@@ -1,0 +1,12 @@
+* board.cpp
+ - check all player <-> color
+ - remove all TODOs
+ - remove all rep(v, v::cnt)
+ - remove all other rep(v, *::cnt) and all rep
+ - add no_more_legal
+ - place_stone, remove_stone ktore zachowuje: hash, color_at, nbr_cnt, MOZE: chain_at i captured
+ - add static everywhere
+ - plan global assert tactic
+ - remove find_root from assertions (npc)
+ - check should be assert dependant
+ - add more print() 's
