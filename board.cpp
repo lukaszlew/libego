@@ -35,7 +35,23 @@ const uint board_area        = board_size * board_size;
 const uint max_captured_cnt  = board_area;
 const uint max_game_length   = board_area * 4;
 
+#ifdef NDEBUG
+const bool player_ac          = false;
+const bool color_ac           = false;
+const bool coord_ac           = false;
+const bool v_ac               = false;
 
+const bool chain_ac           = false;
+const bool board_captured_ac  = false;
+const bool board_hash_ac      = false;
+const bool board_color_at_ac  = false;
+const bool board_nbr_cnt_ac   = false;
+const bool chain_at_ac        = false;
+const bool chains_ac          = false;
+const bool board_ac           = false;
+#endif
+
+#ifdef DEBUG
 const bool player_ac          = true;
 const bool color_ac           = true;
 const bool coord_ac           = true;
@@ -49,7 +65,7 @@ const bool board_nbr_cnt_ac   = true;
 const bool chain_at_ac        = true;
 const bool chains_ac          = true;
 const bool board_ac           = true;
-
+#endif
 
 // namespace player
 
@@ -65,7 +81,7 @@ namespace player {
 
   static void check (t player) { 
     unused (player); // TODO how to fix it?
-    assertc (player_ac, (player & (-2)) == 0);
+    assertc (player_ac, (player & (~1)) == 0);
   }
 
   t other (t player) { 
@@ -96,12 +112,13 @@ namespace color {
 
   static void check (t color) { 
     unused (color);
-    assertc (color_ac, (color & (-4)) == 0); 
+    assertc (color_ac, (color & (~3)) == 0); 
   }
 
-  static bool is_player (t color) { return color & (-2) == 0; }
+  static bool is_player (t color) { return (color & (~1)) == 0; }
 
   static t opponent (t color) {
+    unused (color);
     assertc (color_ac, is_player (color));
     return t (color ^ 1);
   }
@@ -118,15 +135,15 @@ namespace color {
     return '?';                 // should not happen
   }
 
-//   static t of_char (char c) {  // may return t(4)
-//     switch (c) {
-//     case '#': return black;
-//     case 'O': return white;
-//     case '.': return empty;
-//     case '*': return edge;
-//     default : return t(4);
-//     }
-//   }
+   static t of_char (char c) {  // may return t(4)
+     switch (c) {
+     case '#': return black;
+     case 'O': return white;
+     case '.': return empty;
+     case '*': return edge;
+     default : return t(4);
+     }
+   }
 
 }
 
@@ -338,12 +355,12 @@ public:
 class chain_t;
 
 class chain_t {                 // find - union algorithm, with pseudo liberties
+public:
+
   union {
     chain_t* parent;
     int lib_cnt2;               // pseudo_liberties * 2 + 1
   };
-
-public:
 
   bool is_root () const { return lib_cnt2 & 0x1; }
 
@@ -440,7 +457,7 @@ public:
 
   void check_captured () const {
     if (!board_captured_ac) return;
-    assert (captured_cnt < max_captured_cnt);
+    assert (captured_cnt <= max_captured_cnt);
     rep (ii, captured_cnt) 
       assert (color_at[captured[ii]] == color::empty);
   }
@@ -544,7 +561,8 @@ public:
       forward_edge_cnt   = 0;
       backward_edge_cnt  = 0;
       
-      for (v::t act_v = v; act_v != v; act_v = chain_next_v[act_v]) {
+      v::t act_v = v;
+      do {
         assert (color_at[act_v] == act_color);
         assert (chain_at[act_v].find_root_npc () == act_root);
         assert (chain_no[act_v] == no_chain);
@@ -561,13 +579,15 @@ public:
           }
           
         });
-        
-      }
+
+        act_v = chain_next_v[act_v];
+      } while (act_v != v);
+
       
       assert (forward_edge_cnt == backward_edge_cnt);
       assert (act_root->lib_cnt () == lib_cnt);
-      v::check_is_on_board (chain_at-act_root);
-      assert (chain_no[chain_at-act_root] == act_chain_no); // root is a part of the chain
+      v::check_is_on_board (act_root - chain_at);
+      assert (chain_no[act_root - chain_at] == act_chain_no); // root is a part of the chain
       
       act_chain_no++;
     }
@@ -639,11 +659,10 @@ public:
     delta = (chain_t*) (this) - (chain_t*) (save_board);
 
     rep (v, v::cnt) {       // TODO this is mega hack. Remove it !
-      assertc (board_ac, false // TODO unprivate ? friend ?
-//                (chain_at+v)->parent + delta == 
-//                chain_at + 
-//                (save_board->chain_at+v)->parent - 
-//                save_board->chain_at;
+      assertc (board_ac, 
+               (chain_at+v)->parent + delta 
+               == 
+               chain_at + ((save_board->chain_at + v)->parent - save_board->chain_at)
                );
 
       chain_at[v].update_pointer (delta);
@@ -807,10 +826,10 @@ public:
 
   // utils
 
-  bool is_eyelike (color::t color, v::t v) { 
+  bool is_eyelike (player::t player, v::t v) { 
     int diag_color_cnt[color::cnt];
 
-    if (((nbr_cnt[v] >> (color * 4)) & 0xf) != 4) return false; // TODO insert macro / function here
+    if (((nbr_cnt[v] >> (player * 4)) & 0xf) != 4) return false; // TODO insert macro / function here
 
     rep (c, color::cnt) diag_color_cnt[c] = 0; // TODO bzero, here and everywhere
     diag_color_cnt[color_at[v::NW (v)]]++;
@@ -818,8 +837,8 @@ public:
     diag_color_cnt[color_at[v::SW (v)]]++;
     diag_color_cnt[color_at[v::SE (v)]]++;
 
-    if (diag_color_cnt[color::edge] > 0) diag_color_cnt[color::opponent(color)]++;
-    if (diag_color_cnt[color::opponent(color)] >= 2) return false;
+    if (diag_color_cnt[color::edge] > 0) diag_color_cnt[player::other (player)]++;
+    if (diag_color_cnt[player::other (player)] >= 2) return false;
     return true;
   }
   
