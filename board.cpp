@@ -897,3 +897,71 @@ public:
   }
   
 };
+
+
+// class board_test_t
+
+
+class board_test_t {
+  board_t board[1];
+  board_t board_arch[1];
+  
+  v::t rnd_empty_v () {
+    v::t v;
+    do v = pm::rand () % v::cnt; while (board->color_at[v] != color::empty);
+    return v;
+  }
+
+  player::t rnd_player () { return player::t (pm::rand () % 2);} 
+
+  void play_one () {
+    v::t v;
+    player::t pl;
+    v = rnd_empty_v ();
+    pl = rnd_player ();
+    if (board->is_eyelike (pl, v)) pl = player::other (pl);
+    board->play (pl, v);
+    //board->print (v);
+    board->check ();
+    board->captured_cnt = 0;
+  }
+
+public:
+
+  void run_1 () {
+    rep (kk, 300) {
+
+      rep (ii, 500) play_one ();
+      board->print(v::pass);
+      board->check ();
+      board->score ();
+      board->check ();
+
+      board_arch->load (board);
+      board_arch->check ();
+
+      rep (ii, 500) play_one ();
+      board->print(v::pass);
+      board->check ();
+      board->load (board_arch);
+      board->check ();
+      board->print(v::pass);
+      board->check ();
+
+      cout << endl;
+
+      rep (ii, 500) play_one ();
+
+      board->clear ();
+      board->check ();
+    }
+  }
+
+  void run_2 () {
+    rep (kk, 100000) {
+      rep (ii, 112) play_one ();
+      board->load (board_arch);
+    }
+  }
+
+};
