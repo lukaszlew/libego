@@ -80,7 +80,7 @@ namespace player {
   const uint cnt = 2;
 
   static void check (t player) { 
-    unused (player); // TODO how to fix it?
+    unused (player);
     assertc (player_ac, (player & (~1)) == 0);
   }
 
@@ -172,7 +172,7 @@ namespace v {
 
   typedef uint t;
   
-  const uint cnt = (board_size + 2) * (board_size + 2); // TODO may be reduced a'la Gnu Go
+  const uint cnt = (board_size + 2) * (board_size + 2);
   const uint bits_used = 9;     // on 19x19 cnt == 441 < 512 == 1 << 9;
   //static_assert (cnt <= (1 << bits_used));
 
@@ -277,7 +277,7 @@ namespace move {
     return (player << v::bits_used) | v;
   }
 
-  const uint cnt = player::white << v::bits_used | v::cnt;// TODO should be of_pl_v (player::white, v::cnt); // TODO should I compress it?
+  const uint cnt = player::white << v::bits_used | v::cnt;
  
   color::t color (t move) { 
     check (move);
@@ -302,7 +302,7 @@ namespace hash {
   uint index (t hash) { return hash; }
   uint lock  (t hash) { return hash >> 32;  }
 
-  t combine (t h1, t h2) { return h1 + h2; } // xor -> sum to allow double same // TODO better hashing
+  t combine (t h1, t h2) { return h1 + h2; } // not xor. + to allow h1+h2+h1
 
   t random () { 
     return (t)
@@ -335,7 +335,7 @@ public:
     }
   }
 
-  hash::t of_move (move::t m) const { // TODO const
+  hash::t of_move (move::t m) const {
     move::check (m);
     return hashes[m];
   }
@@ -430,19 +430,18 @@ public:
 
 // class board_t
 
-const static zobrist_t zobrist[1]; // TODO this shoud be inside board_t
-
+const static zobrist_t zobrist[1];
 
 class board_t {
   
 public:
-  // TODO check other alignment
+
   color::t  color_at[v::cnt];
-  chain_t   chain_at[v::cnt];   // TODO additional layer may speed up
+  chain_t   chain_at[v::cnt];
   v::t      chain_next_v[v::cnt];
-  uint      nbr_cnt[v::cnt]; // incremental, for fast eye checking // TODO maybe indexing with move::t is better
+  uint      nbr_cnt[v::cnt]; // incremental, for fast eye checking
   
-  v::t      captured[max_captured_cnt]; // TODO it is only a buffer, fix it
+  v::t      captured[max_captured_cnt];
   uint      captured_cnt;
 
   hash::t   hash;
@@ -512,7 +511,7 @@ public:
     if (!chain_at_ac) return;
 
     v_for_each (v) { // whether same color neighbours have same root and liberties
-      // TODO what aoub edge and empty?
+      // TODO what about edge and empty?
       if (color::is_player (color_at[v])) {
 
         assert (!chain_at[v].find_root_npc()->lib_cnt_is_zero ());
@@ -658,7 +657,7 @@ public:
 
     delta = (chain_t*) (this) - (chain_t*) (save_board);
 
-    rep (v, v::cnt) {       // TODO this is mega hack. Remove it !
+    rep (v, v::cnt) {
       assertc (board_ac, 
                (chain_at+v)->parent + delta 
                == 
@@ -685,7 +684,7 @@ public:
     color = color::t (player);
 
     if (((nbr_cnt[v] >> (4-player*4)) & 0xf) == 4)
-      return play_no_lib (player, v); // TODO in MC we always know that we play in eye
+      return play_no_lib (player, v);
 
     color_at[v] = color;
     hash ^= zobrist->of_pl_v (player, v);
@@ -694,7 +693,7 @@ public:
     new_chain_root = &chain_at[v];
     chain_next_v[v] = v;
 
-    process_new_nbr (v::N(v), color, v, &new_chain_root); // TODO is new_chain_root really needed?
+    process_new_nbr (v::N(v), color, v, &new_chain_root);
     process_new_nbr (v::W(v), color, v, &new_chain_root);
     process_new_nbr (v::E(v), color, v, &new_chain_root);
     process_new_nbr (v::S(v), color, v, &new_chain_root);
@@ -722,8 +721,6 @@ public:
     assertc (board_ac, color_at[v::E (v)] == color::opponent (color) || color_at[v::E (v)] == color::edge);
     assertc (board_ac, color_at[v::S (v)] == color::opponent (color) || color_at[v::S (v)] == color::edge);
 
-    // TODO check common expresion elim
-
     chain_root_N = (chain_at + v::N(v))->find_root ();
     chain_root_W = (chain_at + v::W(v))->find_root ();
     chain_root_E = (chain_at + v::E(v))->find_root ();
@@ -734,7 +731,7 @@ public:
     chain_root_E->dec_lib_cnt ();
     chain_root_S->dec_lib_cnt ();
 
-    if ((!chain_root_N->lib_cnt_is_zero ()) & // TODO is it optimalized properly ?
+    if ((!chain_root_N->lib_cnt_is_zero ()) &
         (!chain_root_W->lib_cnt_is_zero ()) & 
         (!chain_root_E->lib_cnt_is_zero ()) & 
         (!chain_root_S->lib_cnt_is_zero ())) 
@@ -831,7 +828,7 @@ public:
 
     if (((nbr_cnt[v] >> (player * 4)) & 0xf) != 4) return false; // TODO insert macro / function here
 
-    rep (c, color::cnt) diag_color_cnt[c] = 0; // TODO bzero, here and everywhere
+    rep (c, color::cnt) diag_color_cnt[c] = 0;
     diag_color_cnt[color_at[v::NW (v)]]++;
     diag_color_cnt[color_at[v::NE (v)]]++;
     diag_color_cnt[color_at[v::SW (v)]]++;
@@ -849,7 +846,7 @@ public:
     rep (v, v::cnt) {       // TODO
       color_score[color_at[v]]++;
       if (color_at[v] == color::empty) {
-        if ((nbr_cnt[v] & 0xf) == 0x4) color_score[color::black]++; // macro
+        if ((nbr_cnt[v] & 0xf) == 0x4) color_score[color::black]++; // TODO macro
         else if ((nbr_cnt[v] & 0xf0) == 0x40) color_score[color::white]++; 
         // TODO test it (removin else may speed it up)
       }
