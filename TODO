@@ -10,3 +10,4 @@
  - remove find_root from assertions (npc)
  - check should be assert dependant
  - add more print() 's
+ - mark most expensive debugs
