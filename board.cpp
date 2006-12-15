@@ -236,15 +236,6 @@ namespace v {
 }
 
 #define v_for_each(v) for (v::t v = 0; v < v::cnt; v++)
-/*
-//#define v_for_each_on_board(v)                                  \
-//   for (v::t v = v::of_rc(0,0); ;)                          \
-//     for (coord::t r = 0; r < coord::t (board_size); r++, v+=2)  \
-//     for (coord::t c = 0; c < coord::t (board_size); c++, v+=1)
-*/
-// TODO test it
-// TODO inline for each line
-// #define v_for_each_on_board(v) v_for_each(v) if (v::is_on_board (v))
 
 #define v_for_each_nbr(center_v, nbr_v, block) {  \
   v::t nbr_v;                                     \
