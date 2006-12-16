@@ -21,6 +21,8 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#pragma once
+
 #include "utils.cpp"
 
 
@@ -594,6 +596,17 @@ public:
     check_chains ();
   }
 
+  void check_no_more_legal (player::t player) { // for assertion at the end of the playout
+    unused (player);
+
+    if (!board_ac) return;
+
+    v_for_each (v)
+      if (color_at[v] == color::empty)
+        assert (is_eyelike(player, v) || play(player, v) == play_ss_suicide);
+  }
+
+
   public:
 
   board_t () { clear (); }
@@ -688,8 +701,10 @@ public:
     process_new_nbr (v::W(v), color, v, &new_chain_root);
     process_new_nbr (v::E(v), color, v, &new_chain_root);
     process_new_nbr (v::S(v), color, v, &new_chain_root);
+
+    assertc (board_ac, new_chain_root == chain_at[v].find_root ());
              
-    if (chain_at[v].find_root ()->lib_cnt_is_zero ()) {
+    if (new_chain_root->lib_cnt_is_zero ()) {
       remove_chain(v);
       assertc (board_ac, chain_next_v[v] != v);
       return play_suicide;
@@ -762,13 +777,14 @@ public:
 
     chain_root = (chain_at + v)->find_root ();
     
-    chain_root->dec_lib_cnt ();
     if (color_at[v] == new_nbr_color) { // same color of groups
+      chain_root->dec_lib_cnt ();
       if (chain_root != *new_nbr_chain_root) { // not merged yet
         *new_nbr_chain_root = chain_root->join (*new_nbr_chain_root);
         swap (chain_next_v[v], chain_next_v[new_nbr_v]);
       }
     } else {
+      chain_root->dec_lib_cnt ();
       if (chain_root->lib_cnt_is_zero ()) remove_chain(v);
     }
   }
@@ -875,7 +891,9 @@ public:
     rep (c, board_size) printf(" %d ", c+1);
     printf("\n");
   }
-  
+
+  void print () { print (v::pass); }
+
   bool load (istream& ifs) {
     uint       bs;
 
