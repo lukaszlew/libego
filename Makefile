@@ -16,10 +16,10 @@ deb: board_test_debug
 
 opt: board_test_opt
 
-board_test_debug: board.cpp
+board_test_debug: board.cpp utils.cpp
 	$(GPP) $(DEBUG) -DBOARD_TEST -o board_test_debug board.cpp 
 
-board_test_opt: board.cpp
+board_test_opt: board.cpp utils.cpp
 	$(GPP) $(OPT)   -DBOARD_TEST -o board_test_opt   board.cpp 
 
 .SUFFIXES: .cpp .o
