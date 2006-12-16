@@ -3,6 +3,11 @@
 This is a Go Board Library (GBL), part of ZG-1 Go program.
 Newest version can be found at http://www.mimuw.edu.pl/~lew.
 
+                      Request
+
+If You are going to use (part of) this library in Your program, 
+please send me a notice ( for my motivation :-) ).
+ 
                      Copyright
 
 All files Copyright 2006 Lukasz Lew 
@@ -13,3 +18,4 @@ which may be found in the file COPYING.
                       Contact
 
 Lukasz Lew (lew at mimuw edu pl)
+
