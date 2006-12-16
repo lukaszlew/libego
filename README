@@ -1,0 +1,15 @@
+                   Go Board Library
+
+This is a Go Board Library (GBL), part of ZG-1 Go program.
+Newest version can be found at http://www.mimuw.edu.pl/~lew.
+
+                     Copyright
+
+All files Copyright 2006 Lukasz Lew 
+
+All files in this package are under General Public License, 
+which may be found in the file COPYING.
+
+                      Contact
+
+Lukasz Lew (lew at mimuw edu pl)
