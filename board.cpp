@@ -21,8 +21,6 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#pragma once
-
 #include "utils.cpp"
 
 
@@ -975,3 +973,14 @@ public:
   }
 
 };
+
+#ifdef BOARD_TEST
+
+int main () { 
+  board_test_t test[1];
+  rep (ii, 100) test->print_playout ();
+
+  return 0;
+}
+
+#endif

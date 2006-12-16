@@ -10,13 +10,13 @@ CFLAGS = -Wall -Wextra -Wno-variadic-macros -Wno-long-long
 
 GPP     = g++ $(CFLAGS) 
 
-all: clean debug
+all: board_test_debug
 
-debug:
-	$(GPP) $(DEBUG) -o debug   main.cpp 
+board_test_debug: board.cpp
+	$(GPP) $(DEBUG) -DBOARD_TEST -o board_test_debug board.cpp 
 
-opt:
-	$(GPP) $(OPT) -o opt   main.cpp 
+board_test_opt: board.cpp
+	$(GPP) $(OPT)   -DBOARD_TEST -o board_test_opt   board.cpp 
 
 .SUFFIXES: .cpp .o
 
@@ -24,5 +24,5 @@ opt:
 	$(GPP) -c $<
 
 clean:
-	rm -f *.s *.o .depend gmon.out debug core opt
+	rm -f *.s *.o .depend gmon.out board_test_debug board_test_opt
 	rm -f *~
