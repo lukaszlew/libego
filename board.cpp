@@ -878,29 +878,30 @@ public:
   
   bool load (istream& ifs) {
     uint       bs;
-    string     row_str;
 
     player::t  play_player[board_area];
     v::t       play_v[board_area];
     uint       play_cnt;
+
+    clear ();
 
     play_cnt = 0;
 
     if (!ifs) return false;
 
     ifs >> bs;
-    if (!bs != board_size) return false;
+    if (bs != board_size) return false;
 
     rep (row, bs) {
-      ifs >> row_str;
-
       uint col = 0;
-      rep (ii, row_str.length ()) {
 
+      rep (ii, bs) {
+        char c;
         color::t pl;
-        if (row_str[ii] == ' ') continue;
 
-        pl = color::of_char (row_str[col]);
+        c = getc_non_space (ifs);
+
+        pl = color::of_char (c);
         if (pl == color::wrong_char) return false;
         
         if (color::is_player (pl)) {
@@ -921,7 +922,7 @@ public:
     rep (pi, play_cnt) {
       play_ret_t ret;
       ret = play (play_player[pi], play_v[pi]);
-      if (ret != play_ok) {
+      if (ret != play_ok || captured_cnt != 0) {
         cerr << "Fatal error: Illegal board configuration in file." << endl;
         exit (1);               // TODO this is a hack
       }
@@ -972,13 +973,25 @@ public:
     v::t v;
     interactive = true;
 
-    board->clear ();
+    ifstream fin;
+
+    fin.open ("test_board.brd");
+
+    if (!fin) 
+      board->clear ();
+    else {
+      if (!board->load (fin)) {
+        cerr << "bad file" << endl;
+        exit (1);
+      }
+    }
+
     rep (ii, 180) {
-      v = play_one ();
       board->print (v);
+      getc (stdin);
+      v = play_one ();
       cout << "Last capture size = " << board->captured_cnt << endl << endl;
       board->captured_cnt = 0;
-      getc (stdin);
     }
     cout << "End of playout" << endl << endl;
   }

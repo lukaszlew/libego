@@ -24,6 +24,7 @@
 #pragma once
 
 #include <iostream>
+#include <fstream>
 #include <cassert>
 
 using namespace std;
@@ -96,3 +97,10 @@ namespace pm {             // Park - Miller "minimal standard"
 }
 
 const float infinity = 1000000000.0;
+
+char getc_non_space (istream& is) {
+  char c;
+  is >> c;
+  if (c == ' ' || c == '\t') return getc_non_space (is);
+  return c;
+}
