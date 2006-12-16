@@ -115,10 +115,10 @@ namespace color {
 
   static bool is_player (t color) { return (color & (~1)) == 0; }
 
-  static t opponent (t color) {
-    unused (color);
-    assertc (color_ac, is_player (color));
-    return t (color ^ 1);
+  static t opponent (player::t player) {
+    unused (player);
+    player::check (player);
+    return t (player ^ 1);
   }
 
   static char to_char (t color) { 
@@ -132,16 +132,18 @@ namespace color {
     }
     return '?';                 // should not happen
   }
+  
+  const t wrong_char = t(4);
 
-   static t of_char (char c) {  // may return t(4)
+  static t of_char (char c) {  // may return t(4)
      switch (c) {
      case '#': return black;
      case 'O': return white;
      case '.': return empty;
      case '*': return edge;
-     default : return t(4);
+     default : return wrong_char;
      }
-   }
+  }
 
 }
 
@@ -496,7 +498,7 @@ public:
     }
   }
 
-  void check_chain_at () const { // TODO move it to check_chains
+  void check_chain_at () const {
     if (!chain_at_ac) return;
 
     v_for_each (v) { // whether same color neighbours have same root and liberties
@@ -701,14 +703,11 @@ public:
     chain_t* chain_root_W;
     chain_t* chain_root_S;
     chain_t* chain_root_E;
-    color::t color;
 
-    color = color::t (player);  // TODO fix it
-
-    assertc (board_ac, color_at[v::N (v)] == color::opponent (color) || color_at[v::N (v)] == color::edge);
-    assertc (board_ac, color_at[v::W (v)] == color::opponent (color) || color_at[v::W (v)] == color::edge);
-    assertc (board_ac, color_at[v::E (v)] == color::opponent (color) || color_at[v::E (v)] == color::edge);
-    assertc (board_ac, color_at[v::S (v)] == color::opponent (color) || color_at[v::S (v)] == color::edge);
+    assertc (board_ac, color_at[v::N (v)] == color::opponent (player) || color_at[v::N (v)] == color::edge);
+    assertc (board_ac, color_at[v::W (v)] == color::opponent (player) || color_at[v::W (v)] == color::edge);
+    assertc (board_ac, color_at[v::E (v)] == color::opponent (player) || color_at[v::E (v)] == color::edge);
+    assertc (board_ac, color_at[v::S (v)] == color::opponent (player) || color_at[v::S (v)] == color::edge);
 
     chain_root_N = (chain_at + v::N(v))->find_root ();
     chain_root_W = (chain_at + v::W(v))->find_root ();
@@ -732,16 +731,17 @@ public:
       return play_ss_suicide;
     }
 
-    color_at[v] = color;
+    color_at[v] = color::t (player);
+
     hash ^= zobrist->of_pl_v (player, v);
     
     (chain_at+v)->init (nbr_cnt[v] >> 8);
     chain_next_v[v] = v;
 
-    nbr_cnt[v::N(v)] += (1 << (color * 4)) - (1 << 8);
-    nbr_cnt[v::W(v)] += (1 << (color * 4)) - (1 << 8); 
-    nbr_cnt[v::E(v)] += (1 << (color * 4)) - (1 << 8);
-    nbr_cnt[v::S(v)] += (1 << (color * 4)) - (1 << 8);
+    nbr_cnt[v::N(v)] += (1 << (player * 4)) - (1 << 8); // TODO macro or function
+    nbr_cnt[v::W(v)] += (1 << (player * 4)) - (1 << 8); 
+    nbr_cnt[v::E(v)] += (1 << (player * 4)) - (1 << 8);
+    nbr_cnt[v::S(v)] += (1 << (player * 4)) - (1 << 8);
 
     if (chain_root_N->lib_cnt_is_zero ()) remove_chain(v::N(v));
     if (chain_root_W->lib_cnt_is_zero ()) remove_chain(v::W(v));
@@ -794,20 +794,15 @@ public:
     } while (act_v != v);
 
     assertc (board_ac, act_v == v);
+
     do {
-      add_liberty (v::N(act_v), old_color);
-      add_liberty (v::W(act_v), old_color);
-      add_liberty (v::E(act_v), old_color);
-      add_liberty (v::S(act_v), old_color);
-      
+      v_for_each_nbr (act_v, nbr_v, {
+        nbr_cnt[nbr_v] -= (1 << (old_color * 4)) - (1 << 8);
+        (chain_at+nbr_v)->find_root ()->inc_lib_cnt (); 
+      });
+
       act_v = chain_next_v[act_v];
     } while (act_v != v);
-  }
-
-
-  void add_liberty (v::t v, color::t nbr_old_color) { // TODO inline it
-    nbr_cnt[v] -= (1 << (nbr_old_color * 4)) - (1 << 8);
-    (chain_at+v)->find_root ()->inc_lib_cnt (); 
   }
 
   // utils
@@ -853,8 +848,7 @@ public:
     return color::white;
   }
 
-  
-  void print (v::t mark_v) {    // TODO use macro
+  void print (v::t mark_v) {
     v::t v;
 
     printf("   ");
@@ -916,6 +910,7 @@ class board_test_t {
 public:
 
   board_test_t () {
+    unused (color::opponent);
     act_player = player::black;
   }
 

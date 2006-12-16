@@ -10,7 +10,11 @@ CFLAGS = -Wall -Wextra -Wno-variadic-macros -Wno-long-long
 
 GPP     = g++ $(CFLAGS) 
 
-all: board_test_debug
+all: deb
+
+deb: board_test_debug
+
+opt: board_test_opt
 
 board_test_debug: board.cpp
 	$(GPP) $(DEBUG) -DBOARD_TEST -o board_test_debug board.cpp 
