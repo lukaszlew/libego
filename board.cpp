@@ -957,6 +957,9 @@ class board_test_t {
     v::t v;
     v = rnd_empty_v ();
     board->play (act_player, v);
+    if (interactive) 
+      cout << "Last capture size = " << board->captured_cnt << endl << endl;
+    board->captured_cnt = 0;
     act_player = player::other (act_player);
     board->check ();
     return v;
@@ -990,8 +993,6 @@ public:
       board->print (v);
       getc (stdin);
       v = play_one ();
-      cout << "Last capture size = " << board->captured_cnt << endl << endl;
-      board->captured_cnt = 0;
     }
     cout << "End of playout" << endl << endl;
   }
@@ -1027,11 +1028,21 @@ public:
   }
 
   void benchmark () {
-    interactive = false;
+    board_arch->clear ();
     rep (kk, 100000) {
-      rep (ii, 112) play_one ();
       board->load (board_arch);
+      rep (ii, 110) {
+        v::t v;
+
+        do v = pm::rand () % v::cnt; 
+        while (board->color_at[v] != color::empty); // || board->is_eyelike (act_player, v)); // most expensive loop
+
+        board->play (act_player, v);
+        board->captured_cnt = 0;
+        act_player = player::other (act_player);
+      }
     }
+
   }
 
 };
@@ -1040,7 +1051,8 @@ public:
 
 int main () { 
   board_test_t test[1];
-  rep (ii, 100) test->print_playout ();
+  //rep (ii, 100) test->print_playout ();
+  test->benchmark ();
 
   return 0;
 }
