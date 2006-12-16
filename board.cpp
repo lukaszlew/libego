@@ -893,34 +893,55 @@ public:
 class board_test_t {
   board_t board[1];
   board_t board_arch[1];
-  
+  player::t act_player;
+  bool interactive;
+
   v::t rnd_empty_v () {
     v::t v;
-    do v = pm::rand () % v::cnt; while (board->color_at[v] != color::empty);
+    do {
+      v = pm::rand () % v::cnt; 
+      if (interactive) cout << ".";
+    } while (board->color_at[v] != color::empty || board->is_eyelike (act_player, v));
+    if (interactive) cout << endl;
     return v;
   }
 
-  player::t rnd_player () { return player::t (pm::rand () % 2);} 
-
-  void play_one () {
+  v::t play_one () {
     v::t v;
-    player::t pl;
     v = rnd_empty_v ();
-    pl = rnd_player ();
-    if (board->is_eyelike (pl, v)) pl = player::other (pl);
-    board->play (pl, v);
-    //board->print (v);
+    board->play (act_player, v);
+    act_player = player::other (act_player);
     board->check ();
-    board->captured_cnt = 0;
+    return v;
   }
 
 public:
 
-  void run_1 () {
-    rep (kk, 300) {
+  board_test_t () {
+    act_player = player::black;
+  }
+
+  void print_playout () {
+    v::t v;
+    interactive = true;
+
+    board->clear ();
+    rep (ii, 180) {
+      v = play_one ();
+      board->print (v);
+      cout << "Last capture size = " << board->captured_cnt << endl << endl;
+      board->captured_cnt = 0;
+      getc (stdin);
+    }
+    cout << "End of playout" << endl << endl;
+  }
+  
+  void test_1 () {
+    interactive = false;
+    rep (kk, 30) {
 
       rep (ii, 500) play_one ();
-      board->print(v::pass);
+
       board->check ();
       board->score ();
       board->check ();
@@ -929,11 +950,11 @@ public:
       board_arch->check ();
 
       rep (ii, 500) play_one ();
-      board->print(v::pass);
+
       board->check ();
       board->load (board_arch);
       board->check ();
-      board->print(v::pass);
+
       board->check ();
 
       cout << endl;
@@ -945,7 +966,8 @@ public:
     }
   }
 
-  void run_2 () {
+  void benchmark () {
+    interactive = false;
     rep (kk, 100000) {
       rep (ii, 112) play_one ();
       board->load (board_arch);

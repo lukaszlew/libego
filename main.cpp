@@ -24,7 +24,8 @@
 #include "board.cpp"
 
 int main () { 
-  board_t board[1];
-  board->print (v::pass);
+  board_test_t test[1];
+  rep (ii, 100) test->print_playout ();
+
   return 0;
 }
