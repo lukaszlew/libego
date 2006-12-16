@@ -876,6 +876,60 @@ public:
     printf("\n");
   }
   
+  bool load (istream& ifs) {
+    uint       bs;
+    string     row_str;
+
+    player::t  play_player[board_area];
+    v::t       play_v[board_area];
+    uint       play_cnt;
+
+    play_cnt = 0;
+
+    if (!ifs) return false;
+
+    ifs >> bs;
+    if (!bs != board_size) return false;
+
+    rep (row, bs) {
+      ifs >> row_str;
+
+      uint col = 0;
+      rep (ii, row_str.length ()) {
+
+        color::t pl;
+        if (row_str[ii] == ' ') continue;
+
+        pl = color::of_char (row_str[col]);
+        if (pl == color::wrong_char) return false;
+        
+        if (color::is_player (pl)) {
+          play_player[play_cnt] = player::t (pl);
+          play_v[play_cnt] = v::of_rc (row, col);
+          play_cnt++;
+          assertc (board_ac, play_cnt < board_area);
+        }
+
+        col++;
+        if (col > bs) return false;
+      }
+
+      if (col != bs) return false;
+      
+    }
+
+    rep (pi, play_cnt) {
+      play_ret_t ret;
+      ret = play (play_player[pi], play_v[pi]);
+      if (ret != play_ok) {
+        cerr << "Fatal error: Illegal board configuration in file." << endl;
+        exit (1);               // TODO this is a hack
+      }
+    }
+
+    return true;
+  }
+
 };
 
 
