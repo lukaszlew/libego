@@ -21,7 +21,9 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#ifndef BOARD_TEST
 #pragma once
+#endif
 
 #include "utils.cpp"
 

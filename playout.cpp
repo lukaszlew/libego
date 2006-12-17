@@ -1,9 +1,13 @@
+#ifndef PLAYOUT_TEST
 #pragma once
+#endif
 
 #include "board.cpp"
 
 
 // playout_t_
+
+static const bool playout_print = false;
 
 #ifdef NDEBUG
 static const bool playout_ac = false;
@@ -85,9 +89,11 @@ public:
 
     #define pp(player) {                    \
       v = play_one (player);                \
-      cout << endl;                         \
-      board->print(v);                      \
-      getchar();                            \
+      if (playout_print) {                  \
+        cout << endl;                       \
+        board->print(v);                    \
+        getchar();                          \
+      }                                     \
       was_pass[player] = (v == v::pass);    \
     } 
     
@@ -114,15 +120,17 @@ public:
           board->play (player, v) == board_t::play_ss_suicide) 
       // then
       {
-        qq ("REJECT\n");
-        board->print (v);
-        getchar ();
-
         rejected_v[rejected_v_cnt++] = v;
+        if (playout_print) {
+          qq ("REJECT\n");
+          board->print (v);
+          getchar ();
+        }
       } else {
-        qq ("OK");
         while (board->captured_cnt > 0) // TODO integrate captured into "play"
           add_empty_v (board->captured[--board->captured_cnt]);
+        
+        if (playout_print) qq ("OK");
 
         return v;
       }
@@ -132,7 +140,8 @@ public:
     empty_v_cnt = rejected_v_cnt;
     rejected_v_cnt = 0;
 
-    cout << "MEMCPY " << empty_v_cnt << endl;
+    if (playout_print) 
+      cout << "MEMCPY " << empty_v_cnt << endl;
 
     while (empty_v_cnt > 0) {   // TODO neutralize this "if"
       v = empty_v [--empty_v_cnt];
@@ -142,15 +151,17 @@ public:
           board->play (player, v) == board_t::play_ss_suicide) 
       // then
       {
-        qq ("REJECT 2\n");
-        board->print (v);
-        getchar ();
-
         rejected_v[rejected_v_cnt++] = v;
+        if (playout_print) {
+          qq ("REJECT\n");
+          board->print (v);
+          getchar ();
+        }
       } else {
-        qq ("OK 2");
         while (board->captured_cnt > 0) // TODO integrate captured into "play"
           add_empty_v (board->captured[--board->captured_cnt]);
+
+        if (playout_print) qq ("OK 2");
 
         return v;
       }
@@ -168,22 +179,24 @@ public:
 
 #ifdef PLAYOUT_TEST
 
+board_t mc_board;
+board_t arch_board;
+
 int main () { 
-  board_t board[2];
   uint win_cnt [player::cnt];
   
   player_for_each (pl) win_cnt [pl] = 0;
 
-  (board+1)->clear ();
-  (board+1)->set_komi (-2);
+  arch_board.clear ();
+  arch_board.set_komi (-2);
   
-  rep (ii, 400000) {
-    board->load (board+1);
+  rep (ii, 200000) {
+    mc_board.load (&arch_board);
 
-    playout_t playout (board);
+    playout_t playout (&mc_board);
     playout.run (player::black);
 
-    win_cnt [board->winner ()] ++; // TODO this is a way too costly // (we have empty tab, there is a better way)
+    win_cnt [mc_board.winner ()] ++; // TODO this is a way too costly // (we have empty tab, there is a better way)
   }
 
   cout << "black wins = " << win_cnt [player::black] << endl

@@ -1,7 +1,7 @@
 OPT = -O3 -march=i686 -fomit-frame-pointer  -DNDEBUG 
 #OPT += -fno-exceptions -fno-rtti
 #OPT += -fstrict-aliasing
-#OPT += -frename-registers
+OPT += -frename-registers
 
 DEBUG = -ggdb3 -DDEBUG -fno-inline 
 PROF  = -ggdb3 -O3 -DNDEBUG -fno-inline 
