@@ -752,14 +752,12 @@ public:
     
     new_chain_root = &chain_at[v];
 
-    process_new_nbr (v::N(v), player, v, &new_chain_root);
-    process_new_nbr (v::W(v), player, v, &new_chain_root);
-    process_new_nbr (v::E(v), player, v, &new_chain_root);
-    process_new_nbr (v::S(v), player, v, &new_chain_root);
+    v_for_each_nbr (v, nbr_v, process_new_nbr (nbr_v, player, v, &new_chain_root));
 
-    assertc (board_ac, new_chain_root == chain_at[v].find_root ());
+    assertc (board_ac, new_chain_root == chain_at[v].find_root_npc ());
              
     if (new_chain_root->lib_cnt_is_zero ()) {
+      assertc (board_ac, captured_cnt == 0);
       remove_chain(v);
       assertc (board_ac, captured_cnt > 1);
       return play_suicide;
@@ -796,8 +794,8 @@ public:
     {
       chain_root_N->inc_lib_cnt ();
       chain_root_W->inc_lib_cnt ();
-      chain_root_S->inc_lib_cnt ();
       chain_root_E->inc_lib_cnt ();
+      chain_root_S->inc_lib_cnt ();
       return play_ss_suicide;
     }
 
