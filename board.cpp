@@ -616,7 +616,7 @@ public:
   bool clear () {
     int r, c;
 
-    komi = 7.5;
+    komi = -7.5;
 
     rep (v, v::cnt) {
       color_at[v] = color::edge;
@@ -854,15 +854,7 @@ public:
     return color_score[color::black] - color_score[color::white];
   }
 
-  color::t winner () {
-    float s;
-
-    s = - komi;
-    s += (float) score ();
-    if (s > 0) return color::black;
-    assertc (board_ac, s < 0);
-    return color::white;
-  }
+  player::t winner () { return player::t (komi > (float) (- score ())); }
 
   void print (v::t mark_v) {
     v::t v;
