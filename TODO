@@ -1,31 +1,31 @@
-
-* board.cpp
+* features
    - mercy rule
+   - plan global assert tactic
+   - load default file
+   - 2 stage playout (x2)
+   - static binary
+   
+* beautyfication
+   - why do we need to do #ifdef's on #pragma once ?
    - remove all rep(v, v::cnt)
    - remove all other rep(v, *::cnt) and all rep
-   - for_each_on_board
-   - additional layer for chain_at
-   - remove captured array
-
    - check all player <-> color
-   - add no_more_legal
-   - place_stone, remove_stone ktore zachowuje: hash, color_at, nbr_cnt, MOZE: chain_at i captured
-   - plan global assert tactic
-   - remove find_root from assertions (npc)
    - unused is needed when assert and NDEBUG, why?
-   - move zobrist into board_t
-   - is new_chain_root really needed (in play)
    - add for_each_nbr in play_no_lib and everywhere
+   - move zobrist into board_t
    - better print
-      
-   * performance
-   - test smaller nunmber of guardians a'la GnuGo
-   - add static everywhere
-   - check performacne of alignment of board_t color_at, chain_at, chain_next_v, nbr_cnt
-   - bzero, here and there
-   - try table based rnd gen
 
-   - in playout we always know: play or play_no_lib?
+* performance
+   - remove captured array
+   - check performacne of alignment of board_t color_at, chain_at, chain_next_v, nbr_cnt
+   - reduce thrasing around on the end of the playout
+   - try other random generators
+   - additional layer for chain_at
+
+   - bzero, here and there
+   - for_each_on_board
+   - test smaller nunmber of guardians a'la GnuGo
+
    - mark most expensive debugs
    - compress move ? 
    - maybe indexing with move::t is better (nbr_cnt, other?)

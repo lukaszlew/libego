@@ -10,7 +10,7 @@ CFLAGS += -Wall -Wextra -Wno-variadic-macros -Wno-long-long -Wno-pragmas
 
 GPP     = g++ $(CFLAGS) 
 
-all: deb
+all: deb opt
 
 deb: playout_test_debug
 
