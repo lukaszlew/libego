@@ -1,34 +1,33 @@
 
 * board.cpp
-   - check all player <-> color
-   - remove all TODOs
+   - mercy rule
    - remove all rep(v, v::cnt)
    - remove all other rep(v, *::cnt) and all rep
+   - for_each_on_board
+   - additional layer for chain_at
+   - remove captured array
+
+   - check all player <-> color
    - add no_more_legal
    - place_stone, remove_stone ktore zachowuje: hash, color_at, nbr_cnt, MOZE: chain_at i captured
    - plan global assert tactic
    - remove find_root from assertions (npc)
-   - check should be assert dependant
-   - add more board_t::print() 's
    - unused is needed when assert and NDEBUG, why?
-   - for_each_on_board
    - move zobrist into board_t
-   - additional layer for chain_at
-   - remove captured array
-   - solve "pointer copying problem" in load in a better way
    - is new_chain_root really needed (in play)
    - add for_each_nbr in play_no_lib and everywhere
    - better print
-   - add aout uint testing in Board.cpp and Makefile
       
    * performance
-   - in playout we always know: play or play_no_lib
-   - add static everywhere
-   - mark most expensive debugs
    - test smaller nunmber of guardians a'la GnuGo
-   - compress move ? 
+   - add static everywhere
    - check performacne of alignment of board_t color_at, chain_at, chain_next_v, nbr_cnt
+   - bzero, here and there
+   - try table based rnd gen
+
+   - in playout we always know: play or play_no_lib?
+   - mark most expensive debugs
+   - compress move ? 
    - maybe indexing with move::t is better (nbr_cnt, other?)
    - maybe introduce pointers elshwere to ommit one addition?
    - check common expresion elim and if condition in play_no_lib
-   - bzero, here and there
