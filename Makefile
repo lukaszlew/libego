@@ -6,7 +6,7 @@ OPT += -frename-registers
 DEBUG = -ggdb3 -DDEBUG -fno-inline 
 PROF  = -ggdb3 -O3 -DNDEBUG -fno-inline 
 
-CFLAGS += -Wall -Wextra -Wno-variadic-macros -Wno-long-long -Wno-pragmas
+CFLAGS += -Wall -Wextra -Wno-variadic-macros -Wno-long-long -Wno-pragmas -static
 
 GPP     = g++ $(CFLAGS) 
 

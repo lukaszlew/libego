@@ -34,7 +34,7 @@
 const uint board_size        = 9;
 
 const uint board_area        = board_size * board_size;
-const uint max_captured_cnt  = board_area;
+const uint max_empty_v_cnt   = board_area;
 const uint max_game_length   = board_area * 4;
 
 #ifdef NDEBUG
@@ -46,7 +46,7 @@ const bool nbr_cnt_ac         = false;
 
 
 const bool chain_ac           = false;
-const bool board_captured_ac  = false;
+const bool board_empty_v_ac   = false;
 const bool board_hash_ac      = false;
 const bool board_color_at_ac  = false;
 const bool board_nbr_cnt_ac   = false;
@@ -64,7 +64,7 @@ const bool v_ac               = true;
 const bool nbr_cnt_ac         = true;
 
 const bool chain_ac           = true;
-const bool board_captured_ac  = true;
+const bool board_empty_v_ac   = true;
 const bool board_hash_ac      = true;
 const bool board_color_at_ac  = true;
 const bool board_nbr_cnt_ac   = true;
@@ -313,7 +313,7 @@ namespace hash {
   }
   
 }
-  
+
 
 // class zobrist_t
 
@@ -482,7 +482,11 @@ public:
   v::t        chain_next_v[v::cnt];
   nbr_cnt::t  nbr_cnt[v::cnt]; // incremental, for fast eye checking
   
-  v::t        captured[max_captured_cnt];
+  v::t        empty_v [board_area];
+  uint        empty_v_cnt;
+
+  uint        empty_pos [v::cnt];
+
   uint        captured_cnt;
 
   hash::t     hash;
@@ -494,11 +498,28 @@ public:
 
   // checks 
 
-  void check_captured () const {
-    if (!board_captured_ac) return;
-    assert (captured_cnt <= max_captured_cnt);
-    rep (ii, captured_cnt) 
-      assert (color_at[captured[ii]] == color::empty);
+  void check_empty_v () const {
+    if (!board_empty_v_ac) return;
+
+    bool noticed[v::cnt];       // TODO check berore return;
+
+    rep (v, v::cnt) noticed[v] = false;
+
+    assert (empty_v_cnt <= board_area);
+
+    rep (ii, empty_v_cnt) {
+      assert (noticed [empty_v [ii]] == false);
+      noticed [empty_v [ii]] = true;
+    }
+
+    v_for_each (v) {
+      assert ((color_at[v] == color::empty) == noticed[v]);
+      if (color_at[v] == color::empty) {
+        assert (empty_pos[v] < empty_v_cnt);
+        assert (empty_v [empty_pos[v]] == v);
+      }
+    }
+    
   }
 
   void check_hash () const {
@@ -642,7 +663,7 @@ public:
   void check () const {
     if (!board_ac) return;
 
-    check_captured      ();
+    check_empty_v       ();
     check_hash          ();
     check_color_at      ();
     check_nbr_cnt       ();
@@ -673,6 +694,7 @@ public:
     int r, c;
 
     komi = -7.5;
+    empty_v_cnt = 0;
 
     rep (v, v::cnt) {
       color_at[v] = color::edge;
@@ -681,7 +703,11 @@ public:
       r = v::row (v);
       c = v::col (v);
 
-      if (v::is_on_board (v)) color_at[v] = color::empty;
+      if (v::is_on_board (v)) {
+        color_at [v] = color::empty;
+        empty_pos [v] = empty_v_cnt;
+        empty_v [empty_v_cnt++] = v;
+      }
 
       chain_next_v[v] = v;
 
@@ -691,8 +717,6 @@ public:
       (chain_at+v)->init (nbr_cnt::empty_cnt (nbr_cnt[v])); //WW
     }
 
-    //captured_top = captured;
-    captured_cnt = 0;
     hash = recalc_hash ();
 
     check ();
@@ -744,6 +768,7 @@ public:
     assertc (board_ac, color_at[v] == color::empty);
 
     color = color::t (player);
+    captured_cnt = 0;
 
     if (nbr_cnt::player_cnt_is_4 (nbr_cnt[v], player::other (player)))
       return play_no_lib (player, v);
@@ -873,6 +898,10 @@ public:
     color_at[v] = color::t (pl);
     (chain_at+v)->init (nbr_cnt::empty_cnt (nbr_cnt[v]));
 
+    empty_v_cnt--;
+    empty_pos [empty_v [empty_v_cnt]] = empty_pos [v];
+    empty_v [empty_pos [v]] = empty_v [empty_v_cnt];
+
     assertc (chain_next_v_ac, chain_next_v[v] == v);
   }
 
@@ -880,9 +909,12 @@ public:
     hash ^= zobrist->of_pl_v (player::t(color_at[v]), v);
     color_at[v] = color::empty;
     (chain_at+v)->init (nbr_cnt::empty_cnt (nbr_cnt[v])); // TODO is it needed ?
-    
-    captured[captured_cnt++] = v;
-    assertc (board_ac, captured_cnt < v::cnt);
+
+    captured_cnt++;
+
+    empty_pos [v] = empty_v_cnt;
+    empty_v [empty_v_cnt++] = v;
+    assertc (board_ac, empty_v_cnt < v::cnt);
   }
 
   // utils

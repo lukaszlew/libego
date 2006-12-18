@@ -88,7 +88,7 @@ public:
     rejected_v_cnt = 0;
 
     v_for_each (v)              // TODO ...on_board
-      if (board->color_at[v] == color::empty) 
+      if (board->color_at[v] == color::empty)
         add_empty_v (v);
   }
 
@@ -118,12 +118,12 @@ public:
         getchar();                          \
       }                                     \
       was_pass[player] = (v == v::pass);    \
-    } 
-    
+    }
+
     if (first_pl == player::white) pp (player::white);
 
     rep (move_no, board_area) { // to avoid rare loopy playouts
-      assertc (playout_ac, board->captured_cnt == 0);
+      //assertc (playout_ac, board->captured_cnt == 0);
 
       player_for_each (pl) pp (pl);
 
@@ -131,64 +131,47 @@ public:
     }
   }
 
+
   v::t play_one (player::t player) {
-    v::t                   v;
+    v::t v;
 
-    // TODO  too many if's inside
-    while (empty_v_cnt > 0) {   // TODO neutralize this "if"
-      v = empty_v [--empty_v_cnt];
+    #define loop(sign)                                                         \
+    while (empty_v_cnt > 0) {                                                  \
+      v = empty_v [--empty_v_cnt];                                             \
+                                                                               \
+      if (board->is_eyelike (player, v) ||                                     \
+          board->play (player, v) == board_t::play_ss_suicide)                 \
+      {                                                                        \
+        rejected_v[rejected_v_cnt++] = v;                                      \
+        if (playout_print) {                                                   \
+          cout << "REJECT" << sign << endl;                                    \
+          board->print (v);                                                    \
+          getchar ();                                                          \
+        }                                                                      \
+      } else {                                                                 \
+        v::t* nev = board->empty_v + board->empty_v_cnt - board->captured_cnt; \
+        rep (ii, board->captured_cnt) {                                        \
+          add_empty_v (*nev);                                                  \
+          nev++;                                                               \
+        }                                                                      \
+        assertc (playout_ac, nev == board->empty_v + board->empty_v_cnt);      \
+                                                                               \
+                                                                               \
+        if (playout_print) cout << "OK" << sign;                               \
+                                                                               \
+        return v;                                                              \
+      }                                                                        \
+    }                                                                          
 
-      // TODO try two phases 1. any eye is bad, play_no_eye 2. play eyes      
-      if (board->is_eyelike (player, v) || 
-          board->play (player, v) == board_t::play_ss_suicide) 
-      // then
-      {
-        rejected_v[rejected_v_cnt++] = v;
-        if (playout_print) {
-          qq ("REJECT\n");
-          board->print (v);
-          getchar ();
-        }
-      } else {
-        while (board->captured_cnt > 0) // TODO integrate captured into "play"
-          add_empty_v (board->captured[--board->captured_cnt]);
-        
-        if (playout_print) qq ("OK");
 
-        return v;
-      }
-    }
+    loop ("");
 
     memcpy (empty_v, rejected_v, sizeof(v::cnt) * rejected_v_cnt);
     empty_v_cnt = rejected_v_cnt;
     rejected_v_cnt = 0;
+    if (playout_print) cout << "MEMCPY " << empty_v_cnt << endl;
 
-    if (playout_print) 
-      cout << "MEMCPY " << empty_v_cnt << endl;
-
-    while (empty_v_cnt > 0) {   // TODO neutralize this "if"
-      v = empty_v [--empty_v_cnt];
-
-      // TODO try two phases 1. any eye is bad, play_no_eye 2. play eyes      
-      if (board->is_eyelike (player, v) || 
-          board->play (player, v) == board_t::play_ss_suicide) 
-      // then
-      {
-        rejected_v[rejected_v_cnt++] = v;
-        if (playout_print) {
-          qq ("REJECT\n");
-          board->print (v);
-          getchar ();
-        }
-      } else {
-        while (board->captured_cnt > 0) // TODO integrate captured into "play"
-          add_empty_v (board->captured[--board->captured_cnt]);
-
-        if (playout_print) qq ("OK 2");
-
-        return v;
-      }
-    }
+    loop (" 2");
 
     board->check_no_more_legal (player); // powerfull check
 
@@ -205,14 +188,14 @@ public:
 board_t mc_board;
 board_t arch_board;
 
-int main () { 
+int main () {
   uint win_cnt [player::cnt];
-  
+
   player_for_each (pl) win_cnt [pl] = 0;
 
   arch_board.clear ();
   arch_board.set_komi (-2);
-  
+
   rep (ii, 200000) {
     mc_board.load (&arch_board);
 
@@ -222,6 +205,7 @@ int main () {
     win_cnt [mc_board.winner ()] ++; // TODO this is a way too costly // (we have empty tab, there is a better way)
   }
 
+  arch_board.print ();
   cout << "black wins = " << win_cnt [player::black] << endl
        << "white wins = " << win_cnt [player::white] << endl;
 
@@ -245,6 +229,6 @@ Potrzebujemy:
   Dobrego kryterium konca gry.
 
 Idealny algorytm:
- 1. good_move_cnt > 0 ?  
-    
+ 1. good_move_cnt > 0 ?
+
 */
