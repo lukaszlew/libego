@@ -2,7 +2,7 @@
    - mercy rule
    - plan global assert tactic
    - load default file
-   - 2 stage playout (x2)
+   - 2 stage playout algorithm / optimization
    - static binary
    
 * beautyfication
@@ -16,11 +16,13 @@
    - better print
 
 * performance
+   - think about copying constructot
    - remove captured array
-   - check performacne of alignment of board_t color_at, chain_at, chain_next_v, nbr_cnt
    - reduce thrasing around on the end of the playout
    - try other random generators
    - additional layer for chain_at
+   - try two phases 1. any eye is bad, play_no_eye 2. play eyes      
+   - too many if's inside playout-run
 
    - bzero, here and there
    - for_each_on_board
