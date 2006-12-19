@@ -1,9 +1,8 @@
 * features
-   - mercy rule
+   - fix README (mercy rule)
    - plan global assert tactic
    - load default file
    - 2 stage playout algorithm / optimization
-   - static binary
    
 * beautyfication
    - why do we need to do #ifdef's on #pragma once ?
@@ -17,7 +16,6 @@
 
 * performance
    - think about copying constructot
-   - remove captured array
    - reduce thrasing around on the end of the playout
    - try other random generators
    - additional layer for chain_at

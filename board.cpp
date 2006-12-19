@@ -245,6 +245,7 @@ namespace v {
 }
 
 #define v_for_each(v) for (v::t v = 0; v < v::cnt; v++)
+#define v_for_each_fast(v) for (v::t v = v::dNS+v::dWE; v <= board_size * (v::dNS + v::dWE); v++)
 
 #define v_for_each_nbr(center_v, nbr_v, block) {  \
   v::t nbr_v;                                     \
@@ -477,20 +478,20 @@ class board_t {
   
 public:
 
-  color::t    color_at[v::cnt];
-  chain_t     chain_at[v::cnt];
-  v::t        chain_next_v[v::cnt];
-  nbr_cnt::t  nbr_cnt[v::cnt]; // incremental, for fast eye checking
+  color::t    color_at      [v::cnt];
+  chain_t     chain_at      [v::cnt];
+  v::t        chain_next_v  [v::cnt];
+  nbr_cnt::t  nbr_cnt       [v::cnt]; // incremental, for fast eye checking
   
-  v::t        empty_v [board_area];
+  uint        empty_pos     [v::cnt];
+  v::t        empty_v       [board_area];
   uint        empty_v_cnt;
+  uint        last_empty_v_cnt;
 
-  uint        empty_pos [v::cnt];
-
-  uint        captured_cnt;
+  uint        player_v_cnt  [player::cnt];
 
   hash::t     hash;
-  float       komi;
+  int         komi;
 
   enum play_ret_t { play_ok, play_suicide, play_ss_suicide };
 
@@ -502,6 +503,7 @@ public:
     if (!board_empty_v_ac) return;
 
     bool noticed[v::cnt];       // TODO check berore return;
+    uint exp_player_v_cnt [player::cnt];
 
     rep (v, v::cnt) noticed[v] = false;
 
@@ -512,14 +514,19 @@ public:
       noticed [empty_v [ii]] = true;
     }
 
+    player_for_each (pl) exp_player_v_cnt [pl] = 0;
+
     v_for_each (v) {
       assert ((color_at[v] == color::empty) == noticed[v]);
       if (color_at[v] == color::empty) {
         assert (empty_pos[v] < empty_v_cnt);
         assert (empty_v [empty_pos[v]] == v);
       }
+      if (color::is_player (color_at [v])) exp_player_v_cnt [color_at[v]]++;
     }
-    
+
+    player_for_each (pl) 
+      assert (exp_player_v_cnt [pl] == player_v_cnt [pl]);
   }
 
   void check_hash () const {
@@ -693,8 +700,9 @@ public:
   bool clear () {
     int r, c;
 
-    komi = -7.5;
+    komi = -7;
     empty_v_cnt = 0;
+    player_for_each (pl) player_v_cnt [pl] = 0;
 
     rep (v, v::cnt) {
       color_at[v] = color::edge;
@@ -728,7 +736,7 @@ public:
     hash::t new_hash;
 
     new_hash = 0;
-    rep (v, v::cnt) {
+    v_for_each (v) {
       if (color::is_player (color_at[v])) {
         new_hash ^= zobrist->of_pl_v (player::t (color_at[v]), v);
       }
@@ -743,7 +751,7 @@ public:
 
     delta = (chain_t*) (this) - (chain_t*) (save_board);
 
-    rep (v, v::cnt) {
+    v_for_each_fast (v) {
       assertc (board_ac, 
                (chain_at+v)->parent + delta 
                == 
@@ -756,7 +764,9 @@ public:
     check ();
   }
   
-  void set_komi (float komi) { this->komi = komi; }
+  void set_komi (float fkomi) { 
+    komi = int (floor (fkomi)); 
+  }
 
   play_ret_t play (player::t player, v::t v) {
     chain_t* new_chain_root;
@@ -768,7 +778,7 @@ public:
     assertc (board_ac, color_at[v] == color::empty);
 
     color = color::t (player);
-    captured_cnt = 0;
+    last_empty_v_cnt = empty_v_cnt;
 
     if (nbr_cnt::player_cnt_is_4 (nbr_cnt[v], player::other (player)))
       return play_no_lib (player, v);
@@ -782,9 +792,9 @@ public:
     assertc (board_ac, new_chain_root == chain_at[v].find_root_npc ());
              
     if (new_chain_root->lib_cnt_is_zero ()) {
-      assertc (board_ac, captured_cnt == 0);
+      assertc (board_ac, last_empty_v_cnt - empty_v_cnt == 1);
       remove_chain(v);
-      assertc (board_ac, captured_cnt > 1);
+      assertc (board_ac, last_empty_v_cnt - empty_v_cnt > 0);
       return play_suicide;
     }
 
@@ -895,6 +905,7 @@ public:
 
   void place_stone (player::t pl, v::t v) {
     hash ^= zobrist->of_pl_v (pl, v);
+    player_v_cnt[pl]++;
     color_at[v] = color::t (pl);
     (chain_at+v)->init (nbr_cnt::empty_cnt (nbr_cnt[v]));
 
@@ -907,13 +918,13 @@ public:
 
   void remove_stone (v::t v) {
     hash ^= zobrist->of_pl_v (player::t(color_at[v]), v);
+    player_v_cnt [color_at[v]]--;
     color_at[v] = color::empty;
     (chain_at+v)->init (nbr_cnt::empty_cnt (nbr_cnt[v])); // TODO is it needed ?
 
-    captured_cnt++;
-
     empty_pos [v] = empty_v_cnt;
     empty_v [empty_v_cnt++] = v;
+
     assertc (board_ac, empty_v_cnt < v::cnt);
   }
 
@@ -934,22 +945,33 @@ public:
     if (diag_color_cnt[player::other (player)] >= 2) return false;
     return true;
   }
-  
-  int score () {
-    int color_score [color::cnt];
 
-    rep (c, 4) color_score[c] = 0;      // TODO bzero
-    rep (v, v::cnt) {       // TODO
-      color_score[color_at[v]]++;
-      if (color_at[v] == color::empty) {
-             if (nbr_cnt::player_cnt_is_4 (nbr_cnt[v], player::black)) color_score[color::black]++;
-        else if (nbr_cnt::player_cnt_is_4 (nbr_cnt[v], player::white)) color_score[color::white]++;
-      }
-    }
-    return color_score[color::black] - color_score[color::white];
+  int approx_score () {
+    return komi + player_v_cnt[player::black] -  player_v_cnt[player::white];
   }
 
-  player::t winner () { return player::t (komi > (float) (- score ())); }
+  player::t approx_winner () { return player::t (approx_score () <= 0); }
+
+  int score () {
+    v::t v;
+    int eye_score;
+
+    eye_score = 0;
+
+    rep (ii, empty_v_cnt) {
+      v = empty_v [ii];
+      if (nbr_cnt::player_cnt_is_4 (nbr_cnt[v], player::black)) {
+        eye_score++; // TODO remove this "if"
+      } else {
+        assertc (board_ac, nbr_cnt::player_cnt_is_4 (nbr_cnt[v], player::white));
+        eye_score--;
+      }
+    }
+
+    return approx_score () + eye_score;
+  }
+
+  player::t winner () { return player::t (score () <= 0); }
 
   void print (v::t mark_v) {
     v::t v;
@@ -1027,7 +1049,7 @@ public:
     rep (pi, play_cnt) {
       play_ret_t ret;
       ret = play (play_player[pi], play_v[pi]);
-      if (ret != play_ok || captured_cnt != 0) {
+      if (ret != play_ok || last_empty_v_cnt - empty_v_cnt != 1) {
         cerr << "Fatal error: Illegal board configuration in file." << endl;
         exit (1);               // TODO this is a hack
       }
@@ -1063,8 +1085,7 @@ class board_test_t {
     v = rnd_empty_v ();
     board->play (act_player, v);
     if (interactive) 
-      cout << "Last capture size = " << board->captured_cnt << endl << endl;
-    board->captured_cnt = 0;
+      cout << "Last capture size = " << board->empty_v_cnt - board->last_empty_v_cnt << endl << endl;
     act_player = player::other (act_player);
     board->check ();
     return v;
@@ -1143,7 +1164,6 @@ public:
         while (board->color_at[v] != color::empty); // || board->is_eyelike (act_player, v)); // most expensive loop
 
         board->play (act_player, v);
-        board->captured_cnt = 0;
         act_player = player::other (act_player);
       }
     }

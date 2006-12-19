@@ -28,10 +28,6 @@
 #include "board.cpp"
 
 
-// playout_t_
-
-static const bool playout_print = false;
-
 #ifdef NDEBUG
 static const bool playout_ac = false;
 #endif
@@ -40,6 +36,14 @@ static const bool playout_ac = false;
 #ifdef DEBUG
 static const bool playout_ac = true;
 #endif
+
+
+static const bool playout_print       = false;
+static const uint max_playout_length  = board_area * 2;
+static const uint mercy_threshold     = 30;
+
+// class playout_t
+
 
 class playout_t { // board with incremental fast random move generator
 
@@ -102,15 +106,13 @@ public:
     assertc (playout_ac, empty_v_cnt <= board_area);
   }
 
-  void run (player::t first_pl) {
+  player::t run (player::t first_pl) {
     v::t  v;
     bool  was_pass[player::cnt];
+    uint  move_no;
+    bool  do_mercy;
 
-    player_for_each (pl) was_pass [pl] = 0;
-
-
-
-    #define pp(player) {                    \
+    #define do_play(player) {               \
       v = play_one (player);                \
       if (playout_print) {                  \
         cout << endl;                       \
@@ -120,15 +122,33 @@ public:
       was_pass[player] = (v == v::pass);    \
     }
 
-    if (first_pl == player::white) pp (player::white);
+    player_for_each (pl) 
+      was_pass [pl] = 0;
 
-    rep (move_no, board_area) { // to avoid rare loopy playouts
-      //assertc (playout_ac, board->captured_cnt == 0);
+    move_no = 0;
 
-      player_for_each (pl) pp (pl);
+    if (first_pl == player::white) 
+      do_play (player::white);
 
-      if (was_pass [player::black] & was_pass [player::white]) break;  // TODO condition here
-    }
+    do { // to avoid rare loopy playouts
+      move_no += 2;
+      player_for_each (pl) 
+        do_play (pl);
+
+      do_mercy = (uint (abs (board->approx_score ())) > mercy_threshold);
+      if ((was_pass [player::black] & was_pass [player::white]) | 
+          move_no > max_playout_length |
+          do_mercy) 
+        break;
+
+    } while (true);
+
+    if (do_mercy)
+      return board->approx_winner ();
+    else
+      return board->winner ();
+
+    #undef do_play
   }
 
 
@@ -149,13 +169,13 @@ public:
           getchar ();                                                          \
         }                                                                      \
       } else {                                                                 \
-        v::t* nev = board->empty_v + board->empty_v_cnt - board->captured_cnt; \
-        rep (ii, board->captured_cnt) {                                        \
-          add_empty_v (*nev);                                                  \
-          nev++;                                                               \
+        v::t* first = board->empty_v + board->last_empty_v_cnt - 1;            \
+        v::t* last = board->empty_v + board->empty_v_cnt;                      \
+        while (first < last) {                                                 \
+          add_empty_v (*first);                                                \
+          first++;                                                             \
+          if (playout_print) cout << "C" << sign << " ";                       \
         }                                                                      \
-        assertc (playout_ac, nev == board->empty_v + board->empty_v_cnt);      \
-                                                                               \
                                                                                \
         if (playout_print) cout << "OK" << sign;                               \
                                                                                \
@@ -188,21 +208,33 @@ public:
 board_t mc_board;
 board_t arch_board;
 
-int main () {
+void usage (char* argv[]) {
+  cout << "Usage: " << argv[0] << " initial_board" << endl;
+  exit (1);
+}
+
+int main (int argc, char* argv[]) {
+  player::t winner;
   uint win_cnt [player::cnt];
 
   player_for_each (pl) win_cnt [pl] = 0;
 
-  arch_board.clear ();
-  arch_board.set_komi (-2);
+  if (argc != 2) usage (argv);
+
+  ifstream board_cin (argv[1]);
+  if (!cin) usage (argv);
+  if (!arch_board.load (board_cin)) {
+    cout << "Wrong file format" << endl;
+    exit (1);
+  }
 
   rep (ii, 200000) {
     mc_board.load (&arch_board);
 
     playout_t playout (&mc_board);
-    playout.run (player::black);
-
-    win_cnt [mc_board.winner ()] ++; // TODO this is a way too costly // (we have empty tab, there is a better way)
+    winner = playout.run (player::black);
+    
+    win_cnt [winner] ++; // TODO this is a way too costly // (we have empty tab, there is a better way)
   }
 
   arch_board.print ();
@@ -218,8 +250,7 @@ int main () {
 /*
 
   Mam bardzo rozgaleziony algorytm, dlaczego?
-1. limit na dlugosc playoutu
-2. 2 pass
+1. limit na dlugosc playoutu 2 pass
 3. szukamy ruchu while empty_v_cnt > 0
 4. eyelike state
 5. play result
