@@ -1,6 +1,6 @@
                    Go Board Library
 
-This is a Go Board Library (GBL), part of ZG-1 Go program.
+This is a Go Board Library, part of ZG-1 Go program.
 Newest version can be found at http://www.mimuw.edu.pl/~lew.
 
                       Request
@@ -18,14 +18,14 @@ which may be found in the file COPYING.
                       Thanks              
 
 My girlfriend for her endless support and patience.
-Jakub for idea of pseudo-liberties and find-union.
+Jakub for the idea of pseudo-liberties and find-union.
 ??? for the idea of mercy rule.
 Markus for his computer go bibliography.
 Don for setting up CGOS server.
-And last but not least, whole computer Go community for stimulating mixture of
-cooperation and competition.
+And last but not least, a whole computer Go community for a 
+stimulating mixture of cooperation and competition.
 
                       Contact
 
-Lukasz Lew (lew at mimuw edu pl)
+Lukasz Lew (lew@mimuw.edu.pl)
 
