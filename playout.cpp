@@ -41,6 +41,7 @@ static const bool playout_ac = true;
 static const bool playout_print       = false;
 static const uint max_playout_length  = board_area * 2;
 static const uint mercy_threshold     = 30;
+static const uint playout_cnt         = 400000;
 
 // class playout_t
 
@@ -214,8 +215,11 @@ void usage (char* argv[]) {
 }
 
 int main (int argc, char* argv[]) {
-  player::t winner;
-  uint win_cnt [player::cnt];
+  player::t  winner;
+  uint       win_cnt [player::cnt];
+  timeval    start_tv[1];
+  timeval    end_tv[1];
+  float      seconds;
 
   player_for_each (pl) win_cnt [pl] = 0;
 
@@ -228,7 +232,9 @@ int main (int argc, char* argv[]) {
     exit (1);
   }
 
-  rep (ii, 200000) {
+  gettimeofday (start_tv, NULL);
+
+  rep (ii, playout_cnt) {
     mc_board.load (&arch_board);
 
     playout_t playout (&mc_board);
@@ -237,9 +243,27 @@ int main (int argc, char* argv[]) {
     win_cnt [winner] ++; // TODO this is a way too costly // (we have empty tab, there is a better way)
   }
 
+  gettimeofday (end_tv, NULL);
+
+  seconds = 
+    float(end_tv->tv_sec - start_tv->tv_sec) + 
+    float(end_tv->tv_usec - start_tv->tv_usec) / 1000000.0;
+
+  cout << "Initial board:" << endl;
+
   arch_board.print ();
-  cout << "black wins = " << win_cnt [player::black] << endl
-       << "white wins = " << win_cnt [player::white] << endl;
+
+  cout << endl;
+  cout << "Performance: " << endl
+       << "  " << playout_cnt << " playouts" << endl
+       << "  " << seconds<< " seconds" << endl
+       << "  " << float (playout_cnt) / seconds / 1000.0 << " kpps" << endl << endl;
+
+  cout << "Black wins = " << win_cnt [player::black] << endl
+       << "White wins = " << win_cnt [player::white] << endl
+       << "P(black win) = " << float (win_cnt [player::black]) / float (win_cnt [player::black] + win_cnt [player::white]) << endl;
+
+  cout << endl;
 
   return 0;
 }

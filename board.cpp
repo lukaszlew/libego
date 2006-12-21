@@ -96,7 +96,13 @@ namespace player {
     return (t)(player ^ 1);
   }
   
-  //  t operator++ (t pl) { return t (pl + 1); }
+  void print (t player, ostream& out) {
+    check (player);
+    if (player == black)
+      out << "#";
+    else
+      out << "O";
+  }
   
 }
 
@@ -502,7 +508,7 @@ public:
   void check_empty_v () const {
     if (!board_empty_v_ac) return;
 
-    bool noticed[v::cnt];       // TODO check berore return;
+    bool noticed[v::cnt];
     uint exp_player_v_cnt [player::cnt];
 
     rep (v, v::cnt) noticed[v] = false;
@@ -783,9 +789,7 @@ public:
     if (nbr_cnt::player_cnt_is_4 (nbr_cnt[v], player::other (player)))
       return play_no_lib (player, v);
 
-    place_stone (player, v);
-    
-    new_chain_root = &chain_at[v];
+    new_chain_root = place_stone (player, v);
 
     v_for_each_nbr (v, nbr_v, process_new_nbr (nbr_v, player, v, &new_chain_root));
 
@@ -903,24 +907,26 @@ public:
     } while (act_v != v);
   }
 
-  void place_stone (player::t pl, v::t v) {
+  chain_t* place_stone (player::t pl, v::t v) {
     hash ^= zobrist->of_pl_v (pl, v);
     player_v_cnt[pl]++;
     color_at[v] = color::t (pl);
-    (chain_at+v)->init (nbr_cnt::empty_cnt (nbr_cnt[v]));
 
     empty_v_cnt--;
     empty_pos [empty_v [empty_v_cnt]] = empty_pos [v];
     empty_v [empty_pos [v]] = empty_v [empty_v_cnt];
 
     assertc (chain_next_v_ac, chain_next_v[v] == v);
+
+    (chain_at+v)->init (nbr_cnt::empty_cnt (nbr_cnt[v]));
+
+    return chain_at+v;
   }
 
   void remove_stone (v::t v) {
     hash ^= zobrist->of_pl_v (player::t(color_at[v]), v);
     player_v_cnt [color_at[v]]--;
     color_at[v] = color::empty;
-    (chain_at+v)->init (nbr_cnt::empty_cnt (nbr_cnt[v])); // TODO is it needed ?
 
     empty_pos [v] = empty_v_cnt;
     empty_v [empty_v_cnt++] = v;
@@ -961,9 +967,8 @@ public:
     rep (ii, empty_v_cnt) {
       v = empty_v [ii];
       if (nbr_cnt::player_cnt_is_4 (nbr_cnt[v], player::black)) {
-        eye_score++; // TODO remove this "if"
-      } else {
-        assertc (board_ac, nbr_cnt::player_cnt_is_4 (nbr_cnt[v], player::white));
+        eye_score++;
+      } else if (nbr_cnt::player_cnt_is_4 (nbr_cnt[v], player::white)) {
         eye_score--;
       }
     }
