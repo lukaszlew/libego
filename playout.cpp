@@ -40,8 +40,8 @@ static const bool playout_ac = true;
 
 static const bool playout_print       = false;
 static const uint max_playout_length  = board_area * 2;
-static const uint mercy_threshold     = 30;
-static const uint playout_cnt         = 400000;
+static const uint mercy_threshold     = 25;
+static const uint playout_cnt         = 500000;
 
 // class playout_t
 

@@ -1,6 +1,6 @@
                    Go Board Library
 
-This is a Go Board Library, part of ZG-1 Go program.
+This is a Go Board Library, high performance implementation of Go rules.
 Newest version can be found at http://www.mimuw.edu.pl/~lew.
 
                       Request
@@ -18,10 +18,10 @@ which may be found in the file COPYING.
                       Thanks              
 
 My girlfriend for her endless support and patience.
-Jakub for the idea of pseudo-liberties and find-union.
-??? for the idea of mercy rule.
-Markus for his computer go bibliography.
-Don for setting up CGOS server.
+Jakub Pawlewicz for the idea of pseudo-liberties and find-union.
+Dave Hillis for the idea of mercy rule.
+Markus Enzenberger for his computer go bibliography.
+Don Dailey for setting up CGOS server.
 And last but not least, a whole computer Go community for a 
 stimulating mixture of cooperation and competition.
 
