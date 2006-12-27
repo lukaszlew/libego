@@ -41,7 +41,7 @@ static const bool playout_ac = true;
 static const bool playout_print       = false;
 static const uint max_playout_length  = board_area * 2;
 static const uint mercy_threshold     = 25;
-static const uint playout_cnt         = 500000;
+static const uint playout_cnt         = 100000;
 
 // class playout_t
 
@@ -117,8 +117,8 @@ public:
       v = play_one (player);                \
       if (playout_print) {                  \
         cout << endl;                       \
-        board->print(v);                    \
-        getchar();                          \
+        board->print (cout, v);             \
+        getchar ();                         \
       }                                     \
       was_pass[player] = (v == v::pass);    \
     }
@@ -166,7 +166,7 @@ public:
         rejected_v[rejected_v_cnt++] = v;                                      \
         if (playout_print) {                                                   \
           cout << "REJECT" << sign << endl;                                    \
-          board->print (v);                                                    \
+          board->print (cout, v);                                              \
           getchar ();                                                          \
         }                                                                      \
       } else {                                                                 \
@@ -251,7 +251,7 @@ int main (int argc, char* argv[]) {
 
   cout << "Initial board:" << endl;
 
-  arch_board.print ();
+  arch_board.print (cout);
 
   cout << endl;
   cout << "Performance: " << endl

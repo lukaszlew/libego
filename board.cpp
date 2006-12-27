@@ -195,6 +195,7 @@ namespace v {
   const uint dWE = 1;
   
   const t pass = 0;
+  const t no_v = 1;
 
   static void check (t v) { 
     unused (v);
@@ -278,17 +279,21 @@ namespace move {
            v::check (move & ((1 << v::bits_used) - 1));
   }
 
+  uint player_mask [player::cnt] = { player::black << v::bits_used, player::white << v::bits_used };
+
   t of_pl_v (player::t player, v::t v) { 
     player::check (player);
     v::check (v);
-    return (player << v::bits_used) | v;
+    return player_mask [player] | v;
   }
 
   const uint cnt = player::white << v::bits_used | v::cnt;
  
-  color::t color (t move) { 
+  const t no_move = 1;
+  
+  player::t player (t move) { 
     check (move);
-    return (color::t) (move >> v::bits_used);
+    return (player::t) (move >> v::bits_used);
   }
 
   v::t v (t move) { 
@@ -296,8 +301,29 @@ namespace move {
     return move & ((1 << v::bits_used) - 1) ; 
   }
 
+  void print (t move, ostream& out) {
+    check (move);
+    player::print (player (move), out);
+    v::print (v (move), out);
+  }
+
 }
 
+#define move_for_each(m, i) do {                 \
+  move::t m;                                     \
+  m = move::of_pl_v (player::black, v::pass);    \
+  i;                                             \
+  m = move::of_pl_v (player::white, v::pass);    \
+  i;                                             \
+  v_for_each_fast (v) {                          \
+    m = move::of_pl_v (player::black, v);        \
+    i;                                           \
+  }                                              \
+  v_for_each_fast (v) {                          \
+    m = move::of_pl_v (player::white, v);        \
+    i;                                           \
+  }                                              \
+} while (false)
 
 // namespace hash
 
@@ -978,35 +1004,31 @@ public:
 
   player::t winner () { return player::t (score () <= 0); }
 
-  void print (v::t mark_v) {
-    v::t v;
-
-    printf("   ");
-    rep (c, board_size) printf(" %d ", c+1);
-    printf("\n");
+  void print (ostream& out, v::t mark_v) {
+    #define os(n) out << " " << n << " ";
+    #define om(n) out << "(" << n << ")";
+    
+    out << "   ";
+    rep (c, board_size) os (c+1);
+    out << endl;
 
     rep (r, board_size) {
-      printf(" %d ", r+1);
-
+      os (r+1);
       rep (c, board_size) {
-        v = v::of_rc (r, c);
-        if (v == mark_v) {
-          printf("(%c)", color::to_char (color_at[v]));
-        } else {
-          printf(" %c ", color::to_char (color_at[v]));
-        }
+        v::t v = v::of_rc (r, c);
+        char ch = color::to_char (color_at[v]);
+        if (v == mark_v) om (ch) else os (ch);
       }
-      
-      printf(" %d ", r+1);
-      printf("\n");
+      os (r+1);
+      out << endl;
     }
-    
-    printf("   ");
-    rep (c, board_size) printf(" %d ", c+1);
-    printf("\n");
+
+    out << "   ";
+    rep (c, board_size) os (c+1);
+    out << endl;
   }
 
-  void print () { print (v::pass); }
+  void print (ostream& out) { print (out, v::pass); }
 
   bool load (istream& ifs) {
     uint       bs;
@@ -1121,7 +1143,7 @@ public:
     }
 
     rep (ii, 180) {
-      board->print (v);
+      board->print (cout, v);
       getc (stdin);
       v = play_one ();
     }
