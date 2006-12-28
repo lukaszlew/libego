@@ -800,7 +800,27 @@ public:
     komi = int (floor (fkomi)); 
   }
 
+  play_ret_t play (move::t move) {
+    move::check (move);
+
+    v::t v = move::v (move);
+    if (v == v::pass) return play_ok;
+    return play (move::player (move), v);
+  }
+
   play_ret_t play (player::t player, v::t v) {
+    check ();
+    player::check (player);
+    v::check_is_on_board (v);
+    assertc (board_ac, color_at[v] == color::empty);
+
+    if (nbr_cnt::player_cnt_is_4 (nbr_cnt[v], player::other (player)))
+      return play_eye (player, v);
+    else 
+      return play_no_eye (player, v);
+  }
+
+  play_ret_t play_no_eye (player::t player, v::t v) {
     chain_t* new_chain_root;
     color::t color;
 
@@ -810,11 +830,8 @@ public:
     assertc (board_ac, color_at[v] == color::empty);
 
     color = color::t (player);
+
     last_empty_v_cnt = empty_v_cnt;
-
-    if (nbr_cnt::player_cnt_is_4 (nbr_cnt[v], player::other (player)))
-      return play_no_lib (player, v);
-
     new_chain_root = place_stone (player, v);
 
     v_for_each_nbr (v, nbr_v, process_new_nbr (nbr_v, player, v, &new_chain_root));
@@ -831,7 +848,7 @@ public:
     return play_ok;
   }
 
-  play_ret_t play_no_lib (player::t player, v::t v) {
+  play_ret_t play_eye (player::t player, v::t v) {
     chain_t* chain_root_N;
     chain_t* chain_root_W;
     chain_t* chain_root_S;
@@ -863,6 +880,8 @@ public:
       chain_root_S->inc_lib_cnt ();
       return play_ss_suicide;
     }
+
+    last_empty_v_cnt = empty_v_cnt;
 
     place_stone (player, v);
     
