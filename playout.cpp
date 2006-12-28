@@ -237,20 +237,18 @@ void playout_benchmark (board_t const * start_board,
     float(end_tv->tv_usec - start_tv->tv_usec) / 1000000.0;
 
   out << "Initial board:" << endl;
+  out << "komi " << -start_board->komi << endl;
 
   start_board->print (out);
 
-  out << endl;
   out << "Performance: " << endl
       << "  " << playout_cnt << " playouts" << endl
       << "  " << seconds<< " seconds" << endl
-      << "  " << float (playout_cnt) / seconds / 1000.0 << " kpps" << endl << endl;
+      << "  " << float (playout_cnt) / seconds / 1000.0 << " kpps" << endl;
 
   out << "Black wins = " << win_cnt [player::black] << endl
       << "White wins = " << win_cnt [player::white] << endl
       << "P(black win) = " << float (win_cnt [player::black]) / float (win_cnt [player::black] + win_cnt [player::white]) << endl;
-
-  out << endl;
 
 }
 

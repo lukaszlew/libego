@@ -148,6 +148,8 @@ static int gtp_list_commands (char *s)
 
   gtp_start_response(GTP_SUCCESS);
 
+  gtp_printf("\n");
+
   for (gtp_command* gc = gtp_commands; gc->name != NULL; gc++)
     gtp_printf("%s\n", gc->name);
 
