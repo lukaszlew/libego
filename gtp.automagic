@@ -1,0 +1,7 @@
+playout_benchmark 200000
+
+load_position problems/ld_difficult
+
+komi -12
+
+playout_benchmark 200000

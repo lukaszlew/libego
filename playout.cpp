@@ -203,44 +203,29 @@ public:
 };
 
 
-#ifdef PLAYOUT_TEST
+void playout_benchmark (board_t const * start_board, 
+                uint playout_cnt, 
+                player::t first_player, 
+                ostream& out) 
+{
+  board_t    mc_board;
 
-static const uint playout_cnt = 200000;
-
-board_t mc_board;
-board_t arch_board;
-
-void usage (char* argv[]) {
-  cout << "Usage: " << argv[0] << " initial_board" << endl;
-  exit (1);
-}
-
-int main (int argc, char* argv[]) {
   player::t  winner;
   uint       win_cnt [player::cnt];
+
   timeval    start_tv[1];
   timeval    end_tv[1];
   float      seconds;
 
   player_for_each (pl) win_cnt [pl] = 0;
 
-  if (argc != 2) usage (argv);
-
-  ifstream board_cin (argv[1]);
-  if (!cin) usage (argv);
-  if (!arch_board.load (board_cin)) {
-    cout << "Wrong file format" << endl;
-    exit (1);
-  }
-
-  //arch_board.set_komi (-1.5);
   gettimeofday (start_tv, NULL);
   
   rep (ii, playout_cnt) {
-    mc_board.load (&arch_board);
+    mc_board.load (start_board);
 
     playout_t playout (&mc_board);
-    winner = playout.run (player::black);
+    winner = playout.run (first_player);
     
     win_cnt [winner] ++; // TODO this is a way too costly // (we have empty tab, there is a better way)
   }
@@ -251,21 +236,46 @@ int main (int argc, char* argv[]) {
     float(end_tv->tv_sec - start_tv->tv_sec) + 
     float(end_tv->tv_usec - start_tv->tv_usec) / 1000000.0;
 
-  cout << "Initial board:" << endl;
+  out << "Initial board:" << endl;
 
-  arch_board.print (cout);
+  start_board->print (out);
 
-  cout << endl;
-  cout << "Performance: " << endl
-       << "  " << playout_cnt << " playouts" << endl
-       << "  " << seconds<< " seconds" << endl
-       << "  " << float (playout_cnt) / seconds / 1000.0 << " kpps" << endl << endl;
+  out << endl;
+  out << "Performance: " << endl
+      << "  " << playout_cnt << " playouts" << endl
+      << "  " << seconds<< " seconds" << endl
+      << "  " << float (playout_cnt) / seconds / 1000.0 << " kpps" << endl << endl;
 
-  cout << "Black wins = " << win_cnt [player::black] << endl
-       << "White wins = " << win_cnt [player::white] << endl
-       << "P(black win) = " << float (win_cnt [player::black]) / float (win_cnt [player::black] + win_cnt [player::white]) << endl;
+  out << "Black wins = " << win_cnt [player::black] << endl
+      << "White wins = " << win_cnt [player::white] << endl
+      << "P(black win) = " << float (win_cnt [player::black]) / float (win_cnt [player::black] + win_cnt [player::white]) << endl;
 
-  cout << endl;
+  out << endl;
+
+}
+
+#ifdef PLAYOUT_TEST
+
+static const uint playout_cnt = 200000;
+
+board_t arch_board;
+
+void usage (char* argv[]) {
+  cout << "Usage: " << argv[0] << " initial_board" << endl;
+  exit (1);
+}
+
+int main (int argc, char* argv[]) {
+  if (argc != 2) usage (argv);
+
+  ifstream board_cin (argv[1]);
+  if (!cin) usage (argv);
+  if (!arch_board.load (board_cin)) {
+    cout << "Wrong file format" << endl;
+    exit (1);
+  }
+
+  playout_benchmark (&arch_board, playout_cnt, player::black, cout);
 
   return 0;
 }

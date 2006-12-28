@@ -800,6 +800,17 @@ public:
     komi = int (floor (fkomi)); 
   }
 
+  bool slow_is_legal (move::t move) const { // TODO ko handling
+    v::t v;
+    
+    v = move::v (move);
+    if (v == v::pass) return true;
+    if (color_at [v] != color::empty) return false;
+
+    board_t tmp_board (this);
+    return tmp_board.play (move) == play_ok;
+  }
+
   play_ret_t play (move::t move) {
     move::check (move);
 
@@ -997,13 +1008,13 @@ public:
     return true;
   }
 
-  int approx_score () {
+  int approx_score () const {
     return komi + player_v_cnt[player::black] -  player_v_cnt[player::white];
   }
 
   player::t approx_winner () { return player::t (approx_score () <= 0); }
 
-  int score () {
+  int score () const {
     v::t v;
     int eye_score;
 
@@ -1021,9 +1032,11 @@ public:
     return approx_score () + eye_score;
   }
 
-  player::t winner () { return player::t (score () <= 0); }
+  player::t winner () const { 
+    return player::t (score () <= 0); 
+  }
 
-  void print (ostream& out, v::t mark_v) {
+  void print (ostream& out, v::t mark_v) const {
     #define os(n) out << " " << n << " ";
     #define om(n) out << "(" << n << ")";
     
@@ -1047,7 +1060,9 @@ public:
     out << endl;
   }
 
-  void print (ostream& out) { print (out, v::pass); }
+  void print (ostream& out) const {
+    print (out, v::pass); 
+  }
 
   bool load (istream& ifs) {
     uint       bs;
