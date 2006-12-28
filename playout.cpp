@@ -41,7 +41,6 @@ static const bool playout_ac = true;
 static const bool playout_print       = false;
 static const uint max_playout_length  = board_area * 2;
 static const uint mercy_threshold     = 25;
-static const uint playout_cnt         = 100000;
 
 // class playout_t
 
@@ -206,6 +205,8 @@ public:
 
 #ifdef PLAYOUT_TEST
 
+static const uint playout_cnt = 200000;
+
 board_t mc_board;
 board_t arch_board;
 
@@ -232,8 +233,9 @@ int main (int argc, char* argv[]) {
     exit (1);
   }
 
+  //arch_board.set_komi (-1.5);
   gettimeofday (start_tv, NULL);
-
+  
   rep (ii, playout_cnt) {
     mc_board.load (&arch_board);
 
