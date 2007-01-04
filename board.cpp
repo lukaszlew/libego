@@ -106,6 +106,7 @@ namespace player {
   
 }
 
+// TODO test it for performance
 #define player_for_each(pl) for (player::t pl = player::black; pl != player::cnt; pl = player::t(pl+1))
 
 
@@ -162,6 +163,8 @@ namespace color {
 
 }
 
+// TODO test it for performance
+#define color_for_each(col) for (color::t col = color::black; col != color::cnt; col = color::t (col+1))
 
 // namespace coord
 
@@ -172,9 +175,11 @@ namespace coord {
 
   bool is_ok (t coord) { return uint (coord) < board_size; }
 
-  static void check (t coord) { 
-    unused (coord);
-    assertc (coord_ac, is_ok (coord)); 
+  static void check2 (t row, t col) { 
+    if (!coord_ac) return;
+    if (row == -1 && col == -1) return;
+    assertc (coord_ac, is_ok (row)); 
+    assertc (coord_ac, is_ok (col)); 
   }
 
 }
@@ -222,10 +227,10 @@ namespace v {
     assertc (v_ac, is_on_board (v)); 
   }
 
-  static t N (t v) { check (v); return v - dNS; }
-  static t W (t v) { check (v); return v - dWE; }
-  static t E (t v) { check (v); return v + dWE; }
-  static t S (t v) { check (v); return v + dNS; }
+  static t N (t v) { check (v); check (v - dNS); return v - dNS; }
+  static t W (t v) { check (v); check (v - dWE); return v - dWE; }
+  static t E (t v) { check (v); check (v + dWE); return v + dWE; }
+  static t S (t v) { check (v); check (v + dNS); return v + dNS; }
 
   static t NW (t v) { check (v); return N(W(v)); }
   static t NE (t v) { check (v); return N(E(v)); }
@@ -233,8 +238,7 @@ namespace v {
   static t SE (t v) { check (v); return S(E(v)); }
 
   static t of_rc (coord::t r, coord::t c) {
-    coord::check (r);
-    coord::check (c);
+    coord::check2 (r, c);
     return (r+1) * dNS + (c+1) * dWE;
   }
 
@@ -243,29 +247,72 @@ namespace v {
     coord::t c;
     check (v);
 
-    r = row (v);
-    c = col (v);
-    
-    out << "(" << r + 1 << "," << c + 1 << ")";
+    if (v == pass) {
+      out << " PASS";
+    } else if (v == no_v) {
+      out << " NO v";
+    } else {
+      r = row (v);
+      c = col (v);
+      
+      out << "(" << r + 1 << "," << c + 1 << ")";
+    }
+  }
+
+  static char coord_tab[20] = "ABCDEFGHJKLMNOPQRST";
+
+  void print_alfanum (t v, ostream& out) {
+    coord::t r;
+    coord::t c;
+    check (v);
+
+    if (v == pass) {
+      out << "PASS";
+    } else if (v == no_v) {
+      out << " NO v";
+    } else {
+      r = row (v);
+      c = col (v);
+      
+      out << coord_tab[c] << board_size - r;
+    }
   }
 
 }
 
-#define v_for_each(v) for (v::t v = 0; v < v::cnt; v++)
-#define v_for_each_fast(v) for (v::t v = v::dNS+v::dWE; v <= board_size * (v::dNS + v::dWE); v++)
+#define v_for_each_all(vv) for (v::t vv = 0; vv < v::cnt; vv++)
+#define v_for_each_faster(vv) for (v::t vv = v::dNS+v::dWE; vv <= board_size * (v::dNS + v::dWE); vv++)
 
 #define v_for_each_nbr(center_v, nbr_v, block) {  \
+  v::check_is_on_board (center_v);                \
   v::t nbr_v;                                     \
-  nbr_v = v::N (center_v);                        \
-  block;                                          \
-  nbr_v = v::W (center_v);                        \
-  block;                                          \
-  nbr_v = v::E (center_v);                        \
-  block;                                          \
-  nbr_v = v::S (center_v);                        \
-  block;                                          \
+  nbr_v = v::N (center_v); block;                 \
+  nbr_v = v::W (center_v); block;                 \
+  nbr_v = v::E (center_v); block;                 \
+  nbr_v = v::S (center_v); block;                 \
 }
 
+#define v_for_each_diag_nbr(center_v, nbr_v, block) {  \
+  v::check_is_on_board (center_v);                     \
+  v::t nbr_v;                                          \
+  nbr_v = v::NW (center_v); block;                     \
+  nbr_v = v::NE (center_v); block;                     \
+  nbr_v = v::SW (center_v); block;                     \
+  nbr_v = v::SE (center_v); block;                     \
+}
+
+#define pl_v_for_each(pl, vv) player_for_each(pl) v_for_each_faster(vv)
+
+#define pl_v_for_each_9_nbr(center_v, pl, nbr_v, i) { \
+  v::check_is_on_board (center_v);                    \
+  move::t    nbr_v;                                   \
+  player_for_each (pl) {                              \
+    nbr_v = center_v;                                 \
+    i;                                                \
+    v_for_each_nbr      (center_v, nbr_v, i);         \
+    v_for_each_diag_nbr (center_v, nbr_v, i);         \
+  }                                                   \
+}
 
 // namespace move
 
@@ -307,24 +354,28 @@ namespace move {
     v::print (v (move), out);
   }
 
+  void print_alfanum (t move, ostream& out) {
+    check (move);
+    player::print (player (move), out);
+    v::print_alfanum (v (move), out);
+  }
 }
 
-#define move_for_each(m, i) do {                 \
+#define move_for_each(mm) rep (mm, move::cnt)
+
+/*
+#define move_for_each_and_pass(m, i) do {        \
   move::t m;                                     \
-  m = move::of_pl_v (player::black, v::pass);    \
-  i;                                             \
-  m = move::of_pl_v (player::white, v::pass);    \
-  i;                                             \
-  v_for_each_fast (v) {                          \
-    m = move::of_pl_v (player::black, v);        \
+  player_for_each (pl) {                         \
+    m = move::of_pl_v (pl, v::pass);             \
     i;                                           \
   }                                              \
-  v_for_each_fast (v) {                          \
-    m = move::of_pl_v (player::white, v);        \
+  pl_v_for_each (pl, v) {                        \
+    m = move::of_pl_v (pl, v);                   \
     i;                                           \
   }                                              \
 } while (false)
-
+*/
 // namespace hash
 
 
@@ -358,13 +409,10 @@ class zobrist_t {
 public:
 
   zobrist_t () {
-    player_for_each (pl) {
-      v_for_each (v) {
-        
-        move::t m;
-        m = move::of_pl_v (pl, v);
-        hashes[m] = hash::random ();
-      }
+    pl_v_for_each (pl, v) {
+      move::t m;
+      m = move::of_pl_v (pl, v);
+      hashes[m] = hash::random ();
     }
   }
 
@@ -537,7 +585,7 @@ public:
     bool noticed[v::cnt];
     uint exp_player_v_cnt [player::cnt];
 
-    rep (v, v::cnt) noticed[v] = false;
+    v_for_each_all (v) noticed[v] = false;
 
     assert (empty_v_cnt <= board_area);
 
@@ -548,7 +596,7 @@ public:
 
     player_for_each (pl) exp_player_v_cnt [pl] = 0;
 
-    v_for_each (v) {
+    v_for_each_faster (v) {
       assert ((color_at[v] == color::empty) == noticed[v]);
       if (color_at[v] == color::empty) {
         assert (empty_pos[v] < empty_v_cnt);
@@ -568,7 +616,7 @@ public:
   void check_color_at () const {
     if (!board_color_at_ac) return;
 
-    v_for_each (v) {
+    v_for_each_all (v) {
       color::check (color_at[v]);
       assert ((color_at[v] != color::edge) == (v::is_on_board (v)));
     }
@@ -577,7 +625,7 @@ public:
   void check_nbr_cnt () const {
     if (!board_nbr_cnt_ac) return;
     
-    v_for_each (v) {
+    v_for_each_faster (v) {
       coord::t r;
       coord::t c;
       uint nbr_color_cnt[color::cnt];
@@ -591,9 +639,9 @@ public:
       assert (coord::is_ok (r)); // checking the macro
       assert (coord::is_ok (c));
           
-      rep (col, color::cnt) nbr_color_cnt[col] = 0;
+      color_for_each (col) nbr_color_cnt [col] = 0;
           
-      nbr_color_cnt[color_at[v::N (v)]]++;
+      nbr_color_cnt[color_at[v::N (v)]]++; // TODO for_each_nbr here and there
       nbr_color_cnt[color_at[v::W (v)]]++;
       nbr_color_cnt[color_at[v::E (v)]]++;
       nbr_color_cnt[color_at[v::S (v)]]++;
@@ -610,7 +658,7 @@ public:
   void check_chain_at () const {
     if (!chain_at_ac) return;
 
-    v_for_each (v) { // whether same color neighbours have same root and liberties
+    v_for_each_faster (v) { // whether same color neighbours have same root and liberties
       // TODO what about edge and empty?
       if (color::is_player (color_at[v])) {
 
@@ -628,7 +676,7 @@ public:
 
   void check_chain_next_v () const {
     if (!chain_next_v_ac) return;
-    v_for_each (v) {
+    v_for_each_all (v) {
       v::check (chain_next_v[v]);
       if (!color::is_player (color_at[v])) 
         assert (chain_next_v[v] == v);
@@ -646,10 +694,10 @@ public:
     
     act_chain_no = 0;
 
-    v_for_each (v) chain_no[v] = no_chain;
+    v_for_each_all (v) chain_no[v] = no_chain;
 
     // TODO what about empty and edge?
-    v_for_each (v) if (color::is_player(color_at[v]) && chain_no[v] == no_chain) { // chain not visited yet
+    v_for_each_faster (v) if (color::is_player(color_at[v]) && chain_no[v] == no_chain) { // chain not visited yet
       color::t        act_color;
       const chain_t*  act_root;
 
@@ -716,7 +764,7 @@ public:
 
     if (!board_ac) return;
 
-    v_for_each (v)
+    v_for_each_faster (v)
       if (color_at[v] == color::empty)
         assert (is_eyelike(player, v) || play(player, v) == play_ss_suicide);
   }
@@ -736,7 +784,7 @@ public:
     empty_v_cnt = 0;
     player_for_each (pl) player_v_cnt [pl] = 0;
 
-    rep (v, v::cnt) {
+    v_for_each_all (v) {
       color_at[v] = color::edge;
       nbr_cnt[v] = nbr_cnt::of_desc (0, 0, 4);
 
@@ -768,7 +816,7 @@ public:
     hash::t new_hash;
 
     new_hash = 0;
-    v_for_each (v) {
+    v_for_each_faster (v) {
       if (color::is_player (color_at[v])) {
         new_hash ^= zobrist->of_pl_v (player::t (color_at[v]), v);
       }
@@ -783,7 +831,7 @@ public:
 
     delta = (chain_t*) (this) - (chain_t*) (save_board);
 
-    v_for_each_fast (v) {
+    v_for_each_faster (v) {
       assertc (board_ac, 
                (chain_at+v)->parent + delta 
                == 
@@ -997,11 +1045,10 @@ public:
 
     if (! nbr_cnt::player_cnt_is_4 (nbr_cnt[v], player)) return false;
 
-    rep (c, color::cnt) diag_color_cnt[c] = 0;
-    diag_color_cnt[color_at[v::NW (v)]]++;
-    diag_color_cnt[color_at[v::NE (v)]]++;
-    diag_color_cnt[color_at[v::SW (v)]]++;
-    diag_color_cnt[color_at[v::SE (v)]]++;
+    color_for_each (col) diag_color_cnt [col] = 0;
+    v_for_each_diag_nbr (v, diag_v, {
+      diag_color_cnt [color_at [diag_v]]++;
+    });
 
     if (diag_color_cnt[color::edge] > 0) diag_color_cnt[player::other (player)]++;
     if (diag_color_cnt[player::other (player)] >= 2) return false;
@@ -1036,7 +1083,7 @@ public:
     return player::t (score () <= 0); 
   }
 
-  void print (ostream& out, v::t mark_v) const {
+  void print (ostream& out, v::t mark_v = v::pass) const { // TODO defoult out
     #define os(n) out << " " << n << " ";
     #define om(n) out << "(" << n << ")";
     
@@ -1060,8 +1107,8 @@ public:
     out << endl;
   }
 
-  void print (ostream& out) const {
-    print (out, v::pass); 
+  void print_cerr (v::t v = v::pass) const {
+    print (cerr, v);
   }
 
   bool load (istream& ifs) {

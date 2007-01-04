@@ -65,7 +65,7 @@ public:
     assert    (empty_v_cnt <= board_area);
     assert (rejected_v_cnt <= board_area);
 
-    rep (v, v::cnt) noticed[v] = false;
+    v_for_each_all (v) noticed[v] = false;
 
     rep (k, empty_v_cnt) {
       assert (noticed[empty_v[k]] == false);
@@ -77,7 +77,7 @@ public:
       noticed[rejected_v[k]] = true;
     }
 
-    v_for_each (v) // TODO on_board
+    v_for_each_faster (v)
       assert ((board->color_at[v] == color::empty) == noticed[v]);
   }
 
@@ -91,9 +91,10 @@ public:
     empty_v_cnt    = 0;
     rejected_v_cnt = 0;
 
-    v_for_each (v)              // TODO ...on_board
+    v_for_each_faster (v) {
       if (board->color_at[v] == color::empty)
         add_empty_v (v);
+    }
   }
 
   void add_empty_v (v::t v) {
@@ -194,6 +195,8 @@ public:
     loop (" 2");
 
     board->check_no_more_legal (player); // powerfull check
+
+    #undef loop
 
     return v::pass;
   }
