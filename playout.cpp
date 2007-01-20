@@ -201,9 +201,76 @@ public:
     return v::pass;
   }
 
-
-
 };
+
+
+
+// class simple_playout_t
+
+
+namespace simple_playout {
+
+  static v::t play_one (board_t* board, player::t player) {
+
+    v::t v;
+    uint start;
+
+    // find random place in vector of empty vertices
+    start = pm::rand () % board->empty_v_cnt; 
+
+    // search for a move in start ... board->empty_v_cnt-1 interval
+    for (uint ev_i = start; ev_i != board->empty_v_cnt; ev_i++) {   
+      v = board->empty_v [ev_i];
+      if (!board->is_eyelike (player, v) &&
+          board->play (player, v) != board_t::play_ss_suicide) return v;
+    }
+
+    // search for a move in 0 ... start interval
+    for (uint ev_i = 0; ev_i != start; ev_i++) {
+      v = board->empty_v [ev_i];
+      if (!board->is_eyelike (player, v) &&
+          board->play (player, v) != board_t::play_ss_suicide) return v;
+    }
+
+    board->check_no_more_legal (player); // powerfull check
+    return v::pass;
+  }
+
+
+  player::t run (board_t* board, player::t first_player) {
+
+    v::t  v;
+    bool  was_pass[player::cnt];
+    uint  move_no;
+    player::t act_player;
+
+    act_player = first_player;
+
+    player_for_each (pl)
+      was_pass [pl] = false;
+
+    move_no = 0;
+
+    do {
+
+      v = play_one (board, act_player);
+
+      was_pass [act_player] = (v == v::pass);
+      act_player = player::other (act_player);
+      move_no++;
+
+      if ((was_pass [player::black] & was_pass [player::white]) | 
+          (move_no > max_playout_length)) break;
+
+    } while (true);
+
+    return board->winner ();
+
+  }
+
+}
+
+
 
 
 void playout_benchmark (board_t const * start_board, 
