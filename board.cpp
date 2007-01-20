@@ -115,7 +115,7 @@ namespace player {
   
 }
 
-// TODO test it for performance
+// faster than non-loop
 #define player_for_each(pl) \
   for (player::t pl = player::black; pl != player::cnt; pl = player::t(pl+1))
 
@@ -706,10 +706,7 @@ public:
           
       color_for_each (col) nbr_color_cnt [col] = 0;
           
-      nbr_color_cnt[color_at[v::N (v)]]++; // TODO for_each_nbr here and there
-      nbr_color_cnt[color_at[v::W (v)]]++;
-      nbr_color_cnt[color_at[v::E (v)]]++;
-      nbr_color_cnt[color_at[v::S (v)]]++;
+      v_for_each_nbr (v, nbr_v, nbr_color_cnt [color_at [nbr_v]]++);
           
       expected_nbr_cnt =        // definition of nbr_cnt[v]
         + ((nbr_color_cnt [color::black] + nbr_color_cnt [color::edge]) 
@@ -855,7 +852,7 @@ public:
   bool clear () {
     int r, c;
 
-    komi = -7;
+    set_komi (-7.5);            // standard for chinese rules
     empty_v_cnt = 0;
     player_for_each (pl) player_v_cnt [pl] = 0;
 
@@ -920,7 +917,7 @@ public:
   }
   
   void set_komi (float fkomi) { 
-    komi = int (floor (fkomi)); // TODO ceil?
+    komi = int (ceil (fkomi));
   }
 
   bool slow_is_legal (move::t move) const { // TODO ko handling
