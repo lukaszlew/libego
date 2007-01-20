@@ -57,7 +57,7 @@ const bool board_ac           = false;
 #endif
 
 #ifdef DEBUG
-const bool paranoic           = false;
+const bool paranoic           = true;
 
 const bool player_ac          = paranoic;
 const bool color_ac           = paranoic;
