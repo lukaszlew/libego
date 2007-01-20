@@ -478,14 +478,23 @@ namespace nbr_cnt {
 
   typedef uint t;
 
-  uint max = 4;                 // maximal number of neighbours
+  const uint max = 4;                 // maximal number of neighbours
 
-  uint empty_cnt  (t nbr_cnt) { return nbr_cnt >> 8; }
-  uint player_cnt (t nbr_cnt, player::t pl) { return (nbr_cnt >> (pl*4)) & 0xf; }
+  const uint f_size = 4;              // size in bits of each of 3 counters in nbr_cnt::t
+  const static uint f_shift [3] = { 0*f_size, 1*f_size, 2*f_size };
+  const uint f_mask = (1 << f_size) - 1;
+
+  uint empty_cnt  (t nbr_cnt) { 
+    return nbr_cnt >> f_shift [color::empty];
+  }
+
+  uint player_cnt (t nbr_cnt, player::t pl) { 
+    return (nbr_cnt >> f_shift [pl]) & f_mask; 
+  }
 
   const uint player_cnt_is_max_mask [player::cnt] = { 
-    (max << (player::black * 4)), 
-    (max << (player::white * 4)) 
+    (max << f_shift [player::black]), 
+    (max << f_shift [player::white]) 
   };
 
   uint player_cnt_is_max (t nbr_cnt, player::t pl) { 
@@ -506,19 +515,22 @@ namespace nbr_cnt {
     assertc (nbr_cnt_ac, empty_cnt <= max);
 
     return 
-      (black_cnt << 0) +
-      (white_cnt << 4) +
-      (empty_cnt << 8);
+      (black_cnt << f_shift [player::black]) +
+      (white_cnt << f_shift [player::white]) +
+      (empty_cnt << f_shift [color::empty]);
   }
   
   const t player_inc_tab [player::cnt] = { 
-    (1 << (player::black * 4)) - (1 << 8), 
-    (1 << (player::white * 4)) - (1 << 8) 
+    (1 << f_shift [player::black]) - (1 << f_shift [color::empty]), 
+    (1 << f_shift [player::white]) - (1 << f_shift [color::empty]) 
   };
 
   t player_inc (player::t pl) { return player_inc_tab[pl]; }
-
-  const t edge_inc = 1 + (1 << 4) - (1 << 8);
+  
+  const t edge_inc = 
+    + (1 << f_shift [player::black]) 
+    + (1 << f_shift [player::white]) 
+    - (1 << f_shift [color::empty]);
 
 }
 
@@ -700,9 +712,12 @@ public:
       nbr_color_cnt[color_at[v::S (v)]]++;
           
       expected_nbr_cnt =        // definition of nbr_cnt[v]
-        ((nbr_color_cnt[color::black] + nbr_color_cnt[color::edge]) << 0) +
-        ((nbr_color_cnt[color::white] + nbr_color_cnt[color::edge]) << 4) +
-        ((nbr_color_cnt[color::empty]                             ) << 8);
+        + ((nbr_color_cnt [color::black] + nbr_color_cnt [color::edge]) 
+           << nbr_cnt::f_shift [player::black])
+        + ((nbr_color_cnt [color::white] + nbr_color_cnt [color::edge])
+           << nbr_cnt::f_shift [player::white])
+        + ((nbr_color_cnt [color::empty]) 
+           << nbr_cnt::f_shift [color::empty]);
     
       assert (nbr_cnt[v] == expected_nbr_cnt);
     }
@@ -814,6 +829,9 @@ public:
     check_chain_at      ();
     check_chain_next_v  ();
     check_chains        ();
+
+    if (color_at[0] == 11) print_cerr (); // TODO LOL hack - need tu use it somwhere 
+
   }
 
   void check_no_more_legal (player::t player) { // at the end of the playout
@@ -902,7 +920,7 @@ public:
   }
   
   void set_komi (float fkomi) { 
-    komi = int (floor (fkomi)); 
+    komi = int (floor (fkomi)); // TODO ceil?
   }
 
   bool slow_is_legal (move::t move) const { // TODO ko handling
