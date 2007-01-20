@@ -105,6 +105,13 @@ namespace player {
     else
       out << "O";
   }
+
+  string to_string (t player) {
+    if (player == black)
+      return "#";
+    else
+      return "O";
+  }
   
 }
 
@@ -150,7 +157,7 @@ namespace color {
     }
     return '?';                 // should not happen
   }
-  
+
   const t wrong_char = t(4);
 
   static t of_char (char c) {  // may return t(4)
@@ -177,6 +184,13 @@ namespace coord {
 
   bool is_ok (t coord) { return uint (coord) < board_size; }
 
+  
+
+  static void check (t coo) { 
+    unused (coo);
+    assertc (coord_ac, is_ok (coo)); 
+  }
+
   static void check2 (t row, t col) { 
     if (!coord_ac) return;
     if (row == -1 && col == -1) return;
@@ -184,7 +198,25 @@ namespace coord {
     assertc (coord_ac, is_ok (col)); 
   }
 
+  static char col_tab[20] = "ABCDEFGHJKLMNOPQRST";
+
+  string row_to_string (t row) {
+    check (row);
+    ostringstream ss;
+    ss << board_size - row;
+    return ss.str ();
+  }
+
+  string col_to_string (t col) {
+    check (col);
+    ostringstream ss;
+    ss << col_tab [col];
+    return ss.str ();
+  }
+
 }
+
+#define coord_for_each(rc) for (coord::t rc = 0; rc < int(board_size); rc = coord::t (rc+1))
 
 
 // namespace v
@@ -261,23 +293,24 @@ namespace v {
     }
   }
 
-  static char coord_tab[20] = "ABCDEFGHJKLMNOPQRST";
 
-  void print_alfanum (t v, ostream& out) {
+  string to_string (t v) {
     coord::t r;
     coord::t c;
     check (v);
-
+    
     if (v == pass) {
-      out << "PASS";
+      return "PASS";
     } else if (v == no_v) {
-      out << " NO v";
+      return "NO_V";
     } else {
       r = row (v);
       c = col (v);
-      
-      out << coord_tab[c] << board_size - r;
+      ostringstream ss;
+      ss << coord::col_to_string (c) << coord::row_to_string (r);
+      return ss.str ();
     }
+    
   }
 
 }
@@ -356,14 +389,13 @@ namespace move {
     v::print (v (move), out);
   }
 
-  void print_alfanum (t move, ostream& out) {
-    check (move);
-    player::print (player (move), out);
-    v::print_alfanum (v (move), out);
+  string to_string (t move) {
+    return player::to_string (player (move)) + " " + v::to_string (v (move));
   }
+
 }
 
-#define move_for_each(mm) rep (mm, move::cnt)
+#define move_for_each_all(m) for (move::t m = 0; m < move::cnt; m++)
 
 /*
 #define move_for_each_and_pass(m, i) do {        \
@@ -1090,22 +1122,24 @@ public:
     #define om(n) out << "(" << n << ")";
     
     out << "   ";
-    rep (c, board_size) os (c+1);
+    //    rep (c, board_size) os (c+1);
+    coord_for_each (col) os (coord::col_to_string (col));
     out << endl;
 
-    rep (r, board_size) {
-      os (r+1);
-      rep (c, board_size) {
-        v::t v = v::of_rc (r, c);
+    coord_for_each (row) {
+      os (coord::row_to_string (row));
+      coord_for_each (col) {
+        v::t v = v::of_rc (row, col);
         char ch = color::to_char (color_at[v]);
-        if (v == mark_v) om (ch) else os (ch);
+        if (v == mark_v)  om (ch) 
+        else              os (ch);
       }
-      os (r+1);
+      os (coord::row_to_string (row));
       out << endl;
     }
-
+    
     out << "   ";
-    rep (c, board_size) os (c+1);
+    coord_for_each (col) os (coord::col_to_string (col));
     out << endl;
   }
 
@@ -1281,6 +1315,24 @@ public:
   }
 
 };
+
+#define empty_v_for_each(board, v, i) {                               \
+  v::t v;                                                             \
+  rep (ev_i, (board)->empty_v_cnt) {                                  \
+    v = (board)->empty_v [ev_i];                                      \
+    i;                                                                \
+  }                                                                   \
+}
+
+#define empty_v_for_each_and_pass(board, v, i) {                      \
+  v::t v;                                                             \
+  v = v::pass;                                                        \
+  i;                                                                  \
+  rep (ev_i, (board)->empty_v_cnt) {                                  \
+    v = (board)->empty_v [ev_i];                                      \
+    i;                                                                \
+  }                                                                   \
+}
 
 #ifdef BOARD_TEST
 
