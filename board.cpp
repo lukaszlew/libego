@@ -464,6 +464,49 @@ public:
 };
 
 
+// namespace nbr_cnt
+
+namespace nbr_cnt {
+
+  typedef uint t;
+
+  uint max = 4;                 // maximal number of neighbours
+
+  uint empty_cnt  (t nbr_cnt) { return nbr_cnt >> 8; }
+  uint player_cnt (t nbr_cnt, player::t pl) { return (nbr_cnt >> (pl*4)) & 0xf; }
+
+  const uint player_cnt_is_max_mask [player::cnt] = { (max << (player::black * 4)), (max << (player::white * 4)) };
+
+  uint player_cnt_is_max (t nbr_cnt, player::t pl) { return nbr_cnt & player_cnt_is_max_mask[pl]; }
+
+  void check (t nbr_cnt) {
+    unused (nbr_cnt);
+    if (!nbr_cnt_ac) return;
+    assert (empty_cnt (nbr_cnt) <= max);
+    assert (player_cnt (nbr_cnt, player::black) <= max);
+    assert (player_cnt (nbr_cnt, player::white) <= max);
+  }
+
+  t of_desc (uint black_cnt, uint white_cnt, uint empty_cnt) {
+    assertc (nbr_cnt_ac, black_cnt <= max);
+    assertc (nbr_cnt_ac, white_cnt <= max);
+    assertc (nbr_cnt_ac, empty_cnt <= max);
+
+    return 
+      (black_cnt << 0) +
+      (white_cnt << 4) +
+      (empty_cnt << 8);
+  }
+  
+  const t player_inc_tab [player::cnt] = { (1 << (player::black * 4)) - (1 << 8), (1 << (player::white * 4)) - (1 << 8) };
+
+  t player_inc (player::t pl) { return player_inc_tab[pl]; }
+
+  const t edge_inc = 1 + (1 << 4) - (1 << 8);
+
+}
+
+
 // class chain_t
 
 
@@ -482,7 +525,7 @@ public:
   void check_is_root () const { assertc (chain_ac, is_root ()); }
 
   void init (uint lib_cnt) {
-    assertc (chain_ac, lib_cnt <= 4);
+    assertc (chain_ac, lib_cnt <= nbr_cnt::max);
     lib_cnt2 = lib_cnt << 1 | 0x1;
   }
 
@@ -541,46 +584,6 @@ public:
   }
 
 };
-
-// namespace nbr_cnt
-
-namespace nbr_cnt {
-
-  typedef uint t;
-
-  uint empty_cnt  (t nbr_cnt) { return nbr_cnt >> 8; }
-  uint player_cnt (t nbr_cnt, player::t pl) { return (nbr_cnt >> (pl*4)) & 0xf; }
-
-  const uint player_cnt_is_4_mask [player::cnt] = { (0x4 << (player::black * 4)), (0x4 << (player::white * 4)) };
-
-  uint player_cnt_is_4 (t nbr_cnt, player::t pl) { return nbr_cnt & player_cnt_is_4_mask[pl]; }
-
-  void check (t nbr_cnt) {
-    unused (nbr_cnt);
-    if (!nbr_cnt_ac) return;
-    assert (empty_cnt (nbr_cnt) <= 4);
-    assert (player_cnt (nbr_cnt, player::black) <= 4);
-    assert (player_cnt (nbr_cnt, player::white) <= 4);
-  }
-
-  t of_desc (uint black_cnt, uint white_cnt, uint empty_cnt) {
-    assertc (nbr_cnt_ac, black_cnt <= 4);
-    assertc (nbr_cnt_ac, white_cnt <= 4);
-    assertc (nbr_cnt_ac, empty_cnt <= 4);
-
-    return 
-      (black_cnt << 0) +
-      (white_cnt << 4) +
-      (empty_cnt << 8);
-  }
-  
-  const t player_inc_tab [player::cnt] = { (1 << (player::black * 4)) - (1 << 8), (1 << (player::white * 4)) - (1 << 8) };
-
-  t player_inc (player::t pl) { return player_inc_tab[pl]; }
-
-  const t edge_inc = 1 + (1 << 4) - (1 << 8);
-
-}
 
 
 // class board_t
@@ -820,7 +823,7 @@ public:
 
     v_for_each_all (v) {
       color_at[v] = color::edge;
-      nbr_cnt[v] = nbr_cnt::of_desc (0, 0, 4);
+      nbr_cnt[v] = nbr_cnt::of_desc (0, 0, nbr_cnt::max);
 
       r = v::row (v);
       c = v::col (v);
@@ -907,7 +910,7 @@ public:
     v::check_is_on_board (v);
     assertc (board_ac, color_at[v] == color::empty);
 
-    if (nbr_cnt::player_cnt_is_4 (nbr_cnt[v], player::other (player)))
+    if (nbr_cnt::player_cnt_is_max (nbr_cnt[v], player::other (player)))
       return play_eye (player, v);
     else 
       return play_no_eye (player, v);
@@ -1077,7 +1080,7 @@ public:
   bool is_eyelike (player::t player, v::t v) { 
     int diag_color_cnt[color::cnt];
 
-    if (! nbr_cnt::player_cnt_is_4 (nbr_cnt[v], player)) return false;
+    if (! nbr_cnt::player_cnt_is_max (nbr_cnt[v], player)) return false;
 
     color_for_each (col) diag_color_cnt [col] = 0;
     v_for_each_diag_nbr (v, diag_v, {
@@ -1103,9 +1106,9 @@ public:
 
     rep (ii, empty_v_cnt) {
       v = empty_v [ii];
-      if (nbr_cnt::player_cnt_is_4 (nbr_cnt[v], player::black)) {
+      if (nbr_cnt::player_cnt_is_max (nbr_cnt[v], player::black)) {
         eye_score++;
-      } else if (nbr_cnt::player_cnt_is_4 (nbr_cnt[v], player::white)) {
+      } else if (nbr_cnt::player_cnt_is_max (nbr_cnt[v], player::white)) {
         eye_score--;
       }
     }
