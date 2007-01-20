@@ -57,20 +57,22 @@ const bool board_ac           = false;
 #endif
 
 #ifdef DEBUG
-const bool player_ac          = true;
-const bool color_ac           = true;
-const bool coord_ac           = true;
-const bool v_ac               = true;
-const bool nbr_cnt_ac         = true;
+const bool paranoic           = false;
 
-const bool chain_ac           = true;
-const bool board_empty_v_ac   = true;
-const bool board_hash_ac      = true;
-const bool board_color_at_ac  = true;
-const bool board_nbr_cnt_ac   = true;
-const bool chain_at_ac        = true;
-const bool chain_next_v_ac    = true;
-const bool chains_ac          = true;
+const bool player_ac          = paranoic;
+const bool color_ac           = paranoic;
+const bool coord_ac           = paranoic;
+const bool v_ac               = paranoic;
+const bool nbr_cnt_ac         = paranoic;
+
+const bool chain_ac           = paranoic;
+const bool board_empty_v_ac   = paranoic;
+const bool board_hash_ac      = paranoic;
+const bool board_color_at_ac  = paranoic;
+const bool board_nbr_cnt_ac   = paranoic;
+const bool chain_at_ac        = paranoic;
+const bool chain_next_v_ac    = paranoic;
+const bool chains_ac          = paranoic;
 const bool board_ac           = true;
 #endif
 
