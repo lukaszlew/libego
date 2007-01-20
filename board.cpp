@@ -116,7 +116,8 @@ namespace player {
 }
 
 // TODO test it for performance
-#define player_for_each(pl) for (player::t pl = player::black; pl != player::cnt; pl = player::t(pl+1))
+#define player_for_each(pl) \
+  for (player::t pl = player::black; pl != player::cnt; pl = player::t(pl+1))
 
 
 // namespace color
@@ -173,7 +174,8 @@ namespace color {
 }
 
 // TODO test it for performance
-#define color_for_each(col) for (color::t col = color::black; col != color::cnt; col = color::t (col+1))
+#define color_for_each(col) \
+  for (color::t col = color::black; col != color::cnt; col = color::t (col+1))
 
 // namespace coord
 
@@ -216,7 +218,8 @@ namespace coord {
 
 }
 
-#define coord_for_each(rc) for (coord::t rc = 0; rc < int(board_size); rc = coord::t (rc+1))
+#define coord_for_each(rc) \
+  for (coord::t rc = 0; rc < int(board_size); rc = coord::t (rc+1))
 
 
 // namespace v
@@ -316,7 +319,9 @@ namespace v {
 }
 
 #define v_for_each_all(vv) for (v::t vv = 0; vv < v::cnt; vv++)
-#define v_for_each_faster(vv) for (v::t vv = v::dNS+v::dWE; vv <= board_size * (v::dNS + v::dWE); vv++)
+
+#define v_for_each_faster(vv) \
+  for (v::t vv = v::dNS+v::dWE; vv <= board_size * (v::dNS + v::dWE); vv++)
 
 #define v_for_each_nbr(center_v, nbr_v, block) {  \
   v::check_is_on_board (center_v);                \
@@ -361,7 +366,10 @@ namespace move {
            v::check (move & ((1 << v::bits_used) - 1));
   }
 
-  uint player_mask [player::cnt] = { player::black << v::bits_used, player::white << v::bits_used };
+  uint player_mask [player::cnt] = { 
+    player::black << v::bits_used, 
+    player::white << v::bits_used 
+  };
 
   t of_pl_v (player::t player, v::t v) { 
     player::check (player);
@@ -475,9 +483,14 @@ namespace nbr_cnt {
   uint empty_cnt  (t nbr_cnt) { return nbr_cnt >> 8; }
   uint player_cnt (t nbr_cnt, player::t pl) { return (nbr_cnt >> (pl*4)) & 0xf; }
 
-  const uint player_cnt_is_max_mask [player::cnt] = { (max << (player::black * 4)), (max << (player::white * 4)) };
+  const uint player_cnt_is_max_mask [player::cnt] = { 
+    (max << (player::black * 4)), 
+    (max << (player::white * 4)) 
+  };
 
-  uint player_cnt_is_max (t nbr_cnt, player::t pl) { return nbr_cnt & player_cnt_is_max_mask[pl]; }
+  uint player_cnt_is_max (t nbr_cnt, player::t pl) { 
+    return (nbr_cnt & player_cnt_is_max_mask [pl]) == player_cnt_is_max_mask [pl]; 
+  }
 
   void check (t nbr_cnt) {
     unused (nbr_cnt);
@@ -498,7 +511,10 @@ namespace nbr_cnt {
       (empty_cnt << 8);
   }
   
-  const t player_inc_tab [player::cnt] = { (1 << (player::black * 4)) - (1 << 8), (1 << (player::white * 4)) - (1 << 8) };
+  const t player_inc_tab [player::cnt] = { 
+    (1 << (player::black * 4)) - (1 << 8), 
+    (1 << (player::white * 4)) - (1 << 8) 
+  };
 
   t player_inc (player::t pl) { return player_inc_tab[pl]; }
 
@@ -702,10 +718,12 @@ public:
         assert (!chain_at[v].find_root_npc()->lib_cnt_is_zero ());
 
         if (color_at[v] == color_at[v::S (v)]) 
-          assert (chain_at[v].find_root_npc () == chain_at[v::S (v)].find_root_npc ());
+          assert (chain_at[v].find_root_npc () == 
+                  chain_at[v::S (v)].find_root_npc ());
 
         if (color_at[v] == color_at[v::E (v)]) 
-          assert (chain_at[v].find_root_npc () == chain_at[v::E (v)].find_root_npc ());
+          assert (chain_at[v].find_root_npc () == 
+                  chain_at[v::E (v)].find_root_npc ());
 
       }
     }
@@ -734,56 +752,58 @@ public:
     v_for_each_all (v) chain_no[v] = no_chain;
 
     // TODO what about empty and edge?
-    v_for_each_faster (v) if (color::is_player(color_at[v]) && chain_no[v] == no_chain) { // chain not visited yet
-      color::t        act_color;
-      const chain_t*  act_root;
-
-      uint lib_cnt;
-      uint forward_edge_cnt;
-      uint backward_edge_cnt;
-
-      chain_root[act_chain_no] = chain_at[v].find_root_npc ();
-      act_root = chain_root[act_chain_no];
-      
-      rep (ch_no, act_chain_no) 
-        assert (chain_root[ch_no] != act_root); // separate chains, separate roots
-      
-      act_color          = color_at[v]; 
-      lib_cnt            = 0;
-      forward_edge_cnt   = 0;
-      backward_edge_cnt  = 0;
-      
-      v::t act_v = v;
-      do {
-        assert (color_at[act_v] == act_color);
-        assert (chain_at[act_v].find_root_npc () == act_root);
-        assert (chain_no[act_v] == no_chain);
-        chain_no[act_v] = act_chain_no;
+    v_for_each_faster (v) {
+      if (color::is_player(color_at[v]) && chain_no[v] == no_chain) { // chain not visited yet
+        color::t        act_color;
+        const chain_t*  act_root;
         
-        v_for_each_nbr (act_v, nbr_v, {
-          if (color_at[nbr_v] == color::empty) lib_cnt++;
-          if (color_at[nbr_v] == act_color) {
-            if (chain_no[nbr_v] == act_chain_no) forward_edge_cnt++; 
-            else {
-              assert (chain_no[nbr_v] == no_chain);
-              backward_edge_cnt++;
-            }
-          }
+        uint lib_cnt;
+        uint forward_edge_cnt;
+        uint backward_edge_cnt;
+        
+        chain_root[act_chain_no] = chain_at[v].find_root_npc ();
+        act_root = chain_root[act_chain_no];
+        
+        rep (ch_no, act_chain_no) 
+          assert (chain_root[ch_no] != act_root); // separate chains, separate roots
+        
+        act_color          = color_at[v]; 
+        lib_cnt            = 0;
+        forward_edge_cnt   = 0;
+        backward_edge_cnt  = 0;
+        
+        v::t act_v = v;
+        do {
+          assert (color_at[act_v] == act_color);
+          assert (chain_at[act_v].find_root_npc () == act_root);
+          assert (chain_no[act_v] == no_chain);
+          chain_no[act_v] = act_chain_no;
           
-        });
-
-        act_v = chain_next_v[act_v];
-      } while (act_v != v);
-      
-      assert (forward_edge_cnt == backward_edge_cnt);
-      assert (act_root->lib_cnt () == lib_cnt);
-      v::check_is_on_board (act_root - chain_at);
-      assert (chain_no[act_root - chain_at] == act_chain_no); // root is a part of the chain
-      
-      act_chain_no++;
+          v_for_each_nbr (act_v, nbr_v, {
+            if (color_at[nbr_v] == color::empty) lib_cnt++;
+            if (color_at[nbr_v] == act_color) {
+              if (chain_no[nbr_v] == act_chain_no) forward_edge_cnt++; 
+              else {
+                assert (chain_no[nbr_v] == no_chain);
+                backward_edge_cnt++;
+              }
+            }
+            
+          });
+          
+          act_v = chain_next_v[act_v];
+        } while (act_v != v);
+        
+        assert (forward_edge_cnt == backward_edge_cnt);
+        assert (act_root->lib_cnt () == lib_cnt);
+        v::check_is_on_board (act_root - chain_at);
+        assert (chain_no[act_root - chain_at] == act_chain_no); // root is a part of the chain
+        
+        act_chain_no++;
+      }
     }
   }
-
+  
   void check () const {
     if (!board_ac) return;
 
@@ -996,7 +1016,11 @@ public:
     return play_ok;
   }
 
-  void process_new_nbr(v::t v, player::t new_nbr_player, v::t new_nbr_v, chain_t** new_nbr_chain_root) {
+  void process_new_nbr(v::t v, 
+                       player::t new_nbr_player,
+                       v::t new_nbr_v, 
+                       chain_t** new_nbr_chain_root)
+  {
     chain_t* chain_root;
     
     nbr_cnt[v] += nbr_cnt::player_inc (new_nbr_player);
@@ -1222,7 +1246,8 @@ class board_test_t {
     do {
       v = pm::rand () % v::cnt; 
       if (interactive) cout << ".";
-    } while (board->color_at[v] != color::empty || board->is_eyelike (act_player, v));
+    } while (board->color_at[v] != color::empty || 
+             board->is_eyelike (act_player, v));
     if (interactive) cout << endl;
     return v;
   }
@@ -1232,7 +1257,10 @@ class board_test_t {
     v = rnd_empty_v ();
     board->play (act_player, v);
     if (interactive) 
-      cout << "Last capture size = " << board->empty_v_cnt - board->last_empty_v_cnt << endl << endl;
+      cout << "Last capture size = " 
+           << board->empty_v_cnt - board->last_empty_v_cnt 
+           << endl 
+           << endl;
     act_player = player::other (act_player);
     board->check ();
     return v;
