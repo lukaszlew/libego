@@ -138,8 +138,8 @@ public:
 
       do_mercy = (uint (abs (board->approx_score ())) > mercy_threshold);
       if ((was_pass [player::black] & was_pass [player::white]) | 
-          move_no > max_playout_length |
-          do_mercy) 
+          (move_no > max_playout_length) |
+          (do_mercy)) 
         break;
 
     } while (true);
