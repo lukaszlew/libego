@@ -101,7 +101,7 @@ public:
     uint ii;
 
     empty_v_cnt++;
-    ii = pm::rand () % empty_v_cnt;         // TODO improve speed here
+    ii = pm::rand_int (empty_v_cnt);         // TODO improve speed here
     empty_v[empty_v_cnt-1] = empty_v[ii];
     empty_v[ii] = v;
     assertc (playout_ac, empty_v_cnt <= board_area);
@@ -216,7 +216,7 @@ namespace simple_playout {
     uint start;
 
     // find random place in vector of empty vertices
-    start = pm::rand () % board->empty_v_cnt; 
+    start = pm::rand_int (board->empty_v_cnt); 
 
     // search for a move in start ... board->empty_v_cnt-1 interval
     for (uint ev_i = start; ev_i != board->empty_v_cnt; ev_i++) {   

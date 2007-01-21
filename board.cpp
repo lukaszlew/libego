@@ -432,10 +432,10 @@ namespace hash {
 
   t random () { 
     return (t)
-      (uint64 (pm::rand ()) << (0*16)) ^
-      (uint64 (pm::rand ()) << (1*16)) ^ 
-      (uint64 (pm::rand ()) << (2*16)) ^ 
-      (uint64 (pm::rand ()) << (3*16));
+      (uint64 (pm::rand_int ()) << (0*16)) ^
+      (uint64 (pm::rand_int ()) << (1*16)) ^ 
+      (uint64 (pm::rand_int ()) << (2*16)) ^ 
+      (uint64 (pm::rand_int ()) << (3*16));
   }
   
 }
@@ -1259,7 +1259,7 @@ class board_test_t {
   v::t rnd_empty_v () {
     v::t v;
     do {
-      v = pm::rand () % v::cnt; 
+      v = pm::rand_int () % v::cnt; 
       if (interactive) cout << ".";
     } while (board->color_at[v] != color::empty || 
              board->is_eyelike (act_player, v));
@@ -1350,7 +1350,7 @@ public:
       rep (ii, 110) {
         v::t v;
 
-        do v = pm::rand () % v::cnt; 
+        do v = pm::rand_int () % v::cnt; 
         while (board->color_at[v] != color::empty); // || board->is_eyelike (act_player, v)); // most expensive loop
 
         board->play (act_player, v);

@@ -79,27 +79,61 @@ typedef unsigned long long uint64;
 
 // namespace pm
 
+const bool pm_ac = true;
+
 namespace pm {             // Park - Miller "minimal standard"
   static unsigned long seed = 12345;
 
   void srand (unsigned long _seed) { seed = _seed; }
 
-  unsigned long rand () {
+  const int cnt = (1<<31) - 1;  
+
+  unsigned long rand_int () {       // a number between  0 ... cnt - 1
     unsigned long hi, lo;
     lo = 16807 * (seed & 0xffff);
     hi = 16807 * (seed >> 16);
     lo += (hi & 0x7fff) << 16;
     lo += hi >> 15;
-    if (lo > 0x7fffffff) lo -= 0x7fffffff; // TODO is it ok?
-    seed = (long) lo;
-    return lo;
+    seed = (lo & 0x7FFFFFFF) + (lo >> 31);
+    return seed;
+  }
+
+  // n must be between 1 .. (1<<16) + 1
+  inline unsigned long rand_int (uint n) { // 0 .. n-1
+    assertc (pm_ac, n > 0);
+    assertc (pm_ac, n <= (1<<16)+1);
+    return ((rand_int () & 0xffff) * n) >> 16;
   }
 
   void test () {
-    uint start = pm::rand ();
-    uint64 i = 2;
-    while (pm::rand() != start) i++;
-    cout << i << endl;
+    uint start = pm::rand_int ();
+    
+    uint n = 1;
+    uint max = 0;
+    uint sum = start;
+    
+    while (true) {
+      uint r = pm::rand_int ();
+      if (r == start) break;
+      n++;
+      sum += r;
+      if (max < r) max = r;
+    }
+    printf ("n = %d\n", n);
+    printf ("max = %d\n", max);
+    printf ("sum = %d\n", sum);
+  }
+
+  void test2 (uint k, uint n) {
+    uint bucket [k];
+
+    rep (ii, k)  bucket [ii] = 0;
+    rep (ii, n) {
+      uint r = rand_int (k);
+      assert (r < k);
+      bucket [r] ++;
+    }
+    rep (ii, k)  printf ("%d\n", bucket [ii]);
   }
 
 }
