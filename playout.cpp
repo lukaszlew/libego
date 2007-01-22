@@ -275,18 +275,15 @@ void playout_benchmark (board_t const * start_board,
                 ostream& out) 
 {
   board_t    mc_board;
+  float      seconds_begin;
+  float      seconds_end;
+  float      seconds_total;
 
   player::t  winner;
   uint       win_cnt [player::cnt];
 
-  timeval    start_tv[1];
-  timeval    end_tv[1];
-  float      seconds;
+  seconds_begin = get_seconds ();
 
-  player_for_each (pl) win_cnt [pl] = 0;
-
-  gettimeofday (start_tv, NULL);
-  
   rep (ii, playout_cnt) {
     mc_board.load (start_board);
 
@@ -296,21 +293,19 @@ void playout_benchmark (board_t const * start_board,
     win_cnt [winner] ++; // TODO this is a way too costly // (we have empty tab, there is a better way)
   }
 
-  gettimeofday (end_tv, NULL);
-
-  seconds = 
-    float(end_tv->tv_sec - start_tv->tv_sec) + 
-    float(end_tv->tv_usec - start_tv->tv_usec) / 1000000.0;
+  seconds_end = get_seconds ();
 
   out << "Initial board:" << endl;
   out << "komi " << -start_board->komi << endl;
 
   start_board->print (out);
 
+  seconds_total = seconds_end - seconds_begin;
+
   out << "Performance: " << endl
       << "  " << playout_cnt << " playouts" << endl
-      << "  " << seconds<< " seconds" << endl
-      << "  " << float (playout_cnt) / seconds / 1000.0 << " kpps" << endl;
+      << "  " << seconds_total << " seconds" << endl
+      << "  " << float (playout_cnt) / seconds_total / 1000.0 << " kpps" << endl;
 
   out << "Black wins = " << win_cnt [player::black] << endl
       << "White wins = " << win_cnt [player::white] << endl

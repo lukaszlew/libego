@@ -29,7 +29,8 @@
 #include <cmath>
 
 #include <sys/time.h>
-#include <time.h>
+#include <sys/resource.h>
+#include <unistd.h>
 
 using namespace std;
 
@@ -143,4 +144,10 @@ char getc_non_space (istream& is) {
   is >> c;
   if (c == ' ' || c == '\t') return getc_non_space (is);
   return c;
+}
+
+float get_seconds () {
+  rusage usage [1];
+  getrusage (RUSAGE_SELF, usage);
+  return float(usage->ru_utime.tv_sec) + float(usage->ru_utime.tv_usec) / 1000000.0;
 }
