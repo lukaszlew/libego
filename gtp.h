@@ -38,8 +38,6 @@
  * without prior written authorization of the copyright holder.  *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#pragma once
-
 #include <stdarg.h>
 #include <stdio.h>
 

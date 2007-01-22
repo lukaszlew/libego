@@ -21,10 +21,6 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef PLAYOUT_TEST
-#pragma once
-#endif
-
 #include "board.cpp"
 
 

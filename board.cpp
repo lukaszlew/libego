@@ -21,10 +21,6 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef BOARD_TEST
-#pragma once
-#endif
-
 #include "utils.cpp"
 
 
@@ -383,22 +379,22 @@ namespace move {
   
   player::t player (t move) { 
     check (move);
-    return (player::t) (move >> v::bits_used);
+    return (::player::t) (move >> v::bits_used);
   }
 
   v::t v (t move) { 
     check (move);
-    return move & ((1 << v::bits_used) - 1) ; 
+    return move & ((1 << ::v::bits_used) - 1) ; 
   }
 
   void print (t move, ostream& out) {
     check (move);
-    player::print (player (move), out);
-    v::print (v (move), out);
+    ::player::print (player (move), out);
+    ::v::print (v (move), out);
   }
 
   string to_string (t move) {
-    return player::to_string (player (move)) + " " + v::to_string (v (move));
+    return ::player::to_string (player (move)) + " " + ::v::to_string (v (move));
   }
 
 }
@@ -899,7 +895,7 @@ public:
 
   void load (const board_t* save_board) { 
     memcpy(this, save_board, sizeof(board_t)); 
-    int delta;
+    long delta;
 
     delta = (chain_t*) (this) - (chain_t*) (save_board);
 

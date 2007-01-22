@@ -5,14 +5,11 @@
    - 2 stage playout algorithm / optimization
    
 * beautyfication
-   - why do we need to do #ifdef's on #pragma once ?
-   - remove all rep(v, v::cnt)
-   - remove all other rep(v, *::cnt) and all rep
+   - remove all rep !
    - check all player <-> color
    - unused is needed when assert and NDEBUG, why?
    - add for_each_nbr in play_no_lib and everywhere
    - move zobrist into board_t
-   - better print
 
 * performance
    - think about copying constructot
