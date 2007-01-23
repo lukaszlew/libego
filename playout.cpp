@@ -38,170 +38,8 @@ static const bool playout_print       = false;
 static const uint max_playout_length  = board_area * 2;
 static const uint mercy_threshold     = 25;
 
-// class playout_t
 
-
-class playout_t { // board with incremental fast random move generator
-
-public:
-
-  board_t*    board;
-
-  v::t        empty_v[board_area];
-  uint        empty_v_cnt;
-
-  v::t        rejected_v[board_area];
-  uint        rejected_v_cnt;
-
-  void check () {
-    if (!playout_ac) return;
-
-    bool noticed[v::cnt];
-
-    assert    (empty_v_cnt <= board_area);
-    assert (rejected_v_cnt <= board_area);
-
-    v_for_each_all (v) noticed[v] = false;
-
-    rep (k, empty_v_cnt) {
-      assert (noticed[empty_v[k]] == false);
-      noticed[empty_v[k]] = true;
-    }
-
-    rep (k, rejected_v_cnt) {
-      assert (noticed[rejected_v[k]] == false);
-      noticed[rejected_v[k]] = true;
-    }
-
-    v_for_each_faster (v)
-      assert ((board->color_at[v] == color::empty) == noticed[v]);
-  }
-
-  playout_t (board_t* board) { // copying constructor makes no improvement as randomization is a key
-    this->board = board;
-
-    init ();
-  }
-
-  void init () {
-    empty_v_cnt    = 0;
-    rejected_v_cnt = 0;
-
-    v_for_each_faster (v) {
-      if (board->color_at[v] == color::empty)
-        add_empty_v (v);
-    }
-  }
-
-  void add_empty_v (v::t v) {
-    uint ii;
-
-    empty_v_cnt++;
-    ii = pm::rand_int (empty_v_cnt);         // TODO improve speed here
-    empty_v[empty_v_cnt-1] = empty_v[ii];
-    empty_v[ii] = v;
-    assertc (playout_ac, empty_v_cnt <= board_area);
-  }
-
-  player::t run (player::t first_pl) {
-    v::t  v;
-    bool  was_pass[player::cnt];
-    uint  move_no;
-    bool  do_mercy;
-
-    #define do_play(player) {               \
-      v = play_one (player);                \
-      if (playout_print) {                  \
-        cout << endl;                       \
-        board->print (cout, v);             \
-        getchar ();                         \
-      }                                     \
-      was_pass[player] = (v == v::pass);    \
-    }
-
-    player_for_each (pl) 
-      was_pass [pl] = 0;
-
-    move_no = 0;
-
-    if (first_pl == player::white) 
-      do_play (player::white);
-
-    do { // to avoid rare loopy playouts
-      move_no += 2;
-      player_for_each (pl) 
-        do_play (pl);
-
-      do_mercy = (uint (abs (board->approx_score ())) > mercy_threshold);
-      if ((was_pass [player::black] & was_pass [player::white]) | 
-          (move_no > max_playout_length) |
-          (do_mercy)) 
-        break;
-
-    } while (true);
-
-    if (do_mercy)
-      return board->approx_winner ();
-    else
-      return board->winner ();
-
-    #undef do_play
-  }
-
-
-  v::t play_one (player::t player) {
-    v::t v;
-
-    #define loop(sign)                                                         \
-    while (empty_v_cnt > 0) {                                                  \
-      v = empty_v [--empty_v_cnt];                                             \
-                                                                               \
-      if (board->is_eyelike (player, v) ||                                     \
-          board->play (player, v) == board_t::play_ss_suicide)                 \
-      {                                                                        \
-        rejected_v[rejected_v_cnt++] = v;                                      \
-        if (playout_print) {                                                   \
-          cout << "REJECT" << sign << endl;                                    \
-          board->print (cout, v);                                              \
-          getchar ();                                                          \
-        }                                                                      \
-      } else {                                                                 \
-        v::t* first = board->empty_v + board->last_empty_v_cnt - 1;            \
-        v::t* last = board->empty_v + board->empty_v_cnt;                      \
-        while (first < last) {                                                 \
-          add_empty_v (*first);                                                \
-          first++;                                                             \
-          if (playout_print) cout << "C" << sign << " ";                       \
-        }                                                                      \
-                                                                               \
-        if (playout_print) cout << "OK" << sign;                               \
-                                                                               \
-        return v;                                                              \
-      }                                                                        \
-    }                                                                          
-
-
-    loop ("");
-
-    memcpy (empty_v, rejected_v, sizeof(v::cnt) * rejected_v_cnt);
-    empty_v_cnt = rejected_v_cnt;
-    rejected_v_cnt = 0;
-    if (playout_print) cout << "MEMCPY " << empty_v_cnt << endl;
-
-    loop (" 2");
-
-    board->check_no_more_legal (player); // powerfull check
-
-    #undef loop
-
-    return v::pass;
-  }
-
-};
-
-
-
-// class simple_playout_t
+// namespace simple_playout_t
 
 
 namespace simple_playout {
@@ -239,13 +77,15 @@ namespace simple_playout {
     bool  was_pass[player::cnt];
     uint  move_no;
     player::t act_player;
+    bool do_mercy;
 
-    act_player = first_player;
 
     player_for_each (pl)
       was_pass [pl] = false;
 
-    move_no = 0;
+    act_player  = first_player;
+    move_no     = 0;
+    do_mercy    = false;
 
     do {
 
@@ -255,63 +95,66 @@ namespace simple_playout {
       act_player = player::other (act_player);
       move_no++;
 
-      if ((was_pass [player::black] & was_pass [player::white]) | 
+      if ((was_pass [player::black] & was_pass [player::white]) ||
           (move_no > max_playout_length)) break;
+      
+      do_mercy = uint(abs (board->approx_score ())) > mercy_threshold;
+
+      if (do_mercy) break;
 
     } while (true);
 
-    return board->winner ();
+    if (do_mercy)  return board->approx_winner ();
+    else           return board->winner ();
 
   }
 
-}
 
-
-
-
-void playout_benchmark (board_t const * start_board, 
-                uint playout_cnt, 
-                player::t first_player, 
-                ostream& out) 
-{
-  board_t    mc_board;
-  float      seconds_begin;
-  float      seconds_end;
-  float      seconds_total;
-
-  player::t  winner;
-  uint       win_cnt [player::cnt];
-
-  seconds_begin = get_seconds ();
-
-  rep (ii, playout_cnt) {
-    mc_board.load (start_board);
-
-    playout_t playout (&mc_board);
-    winner = playout.run (first_player);
+  void benchmark (board_t const * start_board, 
+                  uint playout_cnt, 
+                  player::t first_player, 
+                  ostream& out) 
+  {
+    board_t    mc_board;
+    float      seconds_begin;
+    float      seconds_end;
+    float      seconds_total;
     
-    win_cnt [winner] ++; // TODO this is a way too costly // (we have empty tab, there is a better way)
+    player::t  winner;
+    uint       win_cnt [player::cnt];
+    
+    seconds_begin = get_seconds ();
+    player_for_each (pl) win_cnt [pl] = 0;
+    
+    rep (ii, playout_cnt) {
+      mc_board.load (start_board);
+      winner = simple_playout::run (&mc_board, first_player);
+      win_cnt [winner] ++;
+    }
+    
+    seconds_end = get_seconds ();
+    
+    out << "Initial board:" << endl;
+    out << "komi " << -start_board->komi << endl;
+    
+    start_board->print (out);
+    
+    seconds_total = seconds_end - seconds_begin;
+    
+    out << "Performance: " << endl
+        << "  " << playout_cnt << " playouts" << endl
+        << "  " << seconds_total << " seconds" << endl
+        << "  " << float (playout_cnt) / seconds_total / 1000.0 << " kpps" << endl;
+    
+    out << "Black wins = " << win_cnt [player::black] << endl
+        << "White wins = " << win_cnt [player::white] << endl
+        << "P(black win) = " << float (win_cnt [player::black]) / float (win_cnt [player::black] + win_cnt [player::white]) << endl;
+    
   }
-
-  seconds_end = get_seconds ();
-
-  out << "Initial board:" << endl;
-  out << "komi " << -start_board->komi << endl;
-
-  start_board->print (out);
-
-  seconds_total = seconds_end - seconds_begin;
-
-  out << "Performance: " << endl
-      << "  " << playout_cnt << " playouts" << endl
-      << "  " << seconds_total << " seconds" << endl
-      << "  " << float (playout_cnt) / seconds_total / 1000.0 << " kpps" << endl;
-
-  out << "Black wins = " << win_cnt [player::black] << endl
-      << "White wins = " << win_cnt [player::white] << endl
-      << "P(black win) = " << float (win_cnt [player::black]) / float (win_cnt [player::black] + win_cnt [player::white]) << endl;
-
+  
 }
+
+
 
 #ifdef PLAYOUT_TEST
 
@@ -334,7 +177,7 @@ int main (int argc, char* argv[]) {
     exit (1);
   }
 
-  playout_benchmark (&arch_board, playout_cnt, player::black, cout);
+  simple_playout::benchmark (&arch_board, playout_cnt, player::black, cout);
 
   return 0;
 }

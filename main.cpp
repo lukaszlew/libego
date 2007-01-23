@@ -183,13 +183,12 @@ static int gtp_playout_benchmark (char *s)
   if (sscanf(s, "%u", &playout_cnt) < 1) return gtp_failure("syntax error");
 
   ostringstream ss;
-  playout_benchmark (&gtp_board, playout_cnt, player::black, ss); // TODO
+  simple_playout::benchmark (&gtp_board, playout_cnt, player::black, ss);
 
   gtp_start_response(GTP_SUCCESS);
   gtp_printf ("\n%s", ss.str ().data ());
   return gtp_finish_response();
 }
-
 
 
 // main
