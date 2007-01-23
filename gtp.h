@@ -83,6 +83,60 @@ int gtp_decode_move(char *s, int *color, int *i, int *j);
 void gtp_print_vertices(int n, int movei[], int movej[]);
 void gtp_print_vertex(int i, int j);
 
+// helpful macros
+
+#define decode_float(s, f) {                               \
+  uint n;                                                  \
+  if (sscanf (s, "%f%n", &f, &n) < 1)                      \
+    return gtp_failure("syntax error");                    \
+  s += n;                                                  \
+}
+
+#define decode_int(s, i) {                                 \
+  uint n;                                                  \
+  if (sscanf (s, "%d%n", &i, &n) < 1)                      \
+    return gtp_failure("syntax error");                    \
+  s += n;                                                  \
+}
+
+#define decode_str(s, str) {                               \
+  uint n;                                                  \
+  if (sscanf (s, "%s%n", str, &n) < 1)                     \
+    return gtp_failure("syntax error");                    \
+  s += n;                                                  \
+}
+
+#define decode_player(s, pl) {                             \
+  int       gtp_color;                                     \
+  uint n;                                                  \
+                                                           \
+  n = gtp_decode_color(s, &gtp_color);                     \
+  if (n == 0) return gtp_failure("syntax error");          \
+  s += n;                                                  \
+                                                           \
+  pl = (player::t) (2 - gtp_color);                        \
+}
+
+#define decode_move(s, mm, fail_i) {                       \
+  int       gtp_color;                                     \
+  coord::t  r;                                             \
+  coord::t  c;                                             \
+  uint n;                                                  \
+                                                           \
+  n = gtp_decode_move(s, &gtp_color, &r, &c);              \
+  if (n == 0) fail_i;                                      \
+  else {                                                   \
+    s += n;                                                \
+                                                           \
+    player::t  player;                                     \
+    v::t       v;                                          \
+                                                           \
+    player  = (player::t) (2 - gtp_color);                 \
+    v       = v::of_rc (r, c);                             \
+    mm      = move::of_pl_v (player, v);                   \
+  }                                                        \
+}
+
 extern FILE *gtp_output_file;
 
 /*
