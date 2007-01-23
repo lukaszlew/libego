@@ -1,9 +1,9 @@
 name
 
-echo This is an automatic run of the 200000 MC playouts.
+echo This is an automatic run of the 100000 MC playouts.
 echo If it annoys You, just delete "automagic.gtp" file.
 echo Benchmarking, please wait ...
 
-playout_benchmark 200000
+playout_benchmark 100000
 
 echo Type "help" for list of commands.

@@ -1,16 +1,12 @@
-OPT = -O3 -march=i686 -fomit-frame-pointer  -DNDEBUG -ffast-math
-#OPT += -fno-exceptions -fno-rtti
-#OPT += -fstrict-aliasing
-OPT += -frename-registers
-
+OPT   = -O3 -march=i686 -fomit-frame-pointer  -DNDEBUG -ffast-math -frename-registers
 DEBUG = -ggdb3 -DDEBUG -fno-inline 
-PROF  = -ggdb3 -O3 -DNDEBUG -fno-inline 
+PROF  = $(OPT) -ggdb3 -fno-inline 
 
 CFLAGS += -Wall #-static #-Wno-long-long -Wextra -Wno-variadic-macros
 
-GPP     = g++ $(CFLAGS) 
+GPP    = g++ $(CFLAGS) 
 
-all: engine_debug engine_opt
+all: engine_opt
 
 
 
