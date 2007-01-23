@@ -137,7 +137,7 @@ namespace pm {             // Park - Miller "minimal standard"
 
 }
 
-const float infinity = 1000000000.0;
+const float large_float = 1000000000000.0;
 
 char getc_non_space (istream& is) {
   char c;

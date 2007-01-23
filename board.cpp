@@ -865,7 +865,7 @@ public:                         // board interface
   
   board_t (const board_t* to_copy) { load (to_copy); }
 
-  bool clear () {
+  void clear () {
     int r, c;
 
     set_komi (-7.5);            // standard for chinese rules
@@ -896,8 +896,6 @@ public:                         // board interface
     hash = recalc_hash ();
 
     check ();
-
-    return true;
   }
 
   hash::t recalc_hash () const {
@@ -1131,6 +1129,8 @@ public:                         // utils
 
   bool is_eyelike (player::t player, v::t v) { 
     int diag_color_cnt[color::cnt];
+
+    assertc (board_ac, color_at [v] == color::empty);
 
     if (! nbr_cnt::player_cnt_is_max (nbr_cnt[v], player)) return false;
 
