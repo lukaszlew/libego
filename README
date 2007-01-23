@@ -15,10 +15,44 @@ All files Copyright 2006 Lukasz Lew
 All files in this package are under General Public License, 
 which may be found in the file COPYING.
 
+                    Installation
+
+Just untar (tar zxfv libgoboard*.tgz), and make.
+./engine_opt runs GTP engine, which will first run commands from gtp.automagic.
+For other commands just type "help".
+
+                      Library  
+
+If You want to develop a Go program, then first take a look at 
+simple_playout::run in playout.cpp, which is an effective procedure for 
+Monte-Carlo playouts. 
+
+The interface of Go Board Library is board_t class.
+Most important fields and methods follow:
+
+  color::t color_at [v]                        // color of board vertex (intersection) v
+  hash::t  hash                                // zobrist hash of current position
+
+  void clear ()                                // clears the board
+  void set_komi (float komi)                   // sets the komi, usually should be negative, as white is minimizing player
+
+  void load (board_t* save_board)              // loads a board position from board save_board
+  bool load (istream& ifs)                     // loads a board from text file such as those in ./positions directory
+
+  empty_v_for_each (board, v, { do_it (v); })  // macro that calls do_it for every empty intersection
+  bool is_eyelike (player::t pl, v::t v)       // checks whether v is an eye of player pl
+  play_ret_t play (player::t pl, v::t v)       // plays a move of player pl on vertex v
+
+  int score ()                                 // result of the game, draw (0) is assumed a win for white
+  int approx_score ()                          // fast approximation of score
+  player::t winner ()                          // returns a winner 
+
+  void print (ostream& out, v::t v = v::pass)  // prints a current position to stream out with a vertex mark_v marked
+
                       Thanks              
 
 My girlfriend for her endless support and patience.
-Jakub Pawlewicz for the idea of pseudo-liberties and find-union.
+Jakub Pawlewicz for the idea of pseudo-liberties and find-union algorithms.
 Dave Hillis for the idea of mercy rule.
 Markus Enzenberger for his computer go bibliography.
 Don Dailey for setting up CGOS server.
