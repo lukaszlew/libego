@@ -1,3 +1,4 @@
 name
+#load_position positions/sansan
 
 playout_benchmark 200000

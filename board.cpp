@@ -85,7 +85,7 @@ namespace player {
   const uint cnt = 2;
 
   static void check (t player) { 
-    unused (player);
+    unused (player);            // TODO why unused is needed ?
     assertc (player_ac, (player & (~1)) == 0);
   }
 
@@ -135,9 +135,11 @@ namespace color {
     assertc (color_ac, (color & (~3)) == 0); 
   }
 
-  static bool is_player (t color) { return (color & (~1)) == 0; }
+  static bool is_player (t color) { return color <= color::white; } // & (~1)) == 0; }
+  static bool is_not_player (t color) { return color > color::white; } // & (~1)) == 0; }
 
   static t opponent (player::t player) {
+    unused (opponent);          // avoids warning
     unused (player);
     player::check (player);
     return t (player ^ 1);
@@ -603,8 +605,8 @@ public:
     assertc (chain_ac, (lib_cnt2 >> 1) >= 0);
   }
 
-  void update_pointer (int chain_t_delta) {
-    if (!is_root ()) parent += chain_t_delta;
+  void update_pointer (int chain_t_delta) { // in bytes
+    if (!is_root ()) parent = parent + chain_t_delta;
   }
 
 };
@@ -613,7 +615,7 @@ public:
 // class board_t
 
 
-const static zobrist_t zobrist[1];
+const static zobrist_t zobrist[1]; // TODO move it to board
 
 class board_t {
   
@@ -636,9 +638,27 @@ public:
 
   enum play_ret_t { play_ok, play_suicide, play_ss_suicide };
 
-public:  
+public:                         // macros
 
-  // checks 
+  #define empty_v_for_each(board, v, i) {                               \
+    v::t v;                                                             \
+    rep (ev_i, (board)->empty_v_cnt) {                                  \
+      v = (board)->empty_v [ev_i];                                      \
+      i;                                                                \
+    }                                                                   \
+  }
+  
+  #define empty_v_for_each_and_pass(board, v, i) {                      \
+    v::t v;                                                             \
+    v = v::pass;                                                        \
+    i;                                                                  \
+    rep (ev_i, (board)->empty_v_cnt) {                                  \
+      v = (board)->empty_v [ev_i];                                      \
+      i;                                                                \
+    }                                                                   \
+  }
+
+public:                         // consistency checks
 
   void check_empty_v () const {
     if (!board_empty_v_ac) return;
@@ -650,10 +670,10 @@ public:
 
     assert (empty_v_cnt <= board_area);
 
-    rep (ii, empty_v_cnt) {
-      assert (noticed [empty_v [ii]] == false);
-      noticed [empty_v [ii]] = true;
-    }
+    empty_v_for_each (this, v, {
+      assert (noticed [v] == false);
+      noticed [v] = true;
+    });
 
     player_for_each (pl) exp_player_v_cnt [pl] = 0;
 
@@ -838,7 +858,7 @@ public:
   }
 
 
-  public:
+public:                         // board interface
 
 
   board_t () { clear (); }
@@ -897,7 +917,8 @@ public:
     memcpy(this, save_board, sizeof(board_t)); 
     long delta;
 
-    delta = (chain_t*) (this) - (chain_t*) (save_board);
+    assertc (chain_ac, (((char*) (this) - (char*) (save_board)) & 0x3) == 0);
+    delta = (chain_t*) (this) - (chain_t*) (save_board); // TODO do something about this hack
 
     v_for_each_faster (v) {
       assertc (board_ac, 
@@ -949,14 +970,11 @@ public:
 
   play_ret_t play_no_eye (player::t player, v::t v) {
     chain_t* new_chain_root;
-    color::t color;
 
     check ();
     player::check (player);
     v::check_is_on_board (v);
     assertc (board_ac, color_at[v] == color::empty);
-
-    color = color::t (player);
 
     last_empty_v_cnt = empty_v_cnt;
     new_chain_root = place_stone (player, v);
@@ -976,7 +994,7 @@ public:
   }
 
   play_ret_t play_eye (player::t player, v::t v) {
-    chain_t* chain_root_N;
+    chain_t* chain_root_N;      // TODO macro !!!
     chain_t* chain_root_W;
     chain_t* chain_root_S;
     chain_t* chain_root_E;
@@ -1036,8 +1054,7 @@ public:
     
     nbr_cnt[v] += nbr_cnt::player_inc (new_nbr_player);
 
-
-    if (color_at[v] > color::white) return; // not player
+    if (color::is_not_player (color_at [v])) return;
 
     chain_root = (chain_at + v)->find_root ();
     
@@ -1110,21 +1127,20 @@ public:
     assertc (board_ac, empty_v_cnt < v::cnt);
   }
 
-  // utils
+public:                         // utils
 
   bool is_eyelike (player::t player, v::t v) { 
     int diag_color_cnt[color::cnt];
 
     if (! nbr_cnt::player_cnt_is_max (nbr_cnt[v], player)) return false;
 
-    color_for_each (col) diag_color_cnt [col] = 0;
+    color_for_each (col) diag_color_cnt [col] = 0; // memset is slower
     v_for_each_diag_nbr (v, diag_v, {
       diag_color_cnt [color_at [diag_v]]++;
     });
 
-    if (diag_color_cnt[color::edge] > 0) diag_color_cnt[player::other (player)]++;
-    if (diag_color_cnt[player::other (player)] >= 2) return false;
-    return true;
+    diag_color_cnt[player::other (player)] += (diag_color_cnt[color::edge] > 0);
+    return diag_color_cnt[player::other (player)] < 2;
   }
 
   int approx_score () const {
@@ -1134,19 +1150,17 @@ public:
   player::t approx_winner () { return player::t (approx_score () <= 0); }
 
   int score () const {
-    v::t v;
     int eye_score;
 
     eye_score = 0;
 
-    rep (ii, empty_v_cnt) {
-      v = empty_v [ii];
+    empty_v_for_each (this, v, {
       if (nbr_cnt::player_cnt_is_max (nbr_cnt[v], player::black)) {
         eye_score++;
       } else if (nbr_cnt::player_cnt_is_max (nbr_cnt[v], player::white)) {
         eye_score--;
       }
-    }
+    });
 
     return approx_score () + eye_score;
   }
@@ -1160,7 +1174,6 @@ public:
     #define om(n) out << "(" << n << ")";
     
     out << "   ";
-    //    rep (c, board_size) os (c+1);
     coord_for_each (col) os (coord::col_to_string (col));
     out << endl;
 
@@ -1187,6 +1200,7 @@ public:
 
   bool load (istream& ifs) {
     uint       bs;
+    char c;
 
     player::t  play_player[board_area];
     v::t       play_v[board_area];
@@ -1201,15 +1215,13 @@ public:
     ifs >> bs;
     if (bs != board_size) return false;
 
-    rep (row, bs) {
-      uint col = 0;
+    if (getc_non_space (ifs) != '\n') return false;
 
-      rep (ii, bs) {
-        char c;
+    coord_for_each (row) {
+      coord_for_each (col) {
         color::t pl;
 
         c = getc_non_space (ifs);
-
         pl = color::of_char (c);
         if (pl == color::wrong_char) return false;
         
@@ -1219,13 +1231,9 @@ public:
           play_cnt++;
           assertc (board_ac, play_cnt < board_area);
         }
-
-        col++;
-        if (col > bs) return false;
       }
 
-      if (col != bs) return false;
-      
+      if (getc_non_space (ifs) != '\n') return false;
     }
 
     rep (pi, play_cnt) {
@@ -1243,8 +1251,10 @@ public:
 };
 
 
-// class board_test_t
 
+#ifdef BOARD_TEST
+
+// class board_test_t
 
 class board_test_t {
   board_t board[1];
@@ -1357,26 +1367,6 @@ public:
   }
 
 };
-
-#define empty_v_for_each(board, v, i) {                               \
-  v::t v;                                                             \
-  rep (ev_i, (board)->empty_v_cnt) {                                  \
-    v = (board)->empty_v [ev_i];                                      \
-    i;                                                                \
-  }                                                                   \
-}
-
-#define empty_v_for_each_and_pass(board, v, i) {                      \
-  v::t v;                                                             \
-  v = v::pass;                                                        \
-  i;                                                                  \
-  rep (ev_i, (board)->empty_v_cnt) {                                  \
-    v = (board)->empty_v [ev_i];                                      \
-    i;                                                                \
-  }                                                                   \
-}
-
-#ifdef BOARD_TEST
 
 int main () { 
   board_test_t test[1];

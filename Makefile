@@ -1,4 +1,4 @@
-OPT = -O3 -march=i686 -fomit-frame-pointer  -DNDEBUG 
+OPT = -O3 -march=i686 -fomit-frame-pointer  -DNDEBUG -ffast-math
 #OPT += -fno-exceptions -fno-rtti
 #OPT += -fstrict-aliasing
 OPT += -frename-registers

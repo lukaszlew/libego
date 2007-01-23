@@ -141,7 +141,7 @@ const float infinity = 1000000000.0;
 
 char getc_non_space (istream& is) {
   char c;
-  is >> c;
+  is.get(c);
   if (c == ' ' || c == '\t') return getc_non_space (is);
   return c;
 }

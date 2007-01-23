@@ -1,23 +1,12 @@
 * features
-   - fix README (mercy rule)
-   - plan global assert tactic
-   - load default file
-   - 2 stage playout algorithm / optimization
+   - plan global assert strategy
    
-* beautyfication
-   - remove all rep !
-   - check all player <-> color
-   - unused is needed when assert and NDEBUG, why?
-   - add for_each_nbr in play_no_lib and everywhere
-   - move zobrist into board_t
-
 * performance
+   - 2 stage playout algorithm / optimization
    - think about copying constructot
    - reduce thrasing around on the end of the playout
-   - try other random generators
    - additional layer for chain_at
    - try two phases 1. any eye is bad, play_no_eye 2. play eyes      
-   - too many if's inside playout-run
 
    - bzero, here and there
    - for_each_on_board
