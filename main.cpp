@@ -34,47 +34,21 @@ board_t gtp_board;
 
 // gtp_* functions
 
-#define declare_gtp_fun(fun) static int fun(char *s)
+gtp_command* gtp_commands;      // list_commands needs this
 
-declare_gtp_fun (gtp_boardsize);
-declare_gtp_fun (gtp_clear_board);
-declare_gtp_fun (gtp_list_commands);
-declare_gtp_fun (gtp_komi);
-declare_gtp_fun (gtp_load_position);
-declare_gtp_fun (gtp_name);
-declare_gtp_fun (gtp_play);
-declare_gtp_fun (gtp_protocol_version);
-declare_gtp_fun (gtp_quit);
-declare_gtp_fun (gtp_showboard);
-
-declare_gtp_fun (gtp_playout_benchmark);
-
-gtp_command gtp_commands[] = {
-  { "boardsize",         gtp_boardsize },
-  { "clear_board",       gtp_clear_board },
-  { "help",              gtp_list_commands },
-  { "komi",              gtp_komi },
-  { "list_commands",     gtp_list_commands },
-  { "load_position",     gtp_load_position },
-  { "name",              gtp_name },
-  { "play",              gtp_play },
-  { "protocol_version",  gtp_protocol_version },
-  { "quit",              gtp_quit },
-  { "showboard",         gtp_showboard },
-  { "playout_benchmark", gtp_playout_benchmark },
-  { NULL, NULL }
-};
 
 static int gtp_boardsize (char* s) {
-  uint new_board_size;
-  if (sscanf (s, "%d", &new_board_size) < 1) return gtp_failure ("syntax error");
-  if (new_board_size != board_size) return gtp_failure ("size not supported");
+  int new_board_size;
+  decode_int (s, new_board_size);
+
+  if (new_board_size != int (board_size)) return gtp_failure ("size not supported");
   return gtp_success("");
 }
 
 static int gtp_komi (char *s) {
   float new_komi;
-  if (sscanf(s, "%f", &new_komi) < 1) return gtp_failure("syntax error");
+  decode_float (s, new_komi);
+
   gtp_board.set_komi (-new_komi);
   return gtp_success("");
 }
@@ -89,7 +63,7 @@ static int gtp_clear_board (char* s) {
 static int gtp_load_position (char* s) {
   char f_name[1000];
 
-  sscanf(s, "%s", f_name);
+  decode_str (s, f_name);
   ifstream fin (f_name);
 
   if (!fin)                   return gtp_failure ("no such file \"%s\"", f_name);
@@ -101,20 +75,8 @@ static int gtp_load_position (char* s) {
 
 static int gtp_play (char* s) {
 
-  int       gtp_color;
-  coord::t  r;
-  coord::t  c;
-
-  if (!gtp_decode_move(s, &gtp_color, &r, &c)) 
-    return gtp_failure("syntax error");
-
-  player::t  player;
-  v::t       v;
-  move::t    move;
-
-  player  = (player::t) (2 - gtp_color);
-  v       = v::of_rc (r, c);
-  move    = move::of_pl_v (player, v);
+  move::t move;
+  decode_move (s, move, return gtp_failure ("syntax error"));
 
   if (!gtp_board.slow_is_legal (move))
     return gtp_failure ("illegal move");
@@ -178,9 +140,9 @@ static int gtp_protocol_version (char *s)
 
 static int gtp_playout_benchmark (char *s)
 {
-  uint playout_cnt;
+  int playout_cnt;
 
-  if (sscanf(s, "%u", &playout_cnt) < 1) return gtp_failure("syntax error");
+  decode_int (s, playout_cnt);
 
   ostringstream ss;
   simple_playout::benchmark (&gtp_board, playout_cnt, player::black, ss);
@@ -190,19 +152,45 @@ static int gtp_playout_benchmark (char *s)
   return gtp_finish_response();
 }
 
+static int gtp_echo (char *s)
+{
+  unused (s);
+
+  gtp_start_response(GTP_SUCCESS);
+  gtp_printf("%s", s);
+  return gtp_finish_response ();
+}
+
+gtp_command gtp_commands_static [] = {
+  { "boardsize",         gtp_boardsize },
+  { "clear_board",       gtp_clear_board },
+  { "help",              gtp_list_commands },
+  { "komi",              gtp_komi },
+  { "list_commands",     gtp_list_commands },
+  { "load_position",     gtp_load_position },
+  { "name",              gtp_name },
+  { "play",              gtp_play },
+  { "protocol_version",  gtp_protocol_version },
+  { "quit",              gtp_quit },
+  { "showboard",         gtp_showboard },
+  { "playout_benchmark", gtp_playout_benchmark },
+  { "echo",              gtp_echo },
+  { NULL, NULL }
+};
 
 // main
 
 int main () { 
 
-  pm::srand(123);
+  gtp_commands = gtp_commands_static; // what an crude language C++ is ...
+  pm::srand (123);
 
-  setvbuf(stdout, (char *)NULL, _IONBF, 0);
-  setvbuf(stderr, (char *)NULL, _IONBF, 0);
+  setvbuf (stdout, (char *)NULL, _IONBF, 0);
+  setvbuf (stderr, (char *)NULL, _IONBF, 0);
 
   gtp_internal_set_boardsize (board_size);
 
-  FILE* gtp_default = fopen("gtp.automagic", "r");
+  FILE* gtp_default = fopen ("automagic.gtp", "r");
 
   if (gtp_default) gtp_main_loop (gtp_commands, gtp_default, stdout, NULL);
 
@@ -210,3 +198,4 @@ int main () {
 
   return 0;
 }
+

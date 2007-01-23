@@ -18,8 +18,10 @@ which may be found in the file COPYING.
                     Installation
 
 Just untar (tar zxfv libgoboard*.tgz), and make.
-./engine_opt runs GTP engine, which will first run commands from gtp.automagic.
+./engine_opt runs GTP engine, which will first run commands from automagic.gtp.
 For other commands just type "help".
+
+If something goes wrong, try to run ./engine_debug.
 
                       Library  
 
