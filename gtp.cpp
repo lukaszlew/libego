@@ -475,6 +475,10 @@ gtp_print_vertex(int i, int j)
   gtp_print_vertices(1, &i, &j);
 }
 
+void gtp_append_commands (gtp_command* dst, gtp_command* src) {
+  while (dst->name != NULL) dst++;
+  while (src->name != NULL) *(dst++) = *(src++);
+}
 
 /*
  * Local Variables:

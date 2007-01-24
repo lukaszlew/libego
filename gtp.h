@@ -82,6 +82,7 @@ int gtp_decode_coord(char *s, int *m, int *n);
 int gtp_decode_move(char *s, int *color, int *i, int *j);
 void gtp_print_vertices(int n, int movei[], int movej[]);
 void gtp_print_vertex(int i, int j);
+void gtp_append_commands (gtp_command* dst, gtp_command* src);
 
 // helpful macros
 
