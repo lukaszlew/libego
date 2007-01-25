@@ -21,15 +21,11 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "playout.cpp"
-#include "gtp.h"
-
-
 
 // state of engine is in this board
 
-board_t gtp_board;
 
+board_t gtp_board;
 
 
 // gtp_* functions

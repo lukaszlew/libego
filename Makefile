@@ -32,13 +32,13 @@ playout_test_prof:  board.cpp utils.cpp playout.cpp
 
 
 
-engine_debug: board.cpp utils.cpp playout.cpp gtp.cpp gtp.h main.cpp
+engine_debug: board.cpp utils.cpp playout.cpp gtp.cpp gtp.h gtp_board.cpp main.cpp
 	$(GPP) $(DEBUG) -o engine_debug gtp.cpp main.cpp
 
-engine_opt:   board.cpp utils.cpp playout.cpp gtp.cpp gtp.h main.cpp
+engine_opt:   board.cpp utils.cpp playout.cpp gtp.cpp gtp.h gtp_board.cpp main.cpp
 	$(GPP) $(OPT)   -o engine_opt   gtp.cpp main.cpp
 
-engine_prof:  board.cpp utils.cpp playout.cpp gtp.cpp gtp.h main.cpp
+engine_prof:  board.cpp utils.cpp playout.cpp gtp.cpp gtp.h gtp_board.cpp main.cpp
 	$(GPP) $(PROF)  -o engine_prof  gtp.cpp main.cpp
 
 

@@ -22,6 +22,8 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
+#include "playout.cpp"
+#include "gtp.h"
 #include "gtp_board.cpp"
 
 
