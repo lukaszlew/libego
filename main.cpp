@@ -85,7 +85,6 @@ static int gtp_echo (char *s)
 gtp_command gtp_general_commands [] = {
   { "help",              gtp_list_commands },
   { "list_commands",     gtp_list_commands },
-  { "load_position",     gtp_load_position },
   { "name",              gtp_name },
   { "protocol_version",  gtp_protocol_version },
   { "quit",              gtp_quit },
