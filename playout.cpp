@@ -21,7 +21,7 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "board.cpp"
+#include "stack_board.cpp"
 
 
 #ifdef NDEBUG
