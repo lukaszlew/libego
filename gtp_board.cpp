@@ -80,6 +80,15 @@ static int gtp_play (char* s) {
   return gtp_success("");
 }
 
+static int gtp_undo (char* s) {
+  unused (s);
+  
+  if (!gtp_board->try_undo ())
+    return gtp_failure ("no more undo");
+  
+  return gtp_success("");
+}
+
 static int gtp_showboard (char* s) {
   unused (s);
   ostringstream ss;
@@ -111,6 +120,7 @@ gtp_command gtp_board_commands [] = {
   { "komi",              gtp_komi },
   { "load_position",     gtp_load_position },
   { "play",              gtp_play },
+  { "undo",              gtp_undo },
   { "showboard",         gtp_showboard },
   { "playout_benchmark", gtp_playout_benchmark },
   { NULL, NULL }
