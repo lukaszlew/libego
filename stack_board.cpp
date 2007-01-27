@@ -41,19 +41,19 @@ public:
   }
 
   stack_board_t () {
-    move_cnt = 0;
+    clear ();
   }
 
-  void perm_clear_board () {
+  void clear () {
     move_cnt = 0;  
     act_board()->clear ();
   }
 
   board_t* act_board () { return board_history + move_cnt; }
 
-  bool perm_try_play (player::t player, v::t v) {
-    assertc (perm_ac, player::is_player (player));
-    assertc (perm_ac, v::is_ok (v));
+  bool try_play (player::t player, v::t v) {
+    player::check (player);
+    v::check (v);
 
     record_state (); // for undo
 
@@ -71,7 +71,7 @@ public:
     return true;
   }
 
-  bool perm_try_undo () {
+  bool try_undo () {
     if (move_cnt <= 0) return false;
     revert_state ();
     return true;

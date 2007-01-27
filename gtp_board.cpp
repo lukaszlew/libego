@@ -25,7 +25,7 @@
 // state of engine is in this board
 
 
-board_t gtp_board;
+stack_board_t gtp_board[1];
 
 
 // gtp_* functions
@@ -43,14 +43,14 @@ static int gtp_komi (char *s) {
   float new_komi;
   decode_float (s, new_komi);
 
-  gtp_board.set_komi (-new_komi);
+  gtp_board->act_board()->set_komi (-new_komi);
   return gtp_success("");
 }
 
 
 static int gtp_clear_board (char* s) {
   unused (s);
-  gtp_board.clear ();
+  gtp_board->clear ();
   return gtp_success("");
 }
 
@@ -61,7 +61,7 @@ static int gtp_load_position (char* s) {
   ifstream fin (f_name);
 
   if (!fin)                   return gtp_failure ("no such file \"%s\"", f_name);
-  if (!gtp_board.load (fin))  return gtp_failure ("wrong file format");
+  if (!gtp_board->act_board()->load (fin))  return gtp_failure ("wrong file format");
 
   return gtp_success("");
 }
@@ -69,14 +69,13 @@ static int gtp_load_position (char* s) {
 
 static int gtp_play (char* s) {
 
-  move::t move;
-  decode_move (s, move, return gtp_failure ("syntax error"));
+  player::t  pl;
+  v::t       v;
 
-  if (!gtp_board.slow_is_legal (move))
-    return gtp_failure ("illegal move");
+  decode_player_v (s, pl, v, return gtp_failure ("syntax error"));
   
-  if (gtp_board.play (move) != board_t::play_ok) 
-    gtp_panic (); // should not happen
+  if (!gtp_board->try_play (pl, v))
+    return gtp_failure ("illegal move");
   
   return gtp_success("");
 }
@@ -85,7 +84,7 @@ static int gtp_showboard (char* s) {
   unused (s);
   ostringstream ss;
   
-  gtp_board.print (ss);
+  gtp_board->act_board ()->print (ss);
 
   gtp_start_response(GTP_SUCCESS);
   gtp_printf ("\n%s", ss.str ().data ());
@@ -99,7 +98,7 @@ static int gtp_playout_benchmark (char *s)
   decode_int (s, playout_cnt);
 
   ostringstream ss;
-  simple_playout::benchmark (&gtp_board, playout_cnt, player::black, ss);
+  simple_playout::benchmark (gtp_board->act_board (), playout_cnt, player::black, ss);
 
   gtp_start_response(GTP_SUCCESS);
   gtp_printf ("\n%s", ss.str ().data ());

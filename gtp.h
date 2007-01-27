@@ -118,7 +118,7 @@ void gtp_append_commands (gtp_command* dst, gtp_command* src);
   pl = (player::t) (2 - gtp_color);                        \
 }
 
-#define decode_move(s, mm, fail_i) {                       \
+#define decode_player_v(s, plpl, vv, fail_i) {             \
   int       gtp_color;                                     \
   coord::t  r;                                             \
   coord::t  c;                                             \
@@ -129,13 +129,16 @@ void gtp_append_commands (gtp_command* dst, gtp_command* src);
   else {                                                   \
     s += n;                                                \
                                                            \
-    player::t  player;                                     \
-    v::t       v;                                          \
-                                                           \
-    player  = (player::t) (2 - gtp_color);                 \
-    v       = v::of_rc (r, c);                             \
-    mm      = move::of_pl_v (player, v);                   \
+    plpl    = (player::t) (2 - gtp_color);                 \
+    vv      = v::of_rc (r, c);                             \
   }                                                        \
+}
+
+#define decode_move(s, mm, fail_i) {                       \
+  player::t pl;                                            \
+  v::t v;                                                  \
+  decode_player_v(s, pl, v, fail_i);                       \
+  mm = move::of_pl_v (pl, v);                              \
 }
 
 extern FILE *gtp_output_file;
