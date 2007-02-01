@@ -95,11 +95,10 @@ namespace simple_playout {
       act_player = player::other (act_player);
       move_no++;
 
-      if ((was_pass [player::black] & was_pass [player::white]) ||
-          (move_no > max_playout_length)) break;
+      if (was_pass [player::black] & was_pass [player::white]) break;
+      if (move_no >= max_playout_length) break;
       
       do_mercy = uint(abs (board->approx_score ())) > mercy_threshold;
-
       if (do_mercy) break;
 
     } while (true);
