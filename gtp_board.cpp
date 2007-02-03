@@ -100,6 +100,21 @@ static int gtp_showboard (char* s) {
   return gtp_finish_response();
 }
 
+static int gtp_genmove (char* s) {
+  player::t player;
+  decode_player (s, player);
+
+  v::t v;
+  v = genmove (gtp_board, player);
+
+  ostringstream ss;
+  v::print (v, ss);
+
+  gtp_start_response(GTP_SUCCESS);
+  gtp_printf ("%s", ss.str ().data ());
+  return gtp_finish_response();
+}
+
 static int gtp_playout_benchmark (char *s)
 {
   int playout_cnt;
@@ -122,6 +137,7 @@ gtp_command gtp_board_commands [] = {
   { "play",              gtp_play },
   { "undo",              gtp_undo },
   { "showboard",         gtp_showboard },
+  { "genmove",           gtp_genmove },
   { "playout_benchmark", gtp_playout_benchmark },
   { NULL, NULL }
 };

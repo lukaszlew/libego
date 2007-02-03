@@ -26,6 +26,7 @@
 #include "board.cpp"
 #include "stack_board.cpp"
 #include "playout.cpp"
+#include "genmove.cpp"
 #include "gtp_board.cpp"
 
 
