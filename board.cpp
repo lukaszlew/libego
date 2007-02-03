@@ -2,7 +2,7 @@
  *                                                                           *
  *  This file is part of GoBoard library,                                    *
  *                                                                           *
- *  Copyright 2006 Lukasz Lew                                                *
+ *  Copyright 2006, 2007 Lukasz Lew                                          *
  *                                                                           *
  *  GoBoard library is free software; you can redistribute it and/or modify  *
  *  it under the terms of the GNU General Public License as published by     *
