@@ -21,8 +21,6 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "stack_board.cpp"
-
 
 #ifdef NDEBUG
 static const bool playout_ac = false;

@@ -21,8 +21,6 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "board.cpp"
-
 
 const bool stack_board_ac = true;
 

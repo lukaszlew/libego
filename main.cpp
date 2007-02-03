@@ -20,11 +20,14 @@
  *  Boston, MA  02110-1301  USA                                              *
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-
-#include "playout.cpp"
 #include "gtp.h"
+
+#include "utils.cpp"
+#include "board.cpp"
+#include "stack_board.cpp"
+#include "playout.cpp"
 #include "gtp_board.cpp"
+
 
 
 // general gtp_* functions
