@@ -107,12 +107,14 @@ namespace simple_playout {
   }
 
 
+  board_t    mc_board[1];
+  board_t    mc_board_copy[1];
+  
   static void benchmark (board_t const * start_board, 
                   uint playout_cnt, 
                   player::t first_player, 
                   ostream& out) 
   {
-    board_t    mc_board;
     float      seconds_begin;
     float      seconds_end;
     float      seconds_total;
@@ -120,12 +122,16 @@ namespace simple_playout {
     player::t  winner;
     uint       win_cnt [player::cnt];
     
-    seconds_begin = get_seconds ();
     player_for_each (pl) win_cnt [pl] = 0;
+
+    mc_board->load (start_board);
+    memcpy (mc_board_copy, mc_board, sizeof (mc_board));
+
+    seconds_begin = get_seconds ();
     
     rep (ii, playout_cnt) {
-      mc_board.load (start_board);
-      winner = simple_playout::run (&mc_board, first_player);
+      memcpy (mc_board, mc_board_copy, sizeof (mc_board));
+      winner = simple_playout::run (mc_board, first_player);
       win_cnt [winner] ++;
     }
     
