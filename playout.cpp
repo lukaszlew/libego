@@ -69,7 +69,7 @@ namespace simple_playout {
   }
 
 
-  player::t run (board_t* board, player::t first_player) {
+  static player::t run (board_t* board, player::t first_player) {
 
     v::t  v;
     bool  was_pass[player::cnt];
@@ -107,7 +107,7 @@ namespace simple_playout {
   }
 
 
-  void benchmark (board_t const * start_board, 
+  static void benchmark (board_t const * start_board, 
                   uint playout_cnt, 
                   player::t first_player, 
                   ostream& out) 

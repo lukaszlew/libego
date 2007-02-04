@@ -1,4 +1,4 @@
-OPT   = -O3 -march=i686 -fomit-frame-pointer  -DNDEBUG -ffast-math -frename-registers
+OPT   = -O3 -march=i686 -fomit-frame-pointer  -DNDEBUG -ffast-math -frename-registers -finline-limit=20000 
 DEBUG = -ggdb3 -DDEBUG -fno-inline 
 PROF  = $(OPT) -ggdb3 -fno-inline 
 

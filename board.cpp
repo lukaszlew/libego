@@ -367,7 +367,7 @@ namespace move {
     player::white << v::bits_used 
   };
 
-  t of_pl_v (player::t player, v::t v) { 
+  static t of_pl_v (player::t player, v::t v) { 
     player::check (player);
     v::check (v);
     return player_mask [player] | v;
@@ -441,10 +441,9 @@ namespace hash {
 
 
 class zobrist_t {
+public:
 
   hash::t hashes[move::cnt];
-
-public:
 
   zobrist_t () {
     pl_v_for_each (pl, v) {
@@ -533,8 +532,6 @@ namespace nbr_cnt {
 
 // class chain_t
 
-
-class chain_t;
 
 class chain_t {                 // find - union algorithm, with pseudo liberties
 public:
@@ -633,6 +630,8 @@ public:
 
   hash::t     hash;
   int         komi;
+
+  int         padding;
 
   enum play_ret_t { play_ok, play_suicide, play_ss_suicide };
 
