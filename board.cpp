@@ -862,32 +862,28 @@ public:                         // board interface
   board_t (const board_t* to_copy) { load (to_copy); }
 
   void clear () {
-    coord::t r;
-    coord::t c;
+    uint edge_cnt;
 
     set_komi (7.5);            // standard for chinese rules
     empty_v_cnt = 0;
     player_for_each (pl) player_v_cnt [pl] = 0;
 
     v_for_each_all (v) {
-      color_at[v] = color::edge;
-      nbr_cnt[v] = nbr_cnt::of_desc (0, 0, nbr_cnt::max);
-
-      r = v::row (v);
-      c = v::col (v);
+      color_at      [v] = color::edge;
+      nbr_cnt       [v] = nbr_cnt::of_desc (0, 0, nbr_cnt::max);
+      chain_next_v  [v] = v;
 
       if (v::is_on_board (v)) {
-        color_at [v] = color::empty;
-        empty_pos [v] = empty_v_cnt;
-        empty_v [empty_v_cnt++] = v;
+        color_at   [v]              = color::empty;
+        empty_pos  [v]              = empty_v_cnt;
+        empty_v    [empty_v_cnt++]  = v;
+
+        edge_cnt = 0;
+        v_for_each_nbr (v, nbr_v, if (!v::is_on_board (nbr_v)) edge_cnt++);
+        nbr_cnt [v] += edge_cnt * nbr_cnt::edge_inc;
       }
-
-      chain_next_v[v] = v;
-
-      if (r == 0 || r == board_size-1) nbr_cnt[v] += nbr_cnt::edge_inc;
-      if (c == 0 || c == board_size-1) nbr_cnt[v] += nbr_cnt::edge_inc;
       
-      (chain_at+v)->init (nbr_cnt::empty_cnt (nbr_cnt[v])); //WW
+      (chain_at+v)->init (nbr_cnt::empty_cnt (nbr_cnt [v]));
     }
 
     hash = recalc_hash ();
