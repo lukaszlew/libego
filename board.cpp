@@ -609,6 +609,7 @@ public:
 
 // class board_t
 
+enum play_ret_t { play_ok, play_suicide, play_ss_suicide };
 
 const static zobrist_t zobrist[1]; // TODO move it to board
 
@@ -632,8 +633,6 @@ public:
   int         komi;
 
   int         padding;
-
-  enum play_ret_t { play_ok, play_suicide, play_ss_suicide };
 
 public:                         // macros
 
