@@ -54,14 +54,14 @@ namespace simple_playout {
     for (uint ev_i = start; ev_i != board->empty_v_cnt; ev_i++) {   
       v = board->empty_v [ev_i];
       if (!board->is_eyelike (player, v) &&
-          board->play (player, v) != play_ss_suicide) return v;
+          board->play_no_pass (player, v) != play_ss_suicide) return v;
     }
 
     // search for a move in 0 ... start interval
     for (uint ev_i = 0; ev_i != start; ev_i++) {
       v = board->empty_v [ev_i];
       if (!board->is_eyelike (player, v) &&
-          board->play (player, v) != play_ss_suicide) return v;
+          board->play_no_pass (player, v) != play_ss_suicide) return v;
     }
 
     board->check_no_more_legal (player); // powerfull check

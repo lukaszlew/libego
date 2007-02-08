@@ -932,26 +932,12 @@ public:                         // board interface
     return float(-komi) + 0.5;
   }
 
-  bool slow_is_legal (move::t move) const { // TODO ko handling
-    v::t v;
-    
-    v = move::v (move);
-    if (v == v::pass) return true;
-    if (color_at [v] != color::empty) return false;
-
-    board_t tmp_board (this);
-    return tmp_board.play (move) == play_ok;
-  }
-
-  play_ret_t play (move::t move) {
-    move::check (move);
-
-    v::t v = move::v (move);
+  play_ret_t play (player::t player, v::t v) { 
     if (v == v::pass) return play_ok;
-    return play (move::player (move), v);
+    return play_no_pass (player, v);
   }
 
-  play_ret_t play (player::t player, v::t v) {
+  play_ret_t play_no_pass (player::t player, v::t v) {
     check ();
     player::check (player);
     v::check_is_on_board (v);
@@ -1235,7 +1221,7 @@ public:                         // utils
 
     rep (pi, play_cnt) {
       play_ret_t ret;
-      ret = play (play_player[pi], play_v[pi]);
+      ret = play_no_pass (play_player[pi], play_v[pi]);
       if (ret != play_ok || last_empty_v_cnt - empty_v_cnt != 1) {
         cerr << "Fatal error: Illegal board configuration in file." << endl;
         exit (1);               // TODO this is a hack
