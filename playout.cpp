@@ -138,7 +138,7 @@ namespace simple_playout {
     seconds_end = get_seconds ();
     
     out << "Initial board:" << endl;
-    out << "komi " << -start_board->komi << endl;
+    out << "komi " << start_board->get_komi () << endl;
     
     start_board->print (out);
     

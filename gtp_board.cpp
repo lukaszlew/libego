@@ -43,7 +43,7 @@ static int gtp_komi (char *s) {
   float new_komi;
   decode_float (s, new_komi);
 
-  gtp_board->act_board()->set_komi (-new_komi);
+  gtp_board->act_board()->set_komi (new_komi);
   return gtp_success("");
 }
 

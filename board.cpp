@@ -862,9 +862,10 @@ public:                         // board interface
   board_t (const board_t* to_copy) { load (to_copy); }
 
   void clear () {
-    int r, c;
+    coord::t r;
+    coord::t c;
 
-    set_komi (-7.5);            // standard for chinese rules
+    set_komi (7.5);            // standard for chinese rules
     empty_v_cnt = 0;
     player_for_each (pl) player_v_cnt [pl] = 0;
 
@@ -928,7 +929,11 @@ public:                         // board interface
   }
   
   void set_komi (float fkomi) { 
-    komi = int (ceil (fkomi));
+    komi = int (ceil (-fkomi));
+  }
+
+  float get_komi () const { 
+    return float(-komi) + 0.5;
   }
 
   bool slow_is_legal (move::t move) const { // TODO ko handling
