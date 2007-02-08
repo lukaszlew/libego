@@ -21,19 +21,6 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <iostream>
-#include <fstream>
-#include <sstream>
-
-#include <cassert>
-#include <cmath>
-
-#include <sys/time.h>
-#include <sys/resource.h>
-#include <unistd.h>
-
-using namespace std;
-
 typedef unsigned int uint;
 typedef unsigned long long uint64;
 

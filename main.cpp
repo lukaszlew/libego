@@ -20,6 +20,19 @@
  *  Boston, MA  02110-1301  USA                                              *
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+#include <iostream>
+#include <fstream>
+#include <sstream>
+
+#include <cassert>
+#include <cmath>
+
+#include <sys/time.h>
+#include <sys/resource.h>
+#include <unistd.h>
+
+using namespace std;
+
 #include "gtp.h"
 
 #include "utils.cpp"
