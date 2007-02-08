@@ -107,11 +107,8 @@ static int gtp_genmove (char* s) {
   v::t v;
   v = genmove (gtp_board, player);
 
-  ostringstream ss;
-  v::print (v, ss);
-
   gtp_start_response(GTP_SUCCESS);
-  gtp_printf ("%s", ss.str ().data ());
+  gtp_printf ("%s", v::to_string(v).data ());
   return gtp_finish_response();
 }
 

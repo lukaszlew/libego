@@ -275,24 +275,6 @@ namespace v {
     return (r+1) * dNS + (c+1) * dWE;
   }
 
-  void print (t v, ostream& out) {
-    coord::t r;
-    coord::t c;
-    check (v);
-
-    if (v == pass) {
-      out << " PASS";
-    } else if (v == no_v) {
-      out << " NO v";
-    } else {
-      r = row (v);
-      c = col (v);
-      
-      out << "(" << r + 1 << "," << c + 1 << ")";
-    }
-  }
-
-
   string to_string (t v) {
     coord::t r;
     coord::t c;
@@ -385,12 +367,6 @@ namespace move {
   v::t v (t move) { 
     check (move);
     return move & ((1 << ::v::bits_used) - 1) ; 
-  }
-
-  void print (t move, ostream& out) {
-    check (move);
-    ::player::print (player (move), out);
-    ::v::print (v (move), out);
   }
 
   string to_string (t move) {
