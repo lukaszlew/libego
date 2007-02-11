@@ -140,7 +140,7 @@ namespace simple_playout {
     out << "Initial board:" << endl;
     out << "komi " << start_board->get_komi () << endl;
     
-    start_board->print (out);
+    out << start_board->to_string ();
     
     seconds_total = seconds_end - seconds_begin;
     

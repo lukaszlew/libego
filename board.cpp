@@ -92,14 +92,6 @@ namespace player {
     return (t)(player ^ 1);
   }
   
-  void print (t player, ostream& out) {
-    check (player);
-    if (player == black)
-      out << "#";
-    else
-      out << "O";
-  }
-
   string to_string (t player) {
     if (player == black)
       return "#";
@@ -377,19 +369,7 @@ namespace move {
 
 #define move_for_each_all(m) for (move::t m = 0; m < move::cnt; m++)
 
-/*
-#define move_for_each_and_pass(m, i) do {        \
-  move::t m;                                     \
-  player_for_each (pl) {                         \
-    m = move::of_pl_v (pl, v::pass);             \
-    i;                                           \
-  }                                              \
-  pl_v_for_each (pl, v) {                        \
-    m = move::of_pl_v (pl, v);                   \
-    i;                                           \
-  }                                              \
-} while (false)
-*/
+
 // namespace hash
 
 
@@ -612,20 +592,20 @@ public:
 
 public:                         // macros
 
-  #define empty_v_for_each(board, v, i) {                               \
-    v::t v;                                                             \
+  #define empty_v_for_each(board, vv, i) {                              \
+    v::t vv;                                                            \
     rep (ev_i, (board)->empty_v_cnt) {                                  \
-      v = (board)->empty_v [ev_i];                                      \
+      vv = (board)->empty_v [ev_i];                                     \
       i;                                                                \
     }                                                                   \
   }
   
-  #define empty_v_for_each_and_pass(board, v, i) {                      \
-    v::t v;                                                             \
-    v = v::pass;                                                        \
+  #define empty_v_for_each_and_pass(board, vv, i) {                     \
+    v::t vv;                                                            \
+    vv = v::pass;                                                       \
     i;                                                                  \
     rep (ev_i, (board)->empty_v_cnt) {                                  \
-      v = (board)->empty_v [ev_i];                                      \
+      vv = (board)->empty_v [ev_i];                                     \
       i;                                                                \
     }                                                                   \
   }
@@ -1128,7 +1108,9 @@ public:                         // utils
     return player::t (score () <= 0); 
   }
 
-  void print (ostream& out, v::t mark_v = v::pass) const { // TODO defoult out
+  string to_string (v::t mark_v = v::pass) const { // TODO defoult out
+    ostringstream out;
+
     #define os(n) out << " " << n << " ";
     #define om(n) out << "(" << n << ")";
     
@@ -1151,10 +1133,12 @@ public:                         // utils
     out << "   ";
     coord_for_each (col) os (coord::col_to_string (col));
     out << endl;
+
+    return out.str ();
   }
 
   void print_cerr (v::t v = v::pass) const {
-    print (cerr, v);
+    cerr << to_string (v);
   }
 
   bool load (istream& ifs) {

@@ -91,12 +91,9 @@ static int gtp_undo (char* s) {
 
 static int gtp_showboard (char* s) {
   unused (s);
-  ostringstream ss;
-  
-  gtp_board->act_board ()->print (ss);
 
   gtp_start_response(GTP_SUCCESS);
-  gtp_printf ("\n%s", ss.str ().data ());
+  gtp_printf ("\n%s", gtp_board->act_board ()->to_string().data ());
   return gtp_finish_response();
 }
 
