@@ -565,7 +565,7 @@ public:
 
 // class board_t
 
-enum play_ret_t { play_ok, play_suicide, play_ss_suicide };
+enum play_ret_t { play_ok, play_suicide, play_ss_suicide, play_ko, play_non_empty };
 
 const static zobrist_t zobrist[1]; // TODO move it to board
 
@@ -806,17 +806,14 @@ public:                         // consistency checks
 
     v_for_each_faster (v)
       if (color_at[v] == color::empty)
-        assert (is_eyelike(player, v) || play(player, v) == play_ss_suicide);
+        assert (is_eyelike (player, v) || play_no_pass (player, v) == play_ss_suicide);
   }
 
 
 public:                         // board interface
 
-
   board_t () { clear (); }
   
-  board_t (const board_t* to_copy) { load (to_copy); }
-
   void clear () {
     uint edge_cnt;
 
@@ -888,11 +885,6 @@ public:                         // board interface
     return float(-komi) + 0.5;
   }
 
-  play_ret_t play (player::t player, v::t v) { 
-    if (v == v::pass) return play_ok;
-    return play_no_pass (player, v);
-  }
-
   play_ret_t play_no_pass (player::t player, v::t v) {
     check ();
     player::check (player);
@@ -933,8 +925,8 @@ public:                         // board interface
   play_ret_t play_eye (player::t player, v::t v) {
     chain_t* chain_root_N;      // TODO macro !!!
     chain_t* chain_root_W;
-    chain_t* chain_root_S;
     chain_t* chain_root_E;
+    chain_t* chain_root_S;
 
     assertc (board_ac, color_at[v::N (v)] == color::opponent (player) || color_at[v::N (v)] == color::edge);
     assertc (board_ac, color_at[v::W (v)] == color::opponent (player) || color_at[v::W (v)] == color::edge);
@@ -1192,131 +1184,3 @@ public:                         // utils
   }
 
 };
-
-
-
-#ifdef BOARD_TEST
-
-// class board_test_t
-
-class board_test_t {
-  board_t board[1];
-  board_t board_arch[1];
-  player::t act_player;
-  bool interactive;
-
-  v::t rnd_empty_v () {
-    v::t v;
-    do {
-      v = pm::rand_int () % v::cnt; 
-      if (interactive) cout << ".";
-    } while (board->color_at[v] != color::empty || 
-             board->is_eyelike (act_player, v));
-    if (interactive) cout << endl;
-    return v;
-  }
-
-  v::t play_one () {
-    v::t v;
-    v = rnd_empty_v ();
-    board->play (act_player, v);
-    if (interactive) 
-      cout << "Last capture size = " 
-           << board->empty_v_cnt - board->last_empty_v_cnt 
-           << endl 
-           << endl;
-    act_player = player::other (act_player);
-    board->check ();
-    return v;
-  }
-
-public:
-
-  board_test_t () {
-    unused (color::opponent);
-    act_player = player::black;
-  }
-
-  void print_playout () {
-    v::t v;
-    interactive = true;
-
-    ifstream fin;
-
-    fin.open ("test_board.brd");
-
-    if (!fin) 
-      board->clear ();
-    else {
-      if (!board->load (fin)) {
-        cerr << "bad file" << endl;
-        exit (1);
-      }
-    }
-
-    rep (ii, 180) {
-      board->print (cout, v);
-      getc (stdin);
-      v = play_one ();
-    }
-    cout << "End of playout" << endl << endl;
-  }
-  
-  void test_1 () {
-    interactive = false;
-    rep (kk, 30) {
-
-      rep (ii, 500) play_one ();
-
-      board->check ();
-      board->score ();
-      board->check ();
-
-      board_arch->load (board);
-      board_arch->check ();
-
-      rep (ii, 500) play_one ();
-
-      board->check ();
-      board->load (board_arch);
-      board->check ();
-
-      board->check ();
-
-      cout << endl;
-
-      rep (ii, 500) play_one ();
-
-      board->clear ();
-      board->check ();
-    }
-  }
-
-  void benchmark () {
-    board_arch->clear ();
-    rep (kk, 100000) {
-      board->load (board_arch);
-      rep (ii, 110) {
-        v::t v;
-
-        do v = pm::rand_int () % v::cnt; 
-        while (board->color_at[v] != color::empty); // || board->is_eyelike (act_player, v)); // most expensive loop
-
-        board->play (act_player, v);
-        act_player = player::other (act_player);
-      }
-    }
-
-  }
-
-};
-
-int main () { 
-  board_test_t test[1];
-  //rep (ii, 100) test->print_playout ();
-  test->benchmark ();
-
-  return 0;
-}
-
-#endif
