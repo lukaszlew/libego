@@ -138,3 +138,12 @@ float get_seconds () {
   getrusage (RUSAGE_SELF, usage);
   return float(usage->ru_utime.tv_sec) + float(usage->ru_utime.tv_usec) / 1000000.0;
 }
+
+void fatal_error (const char* s) {
+  cerr << "Fatal error: " << s << endl;
+  exit (1);
+}
+
+#define no_inline   __attribute__((noinline))
+#define flatten     __attribute__((flatten))
+#define all_inline  __attribute__((always_inline))

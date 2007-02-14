@@ -999,7 +999,7 @@ public:                         // board interface
     }
   }
   
-  void remove_chain (v::t v) {
+  no_inline void remove_chain (v::t v) {
     v::t act_v;
     v::t tmp_v;
     color::t old_color;

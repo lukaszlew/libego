@@ -22,7 +22,19 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
+
+#ifdef NDEBUG
+const bool stack_board_ac = false;
+#endif
+
+
+#ifdef DEBUG
 const bool stack_board_ac = true;
+#endif
+
+
+// class stack_board_t
+
 
 class stack_board_t {
 
