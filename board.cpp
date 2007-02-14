@@ -885,7 +885,7 @@ public:                         // board interface
     return float(-komi) + 0.5;
   }
 
-  play_ret_t play_no_pass (player::t player, v::t v) {
+  flatten all_inline play_ret_t play_no_pass (player::t player, v::t v) {
     check ();
     player::check (player);
     v::check_is_on_board (v);

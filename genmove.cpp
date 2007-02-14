@@ -25,10 +25,7 @@
 v::t genmove (stack_board_t* stack_board, player::t player) {
   v::t v = v::pass;
 
-  if (!stack_board->try_play (player, v)) {
-    cout << "genmove: generated illegal move" << endl;
-    exit (1);
-  }
+  if (!stack_board->try_play (player, v)) fatal_error ("genmove: generated illegal move");
 
   return v;
 }
