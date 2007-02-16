@@ -574,11 +574,11 @@ class board_t {
 public:
 
   color::t    color_at      [v::cnt];
-  chain_t     chain_at      [v::cnt];
-  v::t        chain_next_v  [v::cnt];
   nbr_cnt::t  nbr_cnt       [v::cnt]; // incremental, for fast eye checking
-  
   uint        empty_pos     [v::cnt];
+  v::t        chain_next_v  [v::cnt];
+  chain_t     chain_at      [v::cnt];
+  
   v::t        empty_v       [board_area];
   uint        empty_v_cnt;
   uint        last_empty_v_cnt;
@@ -588,7 +588,8 @@ public:
   hash::t     hash;
   int         komi;
 
-  int         padding;
+  v::t        ko_v;             // vertex forbidden by ko
+  player::t   last_player;      // player who made the last play (other::player is forbidden to retake)
 
 public:                         // macros
 
@@ -820,6 +821,7 @@ public:                         // board interface
     set_komi (7.5);            // standard for chinese rules
     empty_v_cnt = 0;
     player_for_each (pl) player_v_cnt [pl] = 0;
+    ko_v = v::no_v;
 
     v_for_each_all (v) {
       color_at      [v] = color::edge;
@@ -885,7 +887,7 @@ public:                         // board interface
     return float(-komi) + 0.5;
   }
 
-  flatten all_inline play_ret_t play_no_pass (player::t player, v::t v) {
+  play_ret_t play_no_pass (player::t player, v::t v) flatten all_inline {
     check ();
     player::check (player);
     v::check_is_on_board (v);
@@ -906,6 +908,9 @@ public:                         // board interface
     assertc (board_ac, color_at[v] == color::empty);
 
     last_empty_v_cnt = empty_v_cnt;
+    ko_v             = v::no_v;
+    last_player      = player;
+    
     new_chain_root = place_stone (player, v);
 
     v_for_each_nbr (v, nbr_v, process_new_nbr (nbr_v, player, v, &new_chain_root));
@@ -933,10 +938,13 @@ public:                         // board interface
     assertc (board_ac, color_at[v::E (v)] == color::opponent (player) || color_at[v::E (v)] == color::edge);
     assertc (board_ac, color_at[v::S (v)] == color::opponent (player) || color_at[v::S (v)] == color::edge);
 
-    chain_root_N = (chain_at + v::N(v))->find_root ();
-    chain_root_W = (chain_at + v::W(v))->find_root ();
-    chain_root_E = (chain_at + v::E(v))->find_root ();
-    chain_root_S = (chain_at + v::S(v))->find_root ();
+    if (v == ko_v && player == player::other (last_player)) 
+      return play_ko;
+
+    chain_root_N = (chain_at + v::N (v))->find_root ();
+    chain_root_W = (chain_at + v::W (v))->find_root ();
+    chain_root_E = (chain_at + v::E (v))->find_root ();
+    chain_root_S = (chain_at + v::S (v))->find_root ();
 
     chain_root_N->dec_lib_cnt ();
     chain_root_W->dec_lib_cnt ();
@@ -956,20 +964,27 @@ public:                         // board interface
     }
 
     last_empty_v_cnt = empty_v_cnt;
+    last_player      = player;
 
     place_stone (player, v);
     
-    nbr_cnt[v::N(v)] += nbr_cnt::player_inc (player);
-    nbr_cnt[v::W(v)] += nbr_cnt::player_inc (player);
-    nbr_cnt[v::E(v)] += nbr_cnt::player_inc (player);
-    nbr_cnt[v::S(v)] += nbr_cnt::player_inc (player);
+    nbr_cnt [v::N (v)] += nbr_cnt::player_inc (player);
+    nbr_cnt [v::W (v)] += nbr_cnt::player_inc (player);
+    nbr_cnt [v::E (v)] += nbr_cnt::player_inc (player);
+    nbr_cnt [v::S (v)] += nbr_cnt::player_inc (player);
 
-    if (chain_root_N->lib_cnt_is_zero ()) remove_chain(v::N(v));
-    if (chain_root_W->lib_cnt_is_zero ()) remove_chain(v::W(v));
-    if (chain_root_E->lib_cnt_is_zero ()) remove_chain(v::E(v));
-    if (chain_root_S->lib_cnt_is_zero ()) remove_chain(v::S(v));
+    if (chain_root_N->lib_cnt_is_zero ()) remove_chain (v::N (v));
+    if (chain_root_W->lib_cnt_is_zero ()) remove_chain (v::W (v));
+    if (chain_root_E->lib_cnt_is_zero ()) remove_chain (v::E (v));
+    if (chain_root_S->lib_cnt_is_zero ()) remove_chain (v::S (v));
 
     assertc (board_ac, !chain_at[v].find_root_npc ()->lib_cnt_is_zero ());
+
+    if (last_empty_v_cnt == empty_v_cnt) { // if captured exactly one stone, end this was eye
+      ko_v = empty_v [empty_v_cnt - 1]; // then ko formed
+    } else {
+      ko_v = v::no_v;
+    }
 
     return play_ok;
   }
@@ -999,7 +1014,7 @@ public:                         // board interface
     }
   }
   
-  no_inline void remove_chain (v::t v) {
+  void remove_chain (v::t v) no_inline {
     v::t act_v;
     v::t tmp_v;
     color::t old_color;

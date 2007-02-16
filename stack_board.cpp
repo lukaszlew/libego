@@ -75,7 +75,7 @@ public:
     if (act_board()->play_no_pass (player, v) != play_ok)
       { revert_state (); return false; }
 
-    if (is_hash_repeated ()) 
+    if (is_hash_repeated ())    // superko test
       { revert_state (); return false; }
 
     return true;
