@@ -54,14 +54,14 @@ namespace simple_playout {
     for (uint ev_i = start; ev_i != board->empty_v_cnt; ev_i++) {   
       v = board->empty_v [ev_i];
       if (!board->is_eyelike (player, v) &&
-          board->play_no_pass (player, v) != play_ss_suicide) return v;
+          board->play_no_pass (player, v) < play_ss_suicide) return v;
     }
 
     // search for a move in 0 ... start interval
     for (uint ev_i = 0; ev_i != start; ev_i++) {
       v = board->empty_v [ev_i];
       if (!board->is_eyelike (player, v) &&
-          board->play_no_pass (player, v) != play_ss_suicide) return v;
+          board->play_no_pass (player, v) < play_ss_suicide) return v;
     }
 
     board->check_no_more_legal (player); // powerfull check
@@ -71,11 +71,11 @@ namespace simple_playout {
 
   static player::t run (board_t* board, player::t first_player) {
 
-    v::t  v;
-    bool  was_pass[player::cnt];
-    uint  move_no;
-    player::t act_player;
-    bool do_mercy;
+    v::t       v;
+    bool       was_pass [player::cnt];
+    uint       move_no;
+    player::t  act_player;
+    bool       do_mercy;
 
 
     player_for_each (pl)
@@ -96,7 +96,7 @@ namespace simple_playout {
       if (was_pass [player::black] & was_pass [player::white]) break;
       if (move_no >= max_playout_length) break;
       
-      do_mercy = uint(abs (board->approx_score ())) > mercy_threshold;
+      do_mercy = uint (abs (board->approx_score ())) > mercy_threshold;
       if (do_mercy) break;
 
     } while (true);
