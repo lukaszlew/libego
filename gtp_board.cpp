@@ -43,7 +43,7 @@ static int gtp_komi (char *s) {
   float new_komi;
   decode_float (s, new_komi);
 
-  gtp_board->act_board()->set_komi (new_komi);
+  gtp_board->set_komi (new_komi);
   return gtp_success("");
 }
 
@@ -61,7 +61,7 @@ static int gtp_load_position (char* s) {
   ifstream fin (f_name);
 
   if (!fin)                   return gtp_failure ("no such file \"%s\"", f_name);
-  if (!gtp_board->act_board()->load (fin))  return gtp_failure ("wrong file format");
+  if (!gtp_board->load (fin))  return gtp_failure ("wrong file format");
 
   return gtp_success("");
 }

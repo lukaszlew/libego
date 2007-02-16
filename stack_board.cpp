@@ -36,18 +36,20 @@ const bool stack_board_ac = true;
 // class stack_board_t
 
 
+const uint max_stack_size = max_game_length;
+
 class stack_board_t {
 
 public:
 
-  board_t  board_history[max_game_length];
-  uint     move_cnt;
+  board_t   stack [max_stack_size];
+  board_t*  stack_top;
 
 public: 
   
   void check () {
     if (!stack_board_ac) return;
-    assert (move_cnt < max_game_length);
+    assert (stack_size < max_stack_size);
   }
 
   stack_board_t () {
@@ -55,11 +57,11 @@ public:
   }
 
   void clear () {
-    move_cnt = 0;  
-    act_board()->clear ();
+    stack_top = stack;  
+    stack_top->clear ();
   }
 
-  board_t* act_board () { return board_history + move_cnt; }
+  board_t const* act_board () { return stack_top; }
 
   bool try_play (player::t player, v::t v) {
     player::check (player);
@@ -69,10 +71,10 @@ public:
 
     if (v == v::pass) return true;
 
-    if (act_board()->color_at[v] != color::empty) 
+    if (stack_top->color_at[v] != color::empty) 
       { revert_state (); return false; }
 
-    if (act_board()->play_no_pass (player, v) != play_ok)
+    if (stack_top->play_no_pass (player, v) != play_ok)
       { revert_state (); return false; }
 
     if (is_hash_repeated ())    // superko test
@@ -82,28 +84,38 @@ public:
   }
 
   bool try_undo () {
-    if (move_cnt <= 0) return false;
+    if (stack_top <= stack) return false;
     revert_state ();
     return true;
   }
 
   void record_state () {
-    (act_board () + 1)->load (act_board ()); // for undo-ing
-    move_cnt++;
+    (stack_top+1)->load (stack_top); // for undo-ing
+    stack_top++;
     check ();
   }
 
   void revert_state () {
-    move_cnt--;
+    stack_top--;
     check ();
   }
 
   bool is_hash_repeated () {
-    rep (ii, move_cnt)          // TODO dseq
-      if (board_history[ii].hash == act_board ()->hash) 
-        return true;
-
+    for (board_t* b = stack_top - 1; b >= stack; b--)
+      if (b->hash == stack_top->hash) return true;
     return false;
+  }
+
+  void set_komi (float komi) {  // TODO is it proper semantics ?
+    for (board_t* b = stack; b <= stack_top; b++) b->set_komi (komi); 
+  }
+
+  bool load (istream& ifs) {
+    board_t tmp[1];
+    if (!tmp->load (ifs)) return false;
+    clear ();
+    stack_top->load (tmp);
+    return true;
   }
 
 };
