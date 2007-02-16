@@ -31,7 +31,7 @@ stack_board_t gtp_board[1];
 // gtp_* functions
 
 
-static int gtp_boardsize (char* s) {
+int gtp_boardsize (char* s) {
   int new_board_size;
   decode_int (s, new_board_size);
 
@@ -39,7 +39,8 @@ static int gtp_boardsize (char* s) {
   return gtp_success("");
 }
 
-static int gtp_komi (char *s) {
+
+int gtp_komi (char *s) {
   float new_komi;
   decode_float (s, new_komi);
 
@@ -48,13 +49,14 @@ static int gtp_komi (char *s) {
 }
 
 
-static int gtp_clear_board (char* s) {
+int gtp_clear_board (char* s) {
   unused (s);
   gtp_board->clear ();
   return gtp_success("");
 }
 
-static int gtp_load_position (char* s) {
+
+int gtp_load_position (char* s) {
   char f_name[1000];
 
   decode_str (s, f_name);
@@ -67,7 +69,7 @@ static int gtp_load_position (char* s) {
 }
 
 
-static int gtp_play (char* s) {
+int gtp_play (char* s) {
 
   player::t  pl;
   v::t       v;
@@ -80,7 +82,8 @@ static int gtp_play (char* s) {
   return gtp_success("");
 }
 
-static int gtp_undo (char* s) {
+
+int gtp_undo (char* s) {
   unused (s);
   
   if (!gtp_board->try_undo ())
@@ -89,7 +92,8 @@ static int gtp_undo (char* s) {
   return gtp_success("");
 }
 
-static int gtp_showboard (char* s) {
+
+int gtp_showboard (char* s) {
   unused (s);
 
   gtp_start_response(GTP_SUCCESS);
@@ -97,7 +101,8 @@ static int gtp_showboard (char* s) {
   return gtp_finish_response();
 }
 
-static int gtp_genmove (char* s) {
+
+int gtp_genmove (char* s) {
   player::t player;
   decode_player (s, player);
 
@@ -110,8 +115,8 @@ static int gtp_genmove (char* s) {
   return gtp_finish_response();
 }
 
-static int gtp_playout_benchmark (char *s)
-{
+
+int gtp_playout_benchmark (char *s) {
   int playout_cnt;
 
   decode_int (s, playout_cnt);
@@ -123,6 +128,7 @@ static int gtp_playout_benchmark (char *s)
   gtp_printf ("\n%s", ss.str ().data ());
   return gtp_finish_response();
 }
+
 
 gtp_command gtp_board_commands [] = {
   { "boardsize",         gtp_boardsize },

@@ -51,15 +51,14 @@ const int max_gtp_commands = 256;
 gtp_command gtp_commands [max_gtp_commands];      // list_commands needs this here
 
 
-
-static int gtp_quit (char *s) {
+int gtp_quit (char *s) {
   unused (s);
   gtp_success ("");
   return GTP_QUIT;
 }
 
-static int gtp_list_commands (char *s)
-{
+
+int gtp_list_commands (char *s) {
   unused (s);
 
   gtp_start_response(GTP_SUCCESS);
@@ -74,8 +73,8 @@ static int gtp_list_commands (char *s)
   return GTP_OK;
 }
 
-static int gtp_name (char *s)
-{
+
+int gtp_name (char *s) {
   unused (s);
 
   gtp_start_response(GTP_SUCCESS);
@@ -83,8 +82,8 @@ static int gtp_name (char *s)
   return gtp_finish_response ();
 }
 
-static int gtp_protocol_version (char *s)
-{
+
+int gtp_protocol_version (char *s) {
   unused (s);
 
   gtp_start_response(GTP_SUCCESS);
@@ -92,14 +91,15 @@ static int gtp_protocol_version (char *s)
   return gtp_finish_response ();
 }
 
-static int gtp_echo (char *s)
-{
+
+int gtp_echo (char *s) {
   unused (s);
 
   gtp_start_response(GTP_SUCCESS);
   gtp_printf("%s", s);
   return gtp_finish_response ();
 }
+
 
 gtp_command gtp_general_commands [] = {
   { "help",              gtp_list_commands },
@@ -113,6 +113,7 @@ gtp_command gtp_general_commands [] = {
 
 
 // main
+
 
 int main () { 
   gtp_append_commands (gtp_commands, gtp_general_commands);

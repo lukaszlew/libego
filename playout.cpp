@@ -23,18 +23,18 @@
 
 
 #ifdef NDEBUG
-static const bool playout_ac = false;
+const bool playout_ac = false;
 #endif
 
 
 #ifdef DEBUG
-static const bool playout_ac = true;
+const bool playout_ac = true;
 #endif
 
 
-static const bool playout_print       = false;
-static const uint max_playout_length  = board_area * 2;
-static const uint mercy_threshold     = 25;
+const bool playout_print       = false;
+const uint max_playout_length  = board_area * 2;
+const uint mercy_threshold     = 25;
 
 
 // namespace simple_playout_t
@@ -42,7 +42,7 @@ static const uint mercy_threshold     = 25;
 
 namespace simple_playout {
 
-  static v::t play_one (board_t* board, player::t player) {
+  all_inline v::t play_one (board_t* board, player::t player) {
 
     v::t v;
     uint start;

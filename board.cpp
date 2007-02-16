@@ -82,7 +82,7 @@ namespace player {
 
   const uint cnt = 2;
 
-  static void check (t player) { 
+  void check (t player) { 
     unused (player);            // TODO why unused is needed ?
     assertc (player_ac, (player & (~1)) == 0);
   }
@@ -120,22 +120,22 @@ namespace color {
 
   const uint cnt = 4;
 
-  static void check (t color) { 
+  void check (t color) { 
     unused (color);
     assertc (color_ac, (color & (~3)) == 0); 
   }
 
-  static bool is_player (t color) { return color <= color::white; } // & (~1)) == 0; }
-  static bool is_not_player (t color) { return color > color::white; } // & (~1)) == 0; }
+  bool is_player (t color) { return color <= color::white; } // & (~1)) == 0; }
+  bool is_not_player (t color) { return color > color::white; } // & (~1)) == 0; }
 
-  static t opponent (player::t player) {
+  t opponent (player::t player) {
     unused (opponent);          // avoids warning
     unused (player);
     player::check (player);
     return t (player ^ 1);
   }
 
-  static char to_char (t color) { 
+  char to_char (t color) { 
     check (color);
     switch (color) {
     case black: return '#';
@@ -149,7 +149,7 @@ namespace color {
 
   const t wrong_char = t(4);
 
-  static t of_char (char c) {  // may return t(4)
+  t of_char (char c) {  // may return t(4)
      switch (c) {
      case '#': return black;
      case 'O': return white;
@@ -176,19 +176,19 @@ namespace coord {
 
   
 
-  static void check (t coo) { 
+  void check (t coo) { 
     unused (coo);
     assertc (coord_ac, is_ok (coo)); 
   }
 
-  static void check2 (t row, t col) { 
+  void check2 (t row, t col) { 
     if (!coord_ac) return;
     if (row == -1 && col == -1) return;
     assertc (coord_ac, is_ok (row)); 
     assertc (coord_ac, is_ok (col)); 
   }
 
-  static char col_tab[20] = "ABCDEFGHJKLMNOPQRST";
+  char col_tab[20] = "ABCDEFGHJKLMNOPQRST";
 
   string row_to_string (t row) {
     check (row);
@@ -227,42 +227,42 @@ namespace v {
   const t pass = 0;
   const t no_v = 1;
 
-  static void check (t v) { 
+  void check (t v) { 
     unused (v);
     assertc (v_ac, v < cnt); 
   }
 
-  static coord::t row (t v) {
+  coord::t row (t v) {
     check (v);
     return v / dNS - 1;
   }
 
-  static coord::t col (t v) {
+  coord::t col (t v) {
     check (v);
     return v % dNS - 1;
   }
 
-  static bool is_on_board (t v) {
+  bool is_on_board (t v) {
     check (v);
     return coord::is_ok (row (v)) & coord::is_ok (col (v)); // TODO is && faster here ?
   }
 
-  static void check_is_on_board (t v) { 
+  void check_is_on_board (t v) { 
     unused (v);
     assertc (v_ac, is_on_board (v)); 
   }
 
-  static t N (t v) { check (v); check (v - dNS); return v - dNS; }
-  static t W (t v) { check (v); check (v - dWE); return v - dWE; }
-  static t E (t v) { check (v); check (v + dWE); return v + dWE; }
-  static t S (t v) { check (v); check (v + dNS); return v + dNS; }
+  t N (t v) { check (v); check (v - dNS); return v - dNS; }
+  t W (t v) { check (v); check (v - dWE); return v - dWE; }
+  t E (t v) { check (v); check (v + dWE); return v + dWE; }
+  t S (t v) { check (v); check (v + dNS); return v + dNS; }
 
-  static t NW (t v) { check (v); return N(W(v)); }
-  static t NE (t v) { check (v); return N(E(v)); }
-  static t SW (t v) { check (v); return S(W(v)); }
-  static t SE (t v) { check (v); return S(E(v)); }
+  t NW (t v) { check (v); return N(W(v)); }
+  t NE (t v) { check (v); return N(E(v)); }
+  t SW (t v) { check (v); return S(W(v)); }
+  t SE (t v) { check (v); return S(E(v)); }
 
-  static t of_rc (coord::t r, coord::t c) {
+  t of_rc (coord::t r, coord::t c) {
     coord::check2 (r, c);
     return (r+1) * dNS + (c+1) * dWE;
   }
@@ -341,7 +341,7 @@ namespace move {
     player::white << v::bits_used 
   };
 
-  static t of_pl_v (player::t player, v::t v) { 
+  t of_pl_v (player::t player, v::t v) { 
     player::check (player);
     v::check (v);
     return player_mask [player] | v;
@@ -432,7 +432,7 @@ namespace nbr_cnt {
   const uint max = 4;                 // maximal number of neighbours
 
   const uint f_size = 4;              // size in bits of each of 3 counters in nbr_cnt::t
-  const static uint f_shift [3] = { 0*f_size, 1*f_size, 2*f_size };
+  const uint f_shift [3] = { 0*f_size, 1*f_size, 2*f_size };
   const uint f_mask = (1 << f_size) - 1;
 
   uint empty_cnt  (t nbr_cnt) { 
@@ -567,7 +567,7 @@ public:
 
 enum play_ret_t { play_ok, play_suicide, play_ss_suicide, play_ko, play_non_empty };
 
-const static zobrist_t zobrist[1]; // TODO move it to board
+const zobrist_t zobrist[1]; // TODO move it to board
 
 class board_t {
   
