@@ -40,6 +40,8 @@ const uint mercy_threshold     = 25;
 // namespace simple_playout_t
 
 
+enum playout_status { playout_ok, playout_mercy, playout_too_long };
+
 namespace simple_playout {
 
   all_inline v::t play_one (board_t* board, player::t player) {
@@ -69,40 +71,30 @@ namespace simple_playout {
   }
 
 
-  static player::t run (board_t* board, player::t first_player) {
+  static playout_status run (board_t* board, player::t first_player) {
 
     v::t       v;
     bool       was_pass [player::cnt];
     uint       move_no;
     player::t  act_player;
-    bool       do_mercy;
-
 
     player_for_each (pl)
       was_pass [pl] = false;
 
     act_player  = first_player;
     move_no     = 0;
-    do_mercy    = false;
 
     do {
-
       v = play_one (board, act_player);
 
       was_pass [act_player] = (v == v::pass);
       act_player = player::other (act_player);
       move_no++;
 
-      if (was_pass [player::black] & was_pass [player::white]) break;
-      if (move_no >= max_playout_length) break;
-      
-      do_mercy = uint (abs (board->approx_score ())) > mercy_threshold;
-      if (do_mercy) break;
-
+      if (was_pass [player::black] & was_pass [player::white])    return playout_ok;
+      if (move_no >= max_playout_length)                          return playout_too_long;
+      if (uint (abs (board->approx_score ())) > mercy_threshold)  return playout_mercy;
     } while (true);
-
-    if (do_mercy)  return board->approx_winner ();
-    else           return board->winner ();
 
   }
 
@@ -119,8 +111,8 @@ namespace simple_playout {
     float      seconds_end;
     float      seconds_total;
     
-    player::t  winner;
-    uint       win_cnt [player::cnt];
+    playout_status  status;
+    uint            win_cnt [player::cnt];
     
     player_for_each (pl) win_cnt [pl] = 0;
 
@@ -131,8 +123,18 @@ namespace simple_playout {
     
     rep (ii, playout_cnt) {
       memcpy (mc_board, mc_board_copy, sizeof (mc_board));
-      winner = simple_playout::run (mc_board, first_player);
-      win_cnt [winner] ++;
+      status = simple_playout::run (mc_board, first_player);
+      
+      switch (status) {
+      case playout_ok:
+        win_cnt [mc_board->winner ()] ++;
+        break;
+      case playout_mercy:
+        win_cnt [mc_board->approx_winner ()] ++;
+        break;
+      case playout_too_long:
+        break;
+      }
     }
     
     seconds_end = get_seconds ();
