@@ -23,7 +23,7 @@
 
 
 v::t genmove (stack_board_t* stack_board, player::t player) {
-  v::t v = v::pass;
+  v::t v = v::resign;
 
   return v;
 }

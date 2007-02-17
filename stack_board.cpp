@@ -49,7 +49,7 @@ public:
   
   void check () {
     if (!stack_board_ac) return;
-    assert (stack_size < max_stack_size);
+    assert (stack_top < stack + max_stack_size);
   }
 
   stack_board_t () {
@@ -70,6 +70,8 @@ public:
     record_state (); // for undo
 
     if (v == v::pass) return true;
+
+    if (v == v::resign) return true;
 
     if (stack_top->color_at[v] != color::empty) 
       { revert_state (); return false; }

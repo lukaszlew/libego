@@ -224,8 +224,9 @@ namespace v {
   const uint dNS = (board_size + 2);
   const uint dWE = 1;
   
-  const t pass = 0;
-  const t no_v = 1;
+  const t pass    = 0;
+  const t no_v    = 1;
+  const t resign  = 2;
 
   void check (t v) { 
     unused (v);
@@ -276,6 +277,8 @@ namespace v {
       return "PASS";
     } else if (v == no_v) {
       return "NO_V";
+    } else if (v == resign) {
+      return "resign";
     } else {
       r = row (v);
       c = col (v);
@@ -807,7 +810,7 @@ public:                         // consistency checks
 
     v_for_each_faster (v)
       if (color_at[v] == color::empty)
-        assert (is_eyelike (player, v) || play_no_pass (player, v) == play_ss_suicide);
+        assert (is_eyelike (player, v) || play_no_pass (player, v) >= play_ss_suicide);
   }
 
 
