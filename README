@@ -1,35 +1,38 @@
-                   Go Board Library
+               Library of Effective GO routines
 
-This is a Go Board Library, high performance implementation of Go rules.
+This is a Library of Effective GO routines (EGO library / lego), a high performance 
+implementation of Go rules and most popular algorithms used in computer Go. 
+This is also fully functional GTP Go engine.
+
 Newest version can be found at http://www.mimuw.edu.pl/~lew.
 
-                      Request
+                           Request
 
 If You are going to use (part of) this library in Your program, 
 please send me a notice ( for my, and others motivation :-) ).
  
-                     Copyright
+                         Copyright
 
-All files Copyright 2006, 2007 Lukasz Lew 
+All files Copyright 2006, 2007 Łukasz Lew 
 
 All files in this package are under General Public License, 
 which may be found in the file COPYING.
 
-                    Installation
+                       Installation
 
-Just untar (tar zxfv libgoboard*.tgz), and make.
+Just untar (tar zxfv libego*.tgz), and make.
 ./engine_opt runs GTP engine, which will first run commands from automagic.gtp.
 For other commands just type "help".
 
-If something goes wrong, try to run ./engine_debug.
+If something goes wrong, try compile and run engine_debug.
 
-                      Library  
+                         Library  
 
 If You want to develop a Go program, then first take a look at 
 simple_playout::run in playout.cpp, which is an effective procedure for 
 Monte-Carlo playouts. 
 
-The interface of Go Board Library is board_t class.
+The basic functionality of EGo is board_t class.
 Most important fields and methods follow:
 
   color::t color_at [v]                        // color of board vertex (intersection) v
@@ -51,7 +54,7 @@ Most important fields and methods follow:
 
   void print (ostream& out, v::t v = v::pass)  // prints a current position to stream out with a vertex mark_v marked
 
-                      Thanks              
+                          Thanks              
 
 My girlfriend for her endless support and patience.
 Jakub Pawlewicz for the idea of pseudo-liberties and find-union algorithms.
@@ -61,7 +64,7 @@ Don Dailey for setting up CGOS server.
 And last but not least, a whole computer Go community for a 
 stimulating mixture of cooperation and competition.
 
-                      Contact
+                          Contact
 
-Lukasz Lew (lew@mimuw.edu.pl)
+Lukasz Lew <lew@mimuw.edu.pl>
 
