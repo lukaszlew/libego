@@ -930,7 +930,7 @@ public:                         // board interface
     return play_ok;
   }
 
-  play_ret_t play_eye (player::t player, v::t v) {
+  play_ret_t play_eye (player::t player, v::t v) no_inline {
     chain_t* chain_root_N;      // TODO macro !!!
     chain_t* chain_root_W;
     chain_t* chain_root_E;

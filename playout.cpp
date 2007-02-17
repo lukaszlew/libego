@@ -71,7 +71,7 @@ namespace simple_playout {
   }
 
 
-  static playout_status run (board_t* board, player::t first_player) {
+  all_inline static playout_status run (board_t* board, player::t first_player) {
 
     v::t       v;
     bool       was_pass [player::cnt];

@@ -39,7 +39,7 @@ using namespace std;
 #include "board.cpp"
 #include "stack_board.cpp"
 #include "playout.cpp"
-#include "genmove.cpp"
+#include "uct.cpp"
 #include "gtp_board.cpp"
 
 

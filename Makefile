@@ -1,4 +1,4 @@
-OPT   = -O3 -march=i686 -fomit-frame-pointer  -DNDEBUG -ffast-math -frename-registers
+OPT   = -O3 -march=i686 -fomit-frame-pointer -DNDEBUG -ffast-math -frename-registers
 DEBUG = -ggdb3 -DDEBUG -fno-inline 
 PROF  = -O2 -march=i686 -DNDEBUG -ggdb3 -fno-inline 
 
@@ -9,13 +9,13 @@ GPP    = g++ $(CFLAGS)
 all: engine_opt
 
 
-engine_debug: board.cpp stack_board.cpp utils.cpp playout.cpp gtp.cpp gtp.h genmove.cpp gtp_board.cpp main.cpp
+engine_debug: board.cpp stack_board.cpp utils.cpp playout.cpp gtp.cpp gtp.h uct.cpp gtp_board.cpp main.cpp
 	$(GPP) $(DEBUG) -o engine_debug gtp.cpp main.cpp
 
-engine_opt:   board.cpp stack_board.cpp utils.cpp playout.cpp gtp.cpp gtp.h genmove.cpp gtp_board.cpp main.cpp
+engine_opt:   board.cpp stack_board.cpp utils.cpp playout.cpp gtp.cpp gtp.h uct.cpp gtp_board.cpp main.cpp
 	$(GPP) $(OPT)   -o engine_opt   gtp.cpp main.cpp
 
-engine_prof:  board.cpp stack_board.cpp utils.cpp playout.cpp gtp.cpp gtp.h genmove.cpp gtp_board.cpp main.cpp
+engine_prof:  board.cpp stack_board.cpp utils.cpp playout.cpp gtp.cpp gtp.h uct.cpp gtp_board.cpp main.cpp
 	$(GPP) $(PROF)  -o engine_prof  gtp.cpp main.cpp
 
 

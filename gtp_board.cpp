@@ -107,7 +107,9 @@ int gtp_genmove (char* s) {
   decode_player (s, player);
 
   v::t v;
-  v = genmove (gtp_board, player);
+  uct_t uct (gtp_board);
+  v = uct.genmove (player);
+
   if (!gtp_board->try_play (player, v)) fatal_error ("genmove: generated illegal move");
 
   gtp_start_response(GTP_SUCCESS);
