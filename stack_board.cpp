@@ -59,7 +59,9 @@ public:
     stack_top->clear ();
   }
 
-  board_t const* act_board () { return stack_top; }
+  board_t const* act_board () const { 
+    return stack_top; 
+  }
 
   bool try_play (player::t player, v::t v) {
     player::check (player);
@@ -89,6 +91,15 @@ public:
     return true;
   }
 
+  bool is_legal (player::t pl, v::t v) {            // slow function
+    bool undo_res;
+    if (!try_play (pl, v)) return false;
+    undo_res = try_undo ();
+    assertc (stack_board_ac, undo_res == true);
+
+    return true;
+  }
+
   void record_state () {
     (stack_top+1)->load (stack_top); // for undo-ing
     stack_top++;
@@ -100,7 +111,7 @@ public:
     check ();
   }
 
-  bool is_hash_repeated () {
+  bool is_hash_repeated () const {
     for (board_t* b = stack_top - 1; b >= stack; b--)
       if (b->hash == stack_top->hash) return true;
     return false;
