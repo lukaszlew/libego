@@ -43,7 +43,7 @@ const float initial_bias           = 1.0;
 const float mature_bias_threshold  = initial_bias + 100.0;
 const float explore_rate           = 0.2;
 const uint  uct_max_depth          = 1000;
-
+const float resign_value           = 0.99;
 
 // class node_t
 
@@ -346,12 +346,15 @@ public:
 
   v::t genmove (player::t player) {
     node_t* best;
-    v::t v;
+
     rep (ii, 100000) do_playout (player);
     best = tree->history [0]->find_most_explored_child (player); // TODO here is a bug (superko)
     
-    v = best == NULL ? v::pass : best->v;
-    return v;
+    if (best == NULL) return v::pass;
+    cerr << "val = " << best->value << endl;
+    if (player == player::black && best->value < -resign_value) return v::resign;
+    if (player == player::white && best->value >  resign_value) return v::resign;
+    return best->v;
   }
   
 };
