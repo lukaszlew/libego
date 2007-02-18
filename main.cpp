@@ -64,8 +64,6 @@ int gtp_list_commands (char *s) {
 
   gtp_start_response(GTP_SUCCESS);
 
-  gtp_printf("\n");
-
   for (gtp_command* gc = gtp_commands; gc->name != NULL; gc++)
     gtp_printf("%s\n", gc->name);
 
@@ -102,6 +100,38 @@ int gtp_echo (char *s) {
 }
 
 
+int gtp_time_settings (char *s) {
+  uint main_time;
+  uint byo_time;
+  uint byo_stones;
+
+  decode_int (s, main_time);  
+  decode_int (s, byo_time);  
+  decode_int (s, byo_stones);  
+
+  // TODO time management
+
+  gtp_start_response(GTP_SUCCESS);
+  return gtp_finish_response ();
+}
+
+
+int gtp_time_left (char *s) {
+  player::t player;
+  uint time;
+  uint stones;
+
+  decode_player (s, player);  
+  decode_int    (s, time);  
+  decode_int    (s, stones);  
+
+  // TODO time management
+
+  gtp_start_response(GTP_SUCCESS);
+  return gtp_finish_response ();
+}
+
+
 gtp_command gtp_general_commands [] = {
   { "help",              gtp_list_commands },
   { "list_commands",     gtp_list_commands },
@@ -109,6 +139,8 @@ gtp_command gtp_general_commands [] = {
   { "protocol_version",  gtp_protocol_version },
   { "quit",              gtp_quit },
   { "echo",              gtp_echo },
+  { "time_settings",     gtp_time_settings },
+  { "time_left",         gtp_time_left },
   { NULL, NULL }
 };
 
@@ -135,4 +167,3 @@ int main () {
 
   return 0;
 }
-

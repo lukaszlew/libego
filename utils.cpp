@@ -65,7 +65,7 @@ typedef unsigned long long uint64;
 
 // namespace pm
 
-const bool pm_ac = true;
+const bool pm_ac = false;
 
 namespace pm {             // Park - Miller "minimal standard"
   static unsigned long seed = 12345;
