@@ -193,6 +193,7 @@ namespace coord {
   string row_to_string (t row) {
     check (row);
     ostringstream ss;
+    if (board_size >= 10 && board_size - row < 10) ss << " ";
     ss << board_size - row;
     return ss.str ();
   }
@@ -1118,13 +1119,14 @@ public:                         // utils
     return player::t (score () <= 0); 
   }
 
-  string to_string (v::t mark_v = v::pass) const { // TODO defoult out
+  string to_string (v::t mark_v = v::no_v) const { // TODO defoult out
     ostringstream out;
 
-    #define os(n) out << " " << n << " ";
-    #define om(n) out << "(" << n << ")";
+    #define os(n)      out << " " << n
+    #define o_left(n)  out << "(" << n
+    #define o_right(n) out << ")" << n
     
-    out << "   ";
+    if (board_size < 10) out << "  "; else out << "   ";
     coord_for_each (col) os (coord::col_to_string (col));
     out << endl;
 
@@ -1133,14 +1135,15 @@ public:                         // utils
       coord_for_each (col) {
         v::t v = v::of_rc (row, col);
         char ch = color::to_char (color_at[v]);
-        if (v == mark_v)  om (ch) 
-        else              os (ch);
+        if      (v == mark_v)        o_left  (ch);
+        else if (v == v::E(mark_v))  o_right (ch);
+        else                         os (ch);
       }
       os (coord::row_to_string (row));
       out << endl;
     }
     
-    out << "   ";
+    if (board_size < 10) out << "  "; else out << "   ";
     coord_for_each (col) os (coord::col_to_string (col));
     out << endl;
 
