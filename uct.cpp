@@ -37,13 +37,14 @@ static const bool tree_ac  = true;
 #endif
 
 
+const float initial_value            = 0.0;
+const float initial_bias             = 1.0;
+const float mature_bias_threshold    = initial_bias + 100.0;
+const float explore_rate             = 0.2;
+const uint  uct_max_depth            = 1000;
+const float resign_value             = 0.99;
+const uint  uct_genmove_playout_cnt  = 100000;
 
-const float initial_value          = 0.0;
-const float initial_bias           = 1.0;
-const float mature_bias_threshold  = initial_bias + 100.0;
-const float explore_rate           = 0.2;
-const uint  uct_max_depth          = 1000;
-const float resign_value           = 0.99;
 
 // class node_t
 
@@ -225,7 +226,7 @@ public:
     history [0]->init (v::no_v);
   }
 
-  void init () {
+  void history_reset () {
     history_top = 0;
   }
   
@@ -260,6 +261,8 @@ public:
       });
     }
   }
+
+  // TODO free history (for sync with stack_bard)
   
   void update_history (float sample) {
     rep (hi, history_top+1) 
@@ -290,7 +293,19 @@ public:
   uct_t (stack_board_t* base_board) {
     this->base_board = base_board;
   }
-  
+
+  void root_ensure_children_legality (player::t pl) { // cares about superko in root (only)
+    tree->history_reset ();
+
+    assertc (uct_ac, tree->history_top == 0);
+    assertc (uct_ac, tree->act_node ()->first_child [pl] == NULL);
+
+    empty_v_for_each_and_pass (base_board->act_board (), v, {
+      if (base_board->is_legal (pl, v))
+        tree->alloc_child (pl, v);
+    });
+  }
+
   void do_playout (player::t first_player) flatten {
     board_t    play_board[1]; // TODO test for perfomance + memcpy
     bool       was_pass [player::cnt];
@@ -299,7 +314,7 @@ public:
     
     
     play_board->load (base_board->act_board ());
-    tree->init ();
+    tree->history_reset ();
     
     player_for_each (pl) 
       was_pass [pl] = false; // TODO maybe there was one pass ?
@@ -347,11 +362,14 @@ public:
   v::t genmove (player::t player) {
     node_t* best;
 
-    rep (ii, 100000) do_playout (player);
-    best = tree->history [0]->find_most_explored_child (player); // TODO here is a bug (superko)
-    
-    if (best == NULL) return v::pass;
-    cerr << "val = " << best->value << endl;
+    root_ensure_children_legality (player);
+
+    rep (ii, uct_genmove_playout_cnt) do_playout (player);
+    best = tree->history [0]->find_most_explored_child (player);
+    assertc (uct_ac, best != NULL);
+
+    //cerr << tree->to_string (0.03) << endl;
+    //cerr << "val = " << best->value << endl;
     if (player == player::black && best->value < -resign_value) return v::resign;
     if (player == player::white && best->value >  resign_value) return v::resign;
     return best->v;
