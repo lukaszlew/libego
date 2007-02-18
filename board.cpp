@@ -51,7 +51,7 @@ const bool board_ac           = false;
 #endif
 
 #ifdef DEBUG
-const bool paranoic           = true;
+const bool paranoic           = false;
 
 const bool player_ac          = paranoic;
 const bool color_ac           = paranoic;
@@ -67,7 +67,7 @@ const bool board_nbr_cnt_ac   = paranoic;
 const bool chain_at_ac        = paranoic;
 const bool chain_next_v_ac    = paranoic;
 const bool chains_ac          = paranoic;
-const bool board_ac           = true;
+const bool board_ac           = false;
 #endif
 
 // namespace player

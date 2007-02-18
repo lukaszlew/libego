@@ -28,7 +28,7 @@ const bool playout_ac = false;
 
 
 #ifdef DEBUG
-const bool playout_ac = true;
+const bool playout_ac = false;
 #endif
 
 

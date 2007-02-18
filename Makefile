@@ -1,4 +1,4 @@
-OPT   = -O3 -march=i686 -fomit-frame-pointer -DNDEBUG -ffast-math -frename-registers
+OPT   = -O3 -march=i686 -fomit-frame-pointer -DDEBUG -ffast-math -frename-registers
 DEBUG = -ggdb3 -DDEBUG -fno-inline 
 PROF  = -O2 -march=i686 -DNDEBUG -ggdb3 -fno-inline 
 
@@ -31,3 +31,4 @@ clean:
 	rm -f playout_test_debug playout_test_opt playout_test_prof
 	rm -f       engine_debug       engine_opt       engine_prof
 	rm -f *~
+	rm -f *.orig

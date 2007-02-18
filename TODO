@@ -1,5 +1,5 @@
 * features
-   - superko in uct
+   - improve portability
    - gogui commands support
    - engine_t class - framework (play undo load clear, etc)
    - my GTP class
@@ -7,10 +7,12 @@
    - tree transfer
    - early passing
    - better exploration
-   - plan global assert strategy
+   - mercy vs UCT ?
+   - better assert control
    - time control
    - pondering
    - smp
+   - v, player as classes
 
 * performance
    - 2 stage playout algorithm / optimization
