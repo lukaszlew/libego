@@ -6,17 +6,17 @@ CFLAGS += -Wall #-static #-Wno-long-long -Wextra -Wno-variadic-macros
 
 GPP    = g++ $(CFLAGS) 
 
-all: engine_opt
+all: ego_opt
 
 
-engine_debug: board.cpp stack_board.cpp utils.cpp playout.cpp gtp.cpp gtp.h uct.cpp gtp_board.cpp main.cpp
-	$(GPP) $(DEBUG) -o engine_debug gtp.cpp main.cpp
+ego_debug: board.cpp stack_board.cpp utils.cpp playout.cpp gtp.cpp gtp.h uct.cpp gtp_board.cpp main.cpp
+	$(GPP) $(DEBUG) -o ego_debug gtp.cpp main.cpp
 
-engine_opt:   board.cpp stack_board.cpp utils.cpp playout.cpp gtp.cpp gtp.h uct.cpp gtp_board.cpp main.cpp
-	$(GPP) $(OPT)   -o engine_opt   gtp.cpp main.cpp
+ego_opt:   board.cpp stack_board.cpp utils.cpp playout.cpp gtp.cpp gtp.h uct.cpp gtp_board.cpp main.cpp
+	$(GPP) $(OPT)   -o ego_opt   gtp.cpp main.cpp
 
-engine_prof:  board.cpp stack_board.cpp utils.cpp playout.cpp gtp.cpp gtp.h uct.cpp gtp_board.cpp main.cpp
-	$(GPP) $(PROF)  -o engine_prof  gtp.cpp main.cpp
+ego_prof:  board.cpp stack_board.cpp utils.cpp playout.cpp gtp.cpp gtp.h uct.cpp gtp_board.cpp main.cpp
+	$(GPP) $(PROF)  -o ego_prof  gtp.cpp main.cpp
 
 
 
@@ -27,8 +27,6 @@ engine_prof:  board.cpp stack_board.cpp utils.cpp playout.cpp gtp.cpp gtp.h uct.
 
 clean:
 	rm -f *.s *.o .depend gmon.out core
-	rm -f   board_test_debug   board_test_opt   board_test_prof
-	rm -f playout_test_debug playout_test_opt playout_test_prof
-	rm -f       engine_debug       engine_opt       engine_prof
+	rm -f ego_debug ego_opt ego_prof
 	rm -f *~
 	rm -f *.orig
