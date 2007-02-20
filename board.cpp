@@ -190,10 +190,9 @@ namespace coord {
 
   char col_tab[20] = "ABCDEFGHJKLMNOPQRST";
 
-  string row_to_string (t row, bool leading_space) {
+  string row_to_string (t row) {
     check (row);
     ostringstream ss;
-    if (leading_space && board_size >= 10 && board_size - row < 10) ss << " ";
     ss << board_size - row;
     return ss.str ();
   }
@@ -284,7 +283,7 @@ namespace v {
       r = row (v);
       c = col (v);
       ostringstream ss;
-      ss << coord::col_to_string (c) << coord::row_to_string (r, false);
+      ss << coord::col_to_string (c) << coord::row_to_string (r);
       return ss.str ();
     }
     
@@ -1131,7 +1130,8 @@ public:                         // utils
     out << endl;
 
     coord_for_each (row) {
-      os (coord::row_to_string (row, true));
+      if (board_size >= 10 && board_size - row < 10) out << " ";
+      os (coord::row_to_string (row));
       coord_for_each (col) {
         v::t v = v::of_rc (row, col);
         char ch = color::to_char (color_at[v]);
@@ -1139,7 +1139,8 @@ public:                         // utils
         else if (v == v::E(mark_v))  o_right (ch);
         else                         os (ch);
       }
-      os (coord::row_to_string (row, true));
+      if (board_size >= 10 && board_size - row < 10) out << " ";
+      os (coord::row_to_string (row));
       out << endl;
     }
     
