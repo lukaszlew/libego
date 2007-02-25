@@ -196,14 +196,60 @@ public:
       << "(" << bias - initial_bias << ")" 
       << endl;
     
-    node_for_each_child (this, player::black, child, { // TODO sorting
-      child->rec_print (out, depth + 1, minimal_bias, player::black);
-    });
+    node_t*  child_tab [v::cnt]; // rough upper bound for the number of legal move
+    uint     child_tab_size;
+    uint     best_child_idx;
 
-    node_for_each_child (this, player::white, child, { // TODO sorting
-      child->rec_print (out, depth + 1, minimal_bias, player::white);
-    });
-  }
+
+    // print black children
+    
+    child_tab_size  = 0;
+    best_child_idx  = 0;
+    
+    // prepare for selection sort
+    node_for_each_child (this, player::black, child, child_tab [child_tab_size++] = child);
+
+    while (child_tab_size > 0) {
+      // find best child
+      rep(ii, child_tab_size) {
+        if (child_tab [best_child_idx]->value < child_tab [ii]->value) 
+          best_child_idx = ii;
+      }
+      // rec call
+      child_tab [best_child_idx]->rec_print (out, depth + 1, minimal_bias, player::black);      
+      child_tab [best_child_idx] = child_tab [--child_tab_size];
+    }
+    
+    // print white children
+    
+    child_tab_size  = 0;
+    best_child_idx  = 0;
+    
+    // prepare for selection sort
+    node_for_each_child (this, player::white, child, child_tab [child_tab_size++] = child);
+    
+    while (child_tab_size > 0) {
+      // find best child
+      rep(ii, child_tab_size) {
+        if (child_tab [best_child_idx]->value > child_tab [ii]->value) 
+          best_child_idx = ii;
+      }
+      // rec call
+      child_tab [best_child_idx]->rec_print (out, depth + 1, minimal_bias, player::white);      
+      child_tab [best_child_idx] = child_tab [--child_tab_size];
+    }
+    
+
+    // // unsorted printing
+    
+    // node_for_each_child (this, player::black, child, { // TODO sorting // nit forget pass
+    //   child->rec_print (out, depth + 1, minimal_bias, player::black);
+    // });
+
+    // node_for_each_child (this, player::white, child, { // TODO sorting
+    //  child->rec_print (out, depth + 1, minimal_bias, player::white);
+    // });
+   }
 
 };
 
@@ -368,8 +414,8 @@ public:
     best = tree->history [0]->find_most_explored_child (player);
     assertc (uct_ac, best != NULL);
 
-    //cerr << tree->to_string (0.03) << endl;
-    //cerr << "val = " << best->value << endl;
+    cerr << tree->to_string (0.03) << endl;
+    cerr << "val = " << best->value << endl;
     if (player == player::black && best->value < -resign_value) return v::resign;
     if (player == player::white && best->value >  resign_value) return v::resign;
     return best->v;
