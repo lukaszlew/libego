@@ -45,6 +45,8 @@ const uint  uct_max_depth            = 1000;
 const float resign_value             = 0.99;
 const uint  uct_genmove_playout_cnt  = 100000;
 
+const float print_visit_threshold_base    = 500.0;
+const float print_visit_threshold_parent  = 0.02;
 
 // class node_t
 
@@ -185,9 +187,7 @@ public:
     return best_child;
   }
 
-
-  void rec_print (ostream& out, uint depth, float minimal_bias, player::t pl) {
-    if (bias < initial_bias + minimal_bias) return;
+  void rec_print (ostream& out, uint depth, player::t pl) {
     rep (d, depth) out << "  ";
     out 
       << player::to_string (pl) << " " 
@@ -195,63 +195,49 @@ public:
       << value << " "
       << "(" << bias - initial_bias << ")" 
       << endl;
-    
+
+    player_for_each (pl)
+      rec_print_children (out, depth, pl);
+  }
+
+  void rec_print_children (ostream& out, uint depth, player::t player) {
     node_t*  child_tab [v::cnt]; // rough upper bound for the number of legal move
     uint     child_tab_size;
     uint     best_child_idx;
-
-
-    // print black children
+    float    min_visit_cnt;
     
     child_tab_size  = 0;
     best_child_idx  = 0;
-    
+    min_visit_cnt   = print_visit_threshold_base + (bias - initial_bias) * print_visit_threshold_parent; // we want to be visited at least initial_bias times + some percentage of parent's visit_cnt
+
     // prepare for selection sort
-    node_for_each_child (this, player::black, child, child_tab [child_tab_size++] = child);
+    node_for_each_child (this, player, child, child_tab [child_tab_size++] = child);
+
+    #define best_child child_tab [best_child_idx]
 
     while (child_tab_size > 0) {
       // find best child
       rep(ii, child_tab_size) {
-        if (child_tab [best_child_idx]->value < child_tab [ii]->value) 
+        if ((player == player::black) == 
+            (best_child->value < child_tab [ii]->value))
           best_child_idx = ii;
       }
       // rec call
-      child_tab [best_child_idx]->rec_print (out, depth + 1, minimal_bias, player::black);      
-      child_tab [best_child_idx] = child_tab [--child_tab_size];
-    }
-    
-    // print white children
-    
-    child_tab_size  = 0;
-    best_child_idx  = 0;
-    
-    // prepare for selection sort
-    node_for_each_child (this, player::white, child, child_tab [child_tab_size++] = child);
-    
-    while (child_tab_size > 0) {
-      // find best child
-      rep(ii, child_tab_size) {
-        if (child_tab [best_child_idx]->value > child_tab [ii]->value) 
-          best_child_idx = ii;
-      }
-      // rec call
-      child_tab [best_child_idx]->rec_print (out, depth + 1, minimal_bias, player::white);      
-      child_tab [best_child_idx] = child_tab [--child_tab_size];
-    }
-    
+      if (best_child->bias - initial_bias >= min_visit_cnt)
+        child_tab [best_child_idx]->rec_print (out, depth + 1, player);      
+      else break;
 
-    // // unsorted printing
-    
-    // node_for_each_child (this, player::black, child, { // TODO sorting // nit forget pass
-    //   child->rec_print (out, depth + 1, minimal_bias, player::black);
-    // });
+      // remove best
+      best_child = child_tab [--child_tab_size];
+    }
 
-    // node_for_each_child (this, player::white, child, { // TODO sorting
-    //  child->rec_print (out, depth + 1, minimal_bias, player::white);
-    // });
-   }
+    #undef best_child
+    
+  }
+
 
 };
+
 
 
 // class tree_t
@@ -315,11 +301,9 @@ public:
       history [hi]->update (sample);
   }
 
-  string to_string (float print_bias_threshold) { 
+  string to_string () { 
     ostringstream out_str;
-    assertc (tree_ac, print_bias_threshold >= 0.0);
-    assertc (tree_ac, print_bias_threshold <= 1.0);
-    history [0]->rec_print (out_str, 0, (history[0]->bias - initial_bias) * print_bias_threshold, player::black); 
+    history [0]->rec_print (out_str, 0, player::black); 
     return out_str.str ();
   }
 };
@@ -414,8 +398,7 @@ public:
     best = tree->history [0]->find_most_explored_child (player);
     assertc (uct_ac, best != NULL);
 
-    cerr << tree->to_string (0.03) << endl;
-    cerr << "val = " << best->value << endl;
+    //cerr << tree->to_string () << endl;
     if (player == player::black && best->value < -resign_value) return v::resign;
     if (player == player::white && best->value >  resign_value) return v::resign;
     return best->v;
