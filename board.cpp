@@ -293,7 +293,7 @@ namespace v {
 
 #define v_for_each_all(vv) for (v::t vv = 0; vv < v::cnt; vv++)
 
-#define v_for_each_faster(vv) \
+#define v_for_each_onboard(vv) \
   for (v::t vv = v::dNS+v::dWE; vv <= board_size * (v::dNS + v::dWE); vv++)
 
 #define v_for_each_nbr(center_v, nbr_v, block) {  \
@@ -314,7 +314,7 @@ namespace v {
   nbr_v = v::SE (center_v); block;                     \
 }
 
-#define pl_v_for_each(pl, vv) player_for_each(pl) v_for_each_faster(vv)
+#define pl_v_for_each(pl, vv) player_for_each(pl) v_for_each_onboard(vv)
 
 #define pl_v_for_each_9_nbr(center_v, pl, nbr_v, i) { \
   v::check_is_on_board (center_v);                    \
@@ -633,7 +633,7 @@ public:                         // consistency checks
 
     player_for_each (pl) exp_player_v_cnt [pl] = 0;
 
-    v_for_each_faster (v) {
+    v_for_each_onboard (v) {
       assert ((color_at[v] == color::empty) == noticed[v]);
       if (color_at[v] == color::empty) {
         assert (empty_pos[v] < empty_v_cnt);
@@ -662,7 +662,7 @@ public:                         // consistency checks
   void check_nbr_cnt () const {
     if (!board_nbr_cnt_ac) return;
     
-    v_for_each_faster (v) {
+    v_for_each_onboard (v) {
       coord::t r;
       coord::t c;
       uint nbr_color_cnt[color::cnt];
@@ -695,7 +695,7 @@ public:                         // consistency checks
   void check_chain_at () const {
     if (!chain_at_ac) return;
 
-    v_for_each_faster (v) { // whether same color neighbours have same root and liberties
+    v_for_each_onboard (v) { // whether same color neighbours have same root and liberties
       // TODO what about edge and empty?
       if (color::is_player (color_at[v])) {
 
@@ -736,7 +736,7 @@ public:                         // consistency checks
     v_for_each_all (v) chain_no[v] = no_chain;
 
     // TODO what about empty and edge?
-    v_for_each_faster (v) {
+    v_for_each_onboard (v) {
       if (color::is_player(color_at[v]) && chain_no[v] == no_chain) { // chain not visited yet
         color::t        act_color;
         const chain_t*  act_root;
@@ -798,9 +798,6 @@ public:                         // consistency checks
     check_chain_at      ();
     check_chain_next_v  ();
     check_chains        ();
-
-    if (color_at[0] == 11) print_cerr (); // TODO LOL hack - need tu use it somwhere 
-
   }
 
   void check_no_more_legal (player::t player) { // at the end of the playout
@@ -808,7 +805,7 @@ public:                         // consistency checks
 
     if (!board_ac) return;
 
-    v_for_each_faster (v)
+    v_for_each_onboard (v)
       if (color_at[v] == color::empty)
         assert (is_eyelike (player, v) || play_no_pass (player, v) >= play_ss_suicide);
   }
@@ -816,7 +813,10 @@ public:                         // consistency checks
 
 public:                         // board interface
 
-  board_t () { clear (); }
+  board_t () { 
+    clear (); 
+    if (color_at[0] == 11) print_cerr (); // TODO LOL hack - need tu use it somwhere 
+  }
   
   void clear () {
     uint edge_cnt;
@@ -853,7 +853,7 @@ public:                         // board interface
     hash::t new_hash;
 
     new_hash = 0;
-    v_for_each_faster (v) {
+    v_for_each_onboard (v) {
       if (color::is_player (color_at[v])) {
         new_hash ^= zobrist->of_pl_v (player::t (color_at[v]), v);
       }
@@ -869,7 +869,7 @@ public:                         // board interface
     assertc (chain_ac, (((char*) (this) - (char*) (save_board)) & 0x3) == 0);
     delta = (chain_t*) (this) - (chain_t*) (save_board); // TODO do something about this hack
 
-    v_for_each_faster (v) {
+    v_for_each_onboard (v) {
       assertc (board_ac, 
                (chain_at+v)->parent + delta 
                == 
