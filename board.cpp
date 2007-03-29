@@ -32,26 +32,17 @@ const uint max_empty_v_cnt   = board_area;
 const uint max_game_length   = board_area * 4;
 
 #ifdef NDEBUG
-const bool player_ac          = false;
-const bool color_ac           = false;
-const bool coord_ac           = false;
-const bool v_ac               = false;
-const bool nbr_cnt_ac         = false;
-
-
-const bool chain_ac           = false;
-const bool board_empty_v_ac   = false;
-const bool board_hash_ac      = false;
-const bool board_color_at_ac  = false;
-const bool board_nbr_cnt_ac   = false;
-const bool chain_at_ac        = false;
-const bool chain_next_v_ac    = false;
-const bool chains_ac          = false;
+const bool paranoic           = false;
 const bool board_ac           = false;
 #endif
 
 #ifdef DEBUG
 const bool paranoic           = false;
+const bool board_ac           = false;
+// const bool paranoic           = true;
+// const bool board_ac           = true;
+#endif
+
 
 const bool player_ac          = paranoic;
 const bool color_ac           = paranoic;
@@ -67,8 +58,6 @@ const bool board_nbr_cnt_ac   = paranoic;
 const bool chain_at_ac        = paranoic;
 const bool chain_next_v_ac    = paranoic;
 const bool chains_ac          = paranoic;
-const bool board_ac           = false;
-#endif
 
 // namespace player
 
@@ -245,7 +234,7 @@ namespace v {
 
   bool is_on_board (t v) {
     check (v);
-    return coord::is_ok (row (v)) & coord::is_ok (col (v)); // TODO is && faster here ?
+    return coord::is_ok (row (v)) & coord::is_ok (col (v));
   }
 
   void check_is_on_board (t v) { 
@@ -489,83 +478,6 @@ namespace nbr_cnt {
 }
 
 
-// class chain_t
-
-
-class chain_t {                 // find - union algorithm, with pseudo liberties
-public:
-
-  union {
-    chain_t* parent;
-    int lib_cnt2;               // pseudo_liberties * 2 + 1
-  };
-
-  bool is_root () const { return lib_cnt2 & 0x1; }
-
-  void check_is_root () const { assertc (chain_ac, is_root ()); }
-
-  void init (uint lib_cnt) {
-    assertc (chain_ac, lib_cnt <= nbr_cnt::max);
-    lib_cnt2 = lib_cnt << 1 | 0x1;
-  }
-
-  chain_t* find_root () {
-    chain_t* node = this;
-    if (node->is_root ()) return node;
-    while (!node->parent->is_root()) 
-      node->parent = node->parent->parent; // nice path compression
-    return node->parent;
-  }
-
-  const chain_t* find_root_npc () const { // no path compression
-    const chain_t* node = this;
-    while (!node->is_root()) node = node->parent;
-    return node;
-  }
-
-  chain_t* join (chain_t* root2) {
-    this->check_is_root ();
-    root2->check_is_root ();
-
-    if (this->lib_cnt2 < root2->lib_cnt2) { // no test at all results in slight inefficiency
-      root2->lib_cnt2 += this->lib_cnt2 - 1;
-      this->parent = root2;
-      return root2;
-    } else {
-      this->lib_cnt2 += root2->lib_cnt2 - 1;
-      root2->parent = this;
-      return this;
-    }
-  }
-
-  bool lib_cnt_is_zero () const {
-    check_is_root ();
-    return lib_cnt2 == 1;
-  }
-
-  uint lib_cnt () const {              // inefficient
-    check_is_root ();
-    return lib_cnt2 >> 1;
-  }
-
-  void inc_lib_cnt () {
-    check_is_root ();
-    lib_cnt2 += 0x2;
-  }
-  
-  void dec_lib_cnt () {
-    check_is_root ();
-    lib_cnt2 -= 0x2;
-    assertc (chain_ac, (lib_cnt2 >> 1) >= 0);
-  }
-
-  void update_pointer (int chain_t_delta) { // in bytes
-    if (!is_root ()) parent = parent + chain_t_delta;
-  }
-
-};
-
-
 // class board_t
 
 enum play_ret_t { play_ok, play_suicide, play_ss_suicide, play_ko, play_non_empty };
@@ -580,7 +492,9 @@ public:
   nbr_cnt::t  nbr_cnt       [v::cnt]; // incremental, for fast eye checking
   uint        empty_pos     [v::cnt];
   v::t        chain_next_v  [v::cnt];
-  chain_t     chain_at      [v::cnt];
+
+  uint        chain_lib_cnt [v::cnt]; // indexed by chain_id
+  uint        chain_id      [v::cnt];
   
   v::t        empty_v       [board_area];
   uint        empty_v_cnt;
@@ -699,15 +613,13 @@ public:                         // consistency checks
       // TODO what about edge and empty?
       if (color::is_player (color_at[v])) {
 
-        assert (!chain_at[v].find_root_npc()->lib_cnt_is_zero ());
+        assert (chain_lib_cnt[ chain_id [v]] != 0);
 
         if (color_at[v] == color_at[v::S (v)]) 
-          assert (chain_at[v].find_root_npc () == 
-                  chain_at[v::S (v)].find_root_npc ());
+          assert (chain_id [v] == chain_id [v::S (v)]);
 
         if (color_at[v] == color_at[v::E (v)]) 
-          assert (chain_at[v].find_root_npc () == 
-                  chain_at[v::E (v)].find_root_npc ());
+          assert (chain_id [v] == chain_id [v::E (v)]);
 
       }
     }
@@ -724,10 +636,10 @@ public:                         // consistency checks
 
   void check_chains () const {        // ... and chain_next_v
     uint            act_chain_no;
-    const chain_t*  chain_root[v::cnt - 1]; // list; could be smaller
-    uint            chain_no[v::cnt]; // 
+    uint            chain_id_list [v::cnt - 1]; // list; could be smaller
+    uint            chain_no [v::cnt]; // 
 
-    const uint      no_chain = 100;
+    const uint      no_chain = 10000;
 
     if (!chains_ac) return;
     
@@ -739,17 +651,15 @@ public:                         // consistency checks
     v_for_each_onboard (v) {
       if (color::is_player(color_at[v]) && chain_no[v] == no_chain) { // chain not visited yet
         color::t        act_color;
-        const chain_t*  act_root;
-        
+
         uint lib_cnt;
         uint forward_edge_cnt;
         uint backward_edge_cnt;
-        
-        chain_root[act_chain_no] = chain_at[v].find_root_npc ();
-        act_root = chain_root[act_chain_no];
-        
+
+        chain_id_list [act_chain_no] = chain_id [v];
+
         rep (ch_no, act_chain_no) 
-          assert (chain_root[ch_no] != act_root); // separate chains, separate roots
+          assert (chain_id_list [ch_no] != chain_id [v]); // separate chains, separate roots
         
         act_color          = color_at[v]; 
         lib_cnt            = 0;
@@ -759,7 +669,7 @@ public:                         // consistency checks
         v::t act_v = v;
         do {
           assert (color_at[act_v] == act_color);
-          assert (chain_at[act_v].find_root_npc () == act_root);
+          assert (chain_id[act_v] == chain_id_list [act_chain_no]);
           assert (chain_no[act_v] == no_chain);
           chain_no[act_v] = act_chain_no;
           
@@ -779,9 +689,7 @@ public:                         // consistency checks
         } while (act_v != v);
         
         assert (forward_edge_cnt == backward_edge_cnt);
-        assert (act_root->lib_cnt () == lib_cnt);
-        v::check_is_on_board (act_root - chain_at);
-        assert (chain_no[act_root - chain_at] == act_chain_no); // root is a part of the chain
+        assert (chain_lib_cnt [chain_id [v]] == lib_cnt);
         
         act_chain_no++;
       }
@@ -830,6 +738,8 @@ public:                         // board interface
       color_at      [v] = color::edge;
       nbr_cnt       [v] = nbr_cnt::of_desc (0, 0, nbr_cnt::max);
       chain_next_v  [v] = v;
+      chain_id      [v] = v;    // TODO is it needed, is it usedt?
+      chain_lib_cnt [v] = nbr_cnt::max; // TODO is it logical? (edges)
 
       if (v::is_on_board (v)) {
         color_at   [v]              = color::empty;
@@ -840,8 +750,6 @@ public:                         // board interface
         v_for_each_nbr (v, nbr_v, if (!v::is_on_board (nbr_v)) edge_cnt++);
         nbr_cnt [v] += edge_cnt * nbr_cnt::edge_inc;
       }
-      
-      (chain_at+v)->init (nbr_cnt::empty_cnt (nbr_cnt [v]));
     }
 
     hash = recalc_hash ();
@@ -864,21 +772,6 @@ public:                         // board interface
 
   void load (const board_t* save_board) { 
     memcpy(this, save_board, sizeof(board_t)); 
-    long delta;
-
-    assertc (chain_ac, (((char*) (this) - (char*) (save_board)) & 0x3) == 0);
-    delta = (chain_t*) (this) - (chain_t*) (save_board); // TODO do something about this hack
-
-    v_for_each_onboard (v) {
-      assertc (board_ac, 
-               (chain_at+v)->parent + delta 
-               == 
-               chain_at + ((save_board->chain_at + v)->parent - save_board->chain_at)
-               );
-
-      chain_at[v].update_pointer (delta);
-    }
-
     check ();
   }
   
@@ -903,8 +796,6 @@ public:                         // board interface
   }
 
   play_ret_t play_no_eye (player::t player, v::t v) {
-    chain_t* new_chain_root;
-
     check ();
     player::check (player);
     v::check_is_on_board (v);
@@ -913,14 +804,12 @@ public:                         // board interface
     last_empty_v_cnt = empty_v_cnt;
     ko_v             = v::no_v;
     last_player      = player;
-    
-    new_chain_root = place_stone (player, v);
 
-    v_for_each_nbr (v, nbr_v, process_new_nbr (nbr_v, player, v, &new_chain_root));
+    place_stone (player, v);
 
-    assertc (board_ac, new_chain_root == chain_at[v].find_root_npc ());
-             
-    if (new_chain_root->lib_cnt_is_zero ()) {
+    v_for_each_nbr (v, nbr_v, process_new_nbr (nbr_v, player, v));
+
+    if (chain_lib_cnt [chain_id [v]] == 0) {
       assertc (board_ac, last_empty_v_cnt - empty_v_cnt == 1);
       remove_chain(v);
       assertc (board_ac, last_empty_v_cnt - empty_v_cnt > 0);
@@ -930,39 +819,24 @@ public:                         // board interface
     return play_ok;
   }
 
-  play_ret_t play_eye (player::t player, v::t v) no_inline {
-    chain_t* chain_root_N;      // TODO macro !!!
-    chain_t* chain_root_W;
-    chain_t* chain_root_E;
-    chain_t* chain_root_S;
 
-    assertc (board_ac, color_at[v::N (v)] == color::opponent (player) || color_at[v::N (v)] == color::edge);
-    assertc (board_ac, color_at[v::W (v)] == color::opponent (player) || color_at[v::W (v)] == color::edge);
-    assertc (board_ac, color_at[v::E (v)] == color::opponent (player) || color_at[v::E (v)] == color::edge);
-    assertc (board_ac, color_at[v::S (v)] == color::opponent (player) || color_at[v::S (v)] == color::edge);
+  play_ret_t play_eye (player::t player, v::t v) no_inline {
+    // TODO test order
+    // TODO check (na zmiane dec i if
+
+    v_for_each_nbr (v, nbr_v, assertc (board_ac, color_at[nbr_v] == color::opponent (player) || color_at[nbr_v] == color::edge));
 
     if (v == ko_v && player == player::other (last_player)) 
       return play_ko;
 
-    chain_root_N = (chain_at + v::N (v))->find_root ();
-    chain_root_W = (chain_at + v::W (v))->find_root ();
-    chain_root_E = (chain_at + v::E (v))->find_root ();
-    chain_root_S = (chain_at + v::S (v))->find_root ();
+    v_for_each_nbr (v, nbr_v, chain_lib_cnt [chain_id [nbr_v]]--);
 
-    chain_root_N->dec_lib_cnt ();
-    chain_root_W->dec_lib_cnt ();
-    chain_root_E->dec_lib_cnt ();
-    chain_root_S->dec_lib_cnt ();
-
-    if ((!chain_root_N->lib_cnt_is_zero ()) &
-        (!chain_root_W->lib_cnt_is_zero ()) & 
-        (!chain_root_E->lib_cnt_is_zero ()) & 
-        (!chain_root_S->lib_cnt_is_zero ())) 
+    if ((chain_lib_cnt [chain_id [v::N (v)]] != 0) &
+        (chain_lib_cnt [chain_id [v::W (v)]] != 0) &
+        (chain_lib_cnt [chain_id [v::E (v)]] != 0) &
+        (chain_lib_cnt [chain_id [v::S (v)]] != 0))
     {
-      chain_root_N->inc_lib_cnt ();
-      chain_root_W->inc_lib_cnt ();
-      chain_root_E->inc_lib_cnt ();
-      chain_root_S->inc_lib_cnt ();
+      v_for_each_nbr (v, nbr_v, chain_lib_cnt [chain_id [nbr_v]] ++);
       return play_ss_suicide;
     }
 
@@ -971,17 +845,11 @@ public:                         // board interface
 
     place_stone (player, v);
     
-    nbr_cnt [v::N (v)] += nbr_cnt::player_inc (player);
-    nbr_cnt [v::W (v)] += nbr_cnt::player_inc (player);
-    nbr_cnt [v::E (v)] += nbr_cnt::player_inc (player);
-    nbr_cnt [v::S (v)] += nbr_cnt::player_inc (player);
+    v_for_each_nbr (v, nbr_v, nbr_cnt [nbr_v] += nbr_cnt::player_inc (player));
 
-    if (chain_root_N->lib_cnt_is_zero ()) remove_chain (v::N (v));
-    if (chain_root_W->lib_cnt_is_zero ()) remove_chain (v::W (v));
-    if (chain_root_E->lib_cnt_is_zero ()) remove_chain (v::E (v));
-    if (chain_root_S->lib_cnt_is_zero ()) remove_chain (v::S (v));
+    v_for_each_nbr (v, nbr_v, if ((chain_lib_cnt [chain_id [nbr_v]] == 0)) remove_chain (nbr_v));
 
-    assertc (board_ac, !chain_at[v].find_root_npc ()->lib_cnt_is_zero ());
+    assertc (board_ac, chain_lib_cnt [chain_id [v]] != 0);
 
     if (last_empty_v_cnt == empty_v_cnt) { // if captured exactly one stone, end this was eye
       ko_v = empty_v [empty_v_cnt - 1]; // then ko formed
@@ -994,29 +862,41 @@ public:                         // board interface
 
   void process_new_nbr(v::t v, 
                        player::t new_nbr_player,
-                       v::t new_nbr_v, 
-                       chain_t** new_nbr_chain_root)
+                       v::t new_nbr_v) // TODO moze warto chain id przekazywc do ustalenia?
   {
-    chain_t* chain_root;
-    
     nbr_cnt[v] += nbr_cnt::player_inc (new_nbr_player);
 
     if (color::is_not_player (color_at [v])) return;
+    chain_lib_cnt [chain_id [v]] --;
 
-    chain_root = (chain_at + v)->find_root ();
-    
-    if (color_at[v] == color::t (new_nbr_player)) { // same color of groups
-      chain_root->dec_lib_cnt ();
-      if (chain_root != *new_nbr_chain_root) { // not merged yet
-        *new_nbr_chain_root = chain_root->join (*new_nbr_chain_root);
-        swap (chain_next_v[v], chain_next_v[new_nbr_v]);
-      }
-    } else {
-      chain_root->dec_lib_cnt ();
-      if (chain_root->lib_cnt_is_zero ()) remove_chain(v);
+    if (color_at[v] != color::t (new_nbr_player)) { // same color of groups
+      if (chain_lib_cnt [chain_id [v]] == 0) remove_chain (v);
+      return;
     }
+
+    if (chain_id [v] == chain_id [new_nbr_v]) return;
+      
+    if (chain_lib_cnt [chain_id [new_nbr_v]] > chain_lib_cnt [chain_id [v]])
+      merge_chains (new_nbr_v, v);
+    else
+      merge_chains (v, new_nbr_v);
+
   }
-  
+
+  void merge_chains (v::t v_base, v::t v_new) {
+    v::t act_v;
+
+    chain_lib_cnt [chain_id [v_base]] += chain_lib_cnt [chain_id [v_new]];
+
+    act_v = v_new;
+    do {
+      chain_id [act_v] = chain_id [v_base];
+      act_v = chain_next_v [act_v];
+    } while (act_v != v_new);
+    
+    swap (chain_next_v[v_base], chain_next_v[v_new]);
+  }
+
   void remove_chain (v::t v) no_inline {
     v::t act_v;
     v::t tmp_v;
@@ -1037,7 +917,7 @@ public:                         // board interface
     do {
       v_for_each_nbr (act_v, nbr_v, {
         nbr_cnt[nbr_v] -= nbr_cnt::player_inc (player::t (old_color));
-        (chain_at+nbr_v)->find_root ()->inc_lib_cnt (); 
+        chain_lib_cnt [chain_id [nbr_v]]++;
       });
 
       tmp_v = act_v;
@@ -1047,7 +927,7 @@ public:                         // board interface
     } while (act_v != v);
   }
 
-  chain_t* place_stone (player::t pl, v::t v) {
+  void place_stone (player::t pl, v::t v) {
     hash ^= zobrist->of_pl_v (pl, v);
     player_v_cnt[pl]++;
     color_at[v] = color::t (pl);
@@ -1058,9 +938,8 @@ public:                         // board interface
 
     assertc (chain_next_v_ac, chain_next_v[v] == v);
 
-    (chain_at+v)->init (nbr_cnt::empty_cnt (nbr_cnt[v]));
-
-    return chain_at+v;
+    chain_id [v] = v;
+    chain_lib_cnt [v] = nbr_cnt::empty_cnt (nbr_cnt[v]);
   }
 
   void remove_stone (v::t v) {
@@ -1118,7 +997,7 @@ public:                         // utils
     return player::t (score () <= 0); 
   }
 
-  string to_string (v::t mark_v = v::no_v) const { // TODO defoult out
+  string to_string (v::t mark_v = v::no_v) const {
     ostringstream out;
 
     #define os(n)      out << " " << n
