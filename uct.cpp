@@ -336,7 +336,8 @@ public:
     });
   }
 
-  void do_playout (player::t first_player) flatten {
+  flatten 
+  void do_playout (player::t first_player){
     board_t    play_board[1]; // TODO test for perfomance + memcpy
     bool       was_pass [player::cnt];
     player::t  act_player;

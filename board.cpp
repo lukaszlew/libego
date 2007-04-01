@@ -783,7 +783,8 @@ public:                         // board interface
     return float(-komi) + 0.5;
   }
 
-  play_ret_t play_no_pass (player::t player, v::t v) flatten all_inline {
+  flatten all_inline 
+  play_ret_t play_no_pass (player::t player, v::t v) {
     check ();
     player::check (player);
     v::check_is_on_board (v);
@@ -819,8 +820,8 @@ public:                         // board interface
     return play_ok;
   }
 
-
-  play_ret_t play_eye (player::t player, v::t v) no_inline {
+  no_inline
+  play_ret_t play_eye (player::t player, v::t v) {
     // TODO test order
     // TODO check (na zmiane dec i if
 
@@ -897,7 +898,8 @@ public:                         // board interface
     swap (chain_next_v[v_base], chain_next_v[v_new]);
   }
 
-  void remove_chain (v::t v) no_inline {
+  no_inline 
+  void remove_chain (v::t v){
     v::t act_v;
     v::t tmp_v;
     color::t old_color;

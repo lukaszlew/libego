@@ -169,6 +169,16 @@ void fatal_error (const char* s) {
   exit (1);
 }
 
+#if 1
+
 #define no_inline   __attribute__((noinline))
 #define flatten     __attribute__((flatten))
 #define all_inline  __attribute__((always_inline))
+
+#else
+
+#define no_inline
+#define flatten  
+#define all_inline
+
+#endif

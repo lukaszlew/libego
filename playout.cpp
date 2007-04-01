@@ -44,7 +44,8 @@ enum playout_status { playout_ok, playout_mercy, playout_too_long };
 
 namespace simple_playout {
 
-  all_inline v::t play_one (board_t* board, player::t player) {
+  all_inline 
+  v::t play_one (board_t* board, player::t player) {
 
     v::t v;
     uint start;
@@ -71,7 +72,8 @@ namespace simple_playout {
   }
 
 
-  all_inline static playout_status run (board_t* board, player::t first_player) {
+  all_inline 
+  static playout_status run (board_t* board, player::t first_player) {
 
     v::t       v;
     bool       was_pass [player::cnt];
