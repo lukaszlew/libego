@@ -22,8 +22,12 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-// constants
 
+// uncomment following line if You want to play Ho (Hexagonal Go) instead of Go
+
+//#define Ho
+
+// constants
 
 const uint board_size        = 9;
 
@@ -130,7 +134,7 @@ namespace color {
     case black: return '#';
     case white: return 'O';
     case empty: return '.';
-    case edge:  return '*';
+    case edge:  return ' ';
     default : assertc (color_ac, false);
     }
     return '?';                 // should not happen
@@ -212,7 +216,7 @@ namespace v {
 
   const uint dNS = (board_size + 2);
   const uint dWE = 1;
-  
+
   const t pass    = 0;
   const t no_v    = 1;
   const t resign  = 2;
@@ -232,9 +236,17 @@ namespace v {
     return v % dNS - 1;
   }
 
-  bool is_on_board (t v) {
+  bool is_on_board (t v) { // TODO Ho here
     check (v);
-    return coord::is_ok (row (v)) & coord::is_ok (col (v));
+#ifdef Ho
+    coord::t r, c, d;
+    r = row (v);
+    c = col (v);
+    d = r+c;
+    return coord::is_ok (r) & coord::is_ok (c) & (d >= int((board_size-1)/2)) & (d < int(board_size + board_size/2));
+#else
+    return coord::is_ok (row(v)) & coord::is_ok (col(v));
+#endif
   }
 
   void check_is_on_board (t v) { 
@@ -248,8 +260,8 @@ namespace v {
   t S (t v) { check (v); check (v + dNS); return v + dNS; }
 
   t NW (t v) { check (v); return N(W(v)); }
-  t NE (t v) { check (v); return N(E(v)); }
-  t SW (t v) { check (v); return S(W(v)); }
+  t NE (t v) { check (v); return N(E(v)); } // only Go
+  t SW (t v) { check (v); return S(W(v)); } // only Go
   t SE (t v) { check (v); return S(E(v)); }
 
   t of_rc (coord::t r, coord::t c) {
@@ -285,36 +297,55 @@ namespace v {
 #define v_for_each_onboard(vv) \
   for (v::t vv = v::dNS+v::dWE; vv <= board_size * (v::dNS + v::dWE); vv++)
 
-#define v_for_each_nbr(center_v, nbr_v, block) {  \
-  v::check_is_on_board (center_v);                \
-  v::t nbr_v;                                     \
-  nbr_v = v::N (center_v); block;                 \
-  nbr_v = v::W (center_v); block;                 \
-  nbr_v = v::E (center_v); block;                 \
-  nbr_v = v::S (center_v); block;                 \
-}
 
-#define v_for_each_diag_nbr(center_v, nbr_v, block) {  \
-  v::check_is_on_board (center_v);                     \
-  v::t nbr_v;                                          \
-  nbr_v = v::NW (center_v); block;                     \
-  nbr_v = v::NE (center_v); block;                     \
-  nbr_v = v::SW (center_v); block;                     \
-  nbr_v = v::SE (center_v); block;                     \
-}
+#ifdef Ho
+
+  #define v_for_each_nbr(center_v, nbr_v, block) {  \
+    v::check_is_on_board (center_v);                \
+    v::t nbr_v;                                     \
+    nbr_v = v::N (center_v); block;                 \
+    nbr_v = v::NE(center_v); block;                 \
+    nbr_v = v::W (center_v); block;                 \
+    nbr_v = v::E (center_v); block;                 \
+    nbr_v = v::SW(center_v); block;                 \
+    nbr_v = v::S (center_v); block;                 \
+  }
+
+#else
+
+  #define v_for_each_nbr(center_v, nbr_v, block) {  \
+    v::check_is_on_board (center_v);                \
+    v::t nbr_v;                                     \
+    nbr_v = v::N (center_v); block;                 \
+    nbr_v = v::W (center_v); block;                 \
+    nbr_v = v::E (center_v); block;                 \
+    nbr_v = v::S (center_v); block;                 \
+  }
+    
+  #define v_for_each_diag_nbr(center_v, nbr_v, block) {  \
+    v::check_is_on_board (center_v);                     \
+    v::t nbr_v;                                          \
+    nbr_v = v::NW (center_v); block;                     \
+    nbr_v = v::NE (center_v); block;                     \
+    nbr_v = v::SW (center_v); block;                     \
+    nbr_v = v::SE (center_v); block;                     \
+    }
+  
+  #define pl_v_for_each_9_nbr(center_v, pl, nbr_v, i) { \
+    v::check_is_on_board (center_v);                    \
+    move::t    nbr_v;                                   \
+    player_for_each (pl) {                              \
+      nbr_v = center_v;                                 \
+      i;                                                \
+      v_for_each_nbr      (center_v, nbr_v, i);         \
+      v_for_each_diag_nbr (center_v, nbr_v, i);         \
+    }                                                   \
+  }
+  
+#endif
 
 #define pl_v_for_each(pl, vv) player_for_each(pl) v_for_each_onboard(vv)
 
-#define pl_v_for_each_9_nbr(center_v, pl, nbr_v, i) { \
-  v::check_is_on_board (center_v);                    \
-  move::t    nbr_v;                                   \
-  player_for_each (pl) {                              \
-    nbr_v = center_v;                                 \
-    i;                                                \
-    v_for_each_nbr      (center_v, nbr_v, i);         \
-    v_for_each_diag_nbr (center_v, nbr_v, i);         \
-  }                                                   \
-}
 
 // namespace move
 
@@ -421,7 +452,11 @@ namespace nbr_cnt {
 
   typedef uint t;
 
+#ifdef Ho
+  const uint max = 6;                 // maximal number of neighbours
+#else
   const uint max = 4;                 // maximal number of neighbours
+#endif
 
   const uint f_size = 4;              // size in bits of each of 3 counters in nbr_cnt::t
   const uint f_shift [3] = { 0*f_size, 1*f_size, 2*f_size };
@@ -505,7 +540,10 @@ public:
   hash::t     hash;
   int         komi;
 
-  v::t        ko_v;             // vertex forbidden by ko
+#ifndef Ho
+  v::t        ko_v;             // vertex forbidden by ko (only Go)
+#endif
+
   player::t   last_player;      // player who made the last play (other::player is forbidden to retake)
 
 public:                         // macros
@@ -615,12 +653,10 @@ public:                         // consistency checks
 
         assert (chain_lib_cnt[ chain_id [v]] != 0);
 
-        if (color_at[v] == color_at[v::S (v)]) 
-          assert (chain_id [v] == chain_id [v::S (v)]);
-
-        if (color_at[v] == color_at[v::E (v)]) 
-          assert (chain_id [v] == chain_id [v::E (v)]);
-
+        v_for_each_nbr (v, nbr_v, {
+          if (color_at[v] == color_at[nbr_v]) 
+            assert (chain_id [v] == chain_id [nbr_v]);
+        });
       }
     }
   }
@@ -732,8 +768,9 @@ public:                         // board interface
     set_komi (7.5);            // standard for chinese rules
     empty_v_cnt = 0;
     player_for_each (pl) player_v_cnt [pl] = 0;
-    ko_v = v::no_v;
-
+#ifndef Ho
+    ko_v = v::no_v;             // only Go
+#endif
     v_for_each_all (v) {
       color_at      [v] = color::edge;
       nbr_cnt       [v] = nbr_cnt::of_desc (0, 0, nbr_cnt::max);
@@ -803,7 +840,9 @@ public:                         // board interface
     assertc (board_ac, color_at[v] == color::empty);
 
     last_empty_v_cnt = empty_v_cnt;
+#ifndef Ho
     ko_v             = v::no_v;
+#endif
     last_player      = player;
 
     place_stone (player, v);
@@ -822,13 +861,12 @@ public:                         // board interface
 
   no_inline
   play_ret_t play_eye (player::t player, v::t v) {
-    // TODO test order
-    // TODO check (na zmiane dec i if
-
     v_for_each_nbr (v, nbr_v, assertc (board_ac, color_at[nbr_v] == color::opponent (player) || color_at[nbr_v] == color::edge));
 
-    if (v == ko_v && player == player::other (last_player)) 
+#ifndef Ho
+    if (v == ko_v && player == player::other (last_player)) // only Go
       return play_ko;
+#endif
 
     uint all_nbr_live = true;
     v_for_each_nbr (v, nbr_v, all_nbr_live &= (--chain_lib_cnt [chain_id [nbr_v]] != 0));
@@ -849,11 +887,13 @@ public:                         // board interface
 
     assertc (board_ac, chain_lib_cnt [chain_id [v]] != 0);
 
-    if (last_empty_v_cnt == empty_v_cnt) { // if captured exactly one stone, end this was eye
+#ifndef Ho
+    if (last_empty_v_cnt == empty_v_cnt) { // if captured exactly one stone, end this was eye (only Go)
       ko_v = empty_v [empty_v_cnt - 1]; // then ko formed
     } else {
       ko_v = v::no_v;
     }
+#endif
 
     return play_ok;
   }
@@ -955,6 +995,9 @@ public:                         // board interface
 public:                         // utils
 
   bool is_eyelike (player::t player, v::t v) { 
+#ifdef Ho
+    return nbr_cnt::player_cnt_is_max (nbr_cnt[v], player);
+#else
     int diag_color_cnt[color::cnt];
 
     assertc (board_ac, color_at [v] == color::empty);
@@ -968,6 +1011,7 @@ public:                         // utils
 
     diag_color_cnt[player::other (player)] += (diag_color_cnt[color::edge] > 0);
     return diag_color_cnt[player::other (player)] < 2;
+#endif
   }
 
   int approx_score () const {
@@ -1003,12 +1047,18 @@ public:                         // utils
     #define o_left(n)  out << "(" << n
     #define o_right(n) out << ")" << n
     
-    if (board_size < 10) out << "  "; else out << "   ";
+#ifndef Ho
+    out << " ";
+#endif
+    if (board_size < 10) out << " "; else out << "  ";
     coord_for_each (col) os (coord::col_to_string (col));
     out << endl;
 
     coord_for_each (row) {
       if (board_size >= 10 && board_size - row < 10) out << " ";
+#ifdef Ho
+      rep (ii, row) out << " ";
+#endif
       os (coord::row_to_string (row));
       coord_for_each (col) {
         v::t v = v::of_rc (row, col);
@@ -1023,6 +1073,9 @@ public:                         // utils
     }
     
     if (board_size < 10) out << "  "; else out << "   ";
+#ifdef Ho
+    rep (ii, board_size) out << " ";
+#endif
     coord_for_each (col) os (coord::col_to_string (col));
     out << endl;
 
