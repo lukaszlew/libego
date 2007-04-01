@@ -47,18 +47,43 @@ typedef unsigned long long uint64;
   } while (0);
 
 
-// TODO can it be a function?
-#define get_cc_cnt(tsc)  __asm__ __volatile__("rdtsc" : "=A" (tsc) : : "edx")
+class cc_clock_t {
+  double  sample_cnt;
+  double  sample_sum;
+  uint    start_time;
+  double  overhead;
+public:
 
-// TODO can it be a function?
-#define cc_time_of(t ,instr) \
-  do {\
-    unsigned int cc_start, cc_stop;\
-    get_cc_cnt(cc_start);\
-    instr;\
-    get_cc_cnt(cc_stop);\
-    t += cc_stop - cc_start - 43;\
-  } while (0)
+  cc_clock_t () : sample_cnt (0), sample_sum (0) { 
+    uint t1, t2;
+    get_cc_time (t1);
+    get_cc_time (t2);
+    overhead = double (t2 - t1);
+  }
+
+  void get_cc_time (uint& t) {
+    __asm__ __volatile__("rdtsc" : "=A" (t) : : "edx");
+  }
+
+  void start () {
+    get_cc_time (start_time);
+  }
+
+  void stop () {
+    uint stop_time;
+    get_cc_time (stop_time);
+    sample_cnt += 1.0;
+    sample_sum += double (stop_time - start_time) - overhead;
+  }
+
+  string to_string () {
+    ostringstream s;
+    s << "avg CC = " << sample_sum / sample_cnt << " (cnt = " << sample_cnt << ")";
+    return s.str ();
+  }
+};
+
+#define cc_measure(cc_clock, instr) { cc_clock.start (); instr; cc_clock.stop (); }
 
 // TODO can it be a function?
 #define assertc(aspect, expr) assert((aspect) ? (expr) : true)
