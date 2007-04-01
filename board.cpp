@@ -830,14 +830,11 @@ public:                         // board interface
     if (v == ko_v && player == player::other (last_player)) 
       return play_ko;
 
-    v_for_each_nbr (v, nbr_v, chain_lib_cnt [chain_id [nbr_v]]--);
+    uint all_nbr_live = true;
+    v_for_each_nbr (v, nbr_v, all_nbr_live &= (--chain_lib_cnt [chain_id [nbr_v]] != 0));
 
-    if ((chain_lib_cnt [chain_id [v::N (v)]] != 0) &
-        (chain_lib_cnt [chain_id [v::W (v)]] != 0) &
-        (chain_lib_cnt [chain_id [v::E (v)]] != 0) &
-        (chain_lib_cnt [chain_id [v::S (v)]] != 0))
-    {
-      v_for_each_nbr (v, nbr_v, chain_lib_cnt [chain_id [nbr_v]] ++);
+    if (all_nbr_live) {
+      v_for_each_nbr (v, nbr_v, chain_lib_cnt [chain_id [nbr_v]]++);
       return play_ss_suicide;
     }
 
