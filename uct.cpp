@@ -21,19 +21,18 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <boost/pool/object_pool.hpp>
-using namespace boost;
-
 
 #ifdef NDEBUG
 static const bool uct_ac   = false;
 static const bool tree_ac  = false;
+static const bool pool_ac  = false;
 #endif
 
 
 #ifdef DEBUG
 static const bool uct_ac   = true;
 static const bool tree_ac  = true;
+static const bool pool_ac  = true;
 #endif
 
 
@@ -42,14 +41,45 @@ const float initial_bias             = 1.0;
 const float mature_bias_threshold    = initial_bias + 100.0;
 const float explore_rate             = 0.2;
 const uint  uct_max_depth            = 1000;
+const uint  uct_max_nodes            = 1000000;
 const float resign_value             = 0.99;
 const uint  uct_genmove_playout_cnt  = 100000;
 
 const float print_visit_threshold_base    = 500.0;
 const float print_visit_threshold_parent  = 0.02;
 
-// class node_t
 
+// class pool_t
+
+template <class elt_t, uint pool_size> class pool_t {
+public:
+  elt_t* memory;
+
+  elt_t* free_elt [pool_size];
+  uint   free_elt_count;
+
+  pool_t () {
+    memory = new elt_t [pool_size];
+    rep (i, pool_size) 
+      free_elt [i] = memory + i;
+    free_elt_count = pool_size;
+  }
+
+  ~pool_t () {
+    delete [] memory;
+  }
+
+  elt_t* malloc () { 
+    assertc (pool_ac, free_elt_count > 0);
+    return free_elt [--free_elt_count]; 
+  }
+
+  void free (elt_t* elt) { 
+    free_elt [free_elt_count++] = elt;  
+  }
+};
+
+// class node_t
 
 class node_t {
 
@@ -247,7 +277,7 @@ class tree_t {
 
 public:
 
-  object_pool <node_t>  node_pool[1];
+  pool_t <node_t, uct_max_nodes> node_pool [1];
   node_t*               history [uct_max_depth];
   uint                  history_top;
 
