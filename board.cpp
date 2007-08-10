@@ -87,71 +87,83 @@ public:
 };
 
 
-// namespace nbr_cnt
 
-namespace nbr_cnt {
+// nbr_cnt_t
 
-  typedef uint t;
+namespace nbr_cnt_aux { // TODO this namespace exists only because we can't have inlined cont arrays in classes
 
 #ifdef Ho
-  const uint max = 6;                 // maximal number of neighbours
+  static const uint max = 6;                 // maximal number of neighbours
 #else
-  const uint max = 4;                 // maximal number of neighbours
+  static const uint max = 4;                 // maximal number of neighbours
 #endif
-
+  
   const uint f_size = 4;              // size in bits of each of 3 counters in nbr_cnt::t
-  const uint f_shift [3] = { 0*f_size, 1*f_size, 2*f_size };
+  const uint f_shift [3] = { 0 * f_size, 1 * f_size, 2 * f_size };
   const uint f_mask = (1 << f_size) - 1;
-
-  uint empty_cnt  (t nbr_cnt) { 
-    return nbr_cnt >> f_shift [color::empty];
-  }
-
-  uint player_cnt (t nbr_cnt, player::t pl) { 
-    return (nbr_cnt >> f_shift [pl]) & f_mask; 
-  }
-
+  
   const uint player_cnt_is_max_mask [player::cnt] = { 
     (max << f_shift [player::black]), 
     (max << f_shift [player::white]) 
   };
-
-  uint player_cnt_is_max (t nbr_cnt, player::t pl) { 
-    return (nbr_cnt & player_cnt_is_max_mask [pl]) == player_cnt_is_max_mask [pl]; 
-  }
-
-  void check (t nbr_cnt) {
-    unused (nbr_cnt);
-    if (!nbr_cnt_ac) return;
-    assert (empty_cnt (nbr_cnt) <= max);
-    assert (player_cnt (nbr_cnt, player::black) <= max);
-    assert (player_cnt (nbr_cnt, player::white) <= max);
-  }
-
-  t of_desc (uint black_cnt, uint white_cnt, uint empty_cnt) {
-    assertc (nbr_cnt_ac, black_cnt <= max);
-    assertc (nbr_cnt_ac, white_cnt <= max);
-    assertc (nbr_cnt_ac, empty_cnt <= max);
-
-    return 
-      (black_cnt << f_shift [player::black]) +
-      (white_cnt << f_shift [player::white]) +
-      (empty_cnt << f_shift [color::empty]);
-  }
   
-  const t player_inc_tab [player::cnt] = { 
-    (1 << f_shift [player::black]) - (1 << f_shift [color::empty]), 
-    (1 << f_shift [player::white]) - (1 << f_shift [color::empty]) 
-  };
-
-  t player_inc (player::t pl) { return player_inc_tab[pl]; }
-  
-  const t edge_inc = 
+  const uint black_inc_val = (1 << f_shift [player::black]) - (1 << f_shift [color::empty]);
+  const uint white_inc_val = (1 << f_shift [player::white]) - (1 << f_shift [color::empty]);
+  const uint edge_inc_val  = 
     + (1 << f_shift [player::black]) 
     + (1 << f_shift [player::white]) 
     - (1 << f_shift [color::empty]);
-
+  
+  const uint player_inc_tab [player::cnt] = { black_inc_val, white_inc_val };
 }
+
+
+class nbr_cnt_t {
+
+  public:
+    uint bitfield;
+
+    nbr_cnt_t () { }
+
+    nbr_cnt_t (uint black_cnt, uint white_cnt, uint empty_cnt) {
+      assertc (nbr_cnt_ac, black_cnt <= nbr_cnt_aux::max);
+      assertc (nbr_cnt_ac, white_cnt <= nbr_cnt_aux::max);
+      assertc (nbr_cnt_ac, empty_cnt <= nbr_cnt_aux::max);
+      
+      bitfield = 
+        (black_cnt << nbr_cnt_aux::f_shift [player::black]) +
+        (white_cnt << nbr_cnt_aux::f_shift [player::white]) +
+        (empty_cnt << nbr_cnt_aux::f_shift [color::empty]);
+    }
+  
+    //void operator+= (const uint delta) { bitfield += delta; }
+
+    void edge_inc () { bitfield += nbr_cnt_aux::edge_inc_val; }
+    void player_inc (player::t player) { bitfield += nbr_cnt_aux::player_inc_tab [player]; }
+    void player_dec (player::t player) { bitfield -= nbr_cnt_aux::player_inc_tab [player]; }
+
+    uint empty_cnt  () const { 
+      return bitfield >> nbr_cnt_aux::f_shift [color::empty];
+    }
+
+    uint player_cnt (player::t pl) const { 
+      return (bitfield >> nbr_cnt_aux::f_shift [pl]) & nbr_cnt_aux::f_mask; 
+    }
+
+
+    uint player_cnt_is_max (player::t pl) const { 
+      return (bitfield & nbr_cnt_aux::player_cnt_is_max_mask [pl]) == nbr_cnt_aux::player_cnt_is_max_mask [pl]; 
+    }
+
+    void check () {
+      if (!nbr_cnt_ac) return;
+      assert (empty_cnt () <= nbr_cnt_aux::max);
+      assert (player_cnt (player::black) <= nbr_cnt_aux::max);
+      assert (player_cnt (player::white) <= nbr_cnt_aux::max);
+    }
+
+};
+
 
 
 // class board_t
@@ -165,7 +177,7 @@ class board_t {
 public:
 
   color::t    color_at      [v::cnt];
-  nbr_cnt::t  nbr_cnt       [v::cnt]; // incremental, for fast eye checking
+  nbr_cnt_t  nbr_cnt       [v::cnt]; // incremental, for fast eye checking
   uint        empty_pos     [v::cnt];
   v::t        chain_next_v  [v::cnt];
 
@@ -275,13 +287,13 @@ public:                         // consistency checks
           
       expected_nbr_cnt =        // definition of nbr_cnt[v]
         + ((nbr_color_cnt [color::black] + nbr_color_cnt [color::edge]) 
-           << nbr_cnt::f_shift [player::black])
+           << nbr_cnt_aux::f_shift [player::black])
         + ((nbr_color_cnt [color::white] + nbr_color_cnt [color::edge])
-           << nbr_cnt::f_shift [player::white])
+           << nbr_cnt_aux::f_shift [player::white])
         + ((nbr_color_cnt [color::empty]) 
-           << nbr_cnt::f_shift [color::empty]);
+           << nbr_cnt_aux::f_shift [color::empty]);
     
-      assert (nbr_cnt[v] == expected_nbr_cnt);
+      assert (nbr_cnt[v].bitfield == expected_nbr_cnt);
     }
   }
 
@@ -414,10 +426,10 @@ public:                         // board interface
 #endif
     v_for_each_all (v) {
       color_at      [v] = color::edge;
-      nbr_cnt       [v] = nbr_cnt::of_desc (0, 0, nbr_cnt::max);
+      nbr_cnt       [v] = nbr_cnt_t (0, 0, nbr_cnt_aux::max);
       chain_next_v  [v] = v;
       chain_id      [v] = v;    // TODO is it needed, is it usedt?
-      chain_lib_cnt [v] = nbr_cnt::max; // TODO is it logical? (edges)
+      chain_lib_cnt [v] = nbr_cnt_aux::max; // TODO is it logical? (edges)
 
       if (v::is_on_board (v)) {
         color_at   [v]              = color::empty;
@@ -426,7 +438,7 @@ public:                         // board interface
 
         edge_cnt = 0;
         v_for_each_nbr (v, nbr_v, if (!v::is_on_board (nbr_v)) edge_cnt++);
-        nbr_cnt [v] += edge_cnt * nbr_cnt::edge_inc;
+        rep (ii, edge_cnt) nbr_cnt [v].edge_inc ();
       }
     }
 
@@ -468,7 +480,7 @@ public:                         // board interface
     v::check_is_on_board (v);
     assertc (board_ac, color_at[v] == color::empty);
 
-    if (nbr_cnt::player_cnt_is_max (nbr_cnt[v], player::other (player)))
+    if (nbr_cnt[v].player_cnt_is_max (player::other (player)))
       return play_eye (player, v);
     else 
       return play_no_eye (player, v);
@@ -522,7 +534,7 @@ public:                         // board interface
 
     place_stone (player, v);
     
-    v_for_each_nbr (v, nbr_v, nbr_cnt [nbr_v] += nbr_cnt::player_inc (player));
+    v_for_each_nbr (v, nbr_v, nbr_cnt [nbr_v].player_inc (player));
 
     v_for_each_nbr (v, nbr_v, if ((chain_lib_cnt [chain_id [nbr_v]] == 0)) remove_chain (nbr_v));
 
@@ -543,7 +555,7 @@ public:                         // board interface
                        player::t new_nbr_player,
                        v::t new_nbr_v) // TODO moze warto chain id przekazywc do ustalenia?
   {
-    nbr_cnt[v] += nbr_cnt::player_inc (new_nbr_player);
+    nbr_cnt[v].player_inc (new_nbr_player);
 
     if (color::is_not_player (color_at [v])) return;
     chain_lib_cnt [chain_id [v]] --;
@@ -596,7 +608,7 @@ public:                         // board interface
 
     do {
       v_for_each_nbr (act_v, nbr_v, {
-        nbr_cnt[nbr_v] -= nbr_cnt::player_inc (player::t (old_color));
+        nbr_cnt[nbr_v].player_dec (player::t (old_color));
         chain_lib_cnt [chain_id [nbr_v]]++;
       });
 
@@ -619,7 +631,7 @@ public:                         // board interface
     assertc (chain_next_v_ac, chain_next_v[v] == v);
 
     chain_id [v] = v;
-    chain_lib_cnt [v] = nbr_cnt::empty_cnt (nbr_cnt[v]);
+    chain_lib_cnt [v] = nbr_cnt[v].empty_cnt ();
   }
 
   void remove_stone (v::t v) {
@@ -643,7 +655,7 @@ public:                         // utils
 
     assertc (board_ac, color_at [v] == color::empty);
 
-    if (! nbr_cnt::player_cnt_is_max (nbr_cnt[v], player)) return false;
+    if (! nbr_cnt[v].player_cnt_is_max (player)) return false;
 
     color_for_each (col) diag_color_cnt [col] = 0; // memset is slower
     v_for_each_diag_nbr (v, diag_v, {
@@ -667,9 +679,9 @@ public:                         // utils
     eye_score = 0;
 
     empty_v_for_each (this, v, {
-      if (nbr_cnt::player_cnt_is_max (nbr_cnt[v], player::black)) {
+      if (nbr_cnt[v].player_cnt_is_max (player::black)) {
         eye_score++;
-      } else if (nbr_cnt::player_cnt_is_max (nbr_cnt[v], player::white)) {
+      } else if (nbr_cnt[v].player_cnt_is_max (player::white)) {
         eye_score--;
       }
     });
