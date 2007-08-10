@@ -37,6 +37,7 @@ using namespace std;
 #include "gtp.h"
 
 #include "utils.cpp"
+#include "basic_go_types.cpp"
 #include "board.cpp"
 #include "stack_board.cpp"
 #include "playout.cpp"
