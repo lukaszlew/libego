@@ -37,24 +37,30 @@ const bool chains_ac          = paranoic;
 // namespace hash
 
 
-namespace hash {
+class hash_t {
+public:
+  
+  uint64 hash;
 
-  typedef uint64 t;
+  hash_t () { }
 
-  uint index (t hash) { return hash; }
-  uint lock  (t hash) { return hash >> 32;  }
+  uint index () const { return hash; }
+  uint lock  () const { return hash >> 32; }
 
-  t combine (t h1, t h2) { return h1 + h2; } // not xor. + to allow h1+h2+h1
-
-  t random () { 
-    return (t)
+  void randomize () { 
+    hash =
       (uint64 (pm::rand_int ()) << (0*16)) ^
       (uint64 (pm::rand_int ()) << (1*16)) ^ 
       (uint64 (pm::rand_int ()) << (2*16)) ^ 
       (uint64 (pm::rand_int ()) << (3*16));
   }
-  
-}
+
+  void set_zero () { hash = 0; }
+
+  bool operator== (const hash_t& other) const { return hash == other.hash; }
+  void operator^= (const hash_t& other) { hash ^= other.hash; }
+
+};
 
 
 // class zobrist_t
@@ -63,22 +69,22 @@ namespace hash {
 class zobrist_t {
 public:
 
-  hash::t hashes[move::cnt];
+  hash_t hashes[move::cnt];
 
   zobrist_t () {
     pl_v_for_each (pl, v) {
       move::t m;
       m = move::of_pl_v (pl, v);
-      hashes[m] = hash::random ();
+      hashes[m].randomize ();
     }
   }
 
-  hash::t of_move (move::t m) const {
+  hash_t of_move (move::t m) const {
     move::check (m);
     return hashes[m];
   }
 
-  hash::t of_pl_v (player::t pl,  v::t v) const {
+  hash_t of_pl_v (player::t pl,  v::t v) const {
     player::check (pl);
     v::check(v);
     return hashes[move::of_pl_v (pl, v)];
@@ -190,7 +196,7 @@ public:
 
   uint        player_v_cnt  [player::cnt];
 
-  hash::t     hash;
+  hash_t      hash;
   int         komi;
 
 #ifndef Ho
@@ -447,10 +453,11 @@ public:                         // board interface
     check ();
   }
 
-  hash::t recalc_hash () const {
-    hash::t new_hash;
+  hash_t recalc_hash () const {
+    hash_t new_hash;
 
-    new_hash = 0;
+    new_hash.set_zero ();
+
     v_for_each_onboard (v) {
       if (color::is_player (color_at[v])) {
         new_hash ^= zobrist->of_pl_v (player::t (color_at[v]), v);
