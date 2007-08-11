@@ -22,19 +22,7 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-
-const bool nbr_cnt_ac         = paranoic;
-const bool chain_ac           = paranoic;
-const bool board_empty_v_ac   = paranoic;
-const bool board_hash_ac      = paranoic;
-const bool board_color_at_ac  = paranoic;
-const bool board_nbr_cnt_ac   = paranoic;
-const bool chain_at_ac        = paranoic;
-const bool chain_next_v_ac    = paranoic;
-const bool chains_ac          = paranoic;
-
-
-// namespace hash
+// class hash_t
 
 
 class hash_t {
@@ -94,7 +82,8 @@ public:
 
 
 
-// nbr_cnt_t
+// namespace nbr_cnt_aux
+
 
 namespace nbr_cnt_aux { // TODO this namespace exists only because we can't have inlined cont arrays in classes
 
@@ -122,6 +111,9 @@ namespace nbr_cnt_aux { // TODO this namespace exists only because we can't have
   
   const uint player_inc_tab [player::cnt] = { black_inc_val, white_inc_val };
 }
+
+
+// class nbr_cnt_t
 
 
 class nbr_cnt_t {
@@ -171,8 +163,8 @@ class nbr_cnt_t {
 };
 
 
-
 // class board_t
+
 
 enum play_ret_t { play_ok, play_suicide, play_ss_suicide, play_ko, play_non_empty };
 

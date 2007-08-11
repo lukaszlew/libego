@@ -21,20 +21,9 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifdef NDEBUG
-const bool stack_board_ac = false;
-#endif
-
-
-#ifdef DEBUG
-const bool stack_board_ac = true;
-#endif
-
 
 // class stack_board_t
 
-
-const uint max_stack_size = max_game_length;
 
 class stack_board_t {
 

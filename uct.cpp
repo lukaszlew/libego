@@ -22,34 +22,8 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-#ifdef NDEBUG
-static const bool uct_ac   = false;
-static const bool tree_ac  = false;
-static const bool pool_ac  = false;
-#endif
-
-
-#ifdef DEBUG
-static const bool uct_ac   = true;
-static const bool tree_ac  = true;
-static const bool pool_ac  = true;
-#endif
-
-
-const float initial_value            = 0.0;
-const float initial_bias             = 1.0;
-const float mature_bias_threshold    = initial_bias + 100.0;
-const float explore_rate             = 0.2;
-const uint  uct_max_depth            = 1000;
-const uint  uct_max_nodes            = 1000000;
-const float resign_value             = 0.99;
-const uint  uct_genmove_playout_cnt  = 100000;
-
-const float print_visit_threshold_base    = 500.0;
-const float print_visit_threshold_parent  = 0.02;
-
-
 // class pool_t
+
 
 template <class elt_t, uint pool_size> class pool_t {
 public:

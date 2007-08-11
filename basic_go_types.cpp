@@ -23,36 +23,6 @@
 
 
 
-// uncomment following line if You want to play Ho (Hexagonal Go) instead of Go
-
-//#define Ho
-
-// constants
-
-const uint board_size        = 9;
-
-const uint board_area        = board_size * board_size;
-const uint max_empty_v_cnt   = board_area;
-const uint max_game_length   = board_area * 4;
-
-#ifdef NDEBUG
-const bool paranoic           = false;
-const bool board_ac           = false;
-#endif
-
-#ifdef DEBUG
-const bool paranoic           = false;
-const bool board_ac           = false;
-// const bool paranoic           = true;
-// const bool board_ac           = true;
-#endif
-
-
-const bool player_ac          = paranoic;
-const bool color_ac           = paranoic;
-const bool coord_ac           = paranoic;
-const bool v_ac               = paranoic;
-
 // namespace player
 
 
@@ -381,4 +351,3 @@ namespace move {
 }
 
 #define move_for_each_all(m) for (move::t m = 0; m < move::cnt; m++)
-

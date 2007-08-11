@@ -22,21 +22,6 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-#ifdef NDEBUG
-const bool playout_ac = false;
-#endif
-
-
-#ifdef DEBUG
-const bool playout_ac = false;
-#endif
-
-
-const bool playout_print       = false;
-const uint max_playout_length  = board_area * 2;
-const uint mercy_threshold     = 25;
-
-
 // namespace simple_playout_t
 
 

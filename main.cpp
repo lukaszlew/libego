@@ -34,6 +34,8 @@
 
 using namespace std;
 
+#include "config.cpp"
+
 #include "gtp.h"
 
 #include "utils.cpp"
@@ -48,7 +50,6 @@ using namespace std;
 
 // general gtp_* functions
 
-const int max_gtp_commands = 256;
 
 gtp_command gtp_commands [max_gtp_commands];      // list_commands needs this here
 

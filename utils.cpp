@@ -88,9 +88,9 @@ public:
 // TODO can it be a function?
 #define assertc(aspect, expr) assert((aspect) ? (expr) : true)
 
+
 // namespace pm
 
-const bool pm_ac = false;
 
 namespace pm {             // Park - Miller "minimal standard"
   static unsigned long seed = 12345;
