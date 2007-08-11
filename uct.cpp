@@ -82,7 +82,7 @@ public:
   void check () const {
     if (!tree_ac) return;
     assert (bias >= 0.0);
-    v::check (v);
+    v.check ();
   }
   
   void init (v::t v) {
@@ -195,7 +195,7 @@ public:
     rep (d, depth) out << "  ";
     out 
       << player::to_string (pl) << " " 
-      << v::to_string (v) << " " 
+      << v.to_string () << " " 
       << value << " "
       << "(" << bias - initial_bias << ")" 
       << endl;

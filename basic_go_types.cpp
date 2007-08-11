@@ -168,127 +168,145 @@ namespace coord {
 
 namespace v {
 
-  typedef uint t;
-  
   const uint cnt = (board_size + 2) * (board_size + 2);
+
   const uint bits_used = 9;     // on 19x19 cnt == 441 < 512 == 1 << 9;
   //static_assert (cnt <= (1 << bits_used));
 
   const uint dNS = (board_size + 2);
   const uint dWE = 1;
 
-  const t pass    = 0;
-  const t no_v    = 1;
-  const t resign  = 2;
+  const uint pass_idx = 0;
+  const uint no_v_idx = 1;
+  const uint resign_idx = 2;
 
-  void check (t v) { 
-    unused (v);
-    assertc (v_ac, v < cnt); 
-  }
 
-  coord::t row (t v) {
-    check (v);
-    return v / dNS - 1;
-  }
+  class t {
+  public:
 
-  coord::t col (t v) {
-    check (v);
-    return v % dNS - 1;
-  }
+    uint idx;
 
-  bool is_on_board (t v) { // TODO Ho here
-    check (v);
-#ifdef Ho
-    coord::t r, c, d;
-    r = row (v);
-    c = col (v);
-    d = r+c;
-    return coord::is_ok (r) & coord::is_ok (c) & (d >= int((board_size-1)/2)) & (d < int(board_size + board_size/2));
-#else
-    return coord::is_ok (row(v)) & coord::is_ok (col(v));
-#endif
-  }
+    t () { } // TODO is it needed
+    t (uint _idx) { idx = _idx; }
 
-  void check_is_on_board (t v) { 
-    unused (v);
-    assertc (v_ac, is_on_board (v)); 
-  }
-
-  t N (t v) { check (v); check (v - dNS); return v - dNS; }
-  t W (t v) { check (v); check (v - dWE); return v - dWE; }
-  t E (t v) { check (v); check (v + dWE); return v + dWE; }
-  t S (t v) { check (v); check (v + dNS); return v + dNS; }
-
-  t NW (t v) { check (v); return N(W(v)); }
-  t NE (t v) { check (v); return N(E(v)); } // only Go
-  t SW (t v) { check (v); return S(W(v)); } // only Go
-  t SE (t v) { check (v); return S(E(v)); }
-
-  t of_rc (coord::t r, coord::t c) {
-    coord::check2 (r, c);
-    return (r+1) * dNS + (c+1) * dWE;
-  }
-
-  string to_string (t v) {
-    coord::t r;
-    coord::t c;
-    check (v);
-    
-    if (v == pass) {
-      return "PASS";
-    } else if (v == no_v) {
-      return "NO_V";
-    } else if (v == resign) {
-      return "resign";
-    } else {
-      r = row (v);
-      c = col (v);
-      ostringstream ss;
-      ss << coord::col_to_string (c) << coord::row_to_string (r);
-      return ss.str ();
+    t (coord::t r, coord::t c) {
+      coord::check2 (r, c);
+      idx = (r+1) * dNS + (c+1) * dWE;
     }
+
+    bool operator== (t other) const { return idx == other.idx; }
+    bool operator!= (t other) const { return idx != other.idx; }
+
+    bool in_range ()          const { return idx < v::cnt; }
+    void next ()                    { idx++; }
+
+
+    void check ()             const { assertc (v_ac, idx < cnt); }
+
+    coord::t row () { return idx / dNS - 1; }
+
+    coord::t col () { return idx % dNS - 1; }
+
+    bool is_on_board () { // TODO Ho here
+      check (); // TODO remove here and there
+#ifdef Ho
+      coord::t r, c, d;
+      r = row ();
+      c = col ();
+      d = r+c;
+      return coord::is_ok (r) & coord::is_ok (c) & (d >= int((board_size-1)/2)) & (d < int(board_size + board_size/2));
+#else
+      return coord::is_ok (row ()) & coord::is_ok (col ());
+#endif
+    }
+
+    void check_is_on_board () { 
+      assertc (v_ac, is_on_board ()); 
+    }
+
+    t N () { return t (idx - dNS); }
+    t W () { return t (idx - dWE); }
+    t E () { return t (idx + dWE); }
+    t S () { return t (idx + dNS); }
+
+    t NW () { return N ().W (); } // TODO can it be faster?
+    t NE () { return N ().E (); } // only Go
+    t SW () { return S ().W (); } // only Go
+    t SE () { return S ().E (); }
+
+    string to_string () {
+      coord::t r;
+      coord::t c;
+      check ();
     
-  }
+      if (idx == pass_idx) {
+        return "PASS";
+      } else if (idx == no_v_idx) {
+        return "NO_V";
+      } else if (idx == resign_idx) {
+        return "resign";
+      } else {
+        r = row ();
+        c = col ();
+        ostringstream ss;
+        ss << coord::col_to_string (c) << coord::row_to_string (r);
+        return ss.str ();
+      }
+    }
+
+  };
+  
+  const t pass    = t (pass_idx);
+  const t no_v    = t (no_v_idx);
+  const t resign  = t (resign_idx); // TODO is it inlined (x2)?
+
+
+  template <typename elt_t> class map_t {
+  public:
+    elt_t tab [v::cnt];
+    elt_t& operator[] (t v) { return tab [v.idx]; }
+    const elt_t& operator[] (t v) const { return tab [v.idx]; }
+  };
 
 }
 
-#define v_for_each_all(vv) for (v::t vv = 0; vv < v::cnt; vv++)
+#define v_for_each_all(vv) for (v::t vv = 0; vv.in_range (); vv.next ())
 
 #define v_for_each_onboard(vv) \
-  for (v::t vv = v::dNS+v::dWE; vv <= board_size * (v::dNS + v::dWE); vv++)
+  for (v::t vv = v::dNS+v::dWE; vv.idx <= board_size * (v::dNS + v::dWE); vv.next ())
 
 
 #ifdef Ho
 
   #define v_for_each_nbr(center_v, nbr_v, block) {  \
-    v::check_is_on_board (center_v);                \
+    center_v.check_is_on_board ();                  \
     v::t nbr_v;                                     \
-    nbr_v = v::N (center_v); block;                 \
-    nbr_v = v::NE(center_v); block;                 \
-    nbr_v = v::W (center_v); block;                 \
-    nbr_v = v::E (center_v); block;                 \
-    nbr_v = v::SW(center_v); block;                 \
-    nbr_v = v::S (center_v); block;                 \
+    nbr_v = center_v.N (); block;                   \
+    nbr_v = center_v.NE(); block;                   \
+    nbr_v = center_v.W (); block;                   \
+    nbr_v = center_v.E (); block;                   \
+    nbr_v = center_v.SW(); block;                   \
+    nbr_v = center_v.S (); block;                   \
   }
 
 #else
 
   #define v_for_each_nbr(center_v, nbr_v, block) {  \
-    v::check_is_on_board (center_v);                \
+    center_v.check_is_on_board ();                  \
     v::t nbr_v;                                     \
-    nbr_v = v::N (center_v); block;                 \
-    nbr_v = v::W (center_v); block;                 \
-    nbr_v = v::E (center_v); block;                 \
-    nbr_v = v::S (center_v); block;                 \
+    nbr_v = center_v.N (); block;                   \
+    nbr_v = center_v.W (); block;                   \
+    nbr_v = center_v.E (); block;                   \
+    nbr_v = center_v.S (); block;                   \
   }
     
   #define v_for_each_diag_nbr(center_v, nbr_v, block) {  \
-    v::check_is_on_board (center_v);                     \
+    center_v.check_is_on_board ();                       \
     v::t nbr_v;                                          \
-    nbr_v = v::NW (center_v); block;                     \
-    nbr_v = v::NE (center_v); block;                     \
-    nbr_v = v::SW (center_v); block;                     \
-    nbr_v = v::SE (center_v); block;                     \
+    nbr_v = center_v.NW (); block;                       \
+    nbr_v = center_v.NE (); block;                       \
+    nbr_v = center_v.SW (); block;                       \
+    nbr_v = center_v.SE (); block;                       \
     }
   
   #define pl_v_for_each_9_nbr(center_v, pl, nbr_v, i) { \
@@ -316,7 +334,7 @@ namespace move {
 
   void check (t move) {
     player::check (player::t (move >> v::bits_used));
-           v::check (move & ((1 << v::bits_used) - 1));
+    v::t (move & ((1 << v::bits_used) - 1)).check ();
   }
 
   uint player_mask [player::cnt] = { 
@@ -326,8 +344,8 @@ namespace move {
 
   t of_pl_v (player::t player, v::t v) { 
     player::check (player);
-    v::check (v);
-    return player_mask [player] | v;
+    v.check ();
+    return player_mask [player] | v.idx;
   }
 
   const uint cnt = player::white << v::bits_used | v::cnt;
@@ -345,7 +363,7 @@ namespace move {
   }
 
   string to_string (t move) {
-    return ::player::to_string (player (move)) + " " + ::v::to_string (v (move));
+    return ::player::to_string (player (move)) + " " + v (move).to_string ();
   }
 
 }

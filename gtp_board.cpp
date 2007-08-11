@@ -113,7 +113,7 @@ int gtp_genmove (char* s) {
   if (!gtp_board->try_play (player, v)) fatal_error ("genmove: generated illegal move");
 
   gtp_start_response(GTP_SUCCESS);
-  gtp_printf ("%s", v::to_string(v).data ());
+  gtp_printf ("%s", v.to_string ().data ());
   return gtp_finish_response();
 }
 

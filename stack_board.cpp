@@ -54,7 +54,7 @@ public:
 
   bool try_play (player::t player, v::t v) {
     player::check (player);
-    v::check (v);
+    v.check ();
 
     record_state (); // for undo
 

@@ -74,7 +74,7 @@ public:
 
   hash_t of_pl_v (player::t pl,  v::t v) const {
     player::check (pl);
-    v::check(v);
+    v.check ();
     return hashes[move::of_pl_v (pl, v)];
   }
 
@@ -174,13 +174,13 @@ class board_t {
   
 public:
 
-  color::t    color_at      [v::cnt];
-  nbr_cnt_t  nbr_cnt       [v::cnt]; // incremental, for fast eye checking
-  uint        empty_pos     [v::cnt];
-  v::t        chain_next_v  [v::cnt];
+  v::map_t <color::t>    color_at;
+  v::map_t <nbr_cnt_t>   nbr_cnt; // incremental, for fast eye checking
+  v::map_t <uint>        empty_pos;
+  v::map_t <v::t>        chain_next_v;
 
   uint        chain_lib_cnt [v::cnt]; // indexed by chain_id
-  uint        chain_id      [v::cnt];
+  v::map_t <uint>        chain_id;
   
   v::t        empty_v       [board_area];
   uint        empty_v_cnt;
@@ -200,7 +200,7 @@ public:
 public:                         // macros
 
   #define empty_v_for_each(board, vv, i) {                              \
-    v::t vv;                                                            \
+    v::t vv = v::no_v;                                                  \
     rep (ev_i, (board)->empty_v_cnt) {                                  \
       vv = (board)->empty_v [ev_i];                                     \
       i;                                                                \
@@ -208,8 +208,7 @@ public:                         // macros
   }
   
   #define empty_v_for_each_and_pass(board, vv, i) {                     \
-    v::t vv;                                                            \
-    vv = v::pass;                                                       \
+    v::t vv = v::pass;                                                  \
     i;                                                                  \
     rep (ev_i, (board)->empty_v_cnt) {                                  \
       vv = (board)->empty_v [ev_i];                                     \
@@ -222,7 +221,7 @@ public:                         // consistency checks
   void check_empty_v () const {
     if (!board_empty_v_ac) return;
 
-    bool noticed[v::cnt];
+    v::map_t <bool> noticed;
     uint exp_player_v_cnt [player::cnt];
 
     v_for_each_all (v) noticed[v] = false;
@@ -258,7 +257,7 @@ public:                         // consistency checks
 
     v_for_each_all (v) {
       color::check (color_at[v]);
-      assert ((color_at[v] != color::off_board) == (v::is_on_board (v)));
+      assert ((color_at[v] != color::off_board) == (v.is_on_board ()));
     }
   }
 
@@ -273,8 +272,8 @@ public:                         // consistency checks
 
       if (color_at[v] == color::off_board) continue; // TODO is that right?
 
-      r = v::row (v);
-      c = v::col (v);
+      r = v.row ();
+      c = v.col ();
 
       assert (coord::is_ok (r)); // checking the macro
       assert (coord::is_ok (c));
@@ -315,7 +314,7 @@ public:                         // consistency checks
   void check_chain_next_v () const {
     if (!chain_next_v_ac) return;
     v_for_each_all (v) {
-      v::check (chain_next_v[v]);
+      chain_next_v[v].check ();
       if (!color::is_player (color_at[v])) 
         assert (chain_next_v[v] == v);
     }
@@ -324,7 +323,7 @@ public:                         // consistency checks
   void check_chains () const {        // ... and chain_next_v
     uint            act_chain_no;
     uint            chain_id_list [v::cnt - 1]; // list; could be smaller
-    uint            chain_no [v::cnt]; // 
+    v::map_t <uint> chain_no;
 
     const uint      no_chain = 10000;
 
@@ -426,16 +425,16 @@ public:                         // board interface
       color_at      [v] = color::off_board;
       nbr_cnt       [v] = nbr_cnt_t (0, 0, nbr_cnt_aux::max);
       chain_next_v  [v] = v;
-      chain_id      [v] = v;    // TODO is it needed, is it usedt?
-      chain_lib_cnt [v] = nbr_cnt_aux::max; // TODO is it logical? (off_boards)
+      chain_id      [v] = v.idx;    // TODO is it needed, is it usedt?
+      chain_lib_cnt [v.idx] = nbr_cnt_aux::max; // TODO is it logical? (off_boards)
 
-      if (v::is_on_board (v)) {
+      if (v.is_on_board ()) {
         color_at   [v]              = color::empty;
         empty_pos  [v]              = empty_v_cnt;
         empty_v    [empty_v_cnt++]  = v;
 
         off_board_cnt = 0;
-        v_for_each_nbr (v, nbr_v, if (!v::is_on_board (nbr_v)) off_board_cnt++);
+        v_for_each_nbr (v, nbr_v, if (!nbr_v.is_on_board ()) off_board_cnt++);
         rep (ii, off_board_cnt) nbr_cnt [v].off_board_inc ();
       }
     }
@@ -476,7 +475,7 @@ public:                         // board interface
   play_ret_t play_no_pass (player::t player, v::t v) {
     check ();
     player::check (player);
-    v::check_is_on_board (v);
+    v.check_is_on_board ();
     assertc (board_ac, color_at[v] == color::empty);
 
     if (nbr_cnt[v].player_cnt_is_max (player::other (player)))
@@ -488,7 +487,7 @@ public:                         // board interface
   play_ret_t play_no_eye (player::t player, v::t v) {
     check ();
     player::check (player);
-    v::check_is_on_board (v);
+    v.check_is_on_board ();
     assertc (board_ac, color_at[v] == color::empty);
 
     last_empty_v_cnt = empty_v_cnt;
@@ -629,8 +628,8 @@ public:                         // board interface
 
     assertc (chain_next_v_ac, chain_next_v[v] == v);
 
-    chain_id [v] = v;
-    chain_lib_cnt [v] = nbr_cnt[v].empty_cnt ();
+    chain_id [v] = v.idx;
+    chain_lib_cnt [v.idx] = nbr_cnt[v].empty_cnt ();
   }
 
   void remove_stone (v::t v) {
@@ -713,10 +712,10 @@ public:                         // utils
 #endif
       os (coord::row_to_string (row));
       coord_for_each (col) {
-        v::t v = v::of_rc (row, col);
+        v::t v = v::t (row, col);
         char ch = color::to_char (color_at[v]);
         if      (v == mark_v)        o_left  (ch);
-        else if (v == v::E(mark_v))  o_right (ch);
+        else if (v == mark_v.E ())   o_right (ch);
         else                         os (ch);
       }
       if (board_size >= 10 && board_size - row < 10) out << " ";
@@ -767,7 +766,7 @@ public:                         // utils
         
         if (color::is_player (pl)) {
           play_player[play_cnt] = player::t (pl);
-          play_v[play_cnt] = v::of_rc (row, col);
+          play_v[play_cnt] = v::t (row, col);
           play_cnt++;
           assertc (board_ac, play_cnt < board_area);
         }

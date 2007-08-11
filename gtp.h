@@ -130,7 +130,7 @@ void gtp_append_commands (gtp_command* dst, gtp_command* src);
     s += n;                                                \
                                                            \
     plpl    = (player::t) (2 - gtp_color);                 \
-    vv      = v::of_rc (r, c);                             \
+    vv      = v::t (r, c);                                 \
   }                                                        \
 }
 
