@@ -104,7 +104,7 @@ namespace nbr_cnt_aux { // TODO this namespace exists only because we can't have
   
   const uint black_inc_val = (1 << f_shift [player::black]) - (1 << f_shift [color::empty]);
   const uint white_inc_val = (1 << f_shift [player::white]) - (1 << f_shift [color::empty]);
-  const uint edge_inc_val  = 
+  const uint off_board_inc_val  = 
     + (1 << f_shift [player::black]) 
     + (1 << f_shift [player::white]) 
     - (1 << f_shift [color::empty]);
@@ -136,7 +136,7 @@ class nbr_cnt_t {
   
     //void operator+= (const uint delta) { bitfield += delta; }
 
-    void edge_inc () { bitfield += nbr_cnt_aux::edge_inc_val; }
+    void off_board_inc () { bitfield += nbr_cnt_aux::off_board_inc_val; }
     void player_inc (player::t player) { bitfield += nbr_cnt_aux::player_inc_tab [player]; }
     void player_dec (player::t player) { bitfield -= nbr_cnt_aux::player_inc_tab [player]; }
 
@@ -258,7 +258,7 @@ public:                         // consistency checks
 
     v_for_each_all (v) {
       color::check (color_at[v]);
-      assert ((color_at[v] != color::edge) == (v::is_on_board (v)));
+      assert ((color_at[v] != color::off_board) == (v::is_on_board (v)));
     }
   }
 
@@ -271,7 +271,7 @@ public:                         // consistency checks
       uint nbr_color_cnt[color::cnt];
       uint expected_nbr_cnt;
 
-      if (color_at[v] == color::edge) continue; // TODO is that right?
+      if (color_at[v] == color::off_board) continue; // TODO is that right?
 
       r = v::row (v);
       c = v::col (v);
@@ -284,9 +284,9 @@ public:                         // consistency checks
       v_for_each_nbr (v, nbr_v, nbr_color_cnt [color_at [nbr_v]]++);
           
       expected_nbr_cnt =        // definition of nbr_cnt[v]
-        + ((nbr_color_cnt [color::black] + nbr_color_cnt [color::edge]) 
+        + ((nbr_color_cnt [color::black] + nbr_color_cnt [color::off_board]) 
            << nbr_cnt_aux::f_shift [player::black])
-        + ((nbr_color_cnt [color::white] + nbr_color_cnt [color::edge])
+        + ((nbr_color_cnt [color::white] + nbr_color_cnt [color::off_board])
            << nbr_cnt_aux::f_shift [player::white])
         + ((nbr_color_cnt [color::empty]) 
            << nbr_cnt_aux::f_shift [color::empty]);
@@ -299,7 +299,7 @@ public:                         // consistency checks
     if (!chain_at_ac) return;
 
     v_for_each_onboard (v) { // whether same color neighbours have same root and liberties
-      // TODO what about edge and empty?
+      // TODO what about off_board and empty?
       if (color::is_player (color_at[v])) {
 
         assert (chain_lib_cnt[ chain_id [v]] != 0);
@@ -334,14 +334,14 @@ public:                         // consistency checks
 
     v_for_each_all (v) chain_no[v] = no_chain;
 
-    // TODO what about empty and edge?
+    // TODO what about empty and off_board?
     v_for_each_onboard (v) {
       if (color::is_player(color_at[v]) && chain_no[v] == no_chain) { // chain not visited yet
         color::t        act_color;
 
         uint lib_cnt;
-        uint forward_edge_cnt;
-        uint backward_edge_cnt;
+        uint forward_off_board_cnt;
+        uint backward_off_board_cnt;
 
         chain_id_list [act_chain_no] = chain_id [v];
 
@@ -350,8 +350,8 @@ public:                         // consistency checks
         
         act_color          = color_at[v]; 
         lib_cnt            = 0;
-        forward_edge_cnt   = 0;
-        backward_edge_cnt  = 0;
+        forward_off_board_cnt   = 0;
+        backward_off_board_cnt  = 0;
         
         v::t act_v = v;
         do {
@@ -363,10 +363,10 @@ public:                         // consistency checks
           v_for_each_nbr (act_v, nbr_v, {
             if (color_at[nbr_v] == color::empty) lib_cnt++;
             if (color_at[nbr_v] == act_color) {
-              if (chain_no[nbr_v] == act_chain_no) forward_edge_cnt++; 
+              if (chain_no[nbr_v] == act_chain_no) forward_off_board_cnt++; 
               else {
                 assert (chain_no[nbr_v] == no_chain);
-                backward_edge_cnt++;
+                backward_off_board_cnt++;
               }
             }
             
@@ -375,7 +375,7 @@ public:                         // consistency checks
           act_v = chain_next_v[act_v];
         } while (act_v != v);
         
-        assert (forward_edge_cnt == backward_edge_cnt);
+        assert (forward_off_board_cnt == backward_off_board_cnt);
         assert (chain_lib_cnt [chain_id [v]] == lib_cnt);
         
         act_chain_no++;
@@ -414,7 +414,7 @@ public:                         // board interface
   }
   
   void clear () {
-    uint edge_cnt;
+    uint off_board_cnt;
 
     set_komi (7.5);            // standard for chinese rules
     empty_v_cnt = 0;
@@ -423,20 +423,20 @@ public:                         // board interface
     ko_v = v::no_v;             // only Go
 #endif
     v_for_each_all (v) {
-      color_at      [v] = color::edge;
+      color_at      [v] = color::off_board;
       nbr_cnt       [v] = nbr_cnt_t (0, 0, nbr_cnt_aux::max);
       chain_next_v  [v] = v;
       chain_id      [v] = v;    // TODO is it needed, is it usedt?
-      chain_lib_cnt [v] = nbr_cnt_aux::max; // TODO is it logical? (edges)
+      chain_lib_cnt [v] = nbr_cnt_aux::max; // TODO is it logical? (off_boards)
 
       if (v::is_on_board (v)) {
         color_at   [v]              = color::empty;
         empty_pos  [v]              = empty_v_cnt;
         empty_v    [empty_v_cnt++]  = v;
 
-        edge_cnt = 0;
-        v_for_each_nbr (v, nbr_v, if (!v::is_on_board (nbr_v)) edge_cnt++);
-        rep (ii, edge_cnt) nbr_cnt [v].edge_inc ();
+        off_board_cnt = 0;
+        v_for_each_nbr (v, nbr_v, if (!v::is_on_board (nbr_v)) off_board_cnt++);
+        rep (ii, off_board_cnt) nbr_cnt [v].off_board_inc ();
       }
     }
 
@@ -513,7 +513,7 @@ public:                         // board interface
 
   no_inline
   play_ret_t play_eye (player::t player, v::t v) {
-    v_for_each_nbr (v, nbr_v, assertc (board_ac, color_at[nbr_v] == color::opponent (player) || color_at[nbr_v] == color::edge));
+    v_for_each_nbr (v, nbr_v, assertc (board_ac, color_at[nbr_v] == color::opponent (player) || color_at[nbr_v] == color::off_board));
 
 #ifndef Ho
     if (v == ko_v && player == player::other (last_player)) // only Go
@@ -661,7 +661,7 @@ public:                         // utils
       diag_color_cnt [color_at [diag_v]]++;
     });
 
-    diag_color_cnt[player::other (player)] += (diag_color_cnt[color::edge] > 0);
+    diag_color_cnt[player::other (player)] += (diag_color_cnt[color::off_board] > 0);
     return diag_color_cnt[player::other (player)] < 2;
 #endif
   }

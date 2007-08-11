@@ -61,12 +61,12 @@ namespace simple_playout {
   static playout_status run (board_t* board, player::t first_player) {
 
     v::t       v;
-    bool       was_pass [player::cnt];
+    v::t       last_v [player::cnt];
     uint       move_no;
     player::t  act_player;
 
     player_for_each (pl)
-      was_pass [pl] = false;
+      last_v [pl] = v::no_v;
 
     act_player  = first_player;
     move_no     = 0;
@@ -74,11 +74,11 @@ namespace simple_playout {
     do {
       v = play_one (board, act_player);
 
-      was_pass [act_player] = (v == v::pass);
+      last_v [act_player] = v;
       act_player = player::other (act_player);
       move_no++;
 
-      if (was_pass [player::black] & was_pass [player::white])    return playout_ok;
+      if ((last_v [player::black] == v::pass) & (last_v [player::white] == v::pass))    return playout_ok;
       if (move_no >= max_playout_length)                          return playout_too_long;
       if (uint (abs (board->approx_score ())) > mercy_threshold)  return playout_mercy;
     } while (true);

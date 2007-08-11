@@ -68,7 +68,7 @@ namespace color {
     black = 0,
     white = 1,
     empty = 2,
-    edge  = 3
+    off_board  = 3
   };
 
   const uint cnt = 4;
@@ -94,7 +94,7 @@ namespace color {
     case black: return '#';
     case white: return 'O';
     case empty: return '.';
-    case edge:  return ' ';
+    case off_board:  return ' ';
     default : assertc (color_ac, false);
     }
     return '?';                 // should not happen
@@ -107,7 +107,7 @@ namespace color {
      case '#': return black;
      case 'O': return white;
      case '.': return empty;
-     case '*': return edge;
+     case '*': return off_board;
      default : return wrong_char;
      }
   }

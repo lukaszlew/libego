@@ -17,6 +17,9 @@ ego_debug: $(FILES)
 ego_opt:   $(FILES)
 	$(GPP) $(OPT)   -o ego_opt   gtp.cpp main.cpp
 
+ego_asm:   $(FILES)
+	$(GPP) $(OPT)   -S -c main.cpp
+
 ego_prof:  $(FILES)
 	$(GPP) $(PROF)  -o ego_prof  gtp.cpp main.cpp
 
