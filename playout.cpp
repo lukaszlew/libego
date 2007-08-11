@@ -30,9 +30,9 @@ enum playout_status { playout_ok, playout_mercy, playout_too_long };
 namespace simple_playout {
 
   all_inline 
-  v::t play_one (board_t* board, player::t player) {
+  vertex_t play_one (board_t* board, player::t player) {
 
-    v::t v;
+    vertex_t v;
     uint start;
 
     // find random place in vector of empty vertices
@@ -53,20 +53,20 @@ namespace simple_playout {
     }
 
     board->check_no_more_legal (player); // powerfull check
-    return v::pass;
+    return vertex_pass;
   }
 
 
   all_inline 
   static playout_status run (board_t* board, player::t first_player) {
 
-    v::t       v;
-    v::t       last_v [player::cnt];
+    vertex_t   v;
+    vertex_t   last_v [player::cnt];
     uint       move_no;
     player::t  act_player;
 
     player_for_each (pl)
-      last_v [pl] = v::no_v;
+      last_v [pl] = vertex_no_v;
 
     act_player  = first_player;
     move_no     = 0;
@@ -78,7 +78,7 @@ namespace simple_playout {
       act_player = player::other (act_player);
       move_no++;
 
-      if ((last_v [player::black] == v::pass) & (last_v [player::white] == v::pass))    return playout_ok;
+      if ((last_v [player::black] == vertex_pass) & (last_v [player::white] == vertex_pass))    return playout_ok;
       if (move_no >= max_playout_length)                          return playout_too_long;
       if (uint (abs (board->approx_score ())) > mercy_threshold)  return playout_mercy;
     } while (true);

@@ -52,15 +52,14 @@ public:
     return stack_top; 
   }
 
-  bool try_play (player::t player, v::t v) {
+  bool try_play (player::t player, vertex_t v) {
     player::check (player);
-    v.check ();
 
     record_state (); // for undo
 
-    if (v == v::pass) return true;
+    if (v == vertex_pass) return true;
 
-    if (v == v::resign) return true;
+    if (v == vertex_resign) return true;
 
     if (stack_top->color_at[v] != color::empty) 
       { revert_state (); return false; }
@@ -80,7 +79,7 @@ public:
     return true;
   }
 
-  bool is_legal (player::t pl, v::t v) {            // slow function
+  bool is_legal (player::t pl, vertex_t v) {            // slow function
     bool undo_res;
     if (!try_play (pl, v)) return false;
     undo_res = try_undo ();

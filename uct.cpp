@@ -59,7 +59,7 @@ class node_t {
 
 public:
 
-  v::t     v;
+  vertex_t     v;
 
   float    value;
   float    bias;
@@ -85,7 +85,7 @@ public:
     v.check ();
   }
   
-  void init (v::t v) {
+  void init (vertex_t v) {
     this->v       = v;
     value         = initial_value;
     bias          = initial_bias;
@@ -205,7 +205,7 @@ public:
   }
 
   void rec_print_children (ostream& out, uint depth, player::t player) {
-    node_t*  child_tab [v::cnt]; // rough upper bound for the number of legal move
+    node_t*  child_tab [v_aux::cnt]; // rough upper bound for the number of legal move
     uint     child_tab_size;
     uint     best_child_idx;
     float    min_visit_cnt;
@@ -259,7 +259,7 @@ public:
 
   tree_t () {
     history [0] = node_pool->malloc ();
-    history [0]->init (v::no_v);
+    history [0]->init (vertex_no_v);
   }
 
   void history_reset () {
@@ -276,7 +276,7 @@ public:
     assertc (tree_ac, act_node () != NULL);
   }
   
-  void alloc_child (player::t pl, v::t v) {
+  void alloc_child (player::t pl, vertex_t v) {
     node_t* new_node;
     new_node = node_pool->malloc ();
     new_node->init (v);
@@ -345,7 +345,7 @@ public:
     board_t    play_board[1]; // TODO test for perfomance + memcpy
     bool       was_pass [player::cnt];
     player::t  act_player;
-    v::t       v;
+    vertex_t       v;
     
     
     play_board->load (base_board->act_board ());
@@ -376,13 +376,13 @@ public:
       tree->uct_descend (act_player);
       v = tree->act_node ()->v;
       
-      if (v != v::pass && play_board->play_no_pass (act_player, v) != play_ok) {
+      if (v != vertex_pass && play_board->play_no_pass (act_player, v) != play_ok) {
         assertc (uct_ac, tree->act_node ()->no_children (player::other (act_player)));
         tree->delete_act_node (act_player);
         return;
       }
       
-      was_pass [act_player]  = (v == v::pass);
+      was_pass [act_player]  = (v == vertex_pass);
       act_player             = player::other (act_player);
       
       if (was_pass [player::black] & was_pass [player::white]) break;
@@ -394,7 +394,7 @@ public:
   }
   
 
-  v::t genmove (player::t player) {
+  vertex_t genmove (player::t player) {
     node_t* best;
 
     root_ensure_children_legality (player);
@@ -404,8 +404,8 @@ public:
     assertc (uct_ac, best != NULL);
 
     //cerr << tree->to_string () << endl;
-    if (player == player::black && best->value < -resign_value) return v::resign;
-    if (player == player::white && best->value >  resign_value) return v::resign;
+    if (player == player::black && best->value < -resign_value) return vertex_resign;
+    if (player == player::white && best->value >  resign_value) return vertex_resign;
     return best->v;
   }
   

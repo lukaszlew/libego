@@ -72,9 +72,8 @@ public:
     return hashes[m];
   }
 
-  hash_t of_pl_v (player::t pl,  v::t v) const {
+  hash_t of_pl_v (player::t pl,  vertex_t v) const {
     player::check (pl);
-    v.check ();
     return hashes[move::of_pl_v (pl, v)];
   }
 
@@ -174,15 +173,15 @@ class board_t {
   
 public:
 
-  v::map_t <color::t>    color_at;
-  v::map_t <nbr_cnt_t>   nbr_cnt; // incremental, for fast eye checking
-  v::map_t <uint>        empty_pos;
-  v::map_t <v::t>        chain_next_v;
+  vertex_map_t <color::t>    color_at;
+  vertex_map_t <nbr_cnt_t>   nbr_cnt; // incremental, for fast eye checking
+  vertex_map_t <uint>        empty_pos;
+  vertex_map_t <vertex_t>        chain_next_v;
 
-  uint        chain_lib_cnt [v::cnt]; // indexed by chain_id
-  v::map_t <uint>        chain_id;
+  uint        chain_lib_cnt [v_aux::cnt]; // indexed by chain_id
+  vertex_map_t <uint>        chain_id;
   
-  v::t        empty_v       [board_area];
+  vertex_t        empty_v       [board_area];
   uint        empty_v_cnt;
   uint        last_empty_v_cnt;
 
@@ -192,7 +191,7 @@ public:
   int         komi;
 
 #ifndef Ho
-  v::t        ko_v;             // vertex forbidden by ko (only Go)
+  vertex_t        ko_v;             // vertex forbidden by ko (only Go)
 #endif
 
   player::t   last_player;      // player who made the last play (other::player is forbidden to retake)
@@ -200,7 +199,7 @@ public:
 public:                         // macros
 
   #define empty_v_for_each(board, vv, i) {                              \
-    v::t vv = v::no_v;                                                  \
+    vertex_t vv = vertex_no_v;                                          \
     rep (ev_i, (board)->empty_v_cnt) {                                  \
       vv = (board)->empty_v [ev_i];                                     \
       i;                                                                \
@@ -208,7 +207,7 @@ public:                         // macros
   }
   
   #define empty_v_for_each_and_pass(board, vv, i) {                     \
-    v::t vv = v::pass;                                                  \
+    vertex_t vv = vertex_pass;                                          \
     i;                                                                  \
     rep (ev_i, (board)->empty_v_cnt) {                                  \
       vv = (board)->empty_v [ev_i];                                     \
@@ -221,7 +220,7 @@ public:                         // consistency checks
   void check_empty_v () const {
     if (!board_empty_v_ac) return;
 
-    v::map_t <bool> noticed;
+    vertex_map_t <bool> noticed;
     uint exp_player_v_cnt [player::cnt];
 
     v_for_each_all (v) noticed[v] = false;
@@ -322,8 +321,8 @@ public:                         // consistency checks
 
   void check_chains () const {        // ... and chain_next_v
     uint            act_chain_no;
-    uint            chain_id_list [v::cnt - 1]; // list; could be smaller
-    v::map_t <uint> chain_no;
+    uint            chain_id_list [v_aux::cnt - 1]; // list; could be smaller
+    vertex_map_t <uint> chain_no;
 
     const uint      no_chain = 10000;
 
@@ -352,7 +351,7 @@ public:                         // consistency checks
         forward_off_board_cnt   = 0;
         backward_off_board_cnt  = 0;
         
-        v::t act_v = v;
+        vertex_t act_v = v;
         do {
           assert (color_at[act_v] == act_color);
           assert (chain_id[act_v] == chain_id_list [act_chain_no]);
@@ -419,7 +418,7 @@ public:                         // board interface
     empty_v_cnt = 0;
     player_for_each (pl) player_v_cnt [pl] = 0;
 #ifndef Ho
-    ko_v = v::no_v;             // only Go
+    ko_v = vertex_no_v;             // only Go
 #endif
     v_for_each_all (v) {
       color_at      [v] = color::off_board;
@@ -472,7 +471,7 @@ public:                         // board interface
   }
 
   flatten all_inline 
-  play_ret_t play_no_pass (player::t player, v::t v) {
+  play_ret_t play_no_pass (player::t player, vertex_t v) {
     check ();
     player::check (player);
     v.check_is_on_board ();
@@ -484,7 +483,7 @@ public:                         // board interface
       return play_no_eye (player, v);
   }
 
-  play_ret_t play_no_eye (player::t player, v::t v) {
+  play_ret_t play_no_eye (player::t player, vertex_t v) {
     check ();
     player::check (player);
     v.check_is_on_board ();
@@ -492,7 +491,7 @@ public:                         // board interface
 
     last_empty_v_cnt = empty_v_cnt;
 #ifndef Ho
-    ko_v             = v::no_v;
+    ko_v             = vertex_no_v;
 #endif
     last_player      = player;
 
@@ -511,7 +510,7 @@ public:                         // board interface
   }
 
   no_inline
-  play_ret_t play_eye (player::t player, v::t v) {
+  play_ret_t play_eye (player::t player, vertex_t v) {
     v_for_each_nbr (v, nbr_v, assertc (board_ac, color_at[nbr_v] == color::opponent (player) || color_at[nbr_v] == color::off_board));
 
 #ifndef Ho
@@ -542,16 +541,16 @@ public:                         // board interface
     if (last_empty_v_cnt == empty_v_cnt) { // if captured exactly one stone, end this was eye (only Go)
       ko_v = empty_v [empty_v_cnt - 1]; // then ko formed
     } else {
-      ko_v = v::no_v;
+      ko_v = vertex_no_v;
     }
 #endif
 
     return play_ok;
   }
 
-  void process_new_nbr(v::t v, 
+  void process_new_nbr(vertex_t v, 
                        player::t new_nbr_player,
-                       v::t new_nbr_v) // TODO moze warto chain id przekazywc do ustalenia?
+                       vertex_t new_nbr_v) // TODO moze warto chain id przekazywc do ustalenia?
   {
     nbr_cnt[v].player_inc (new_nbr_player);
 
@@ -572,8 +571,8 @@ public:                         // board interface
 
   }
 
-  void merge_chains (v::t v_base, v::t v_new) {
-    v::t act_v;
+  void merge_chains (vertex_t v_base, vertex_t v_new) {
+    vertex_t act_v;
 
     chain_lib_cnt [chain_id [v_base]] += chain_lib_cnt [chain_id [v_new]];
 
@@ -587,9 +586,9 @@ public:                         // board interface
   }
 
   no_inline 
-  void remove_chain (v::t v){
-    v::t act_v;
-    v::t tmp_v;
+  void remove_chain (vertex_t v){
+    vertex_t act_v;
+    vertex_t tmp_v;
     color::t old_color;
 
     old_color = color_at[v];
@@ -617,7 +616,7 @@ public:                         // board interface
     } while (act_v != v);
   }
 
-  void place_stone (player::t pl, v::t v) {
+  void place_stone (player::t pl, vertex_t v) {
     hash ^= zobrist->of_pl_v (pl, v);
     player_v_cnt[pl]++;
     color_at[v] = color::t (pl);
@@ -632,7 +631,7 @@ public:                         // board interface
     chain_lib_cnt [v.idx] = nbr_cnt[v].empty_cnt ();
   }
 
-  void remove_stone (v::t v) {
+  void remove_stone (vertex_t v) {
     hash ^= zobrist->of_pl_v (player::t(color_at[v]), v);
     player_v_cnt [color_at[v]]--;
     color_at[v] = color::empty;
@@ -640,12 +639,12 @@ public:                         // board interface
     empty_pos [v] = empty_v_cnt;
     empty_v [empty_v_cnt++] = v;
 
-    assertc (board_ac, empty_v_cnt < v::cnt);
+    assertc (board_ac, empty_v_cnt < v_aux::cnt);
   }
 
 public:                         // utils
 
-  bool is_eyelike (player::t player, v::t v) { 
+  bool is_eyelike (player::t player, vertex_t v) { 
 #ifdef Ho
     return nbr_cnt::player_cnt_is_max (nbr_cnt[v], player);
 #else
@@ -691,7 +690,7 @@ public:                         // utils
     return player::t (score () <= 0); 
   }
 
-  string to_string (v::t mark_v = v::no_v) const {
+  string to_string (vertex_t mark_v = vertex_no_v) const {
     ostringstream out;
 
     #define os(n)      out << " " << n
@@ -712,7 +711,7 @@ public:                         // utils
 #endif
       os (coord::row_to_string (row));
       coord_for_each (col) {
-        v::t v = v::t (row, col);
+        vertex_t v = vertex_t (row, col);
         char ch = color::to_char (color_at[v]);
         if      (v == mark_v)        o_left  (ch);
         else if (v == mark_v.E ())   o_right (ch);
@@ -733,7 +732,7 @@ public:                         // utils
     return out.str ();
   }
 
-  void print_cerr (v::t v = v::pass) const {
+  void print_cerr (vertex_t v = vertex_pass) const {
     cerr << to_string (v);
   }
 
@@ -742,7 +741,7 @@ public:                         // utils
     char c;
 
     player::t  play_player[board_area];
-    v::t       play_v[board_area];
+    vertex_t       play_v[board_area];
     uint       play_cnt;
 
     clear ();
@@ -766,7 +765,7 @@ public:                         // utils
         
         if (color::is_player (pl)) {
           play_player[play_cnt] = player::t (pl);
-          play_v[play_cnt] = v::t (row, col);
+          play_v[play_cnt] = vertex_t (row, col);
           play_cnt++;
           assertc (board_ac, play_cnt < board_area);
         }

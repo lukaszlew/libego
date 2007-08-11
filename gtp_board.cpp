@@ -72,7 +72,7 @@ int gtp_load_position (char* s) {
 int gtp_play (char* s) {
 
   player::t  pl;
-  v::t       v;
+  vertex_t   v;
 
   decode_player_v (s, pl, v, return gtp_failure ("syntax error"));
   
@@ -106,7 +106,7 @@ int gtp_genmove (char* s) {
   player::t player;
   decode_player (s, player);
 
-  v::t v;
+  vertex_t v;
   uct_t uct (gtp_board);
   v = uct.genmove (player);
 

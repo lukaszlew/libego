@@ -130,13 +130,13 @@ void gtp_append_commands (gtp_command* dst, gtp_command* src);
     s += n;                                                \
                                                            \
     plpl    = (player::t) (2 - gtp_color);                 \
-    vv      = v::t (r, c);                                 \
+    vv      = vertex_t (r, c);                             \
   }                                                        \
 }
 
 #define decode_move(s, mm, fail_i) {                       \
   player::t pl;                                            \
-  v::t v;                                                  \
+  vertex_t v;                                              \
   decode_player_v(s, pl, v, fail_i);                       \
   mm = move::of_pl_v (pl, v);                              \
 }
