@@ -755,14 +755,14 @@ public:                         // utils
 
     coord_for_each (row) {
       coord_for_each (col) {
-        color::t pl;
+        color::t color;
 
         c = getc_non_space (ifs);
-        pl = color::of_char (c);
-        if (pl == color::wrong_char) return false;
+        color = color::of_char (c);
+        if (color == color::wrong_char) return false;
         
-        if (color::is_player (pl)) {
-          play_player[play_cnt] = player_t (pl);
+        if (color::is_player (color)) {
+          play_player[play_cnt] = player_t (color);
           play_v[play_cnt] = vertex_t (row, col);
           play_cnt++;
           assertc (board_ac, play_cnt < board_area);

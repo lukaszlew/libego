@@ -21,7 +21,7 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-
+// TODO check is check always checked :)
 
 // namespace player
 
@@ -43,30 +43,33 @@ public:
 
   bool operator== (player_t other) const { return idx == other.idx; }
 
-  void check () { 
+  void check () const { 
     assertc (player_ac, (idx & (~1)) == 0);
   }
 
-  player_t other () { 
+  player_t other () const { 
     return player_t(idx ^ 1);
   }
   
-  string to_string () {
+  string to_string () const {
     if (idx == player_aux::black_idx)
       return "#";
     else
       return "O";
   }
 
-  bool in_range () { return idx < player_aux::cnt; }
+  bool in_range () const { return idx < player_aux::cnt; }
   void next () { idx++; }
 
-  uint get_idx () { return idx; }
+  uint get_idx () const { return idx; }
   
 };
 
-player_t player_black = player_t (player_aux::black_idx);
-player_t player_white = player_t (player_aux::white_idx);
+const player_t player_black = player_t (player_aux::black_idx);
+const player_t player_white = player_t (player_aux::white_idx);
+
+
+// class player_map_t
 
 template <typename elt_t> class player_map_t {
 public:
@@ -74,6 +77,7 @@ public:
   elt_t& operator[] (player_t pl)             { return tab [pl.get_idx ()]; }
   const elt_t& operator[] (player_t pl) const { return tab [pl.get_idx ()]; }
 };
+
 
 // faster than non-loop
 #define player_for_each(pl) \
