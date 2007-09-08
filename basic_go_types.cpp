@@ -21,7 +21,7 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-
+// TODO check is check always checked :)
 
 // namespace player
 
@@ -43,30 +43,33 @@ public:
 
   bool operator== (player_t other) const { return idx == other.idx; }
 
-  void check () { 
+  void check () const { 
     assertc (player_ac, (idx & (~1)) == 0);
   }
 
-  player_t other () { 
+  player_t other () const { 
     return player_t(idx ^ 1);
   }
   
-  string to_string () {
+  string to_string () const {
     if (idx == player_aux::black_idx)
       return "#";
     else
       return "O";
   }
 
-  bool in_range () { return idx < player_aux::cnt; }
+  bool in_range () const { return idx < player_aux::cnt; }
   void next () { idx++; }
 
-  uint get_idx () { return idx; }
+  uint get_idx () const { return idx; }
   
 };
 
-player_t player_black = player_t (player_aux::black_idx);
-player_t player_white = player_t (player_aux::white_idx);
+const player_t player_black = player_t (player_aux::black_idx);
+const player_t player_white = player_t (player_aux::white_idx);
+
+
+// class player_map_t
 
 template <typename elt_t> class player_map_t {
 public:
@@ -75,68 +78,103 @@ public:
   const elt_t& operator[] (player_t pl) const { return tab [pl.get_idx ()]; }
 };
 
+
 // faster than non-loop
 #define player_for_each(pl) \
   for (player_t pl = player_black; pl.in_range (); pl.next ())
 
 
-// namespace color
+// class color
 
+namespace color_aux {
 
-namespace color {
+  const uint black_idx = 0;
+  const uint white_idx = 1;
+  const uint empty_idx = 2;
+  const uint off_board_idx  = 3;
 
-  enum t {
-    black = 0,
-    white = 1,
-    empty = 2,
-    off_board  = 3
-  };
+  const uint wrong_char_idx = 40;
 
   const uint cnt = 4;
+}
 
-  void check (t color) { 
-    unused (color);
-    assertc (color_ac, (color & (~3)) == 0); 
+
+class color_t {
+  uint idx;
+public:
+
+  color_t () { idx = -1; } // TODO test - remove it
+
+  color_t (uint idx_) { idx = idx_; } // TODO test - remove it
+
+  color_t (player_t pl) { idx = pl.get_idx (); }
+
+  color_t (char c, uint dummy) {  // may return color_wrong_char // TODO dummmy is just to be able to choose the constructor
+     switch (c) {
+     case '#': idx = color_aux::black_idx; break;
+     case 'O': idx = color_aux::white_idx; break;
+     case '.': idx = color_aux::empty_idx; break;
+     case '*': idx = color_aux::off_board_idx; break;
+     default : idx = color_aux::wrong_char_idx; break;
+     }
   }
 
-  bool is_player (t color) { return color <= color::white; } // & (~1)) == 0; }
-  bool is_not_player (t color) { return color > color::white; } // & (~1)) == 0; }
-
-  t opponent (player_t player) {
-    unused (opponent);          // avoids warning
-    unused (player);
-    return t (player.get_idx () ^ 1);
+  void check () const { 
+    assertc (color_ac, (idx & (~3)) == 0); 
   }
 
-  char to_char (t color) { 
-    check (color);
-    switch (color) {
-    case black: return '#';
-    case white: return 'O';
-    case empty: return '.';
-    case off_board:  return ' ';
+  bool is_player     () const { return idx <= color_aux::white_idx; } // & (~1)) == 0; }
+  bool is_not_player () const { return idx  > color_aux::white_idx; } // & (~1)) == 0; }
+
+  player_t to_player () const { return player_t (idx); }
+
+//   t opponent (player_t player) {
+//     unused (opponent);          // avoids warning
+//     unused (player);
+//     return t (player.get_idx () ^ 1);
+//   }
+
+  char to_char () const { 
+    switch (idx) {
+    case color_aux::black_idx:      return '#';
+    case color_aux::white_idx:      return 'O';
+    case color_aux::empty_idx:      return '.';
+    case color_aux::off_board_idx:  return ' ';
     default : assertc (color_ac, false);
     }
     return '?';                 // should not happen
   }
 
-  const t wrong_char = t(4);
+  bool in_range () const { return idx < color_aux::cnt; }
+  void next () { idx++; }
 
-  t of_char (char c) {  // may return t(4)
-     switch (c) {
-     case '#': return black;
-     case 'O': return white;
-     case '.': return empty;
-     case '*': return off_board;
-     default : return wrong_char;
-     }
-  }
+  uint get_idx () { return idx; }
+  bool operator== (color_t other) const { return idx == other.idx; }
+  bool operator!= (color_t other) const { return idx != other.idx; }
 
-}
+};
+
+const color_t color_black     = color_t (color_aux::black_idx);
+const color_t color_white     = color_t (color_aux::white_idx);
+const color_t color_empty     = color_t (color_aux::empty_idx);
+const color_t color_off_board = color_t (color_aux::off_board_idx);
+
+const color_t color_wrong_char = color_t (color_aux::wrong_char_idx);
+
+// class color_map_t
+
+template <typename elt_t> class color_map_t {
+public:
+  elt_t tab [color_aux::cnt];
+  elt_t& operator[] (color_t col)             { return tab [col.get_idx ()]; }
+  const elt_t& operator[] (color_t col) const { return tab [col.get_idx ()]; }
+};
+
 
 // TODO test it for performance
 #define color_for_each(col) \
-  for (color::t col = color::black; col != color::cnt; col = color::t (col+1))
+  for (color_t col = color_black; col.in_range (); col.next ())
+
 
 // namespace coord
 

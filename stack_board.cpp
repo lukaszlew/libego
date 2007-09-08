@@ -60,7 +60,7 @@ public:
 
     if (v == vertex_resign) return true;
 
-    if (stack_top->color_at[v] != color::empty) 
+    if (stack_top->color_at [v] != color_empty) 
       { revert_state (); return false; }
 
     if (stack_top->play_no_pass (player, v) != play_ok)
