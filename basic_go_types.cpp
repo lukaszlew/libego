@@ -210,9 +210,10 @@ namespace v_aux {
 
 class vertex_t {
 
+  uint idx;
+
 public:
 
-  uint idx;
 
   vertex_t () { } // TODO is it needed
   vertex_t (uint _idx) { idx = _idx; }
@@ -221,6 +222,8 @@ public:
     coord::check2 (r, c);
     idx = (r+1) * v_aux::dNS + (c+1) * v_aux::dWE;
   }
+
+  uint get_idx () { return idx; }
 
   bool operator== (vertex_t other) const { return idx == other.idx; }
   bool operator!= (vertex_t other) const { return idx != other.idx; }
@@ -290,15 +293,17 @@ const vertex_t vertex_resign  = vertex_t (v_aux::resign_idx); // TODO is it inli
 template <typename elt_t> class vertex_map_t {
 public:
   elt_t tab [v_aux::cnt];
-  elt_t& operator[] (vertex_t v)             { return tab [v.idx]; }
-  const elt_t& operator[] (vertex_t v) const { return tab [v.idx]; }
+  elt_t& operator[] (vertex_t v)             { return tab [v.get_idx ()]; }
+  const elt_t& operator[] (vertex_t v) const { return tab [v.get_idx ()]; }
 };
 
 
-#define v_for_each_all(vv) for (vertex_t vv = 0; vv.in_range (); vv.next ()) // TODO 0 works???
+#define v_for_each_all(vv) for (vertex_t vv = 0; vv.in_range (); vv.next ()) // TODO 0 works??? // TODO player the same way!
 
-#define v_for_each_onboard(vv) \
-  for (vertex_t vv = vertex_t(v_aux::dNS+v_aux::dWE); vv.idx <= board_size * (v_aux::dNS + v_aux::dWE); vv.next ())
+#define v_for_each_onboard(vv)                                       \
+  for (vertex_t vv = vertex_t(v_aux::dNS+v_aux::dWE);                \
+       vv.get_idx () <= board_size * (v_aux::dNS + v_aux::dWE);      \
+       vv.next ())
 
 
 #ifdef Ho
@@ -368,7 +373,7 @@ namespace move {
   };
 
   t of_pl_v (player_t player, vertex_t v) { 
-    return player_mask [player.get_idx ()] | v.idx; // TODO replace
+    return player_mask [player.get_idx ()] | v.get_idx (); // TODO replace
   }
 
   const uint cnt = player_aux::white_idx << v_aux::bits_used | v_aux::cnt;

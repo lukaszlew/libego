@@ -423,8 +423,8 @@ public:                         // board interface
       color_at      [v] = color::off_board;
       nbr_cnt       [v] = nbr_cnt_t (0, 0, nbr_cnt_aux::max);
       chain_next_v  [v] = v;
-      chain_id      [v] = v.idx;    // TODO is it needed, is it usedt?
-      chain_lib_cnt [v.idx] = nbr_cnt_aux::max; // TODO is it logical? (off_boards)
+      chain_id      [v] = v.get_idx ();    // TODO is it needed, is it usedt?
+      chain_lib_cnt [v.get_idx ()] = nbr_cnt_aux::max; // TODO is it logical? (off_boards)
 
       if (v.is_on_board ()) {
         color_at   [v]              = color::empty;
@@ -624,8 +624,8 @@ public:                         // board interface
 
     assertc (chain_next_v_ac, chain_next_v[v] == v);
 
-    chain_id [v] = v.idx;
-    chain_lib_cnt [v.idx] = nbr_cnt[v].empty_cnt ();
+    chain_id [v] = v.get_idx ();
+    chain_lib_cnt [v.get_idx ()] = nbr_cnt[v].empty_cnt ();
   }
 
   void remove_stone (vertex_t v) {
