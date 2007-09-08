@@ -58,6 +58,9 @@ public:
       return "O";
   }
 
+  bool in_range () { return idx < player_aux::cnt; }
+  void next () { idx++; }
+
   uint get_idx () { return idx; }
   
 };
@@ -72,15 +75,9 @@ public:
   const elt_t& operator[] (player_t pl) const { return tab [pl.get_idx ()]; }
 };
 
-
-//#define player_for_each(pl, i) { 
-//  player_t pl = player_black; i;
-//           pl = player_white; i;
-//}
-
 // faster than non-loop
 #define player_for_each(pl) \
-  for (player_t pl = player_black; pl.get_idx () != player_aux::cnt; pl = player_t(pl.get_idx ()+1))
+  for (player_t pl = player_black; pl.in_range (); pl.next ())
 
 
 // namespace color

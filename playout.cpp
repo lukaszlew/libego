@@ -75,9 +75,15 @@ namespace simple_playout {
       act_player = act_player.other ();
       move_no++;
 
-      if ((last_v [player_black] == vertex_pass) & (last_v [player_white] == vertex_pass))    return playout_ok;
-      if (move_no >= max_playout_length)                          return playout_too_long;
-      if (uint (abs (board->approx_score ())) > mercy_threshold)  return playout_mercy; // TODO introduce constatn
+      if ((last_v [player_black] == vertex_pass) & (last_v [player_white] == vertex_pass))    
+        return playout_ok;
+
+      if (move_no >= max_playout_length)                          
+        return playout_too_long;
+
+      if (use_mercy_rule && uint (abs (board->approx_score ())) > mercy_threshold)  
+        return playout_mercy;
+
     } while (true);
 
   }
