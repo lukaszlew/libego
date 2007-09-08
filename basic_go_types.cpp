@@ -148,7 +148,7 @@ public:
   bool in_range () const { return idx < color_aux::cnt; }
   void next () { idx++; }
 
-  uint get_idx () { return idx; }
+  uint get_idx () const { return idx; }
   bool operator== (color_t other) const { return idx == other.idx; }
   bool operator!= (color_t other) const { return idx != other.idx; }
 
@@ -163,12 +163,12 @@ const color_t color_wrong_char = color_t (color_aux::wrong_char_idx);
 
 // class color_map_t
 
-template <typename elt_t> class color_map_t {
-public:
-  elt_t tab [color_aux::cnt];
-  elt_t& operator[] (color_t col)             { return tab [col.get_idx ()]; }
-  const elt_t& operator[] (color_t col) const { return tab [col.get_idx ()]; }
-};
+// template <typename elt_t> class color_map_t {
+// public:
+//   elt_t tab [color_aux::cnt];
+//   elt_t& operator[] (color_t col)             { return tab [col.get_idx ()]; }
+//   const elt_t& operator[] (color_t col) const { return tab [col.get_idx ()]; }
+// };
 
 
 // TODO test it for performance
@@ -258,7 +258,7 @@ public:
     idx = (r+1) * v_aux::dNS + (c+1) * v_aux::dWE;
   }
 
-  uint get_idx () { return idx; }
+  uint get_idx () const { return idx; }
 
   bool operator== (vertex_t other) const { return idx == other.idx; }
   bool operator!= (vertex_t other) const { return idx != other.idx; }
@@ -269,11 +269,11 @@ public:
 
   void check ()             const { assertc (v_ac, in_range ()); }
 
-  coord::t row () { return idx / v_aux::dNS - 1; }
+  coord::t row () const { return idx / v_aux::dNS - 1; }
 
-  coord::t col () { return idx % v_aux::dNS - 1; }
+  coord::t col () const { return idx % v_aux::dNS - 1; }
 
-  bool is_on_board () { // TODO Ho here
+  bool is_on_board () const { // TODO Ho here
 #ifdef Ho
     coord::t r, c, d;
     r = row ();
@@ -285,21 +285,21 @@ public:
 #endif
   }
 
-  void check_is_on_board () { 
+  void check_is_on_board () const { 
     assertc (v_ac, is_on_board ()); 
   }
 
-  vertex_t N () { return vertex_t (idx - v_aux::dNS); }
-  vertex_t W () { return vertex_t (idx - v_aux::dWE); }
-  vertex_t E () { return vertex_t (idx + v_aux::dWE); }
-  vertex_t S () { return vertex_t (idx + v_aux::dNS); }
+  vertex_t N () const { return vertex_t (idx - v_aux::dNS); }
+  vertex_t W () const { return vertex_t (idx - v_aux::dWE); }
+  vertex_t E () const { return vertex_t (idx + v_aux::dWE); }
+  vertex_t S () const { return vertex_t (idx + v_aux::dNS); }
 
-  vertex_t NW () { return N ().W (); } // TODO can it be faster?
-  vertex_t NE () { return N ().E (); } // only Go
-  vertex_t SW () { return S ().W (); } // only Go
-  vertex_t SE () { return S ().E (); }
+  vertex_t NW () const { return N ().W (); } // TODO can it be faster?
+  vertex_t NE () const { return N ().E (); } // only Go
+  vertex_t SW () const { return S ().W (); } // only Go
+  vertex_t SE () const { return S ().E (); }
 
-  string to_string () {
+  string to_string () const {
     coord::t r;
     coord::t c;
     

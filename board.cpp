@@ -266,7 +266,8 @@ public:                         // consistency checks
     v_for_each_onboard (v) {
       coord::t r;
       coord::t c;
-      color_map_t <uint> nbr_color_cnt;
+      //color_map_t <uint> nbr_color_cnt;
+      uint nbr_color_cnt [color_aux::cnt];
       uint expected_nbr_cnt;
 
       if (color_at[v] == color_off_board) continue; // TODO is that right?
@@ -277,16 +278,16 @@ public:                         // consistency checks
       assert (coord::is_ok (r)); // checking the macro
       assert (coord::is_ok (c));
           
-      color_for_each (col) nbr_color_cnt [col] = 0;
+      color_for_each (col) nbr_color_cnt [col.get_idx ()] = 0;
           
-      v_for_each_nbr (v, nbr_v, nbr_color_cnt [color_at [nbr_v]]++);
+      v_for_each_nbr (v, nbr_v, nbr_color_cnt [color_at [nbr_v].get_idx ()]++);
           
       expected_nbr_cnt =        // definition of nbr_cnt[v]
-        + ((nbr_color_cnt [color_black] + nbr_color_cnt [color_off_board]) 
+        + ((nbr_color_cnt [color_black.get_idx ()] + nbr_color_cnt [color_off_board.get_idx ()]) 
            << nbr_cnt_aux::f_shift [player_aux::black_idx])
-        + ((nbr_color_cnt [color_white] + nbr_color_cnt [color_off_board])
+        + ((nbr_color_cnt [color_white.get_idx ()] + nbr_color_cnt [color_off_board.get_idx ()])
            << nbr_cnt_aux::f_shift [player_aux::white_idx])
-        + ((nbr_color_cnt [color_empty]) 
+        + ((nbr_color_cnt [color_empty.get_idx ()]) 
            << nbr_cnt_aux::f_shift [color_aux::empty_idx]);
     
       assert (nbr_cnt[v].bitfield == expected_nbr_cnt);
@@ -650,19 +651,19 @@ public:                         // utils
 #ifdef Ho
     return nbr_cnt::player_cnt_is_max (nbr_cnt[v], player);
 #else
-    color_map_t <int> diag_color_cnt;
-
+    //color_map_t <int> diag_color_cnt;
+    int diag_color_cnt [color_aux::cnt];
     assertc (board_ac, color_at [v] == color_empty);
 
     if (! nbr_cnt[v].player_cnt_is_max (player)) return false;
 
-    color_for_each (col) diag_color_cnt [col] = 0; // memset is slower
+    color_for_each (col) diag_color_cnt [col.get_idx ()] = 0; // memset is slower
     v_for_each_diag_nbr (v, diag_v, {
-      diag_color_cnt [color_at [diag_v]]++;
+      diag_color_cnt [color_at [diag_v].get_idx ()]++;
     });
 
-    diag_color_cnt [color_t (player.other ())] += (diag_color_cnt[color_off_board] > 0);
-    return diag_color_cnt [color_t(player.other ())] < 2;
+    diag_color_cnt [player.other ().get_idx ()] += (diag_color_cnt[color_aux::off_board_idx] > 0);
+    return diag_color_cnt [player.other ().get_idx ()] < 2;
 #endif
   }
 
