@@ -29,6 +29,8 @@ enum playout_status { playout_ok, playout_mercy, playout_too_long };
 
 namespace simple_playout {
 
+  random_pm_t pm; // TODO seed it when class
+
   all_inline 
   vertex_t play_one (board_t* board, player_t player) {
 
@@ -36,7 +38,7 @@ namespace simple_playout {
     uint start;
 
     // find random place in vector of empty vertices
-    start = pm::rand_int (board->empty_v_cnt); 
+    start = pm.rand_int (board->empty_v_cnt); 
 
     // search for a move in start ... board->empty_v_cnt-1 interval
     for (uint ev_i = start; ev_i != board->empty_v_cnt; ev_i++) {   

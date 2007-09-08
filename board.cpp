@@ -35,12 +35,12 @@ public:
   uint index () const { return hash; }
   uint lock  () const { return hash >> 32; }
 
-  void randomize () { 
+  void randomize (random_pm_t& pm) { 
     hash =
-      (uint64 (pm::rand_int ()) << (0*16)) ^
-      (uint64 (pm::rand_int ()) << (1*16)) ^ 
-      (uint64 (pm::rand_int ()) << (2*16)) ^ 
-      (uint64 (pm::rand_int ()) << (3*16));
+      (uint64 (pm.rand_int ()) << (0*16)) ^
+      (uint64 (pm.rand_int ()) << (1*16)) ^ 
+      (uint64 (pm.rand_int ()) << (2*16)) ^ 
+      (uint64 (pm.rand_int ()) << (3*16));
   }
 
   void set_zero () { hash = 0; }
@@ -59,11 +59,11 @@ public:
 
   hash_t hashes[move::cnt];
 
-  zobrist_t () {
+  zobrist_t (random_pm_t& pm) {
     pl_v_for_each (pl, v) {
       move::t m;
       m = move::of_pl_v (pl, v);
-      hashes[m].randomize ();
+      hashes[m].randomize (pm);
     }
   }
 
@@ -166,7 +166,8 @@ class nbr_cnt_t {
 
 enum play_ret_t { play_ok, play_suicide, play_ss_suicide, play_ko, play_non_empty };
 
-const zobrist_t zobrist[1]; // TODO move it to board
+random_pm_t zobrist_pm;
+const zobrist_t zobrist[1] = { zobrist_t (zobrist_pm) }; // TODO move it to board
 
 class board_t {
   

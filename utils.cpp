@@ -91,13 +91,19 @@ public:
 
 // namespace pm
 
+namespace random_pm_aux {
+  const int cnt = (1<<31) - 1;  
+}
 
-namespace pm {             // Park - Miller "minimal standard"
-  static unsigned long seed = 12345;
+class random_pm_t {             // Park - Miller "minimal standard"
+
+  unsigned long seed;
+
+public:
+
+  random_pm_t (unsigned long seed_ = 12345) { seed = seed_; }
 
   void srand (unsigned long _seed) { seed = _seed; }
-
-  const int cnt = (1<<31) - 1;  
 
   unsigned long rand_int () {       // a number between  0 ... cnt - 1
     unsigned long hi, lo;
@@ -117,14 +123,14 @@ namespace pm {             // Park - Miller "minimal standard"
   }
 
   void test () {
-    uint start = pm::rand_int ();
+    uint start = rand_int ();
     
     uint n = 1;
     uint max = 0;
     uint sum = start;
     
     while (true) {
-      uint r = pm::rand_int ();
+      uint r = rand_int ();
       if (r == start) break;
       n++;
       sum += r;
@@ -147,7 +153,7 @@ namespace pm {             // Park - Miller "minimal standard"
     rep (ii, k)  printf ("%d\n", bucket [ii]);
   }
 
-}
+};
 
 const float large_float = 1000000000000.0;
 

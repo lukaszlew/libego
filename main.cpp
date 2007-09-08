@@ -154,7 +154,6 @@ int main () {
   gtp_append_commands (gtp_commands, gtp_general_commands);
   gtp_append_commands (gtp_commands, gtp_board_commands);
 
-  pm::srand (123);
 
   setvbuf (stdout, (char *)NULL, _IONBF, 0);
   setvbuf (stderr, (char *)NULL, _IONBF, 0);
