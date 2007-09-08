@@ -61,24 +61,21 @@ namespace simple_playout {
   static playout_status run (board_t* board, player_t first_player) {
 
     vertex_t   v;
-    vertex_t   last_v [player_aux::cnt];
-    uint       move_no;
-    player_t  act_player;
+    player_map_t <vertex_t>   last_v;
+    uint       move_no = 0;
+    player_t   act_player = first_player;
 
     player_for_each (pl)
-      last_v [pl.idx] = vertex_no_v;
-
-    act_player  = first_player;
-    move_no     = 0;
+      last_v [pl] = vertex_no_v;
 
     do {
       v = play_one (board, act_player);
 
-      last_v [act_player.idx] = v;
+      last_v [act_player] = v;
       act_player = act_player.other ();
       move_no++;
 
-      if ((last_v [player_black.idx] == vertex_pass) & (last_v [player_white.idx] == vertex_pass))    return playout_ok;
+      if ((last_v [player_black] == vertex_pass) & (last_v [player_white] == vertex_pass))    return playout_ok;
       if (move_no >= max_playout_length)                          return playout_too_long;
       if (uint (abs (board->approx_score ())) > mercy_threshold)  return playout_mercy; // TODO introduce constatn
     } while (true);
@@ -99,9 +96,9 @@ namespace simple_playout {
     float      seconds_total;
     
     playout_status  status;
-    uint            win_cnt [player_aux::cnt];
+    player_map_t <uint> win_cnt;
     
-    player_for_each (pl) win_cnt [pl.idx] = 0;
+    player_for_each (pl) win_cnt [pl] = 0;
 
     mc_board->load (start_board);
     memcpy (mc_board_copy, mc_board, sizeof (mc_board));
@@ -114,10 +111,10 @@ namespace simple_playout {
       
       switch (status) {
       case playout_ok:
-        win_cnt [mc_board->winner ().idx] ++;
+        win_cnt [mc_board->winner ()] ++;
         break;
       case playout_mercy:
-        win_cnt [mc_board->approx_winner ().idx] ++;
+        win_cnt [mc_board->approx_winner ()] ++;
         break;
       case playout_too_long:
         break;
@@ -138,9 +135,9 @@ namespace simple_playout {
         << "  " << seconds_total << " seconds" << endl
         << "  " << float (playout_cnt) / seconds_total / 1000.0 << " kpps" << endl;
     
-    out << "Black wins = " << win_cnt [player_black.idx] << endl
-        << "White wins = " << win_cnt [player_white.idx] << endl
-        << "P(black win) = " << float (win_cnt [player_black.idx]) / float (win_cnt [player_black.idx] + win_cnt [player_white.idx]) << endl;
+    out << "Black wins = " << win_cnt [player_black] << endl
+        << "White wins = " << win_cnt [player_white] << endl
+        << "P(black win) = " << float (win_cnt [player_black]) / float (win_cnt [player_black] + win_cnt [player_white]) << endl;
     
   }
   

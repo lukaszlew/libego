@@ -64,7 +64,7 @@ public:
   float    value;
   float    bias;
 
-  node_t*  first_child [player_aux::cnt];         // head of list of moves of particular player 
+  player_map_t <node_t*> first_child;         // head of list of moves of particular player 
   node_t*  sibling;                           // NULL if last child
 
 public:
@@ -72,7 +72,7 @@ public:
   #define node_for_each_child(node, pl, act_node, i) do {   \
     assertc (tree_ac, node!= NULL);                         \
     node_t* act_node;                                       \
-    act_node = node->first_child [pl.idx];                  \
+    act_node = node->first_child [pl];                      \
     while (act_node != NULL) {                              \
       i;                                                    \
       act_node = act_node->sibling;                         \
@@ -91,7 +91,7 @@ public:
     bias          = initial_bias;
 
     player_for_each (pl) 
-      first_child [pl.idx]  = NULL;
+      first_child [pl]  = NULL;
 
     sibling       = NULL;
   }
@@ -99,22 +99,22 @@ public:
   void add_child (node_t* new_child, player_t pl) { // TODO sorting?
     assertc (tree_ac, new_child->sibling     == NULL); 
     player_for_each (pl2)
-      assertc (tree_ac, new_child->first_child [pl2.idx] == NULL); 
+      assertc (tree_ac, new_child->first_child [pl2] == NULL); 
 
-    new_child->sibling     = this->first_child [pl.idx];
-    this->first_child [pl.idx] = new_child;
+    new_child->sibling     = this->first_child [pl];
+    this->first_child [pl] = new_child;
   }
 
   void remove_child (player_t pl, node_t* del_child) { // TODO inefficient
     node_t* act_child;
     assertc (tree_ac, del_child != NULL);
 
-    if (first_child [pl.idx] == del_child) {
-      first_child [pl.idx] = first_child [pl.idx]->sibling;
+    if (first_child [pl] == del_child) {
+      first_child [pl] = first_child [pl]->sibling;
       return;
     }
     
-    act_child = first_child [pl.idx];
+    act_child = first_child [pl];
 
     while (true) {
       assertc (tree_ac, act_child != NULL);
@@ -142,7 +142,7 @@ public:
   }
 
   bool no_children (player_t pl) {
-    return first_child [pl.idx] == NULL;
+    return first_child [pl] == NULL;
   }
 
   node_t* find_uct_child (player_t pl) {
@@ -325,7 +325,7 @@ public:
     tree->history_reset ();
 
     assertc (uct_ac, tree->history_top == 0);
-    assertc (uct_ac, tree->act_node ()->first_child [pl.idx] == NULL);
+    assertc (uct_ac, tree->act_node ()->first_child [pl] == NULL);
 
     empty_v_for_each_and_pass (base_board->act_board (), v, {
       if (base_board->is_legal (pl, v))
@@ -336,8 +336,8 @@ public:
   flatten 
   void do_playout (player_t first_player){
     board_t    play_board[1]; // TODO test for perfomance + memcpy
-    bool       was_pass [player_aux::cnt];
-    player_t  act_player;
+    player_map_t <bool> was_pass;
+    player_t  act_player = first_player;
     vertex_t       v;
     
     
@@ -345,9 +345,7 @@ public:
     tree->history_reset ();
     
     player_for_each (pl) 
-      was_pass [pl.idx] = false; // TODO maybe there was one pass ?
-    
-    act_player  = first_player;
+      was_pass [pl] = false; // TODO maybe there was one pass ?
     
     do {
       if (tree->act_node ()->no_children (act_player)) { // we're finishing it
@@ -375,15 +373,15 @@ public:
         return;
       }
       
-      was_pass [act_player.idx]  = (v == vertex_pass);
-      act_player                 = act_player.other ();
+      was_pass [act_player]  = (v == vertex_pass);
+      act_player             = act_player.other ();
       
-      if (was_pass [player_black.idx] & was_pass [player_white.idx]) break;
+      if (was_pass [player_black] & was_pass [player_white]) break;
       
     } while (true);
     
     player_t winner = play_board->winner ();
-    tree->update_history (1-winner.idx-winner.idx); // result values are 1 for black, -1 for white
+    tree->update_history (1-winner.get_idx()-winner.get_idx()); // result values are 1 for black, -1 for white
   }
   
 

@@ -34,10 +34,11 @@ namespace player_aux {
 
 
 class player_t {
-public:
-  uint idx; // TODO private test
+  uint idx;
 
-  player_t () { idx = -1; } // TODO remove test
+public:
+
+  player_t () { idx = -1; }
   player_t (uint _idx) { idx = _idx; }
 
   bool operator== (player_t other) const { return idx == other.idx; }
@@ -56,6 +57,8 @@ public:
     else
       return "O";
   }
+
+  uint get_idx () { return idx; }
   
 };
 
@@ -65,14 +68,19 @@ player_t player_white = player_t (player_aux::white_idx);
 template <typename elt_t> class player_map_t {
 public:
   elt_t tab [player_aux::cnt];
-  elt_t& operator[] (player_t pl)             { return tab [pl.idx]; }
-  const elt_t& operator[] (player_t pl) const { return tab [pl.idx]; }
+  elt_t& operator[] (player_t pl)             { return tab [pl.get_idx ()]; }
+  const elt_t& operator[] (player_t pl) const { return tab [pl.get_idx ()]; }
 };
 
 
+//#define player_for_each(pl, i) { 
+//  player_t pl = player_black; i;
+//           pl = player_white; i;
+//}
+
 // faster than non-loop
 #define player_for_each(pl) \
-  for (player_t pl = player_black; pl.idx != player_aux::cnt; pl = player_t(pl.idx+1))
+  for (player_t pl = player_black; pl.get_idx () != player_aux::cnt; pl = player_t(pl.get_idx ()+1))
 
 
 // namespace color
@@ -100,7 +108,7 @@ namespace color {
   t opponent (player_t player) {
     unused (opponent);          // avoids warning
     unused (player);
-    return t (player.idx ^ 1);
+    return t (player.get_idx () ^ 1);
   }
 
   char to_char (t color) { 
@@ -354,13 +362,13 @@ namespace move {
     vertex_t (move & ((1 << v_aux::bits_used) - 1)).check ();
   }
 
-  uint player_mask [player_aux::cnt] = { 
-    player_black.idx << v_aux::bits_used, 
-    player_white.idx << v_aux::bits_used 
+  uint player_mask [player_aux::cnt] = {  // TODO map_t ?
+    player_aux::black_idx << v_aux::bits_used, 
+    player_aux::white_idx << v_aux::bits_used 
   };
 
   t of_pl_v (player_t player, vertex_t v) { 
-    return player_mask [player.idx] | v.idx; // TODO replace
+    return player_mask [player.get_idx ()] | v.idx; // TODO replace
   }
 
   const uint cnt = player_aux::white_idx << v_aux::bits_used | v_aux::cnt;

@@ -96,15 +96,15 @@ namespace nbr_cnt_aux { // TODO this namespace exists only because we can't have
   const uint f_mask = (1 << f_size) - 1;
   
   const uint player_cnt_is_max_mask [player_aux::cnt] = {  // TODO player_map_t
-    (max << f_shift [player_black.idx]), 
-    (max << f_shift [player_white.idx]) 
+    (max << f_shift [player_aux::black_idx]), 
+    (max << f_shift [player_aux::white_idx]) 
   };
   
-  const uint black_inc_val = (1 << f_shift [player_black.idx]) - (1 << f_shift [color::empty]);
-  const uint white_inc_val = (1 << f_shift [player_white.idx]) - (1 << f_shift [color::empty]);
+  const uint black_inc_val = (1 << f_shift [player_aux::black_idx]) - (1 << f_shift [color::empty]);
+  const uint white_inc_val = (1 << f_shift [player_aux::white_idx]) - (1 << f_shift [color::empty]);
   const uint off_board_inc_val  = 
-    + (1 << f_shift [player_black.idx]) 
-    + (1 << f_shift [player_white.idx]) 
+    + (1 << f_shift [player_aux::black_idx]) 
+    + (1 << f_shift [player_aux::white_idx]) 
     - (1 << f_shift [color::empty]);
   
   const uint player_inc_tab [player_aux::cnt] = { black_inc_val, white_inc_val };
@@ -127,28 +127,28 @@ class nbr_cnt_t {
       assertc (nbr_cnt_ac, empty_cnt <= nbr_cnt_aux::max);
       
       bitfield = 
-        (black_cnt << nbr_cnt_aux::f_shift [player_black.idx]) +
-        (white_cnt << nbr_cnt_aux::f_shift [player_white.idx]) +
+        (black_cnt << nbr_cnt_aux::f_shift [player_aux::black_idx]) +
+        (white_cnt << nbr_cnt_aux::f_shift [player_aux::white_idx]) +
         (empty_cnt << nbr_cnt_aux::f_shift [color::empty]);
     }
   
     //void operator+= (const uint delta) { bitfield += delta; }
 
     void off_board_inc () { bitfield += nbr_cnt_aux::off_board_inc_val; }
-    void player_inc (player_t player) { bitfield += nbr_cnt_aux::player_inc_tab [player.idx]; }
-    void player_dec (player_t player) { bitfield -= nbr_cnt_aux::player_inc_tab [player.idx]; }
+    void player_inc (player_t player) { bitfield += nbr_cnt_aux::player_inc_tab [player.get_idx ()]; }
+    void player_dec (player_t player) { bitfield -= nbr_cnt_aux::player_inc_tab [player.get_idx ()]; }
 
     uint empty_cnt  () const { 
       return bitfield >> nbr_cnt_aux::f_shift [color::empty];
     }
 
     uint player_cnt (player_t pl) const { 
-      return (bitfield >> nbr_cnt_aux::f_shift [pl.idx]) & nbr_cnt_aux::f_mask; 
+      return (bitfield >> nbr_cnt_aux::f_shift [pl.get_idx ()]) & nbr_cnt_aux::f_mask; 
     }
 
 
     uint player_cnt_is_max (player_t pl) const { 
-      return (bitfield & nbr_cnt_aux::player_cnt_is_max_mask [pl.idx]) == nbr_cnt_aux::player_cnt_is_max_mask [pl.idx]; 
+      return (bitfield & nbr_cnt_aux::player_cnt_is_max_mask [pl.get_idx ()]) == nbr_cnt_aux::player_cnt_is_max_mask [pl.get_idx ()]; 
     }
 
     void check () {
@@ -175,16 +175,16 @@ public:
   vertex_map_t <color::t>    color_at;
   vertex_map_t <nbr_cnt_t>   nbr_cnt; // incremental, for fast eye checking
   vertex_map_t <uint>        empty_pos;
-  vertex_map_t <vertex_t>        chain_next_v;
+  vertex_map_t <vertex_t>    chain_next_v;
 
-  uint        chain_lib_cnt [v_aux::cnt]; // indexed by chain_id
+  uint                       chain_lib_cnt [v_aux::cnt]; // indexed by chain_id
   vertex_map_t <uint>        chain_id;
   
-  vertex_t        empty_v       [board_area];
+  vertex_t    empty_v [board_area];
   uint        empty_v_cnt;
   uint        last_empty_v_cnt;
 
-  uint        player_v_cnt  [player_aux::cnt];
+  player_map_t <uint>        player_v_cnt;
 
   hash_t      hash;
   int         komi;
@@ -220,7 +220,7 @@ public:                         // consistency checks
     if (!board_empty_v_ac) return;
 
     vertex_map_t <bool> noticed;
-    uint exp_player_v_cnt [player_aux::cnt];
+    player_map_t <uint> exp_player_v_cnt;
 
     v_for_each_all (v) noticed[v] = false;
 
@@ -231,7 +231,7 @@ public:                         // consistency checks
       noticed [v] = true;
     });
 
-    player_for_each (pl) exp_player_v_cnt [pl.idx] = 0;
+    player_for_each (pl) exp_player_v_cnt [pl] = 0;
 
     v_for_each_onboard (v) {
       assert ((color_at[v] == color::empty) == noticed[v]);
@@ -239,11 +239,11 @@ public:                         // consistency checks
         assert (empty_pos[v] < empty_v_cnt);
         assert (empty_v [empty_pos[v]] == v);
       }
-      if (color::is_player (color_at [v])) exp_player_v_cnt [color_at[v]]++;
+      if (color::is_player (color_at [v])) exp_player_v_cnt [player_t (color_at[v])]++;
     }
 
     player_for_each (pl) 
-      assert (exp_player_v_cnt [pl.idx] == player_v_cnt [pl.idx]);
+      assert (exp_player_v_cnt [pl] == player_v_cnt [pl]);
   }
 
   void check_hash () const {
@@ -282,9 +282,9 @@ public:                         // consistency checks
           
       expected_nbr_cnt =        // definition of nbr_cnt[v]
         + ((nbr_color_cnt [color::black] + nbr_color_cnt [color::off_board]) 
-           << nbr_cnt_aux::f_shift [player_black.idx])
+           << nbr_cnt_aux::f_shift [player_aux::black_idx])
         + ((nbr_color_cnt [color::white] + nbr_color_cnt [color::off_board])
-           << nbr_cnt_aux::f_shift [player_white.idx])
+           << nbr_cnt_aux::f_shift [player_aux::white_idx])
         + ((nbr_color_cnt [color::empty]) 
            << nbr_cnt_aux::f_shift [color::empty]);
     
@@ -415,7 +415,7 @@ public:                         // board interface
 
     set_komi (7.5);            // standard for chinese rules
     empty_v_cnt = 0;
-    player_for_each (pl) player_v_cnt [pl.idx] = 0;
+    player_for_each (pl) player_v_cnt [pl] = 0;
 #ifndef Ho
     ko_v = vertex_no_v;             // only Go
 #endif
@@ -554,7 +554,7 @@ public:                         // board interface
     if (color::is_not_player (color_at [v])) return;
     chain_lib_cnt [chain_id [v]] --;
 
-    if (color_at[v] != color::t (new_nbr_player.idx)) { // same color of groups
+    if (color_at[v] != color::t (new_nbr_player.get_idx ())) { // same color of groups
       if (chain_lib_cnt [chain_id [v]] == 0) remove_chain (v);
       return;
     }
@@ -615,8 +615,8 @@ public:                         // board interface
 
   void place_stone (player_t pl, vertex_t v) {
     hash ^= zobrist->of_pl_v (pl, v);
-    player_v_cnt[pl.idx]++;
-    color_at[v] = color::t (pl.idx);
+    player_v_cnt[pl]++;
+    color_at[v] = color::t (pl.get_idx ());
 
     empty_v_cnt--;
     empty_pos [empty_v [empty_v_cnt]] = empty_pos [v];
@@ -656,13 +656,13 @@ public:                         // utils
       diag_color_cnt [color_at [diag_v]]++;
     });
 
-    diag_color_cnt[player.other ().idx] += (diag_color_cnt[color::off_board] > 0);
-    return diag_color_cnt[player.other ().idx] < 2;
+    diag_color_cnt[player.other ().get_idx ()] += (diag_color_cnt[color::off_board] > 0);
+    return diag_color_cnt[player.other ().get_idx ()] < 2;
 #endif
   }
 
   int approx_score () const {
-    return komi + player_v_cnt[player_black.idx] -  player_v_cnt[player_white.idx];
+    return komi + player_v_cnt[player_black] -  player_v_cnt[player_white];
   }
 
   player_t approx_winner () { return player_t (approx_score () <= 0); }
