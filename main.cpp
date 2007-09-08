@@ -119,7 +119,7 @@ int gtp_time_settings (char *s) {
 
 
 int gtp_time_left (char *s) {
-  player::t player;
+  player_t player;
   uint time;
   uint stones;
 

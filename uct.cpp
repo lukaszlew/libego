@@ -64,7 +64,7 @@ public:
   float    value;
   float    bias;
 
-  node_t*  first_child [player::cnt];         // head of list of moves of particular player 
+  node_t*  first_child [player_aux::cnt];         // head of list of moves of particular player 
   node_t*  sibling;                           // NULL if last child
 
 public:
@@ -72,7 +72,7 @@ public:
   #define node_for_each_child(node, pl, act_node, i) do {   \
     assertc (tree_ac, node!= NULL);                         \
     node_t* act_node;                                       \
-    act_node = node->first_child [pl];                      \
+    act_node = node->first_child [pl.idx];                  \
     while (act_node != NULL) {                              \
       i;                                                    \
       act_node = act_node->sibling;                         \
@@ -91,30 +91,30 @@ public:
     bias          = initial_bias;
 
     player_for_each (pl) 
-      first_child [pl]  = NULL;
+      first_child [pl.idx]  = NULL;
 
     sibling       = NULL;
   }
 
-  void add_child (node_t* new_child, player::t pl) { // TODO sorting?
+  void add_child (node_t* new_child, player_t pl) { // TODO sorting?
     assertc (tree_ac, new_child->sibling     == NULL); 
-    player_for_each (p)
-      assertc (tree_ac, new_child->first_child [p] == NULL); 
+    player_for_each (pl2)
+      assertc (tree_ac, new_child->first_child [pl2.idx] == NULL); 
 
-    new_child->sibling     = this->first_child [pl];
-    this->first_child [pl] = new_child;
+    new_child->sibling     = this->first_child [pl.idx];
+    this->first_child [pl.idx] = new_child;
   }
 
-  void remove_child (player::t pl, node_t* del_child) { // TODO inefficient
+  void remove_child (player_t pl, node_t* del_child) { // TODO inefficient
     node_t* act_child;
     assertc (tree_ac, del_child != NULL);
 
-    if (first_child [pl] == del_child) {
-      first_child [pl] = first_child [pl]->sibling;
+    if (first_child [pl.idx] == del_child) {
+      first_child [pl.idx] = first_child [pl.idx]->sibling;
       return;
     }
     
-    act_child = first_child [pl];
+    act_child = first_child [pl.idx];
 
     while (true) {
       assertc (tree_ac, act_child != NULL);
@@ -126,9 +126,9 @@ public:
     }
   }
 
-  template <player::t pl> float ucb (float explore_coeff) { 
+  float ucb (player_t pl, float explore_coeff) {  // TODO pl_idx is awfull
     return 
-      (pl == player::black ? value : -value) +
+      (pl == player_black ? value : -value) +
       sqrt (explore_coeff / bias);
   }
 
@@ -141,11 +141,11 @@ public:
     return bias > mature_bias_threshold; 
   }
 
-  bool no_children (player::t pl) {
-    return first_child [pl] == NULL;
+  bool no_children (player_t pl) {
+    return first_child [pl.idx] == NULL;
   }
 
-  template <player::t pl> node_t* find_uct_child () {
+  node_t* find_uct_child (player_t pl) {
     node_t* best_child;
     float   best_urgency;
     float   explore_coeff;
@@ -155,7 +155,7 @@ public:
     explore_coeff  = log (bias) * explore_rate;
 
     node_for_each_child (this, pl, child, {
-      float child_urgency = child->ucb <pl> (explore_coeff);
+      float child_urgency = child->ucb (pl, explore_coeff);
       if (child_urgency > best_urgency) {
         best_urgency  = child_urgency;
         best_child    = child;
@@ -166,14 +166,7 @@ public:
     return best_child;
   }
 
-  node_t* find_uct_child (player::t pl) {
-    if (pl == player::black)
-      return find_uct_child <player::black> ();
-    else
-      return find_uct_child <player::white> ();
-  }
-
-  node_t* find_most_explored_child (player::t pl) {
+  node_t* find_most_explored_child (player_t pl) {
     node_t* best_child;
     float   best_bias;
 
@@ -191,10 +184,10 @@ public:
     return best_child;
   }
 
-  void rec_print (ostream& out, uint depth, player::t pl) {
+  void rec_print (ostream& out, uint depth, player_t pl) {
     rep (d, depth) out << "  ";
     out 
-      << player::to_string (pl) << " " 
+      << pl.to_string () << " " 
       << v.to_string () << " " 
       << value << " "
       << "(" << bias - initial_bias << ")" 
@@ -204,7 +197,7 @@ public:
       rec_print_children (out, depth, pl);
   }
 
-  void rec_print_children (ostream& out, uint depth, player::t player) {
+  void rec_print_children (ostream& out, uint depth, player_t player) {
     node_t*  child_tab [v_aux::cnt]; // rough upper bound for the number of legal move
     uint     child_tab_size;
     uint     best_child_idx;
@@ -222,7 +215,7 @@ public:
     while (child_tab_size > 0) {
       // find best child
       rep(ii, child_tab_size) {
-        if ((player == player::black) == 
+        if ((player == player_black) == 
             (best_child->value < child_tab [ii]->value))
           best_child_idx = ii;
       }
@@ -270,20 +263,20 @@ public:
     return history [history_top];
   }
   
-  void uct_descend (player::t pl) {
+  void uct_descend (player_t pl) {
     history [history_top + 1] = act_node ()->find_uct_child (pl);
     history_top++;
     assertc (tree_ac, act_node () != NULL);
   }
   
-  void alloc_child (player::t pl, vertex_t v) {
+  void alloc_child (player_t pl, vertex_t v) {
     node_t* new_node;
     new_node = node_pool->malloc ();
     new_node->init (v);
     act_node ()->add_child (new_node, pl);
   }
   
-  void delete_act_node (player::t pl) {
+  void delete_act_node (player_t pl) {
     assertc (tree_ac, history_top > 0);
     history [history_top-1]->remove_child (pl, act_node ());
     node_pool->free (act_node ());
@@ -307,7 +300,7 @@ public:
 
   string to_string () { 
     ostringstream out_str;
-    history [0]->rec_print (out_str, 0, player::black); 
+    history [0]->rec_print (out_str, 0, player_black); 
     return out_str.str ();
   }
 };
@@ -328,11 +321,11 @@ public:
     this->base_board = base_board;
   }
 
-  void root_ensure_children_legality (player::t pl) { // cares about superko in root (only)
+  void root_ensure_children_legality (player_t pl) { // cares about superko in root (only)
     tree->history_reset ();
 
     assertc (uct_ac, tree->history_top == 0);
-    assertc (uct_ac, tree->act_node ()->first_child [pl] == NULL);
+    assertc (uct_ac, tree->act_node ()->first_child [pl.idx] == NULL);
 
     empty_v_for_each_and_pass (base_board->act_board (), v, {
       if (base_board->is_legal (pl, v))
@@ -341,10 +334,10 @@ public:
   }
 
   flatten 
-  void do_playout (player::t first_player){
+  void do_playout (player_t first_player){
     board_t    play_board[1]; // TODO test for perfomance + memcpy
-    bool       was_pass [player::cnt];
-    player::t  act_player;
+    bool       was_pass [player_aux::cnt];
+    player_t  act_player;
     vertex_t       v;
     
     
@@ -352,7 +345,7 @@ public:
     tree->history_reset ();
     
     player_for_each (pl) 
-      was_pass [pl] = false; // TODO maybe there was one pass ?
+      was_pass [pl.idx] = false; // TODO maybe there was one pass ?
     
     act_player  = first_player;
     
@@ -377,24 +370,24 @@ public:
       v = tree->act_node ()->v;
       
       if (v != vertex_pass && play_board->play_no_pass (act_player, v) != play_ok) {
-        assertc (uct_ac, tree->act_node ()->no_children (player::other (act_player)));
+        assertc (uct_ac, tree->act_node ()->no_children (act_player.other ()));
         tree->delete_act_node (act_player);
         return;
       }
       
-      was_pass [act_player]  = (v == vertex_pass);
-      act_player             = player::other (act_player);
+      was_pass [act_player.idx]  = (v == vertex_pass);
+      act_player                 = act_player.other ();
       
-      if (was_pass [player::black] & was_pass [player::white]) break;
+      if (was_pass [player_black.idx] & was_pass [player_white.idx]) break;
       
     } while (true);
     
-    player::t winner = play_board->winner ();
-    tree->update_history (1-winner-winner); // result values are 1 for black, -1 for white
+    player_t winner = play_board->winner ();
+    tree->update_history (1-winner.idx-winner.idx); // result values are 1 for black, -1 for white
   }
   
 
-  vertex_t genmove (player::t player) {
+  vertex_t genmove (player_t player) {
     node_t* best;
 
     root_ensure_children_legality (player);
@@ -404,8 +397,8 @@ public:
     assertc (uct_ac, best != NULL);
 
     //cerr << tree->to_string () << endl;
-    if (player == player::black && best->value < -resign_value) return vertex_resign;
-    if (player == player::white && best->value >  resign_value) return vertex_resign;
+    if (player == player_black && best->value < -resign_value) return vertex_resign;
+    if (player == player_white && best->value >  resign_value) return vertex_resign;
     return best->v;
   }
   

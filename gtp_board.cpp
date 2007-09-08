@@ -71,7 +71,7 @@ int gtp_load_position (char* s) {
 
 int gtp_play (char* s) {
 
-  player::t  pl;
+  player_t  pl;
   vertex_t   v;
 
   decode_player_v (s, pl, v, return gtp_failure ("syntax error"));
@@ -103,7 +103,7 @@ int gtp_showboard (char* s) {
 
 
 int gtp_genmove (char* s) {
-  player::t player;
+  player_t player;
   decode_player (s, player);
 
   vertex_t v;
@@ -124,7 +124,7 @@ int gtp_playout_benchmark (char *s) {
   decode_int (s, playout_cnt);
 
   ostringstream ss;
-  simple_playout::benchmark (gtp_board->act_board (), playout_cnt, player::black, ss);
+  simple_playout::benchmark (gtp_board->act_board (), playout_cnt, player_black, ss);
 
   gtp_start_response(GTP_SUCCESS);
   gtp_printf ("\n%s", ss.str ().data ());

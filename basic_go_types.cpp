@@ -25,38 +25,54 @@
 
 // namespace player
 
-
-namespace player {
-
-  enum t {
-    black = 0,
-    white = 1
-  };
+namespace player_aux {
+  const uint black_idx = 0;
+  const uint white_idx = 1;
 
   const uint cnt = 2;
+}
 
-  void check (t player) { 
-    unused (player);            // TODO why unused is needed ?
-    assertc (player_ac, (player & (~1)) == 0);
+
+class player_t {
+public:
+  uint idx; // TODO private test
+
+  player_t () { idx = -1; } // TODO remove test
+  player_t (uint _idx) { idx = _idx; }
+
+  bool operator== (player_t other) const { return idx == other.idx; }
+
+  void check () { 
+    assertc (player_ac, (idx & (~1)) == 0);
   }
 
-  t other (t player) { 
-    check (player);
-    return (t)(player ^ 1);
+  player_t other () { 
+    return player_t(idx ^ 1);
   }
   
-  string to_string (t player) {
-    if (player == black)
+  string to_string () {
+    if (idx == player_aux::black_idx)
       return "#";
     else
       return "O";
   }
   
-}
+};
+
+player_t player_black = player_t (player_aux::black_idx);
+player_t player_white = player_t (player_aux::white_idx);
+
+template <typename elt_t> class player_map_t {
+public:
+  elt_t tab [player_aux::cnt];
+  elt_t& operator[] (player_t pl)             { return tab [pl.idx]; }
+  const elt_t& operator[] (player_t pl) const { return tab [pl.idx]; }
+};
+
 
 // faster than non-loop
 #define player_for_each(pl) \
-  for (player::t pl = player::black; pl != player::cnt; pl = player::t(pl+1))
+  for (player_t pl = player_black; pl.idx != player_aux::cnt; pl = player_t(pl.idx+1))
 
 
 // namespace color
@@ -81,11 +97,10 @@ namespace color {
   bool is_player (t color) { return color <= color::white; } // & (~1)) == 0; }
   bool is_not_player (t color) { return color > color::white; } // & (~1)) == 0; }
 
-  t opponent (player::t player) {
+  t opponent (player_t player) {
     unused (opponent);          // avoids warning
     unused (player);
-    player::check (player);
-    return t (player ^ 1);
+    return t (player.idx ^ 1);
   }
 
   char to_char (t color) { 
@@ -335,27 +350,26 @@ namespace move {
   typedef uint t;
 
   void check (t move) {
-    player::check (player::t (move >> v_aux::bits_used));
+    player_t (move >> v_aux::bits_used);
     vertex_t (move & ((1 << v_aux::bits_used) - 1)).check ();
   }
 
-  uint player_mask [player::cnt] = { 
-    player::black << v_aux::bits_used, 
-    player::white << v_aux::bits_used 
+  uint player_mask [player_aux::cnt] = { 
+    player_black.idx << v_aux::bits_used, 
+    player_white.idx << v_aux::bits_used 
   };
 
-  t of_pl_v (player::t player, vertex_t v) { 
-    player::check (player);
-    return player_mask [player] | v.idx;
+  t of_pl_v (player_t player, vertex_t v) { 
+    return player_mask [player.idx] | v.idx; // TODO replace
   }
 
-  const uint cnt = player::white << v_aux::bits_used | v_aux::cnt;
+  const uint cnt = player_aux::white_idx << v_aux::bits_used | v_aux::cnt;
  
   const t no_move = 1;
   
-  player::t player (t move) { 
+  player_t to_player (t move) { 
     check (move);
-    return (::player::t) (move >> v_aux::bits_used);
+    return (::player_t) (move >> v_aux::bits_used);
   }
 
   vertex_t v (t move) { 
@@ -364,7 +378,7 @@ namespace move {
   }
 
   string to_string (t move) {
-    return ::player::to_string (player (move)) + " " + v (move).to_string ();
+    return to_player (move).to_string () + " " + v (move).to_string ();
   }
 
 }

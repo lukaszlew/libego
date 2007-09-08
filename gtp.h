@@ -115,7 +115,7 @@ void gtp_append_commands (gtp_command* dst, gtp_command* src);
   if (n == 0) return gtp_failure("syntax error");          \
   s += n;                                                  \
                                                            \
-  pl = (player::t) (2 - gtp_color);                        \
+  pl = player_t (2 - gtp_color);                           \
 }
 
 #define decode_player_v(s, plpl, vv, fail_i) {             \
@@ -129,7 +129,7 @@ void gtp_append_commands (gtp_command* dst, gtp_command* src);
   else {                                                   \
     s += n;                                                \
                                                            \
-    plpl    = (player::t) (2 - gtp_color);                 \
+    plpl    = player_t (2 - gtp_color);                    \
     vv      = vertex_t (r, c);                             \
   }                                                        \
 }

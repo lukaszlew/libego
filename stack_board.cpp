@@ -52,8 +52,7 @@ public:
     return stack_top; 
   }
 
-  bool try_play (player::t player, vertex_t v) {
-    player::check (player);
+  bool try_play (player_t player, vertex_t v) {
 
     record_state (); // for undo
 
@@ -79,7 +78,7 @@ public:
     return true;
   }
 
-  bool is_legal (player::t pl, vertex_t v) {            // slow function
+  bool is_legal (player_t pl, vertex_t v) {            // slow function
     bool undo_res;
     if (!try_play (pl, v)) return false;
     undo_res = try_undo ();
