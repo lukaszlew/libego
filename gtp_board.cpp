@@ -124,7 +124,7 @@ int gtp_playout_benchmark (char *s) {
   decode_int (s, playout_cnt);
 
   ostringstream ss;
-  simple_playout::benchmark (gtp_board->act_board (), playout_cnt, player_black, ss);
+  simple_playout_benchmark::run (gtp_board->act_board (), playout_cnt, player_black, ss);
 
   gtp_start_response(GTP_SUCCESS);
   gtp_printf ("\n%s", ss.str ().data ());

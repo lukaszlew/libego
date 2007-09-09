@@ -359,7 +359,8 @@ public:
           continue;            // try again
         }
         
-        simple_playout::run (play_board, act_player);
+        simple_playout_t sp (play_board, act_player);
+        sp.run ();
         break;
         
       }

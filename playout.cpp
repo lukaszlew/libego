@@ -27,12 +27,25 @@
 
 enum playout_status { playout_ok, playout_mercy, playout_too_long };
 
-namespace simple_playout {
+random_pm_t pm(123); // TODO seed it when class
 
-  random_pm_t pm(123); // TODO seed it when class
+class simple_playout_t {
+public:
+  board_t* board;
+  player_t act_player;
+  player_map_t <vertex_t>   last_v;
+  uint     move_no;
+
+  simple_playout_t (board_t* board_, player_t first_player) { 
+    board = board_; 
+    act_player = first_player;
+    player_for_each (pl)
+      last_v [pl] = vertex_no_v;
+    move_no = 0;
+  }
 
   all_inline 
-  vertex_t play_one (board_t* board, player_t player) {
+  void play_one () {
 
     vertex_t v;
     uint start;
@@ -43,37 +56,37 @@ namespace simple_playout {
     // search for a move in start ... board->empty_v_cnt-1 interval
     for (uint ev_i = start; ev_i != board->empty_v_cnt; ev_i++) {   
       v = board->empty_v [ev_i];
-      if (!board->is_eyelike (player, v) &&
-          board->play_no_pass (player, v) < play_ss_suicide) return v;
+      if (!board->is_eyelike (act_player, v) &&
+          board->play_no_pass (act_player, v) < play_ss_suicide) 
+      {
+        last_v [act_player] = v;
+        return;
+      }
     }
 
     // search for a move in 0 ... start interval
     for (uint ev_i = 0; ev_i != start; ev_i++) {
       v = board->empty_v [ev_i];
-      if (!board->is_eyelike (player, v) &&
-          board->play_no_pass (player, v) < play_ss_suicide) return v;
+      if (!board->is_eyelike (act_player, v) &&
+          board->play_no_pass (act_player, v) < play_ss_suicide)
+      {
+        last_v [act_player] = v;
+        return;
+      }
     }
 
-    board->check_no_more_legal (player); // powerfull check
-    return vertex_pass;
+    last_v [act_player] = vertex_pass;
+
+    board->check_no_more_legal (act_player); // powerfull check
   }
 
 
   all_inline 
-  static playout_status run (board_t* board, player_t first_player) {
-
-    vertex_t   v;
-    player_map_t <vertex_t>   last_v;
-    uint       move_no = 0;
-    player_t   act_player = first_player;
-
-    player_for_each (pl)
-      last_v [pl] = vertex_no_v;
+  playout_status run () {
 
     do {
-      v = play_one (board, act_player);
+      play_one ();
 
-      last_v [act_player] = v;
       act_player = act_player.other ();
       move_no++;
 
@@ -90,14 +103,19 @@ namespace simple_playout {
 
   }
 
+};
+
+
+namespace simple_playout_benchmark {
+
 
   board_t    mc_board[1];
   board_t    mc_board_copy[1];
   
-  static void benchmark (board_t const * start_board, 
-                  uint playout_cnt, 
-                  player_t first_player, 
-                  ostream& out) 
+  static void run (board_t const * start_board, 
+                   uint playout_cnt, 
+                   player_t first_player, 
+                   ostream& out) 
   {
     float      seconds_begin;
     float      seconds_end;
@@ -115,7 +133,8 @@ namespace simple_playout {
     
     rep (ii, playout_cnt) {
       memcpy (mc_board, mc_board_copy, sizeof (mc_board));
-      status = simple_playout::run (mc_board, first_player);
+      simple_playout_t sp (mc_board, first_player);
+      status = sp.run ();
       
       switch (status) {
       case playout_ok:
@@ -146,7 +165,5 @@ namespace simple_playout {
     out << "Black wins = " << win_cnt [player_black] << endl
         << "White wins = " << win_cnt [player_white] << endl
         << "P(black win) = " << float (win_cnt [player_black]) / float (win_cnt [player_black] + win_cnt [player_white]) << endl;
-    
   }
-  
 }
