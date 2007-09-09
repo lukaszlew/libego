@@ -361,44 +361,62 @@ public:
 // namespace move
 
 
-
-
-namespace move {
-
-  typedef uint t;
-
-  void check (t move) {
-    player_t (move >> v_aux::bits_used);
-    vertex_t (move & ((1 << v_aux::bits_used) - 1)).check ();
-  }
-
+namespace move_aux {
   uint player_mask [player_aux::cnt] = {  // TODO map_t ?
     player_aux::black_idx << v_aux::bits_used, 
     player_aux::white_idx << v_aux::bits_used 
   };
 
-  t of_pl_v (player_t player, vertex_t v) { 
-    return player_mask [player.get_idx ()] | v.get_idx (); // TODO replace
-  }
-
   const uint cnt = player_aux::white_idx << v_aux::bits_used | v_aux::cnt;
  
-  const t no_move = 1;
-  
-  player_t to_player (t move) { 
-    check (move);
-    return (::player_t) (move >> v_aux::bits_used);
+  const uint no_move_idx = 1;
+
+};
+
+
+class move_t {
+public:
+
+  uint idx;
+
+  void check () {
+    player_t (idx >> v_aux::bits_used);
+    vertex_t (idx & ((1 << v_aux::bits_used) - 1)).check ();
   }
 
-  vertex_t v (t move) { 
-    check (move);
-    return move & ((1 << ::v_aux::bits_used) - 1) ; 
+  move_t (player_t player, vertex_t v) { 
+    idx = move_aux::player_mask [player.get_idx ()] | v.get_idx (); // TODO replace
   }
 
-  string to_string (t move) {
-    return to_player (move).to_string () + " " + v (move).to_string ();
+  player_t get_player () { 
+    return player_t (idx >> v_aux::bits_used);
   }
 
-}
+  vertex_t get_vertex () { 
+    return vertex_t (idx & ((1 << ::v_aux::bits_used) - 1)) ; 
+  }
 
-#define move_for_each_all(m) for (move::t m = 0; m < move::cnt; m++)
+  string to_string () {
+    return get_player ().to_string () + " " + get_vertex ().to_string ();
+  }
+
+  uint get_idx () { return idx; }
+
+  bool operator== (move_t other) const { return idx == other.idx; }
+  bool operator!= (move_t other) const { return idx != other.idx; }
+
+  bool in_range ()          const { return idx < move_aux::cnt; }
+  void next ()                    { idx++; }
+
+};
+
+#define move_for_each_all(m) for (move::t m = 0; m.in_range (); m.next ())
+
+
+template <typename elt_t> class move_map_t {
+public:
+  elt_t tab [move_aux::cnt];
+  elt_t& operator[] (move_t m)             { return tab [m.get_idx ()]; }
+  const elt_t& operator[] (move_t m) const { return tab [m.get_idx ()]; }
+};
+

@@ -57,23 +57,21 @@ public:
 class zobrist_t {
 public:
 
-  hash_t hashes[move::cnt];
+  move_map_t <hash_t> hashes;
 
   zobrist_t (random_pm_t& pm) {
     pl_v_for_each (pl, v) {
-      move::t m;
-      m = move::of_pl_v (pl, v);
-      hashes[m].randomize (pm);
+      move_t m = move_t (pl, v);
+      hashes [m].randomize (pm);
     }
   }
 
-  hash_t of_move (move::t m) const {
-    move::check (m);
-    return hashes[m];
+  hash_t of_move (move_t m) const {
+    return hashes [m];
   }
 
   hash_t of_pl_v (player_t pl,  vertex_t v) const {
-    return hashes[move::of_pl_v (pl, v)];
+    return hashes [move_t (pl, v)];
   }
 
 };
