@@ -39,7 +39,7 @@ class player_t {
 public:
 
   player_t () { idx = -1; }
-  player_t (uint _idx) { idx = _idx; }
+  player_t (uint _idx) { idx = _idx; check ();}
 
   bool operator== (player_t other) const { return idx == other.idx; }
 
@@ -58,7 +58,7 @@ public:
       return "O";
   }
 
-  bool in_range () const { return idx < player_aux::cnt; }
+  bool in_range () const { return idx < player_aux::cnt; } // TODO do it like check
   void next () { idx++; }
 
   uint get_idx () const { return idx; }
@@ -356,7 +356,11 @@ public:
 #define pl_v_for_each(pl, vv) player_for_each(pl) v_for_each_onboard(vv)
 
 
+
+
 // namespace move
+
+
 
 
 namespace move {

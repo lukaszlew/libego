@@ -29,7 +29,7 @@ enum playout_status { playout_ok, playout_mercy, playout_too_long };
 
 namespace simple_playout {
 
-  random_pm_t pm; // TODO seed it when class
+  random_pm_t pm(123); // TODO seed it when class
 
   all_inline 
   vertex_t play_one (board_t* board, player_t player) {
