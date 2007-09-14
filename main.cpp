@@ -27,6 +27,7 @@
 
 #include <cassert>
 #include <cmath>
+#include <cstdarg>
 
 #include <sys/time.h>
 #include <sys/resource.h>
