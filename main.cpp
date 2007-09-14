@@ -36,7 +36,7 @@ using namespace std;
 
 #include "config.cpp"
 
-#include "gtp.h"
+#include "gtp.cpp"
 
 #include "utils.cpp"
 #include "basic_go_types.cpp"

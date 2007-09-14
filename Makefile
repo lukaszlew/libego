@@ -6,22 +6,22 @@ CFLAGS += -Wall #-static #-Wno-long-long -Wextra -Wno-variadic-macros
 
 GPP    = g++ $(CFLAGS) 
 
-FILES  = Makefile config.cpp utils.cpp basic_go_types.cpp board.cpp stack_board.cpp utils.cpp playout.cpp gtp.cpp gtp.h uct.cpp gtp_board.cpp main.cpp
+FILES  = Makefile config.cpp utils.cpp basic_go_types.cpp board.cpp stack_board.cpp utils.cpp playout.cpp gtp.cpp uct.cpp gtp_board.cpp main.cpp
 
 all: ego_opt
 
 
 ego_debug: $(FILES)
-	$(GPP) $(DEBUG) -o ego_debug gtp.cpp main.cpp
+	$(GPP) $(DEBUG) -o ego_debug main.cpp
 
 ego_opt:   $(FILES)
-	$(GPP) $(OPT)   -o ego_opt   gtp.cpp main.cpp
+	$(GPP) $(OPT)   -o ego_opt   main.cpp
 
 ego_asm:   $(FILES)
-	$(GPP) $(OPT)   -S -c main.cpp
+	$(GPP) $(OPT)   -S -c        main.cpp
 
 ego_prof:  $(FILES)
-	$(GPP) $(PROF)  -o ego_prof  gtp.cpp main.cpp
+	$(GPP) $(PROF)  -o ego_prof  main.cpp
 
 
 

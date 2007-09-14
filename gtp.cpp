@@ -43,7 +43,111 @@
 #include <ctype.h>
 #include <assert.h>
 
-#include "gtp.h"
+#include <stdarg.h>
+#include <stdio.h>
+
+/* Maximum allowed line length in GTP. */
+#define GTP_BUFSIZE 1000
+
+/* Status returned from callback functions. */
+#define GTP_QUIT    -1
+#define GTP_OK       0
+#define GTP_FATAL    1
+
+/* Whether the GTP command was successful. */
+#define GTP_SUCCESS  0
+#define GTP_FAILURE  1
+
+/* Function pointer for callback functions. */
+typedef int (*gtp_fn_ptr)(char *s);
+
+/* Function pointer for vertex transform functions. */
+typedef void (*gtp_transform_ptr)(int ai, int aj, int *bi, int *bj);
+
+/* Elements in the array of commands required by gtp_main_loop. */
+struct gtp_command {
+  const char *name;
+  gtp_fn_ptr function;
+};
+
+void gtp_main_loop(struct gtp_command commands[],
+		   FILE *gtp_input, FILE *gtp_output, FILE *gtp_dump_commands);
+void gtp_internal_set_boardsize(int size);
+void gtp_set_vertex_transform_hooks(gtp_transform_ptr in,
+				    gtp_transform_ptr out);
+void gtp_mprintf(const char *format, ...);
+void gtp_printf(const char *format, ...);
+void gtp_start_response(int status);
+int gtp_finish_response(void);
+int gtp_success(const char *format, ...);
+int gtp_failure(const char *format, ...);
+void gtp_panic(void);
+int gtp_decode_color(char *s, int *color);
+int gtp_decode_coord(char *s, int *m, int *n);
+int gtp_decode_move(char *s, int *color, int *i, int *j);
+void gtp_print_vertices(int n, int movei[], int movej[]);
+void gtp_print_vertex(int i, int j);
+void gtp_append_commands (gtp_command* dst, gtp_command* src);
+
+// helpful macros
+
+#define decode_float(s, f) {                               \
+  uint n;                                                  \
+  if (sscanf (s, "%f%n", &f, &n) < 1)                      \
+    return gtp_failure("syntax error");                    \
+  s += n;                                                  \
+}
+
+#define decode_int(s, i) {                                 \
+  uint n;                                                  \
+  if (sscanf (s, "%d%n", &i, &n) < 1)                      \
+    return gtp_failure("syntax error");                    \
+  s += n;                                                  \
+}
+
+#define decode_str(s, str) {                               \
+  uint n;                                                  \
+  if (sscanf (s, "%s%n", str, &n) < 1)                     \
+    return gtp_failure("syntax error");                    \
+  s += n;                                                  \
+}
+
+#define decode_player(s, pl) {                             \
+  int       gtp_color;                                     \
+  uint n;                                                  \
+                                                           \
+  n = gtp_decode_color(s, &gtp_color);                     \
+  if (n == 0) return gtp_failure("syntax error");          \
+  s += n;                                                  \
+                                                           \
+  pl = player_t (2 - gtp_color);                           \
+}
+
+#define decode_player_v(s, plpl, vv, fail_i) {             \
+  int       gtp_color;                                     \
+  coord::t  r;                                             \
+  coord::t  c;                                             \
+  uint n;                                                  \
+                                                           \
+  n = gtp_decode_move(s, &gtp_color, &r, &c);              \
+  if (n == 0) fail_i;                                      \
+  else {                                                   \
+    s += n;                                                \
+                                                           \
+    plpl    = player_t (2 - gtp_color);                    \
+    vv      = vertex_t (r, c);                             \
+  }                                                        \
+}
+
+#define decode_move(s, mm, fail_i) {                       \
+  player::t pl;                                            \
+  vertex_t v;                                              \
+  decode_player_v(s, pl, v, fail_i);                       \
+  mm = move::of_pl_v (pl, v);                              \
+}
+
+extern FILE *gtp_output_file;
+
 
 /* These are copied from gnugo.h. We don't include this file in order
  * to remain as independent as possible of GNU Go internals.
@@ -57,7 +161,7 @@
  * the board size in all calls needing it, but that would be
  * unnecessarily inconvenient.
  */
-static int gtp_boardsize = -1;
+static int gtp_internal_boardsize = -1;
 
 /* Vertex transformation hooks. */
 static gtp_transform_ptr vertex_transform_input_hook = NULL;
@@ -155,7 +259,7 @@ gtp_main_loop(struct gtp_command commands[],
 void
 gtp_internal_set_boardsize(int size)
 {
-  gtp_boardsize = size;
+  gtp_internal_boardsize = size;
 }
 
 /* If you need to transform the coordinates on input or output, use
@@ -326,7 +430,7 @@ gtp_decode_color(char *s, int *color)
   int i;
   int n;
 
-  assert(gtp_boardsize > 0);
+  assert(gtp_internal_boardsize > 0);
 
   if (sscanf(s, "%6s%n", color_string, &n) != 1)
     return 0;
@@ -358,7 +462,7 @@ gtp_decode_coord(char *s, int *i, int *j)
   int row;
   int n;
 
-  assert(gtp_boardsize > 0);
+  assert(gtp_internal_boardsize > 0);
 
   if (sscanf(s, " %c%d%n", &column, &row, &n) != 2)
     return 0;
@@ -369,9 +473,9 @@ gtp_decode_coord(char *s, int *i, int *j)
   if (tolower((int) column) > 'i')
     --*j;
 
-  *i = gtp_boardsize - row;
+  *i = gtp_internal_boardsize - row;
 
-  if (*i < 0 || *i >= gtp_boardsize || *j < 0 || *j >= gtp_boardsize)
+  if (*i < 0 || *i >= gtp_internal_boardsize || *j < 0 || *j >= gtp_internal_boardsize)
     return 0;
 
   if (vertex_transform_input_hook != NULL)
@@ -390,7 +494,7 @@ gtp_decode_move(char *s, int *color, int *i, int *j)
   int n1, n2;
   int k;
 
-  assert(gtp_boardsize > 0);
+  assert(gtp_internal_boardsize > 0);
 
   n1 = gtp_decode_color(s, color);
   if (n1 == 0)
@@ -445,7 +549,7 @@ gtp_print_vertices(int n, int movei[], int movej[])
   int k;
   int ri, rj;
   
-  assert(gtp_boardsize > 0);
+  assert(gtp_internal_boardsize > 0);
   
   sort_moves(n, movei, movej);
   for (k = 0; k < n; k++) {
@@ -453,8 +557,8 @@ gtp_print_vertices(int n, int movei[], int movej[])
       gtp_printf(" ");
     if (movei[k] == -1 && movej[k] == -1)
       gtp_printf("PASS");
-    else if (movei[k] < 0 || movei[k] >= gtp_boardsize
-	     || movej[k] < 0 || movej[k] >= gtp_boardsize)
+    else if (movei[k] < 0 || movei[k] >= gtp_internal_boardsize
+	     || movej[k] < 0 || movej[k] >= gtp_internal_boardsize)
       gtp_printf("??");
     else {
       if (vertex_transform_output_hook != NULL)
@@ -463,7 +567,7 @@ gtp_print_vertices(int n, int movei[], int movej[])
 	ri = movei[k];
 	rj = movej[k];
       }
-      gtp_printf("%c%d", 'A' + rj + (rj >= 8), gtp_boardsize - ri);
+      gtp_printf("%c%d", 'A' + rj + (rj >= 8), gtp_internal_boardsize - ri);
     }
   }
 }
