@@ -198,7 +198,7 @@ public:
   }
 
   void rec_print_children (ostream& out, uint depth, player_t player) {
-    node_t*  child_tab [v_aux::cnt]; // rough upper bound for the number of legal move
+    node_t*  child_tab [vertex_aux::cnt]; // rough upper bound for the number of legal move
     uint     child_tab_size;
     uint     best_child_idx;
     float    min_visit_cnt;

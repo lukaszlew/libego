@@ -176,7 +176,7 @@ public:
   vertex_map_t <uint>        empty_pos;
   vertex_map_t <vertex_t>    chain_next_v;
 
-  uint                       chain_lib_cnt [v_aux::cnt]; // indexed by chain_id
+  uint                       chain_lib_cnt [vertex_aux::cnt]; // indexed by chain_id
   vertex_map_t <uint>        chain_id;
   
   vertex_t    empty_v [board_area];
@@ -319,7 +319,7 @@ public:                         // consistency checks
 
   void check_chains () const {        // ... and chain_next_v
     uint            act_chain_no;
-    uint            chain_id_list [v_aux::cnt - 1]; // list; could be smaller
+    uint            chain_id_list [vertex_aux::cnt - 1]; // list; could be smaller
     vertex_map_t <uint> chain_no;
 
     const uint      no_chain = 10000;
@@ -635,7 +635,7 @@ public:                         // board interface
     empty_pos [v] = empty_v_cnt;
     empty_v [empty_v_cnt++] = v;
 
-    assertc (board_ac, empty_v_cnt < v_aux::cnt);
+    assertc (board_ac, empty_v_cnt < vertex_aux::cnt);
   }
 
 public:                         // utils

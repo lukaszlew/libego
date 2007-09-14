@@ -21,9 +21,9 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-// TODO check is check always checked :)
 
-// namespace player
+/* auxiliary constants that can't won't be inlined if static in class */
+
 
 namespace player_aux {
   const uint black_idx = 0;
@@ -33,7 +33,42 @@ namespace player_aux {
 }
 
 
-class player_t {
+namespace vertex_aux {
+
+  const uint cnt = (board_size + 2) * (board_size + 2);
+
+  const uint bits_used = 9;     // on 19x19 cnt == 441 < 512 == 1 << 9;
+  //static_assert (cnt <= (1 << bits_used));
+
+  const uint dNS = (board_size + 2);
+  const uint dWE = 1;
+
+  const uint pass_idx = 0;
+  const uint no_v_idx = 1;
+  const uint resign_idx = 2;
+}
+
+
+namespace move_aux {
+  uint player_mask [player_aux::cnt] = {  // TODO map_t ?
+    player_aux::black_idx << vertex_aux::bits_used, 
+    player_aux::white_idx << vertex_aux::bits_used 
+  };
+
+  const uint cnt = player_aux::white_idx << vertex_aux::bits_used | vertex_aux::cnt;
+ 
+  const uint no_move_idx = 1;
+
+}
+
+
+
+/********************************************************************************/
+
+
+
+class player_t { // TODO check is check always checked in constructors
+
   uint idx;
 
 public:
@@ -69,23 +104,7 @@ const player_t player_black = player_t (player_aux::black_idx);
 const player_t player_white = player_t (player_aux::white_idx);
 
 
-// class player_map_t
-
-template <typename elt_t> class player_map_t {
-public:
-  elt_t tab [player_aux::cnt];
-  elt_t& operator[] (player_t pl)             { return tab [pl.get_idx ()]; }
-  const elt_t& operator[] (player_t pl) const { return tab [pl.get_idx ()]; }
-};
-
-
-// faster than non-loop
-#define player_for_each(pl) \
-  for (player_t pl = player_black; pl.in_range (); pl.next ())
-
-
-// namespace color
-
+//------------------------------------------------------------------------------
 
 namespace color {
 
@@ -138,11 +157,8 @@ namespace color {
 
 }
 
-// TODO test it for performance
-#define color_for_each(col) \
-  for (color::t col = color::black; col != color::cnt; col = color::t (col+1))
 
-// namespace coord
+//--------------------------------------------------------------------------------
 
 
 namespace coord {
@@ -183,30 +199,8 @@ namespace coord {
 
 }
 
-#define coord_for_each(rc) \
-  for (coord::t rc = 0; rc < int(board_size); rc = coord::t (rc+1))
 
-
-// namespace v
-
-
-namespace v_aux {
-
-  const uint cnt = (board_size + 2) * (board_size + 2);
-
-  const uint bits_used = 9;     // on 19x19 cnt == 441 < 512 == 1 << 9;
-  //static_assert (cnt <= (1 << bits_used));
-
-  const uint dNS = (board_size + 2);
-  const uint dWE = 1;
-
-  const uint pass_idx = 0;
-  const uint no_v_idx = 1;
-  const uint resign_idx = 2;
-}
-
-
-// class vertex_t
+//--------------------------------------------------------------------------------
 
 
 class vertex_t {
@@ -221,7 +215,7 @@ public:
 
   vertex_t (coord::t r, coord::t c) {
     coord::check2 (r, c);
-    idx = (r+1) * v_aux::dNS + (c+1) * v_aux::dWE;
+    idx = (r+1) * vertex_aux::dNS + (c+1) * vertex_aux::dWE;
   }
 
   uint get_idx () { return idx; }
@@ -229,15 +223,15 @@ public:
   bool operator== (vertex_t other) const { return idx == other.idx; }
   bool operator!= (vertex_t other) const { return idx != other.idx; }
 
-  bool in_range ()          const { return idx < v_aux::cnt; }
+  bool in_range ()          const { return idx < vertex_aux::cnt; }
   void next ()                    { idx++; }
 
 
   void check ()             const { assertc (v_ac, in_range ()); }
 
-  coord::t row () { return idx / v_aux::dNS - 1; }
+  coord::t row () { return idx / vertex_aux::dNS - 1; }
 
-  coord::t col () { return idx % v_aux::dNS - 1; }
+  coord::t col () { return idx % vertex_aux::dNS - 1; }
 
   bool is_on_board () { // TODO Ho here
 #ifdef Ho
@@ -255,10 +249,10 @@ public:
     assertc (v_ac, is_on_board ()); 
   }
 
-  vertex_t N () { return vertex_t (idx - v_aux::dNS); }
-  vertex_t W () { return vertex_t (idx - v_aux::dWE); }
-  vertex_t E () { return vertex_t (idx + v_aux::dWE); }
-  vertex_t S () { return vertex_t (idx + v_aux::dNS); }
+  vertex_t N () { return vertex_t (idx - vertex_aux::dNS); }
+  vertex_t W () { return vertex_t (idx - vertex_aux::dWE); }
+  vertex_t E () { return vertex_t (idx + vertex_aux::dWE); }
+  vertex_t S () { return vertex_t (idx + vertex_aux::dNS); }
 
   vertex_t NW () { return N ().W (); } // TODO can it be faster?
   vertex_t NE () { return N ().E (); } // only Go
@@ -269,11 +263,11 @@ public:
     coord::t r;
     coord::t c;
     
-    if (idx == v_aux::pass_idx) {
+    if (idx == vertex_aux::pass_idx) {
       return "PASS";
-    } else if (idx == v_aux::no_v_idx) {
+    } else if (idx == vertex_aux::no_v_idx) {
       return "NO_V";
-    } else if (idx == v_aux::resign_idx) {
+    } else if (idx == vertex_aux::resign_idx) {
       return "resign";
     } else {
       r = row ();
@@ -286,24 +280,76 @@ public:
 
 };
   
-const vertex_t vertex_pass    = vertex_t (v_aux::pass_idx);
-const vertex_t vertex_no_v    = vertex_t (v_aux::no_v_idx);
-const vertex_t vertex_resign  = vertex_t (v_aux::resign_idx); // TODO is it inlined (x2)?
+const vertex_t vertex_pass    = vertex_t (vertex_aux::pass_idx);
+const vertex_t vertex_no_v    = vertex_t (vertex_aux::no_v_idx);
+const vertex_t vertex_resign  = vertex_t (vertex_aux::resign_idx); // TODO is it inlined (x2)?
 
 
-template <typename elt_t> class vertex_map_t {
+//--------------------------------------------------------------------------------
+
+
+class move_t {
 public:
-  elt_t tab [v_aux::cnt];
-  elt_t& operator[] (vertex_t v)             { return tab [v.get_idx ()]; }
-  const elt_t& operator[] (vertex_t v) const { return tab [v.get_idx ()]; }
+
+  uint idx;
+
+  void check () {
+    player_t (idx >> vertex_aux::bits_used);
+    vertex_t (idx & ((1 << vertex_aux::bits_used) - 1)).check ();
+  }
+
+  move_t (player_t player, vertex_t v) { 
+    idx = move_aux::player_mask [player.get_idx ()] | v.get_idx (); // TODO replace
+  }
+
+  player_t get_player () { 
+    return player_t (idx >> vertex_aux::bits_used);
+  }
+
+  vertex_t get_vertex () { 
+    return vertex_t (idx & ((1 << ::vertex_aux::bits_used) - 1)) ; 
+  }
+
+  string to_string () {
+    return get_player ().to_string () + " " + get_vertex ().to_string ();
+  }
+
+  uint get_idx () { return idx; }
+
+  bool operator== (move_t other) const { return idx == other.idx; }
+  bool operator!= (move_t other) const { return idx != other.idx; }
+
+  bool in_range ()          const { return idx < move_aux::cnt; }
+  void next ()                    { idx++; }
+
 };
+
+
+/********************************************************************************/
+
+// macros *_for_each
+
+// faster than non-loop
+#define player_for_each(pl) \
+  for (player_t pl = player_black; pl.in_range (); pl.next ())
+
+
+
+// TODO test it for performance
+#define color_for_each(col) \
+  for (color::t col = color::black; col != color::cnt; col = color::t (col+1))
+
+
+#define coord_for_each(rc) \
+  for (coord::t rc = 0; rc < int(board_size); rc = coord::t (rc+1))
+
 
 
 #define v_for_each_all(vv) for (vertex_t vv = 0; vv.in_range (); vv.next ()) // TODO 0 works??? // TODO player the same way!
 
 #define v_for_each_onboard(vv)                                       \
-  for (vertex_t vv = vertex_t(v_aux::dNS+v_aux::dWE);                \
-       vv.get_idx () <= board_size * (v_aux::dNS + v_aux::dWE);      \
+  for (vertex_t vv = vertex_t(vertex_aux::dNS+vertex_aux::dWE);                \
+       vv.get_idx () <= board_size * (vertex_aux::dNS + vertex_aux::dWE);      \
        vv.next ())
 
 
@@ -355,62 +401,27 @@ public:
 
 #define pl_v_for_each(pl, vv) player_for_each(pl) v_for_each_onboard(vv)
 
-
-
-
-// namespace move
-
-
-namespace move_aux {
-  uint player_mask [player_aux::cnt] = {  // TODO map_t ?
-    player_aux::black_idx << v_aux::bits_used, 
-    player_aux::white_idx << v_aux::bits_used 
-  };
-
-  const uint cnt = player_aux::white_idx << v_aux::bits_used | v_aux::cnt;
- 
-  const uint no_move_idx = 1;
-
-};
-
-
-class move_t {
-public:
-
-  uint idx;
-
-  void check () {
-    player_t (idx >> v_aux::bits_used);
-    vertex_t (idx & ((1 << v_aux::bits_used) - 1)).check ();
-  }
-
-  move_t (player_t player, vertex_t v) { 
-    idx = move_aux::player_mask [player.get_idx ()] | v.get_idx (); // TODO replace
-  }
-
-  player_t get_player () { 
-    return player_t (idx >> v_aux::bits_used);
-  }
-
-  vertex_t get_vertex () { 
-    return vertex_t (idx & ((1 << ::v_aux::bits_used) - 1)) ; 
-  }
-
-  string to_string () {
-    return get_player ().to_string () + " " + get_vertex ().to_string ();
-  }
-
-  uint get_idx () { return idx; }
-
-  bool operator== (move_t other) const { return idx == other.idx; }
-  bool operator!= (move_t other) const { return idx != other.idx; }
-
-  bool in_range ()          const { return idx < move_aux::cnt; }
-  void next ()                    { idx++; }
-
-};
-
 #define move_for_each_all(m) for (move::t m = 0; m.in_range (); m.next ())
+
+
+/********************************************************************************/
+
+// dictionaries indexed with basic go types
+
+template <typename elt_t> class player_map_t {
+public:
+  elt_t tab [player_aux::cnt];
+  elt_t& operator[] (player_t pl)             { return tab [pl.get_idx ()]; }
+  const elt_t& operator[] (player_t pl) const { return tab [pl.get_idx ()]; }
+};
+
+
+template <typename elt_t> class vertex_map_t {
+public:
+  elt_t tab [vertex_aux::cnt];
+  elt_t& operator[] (vertex_t v)             { return tab [v.get_idx ()]; }
+  const elt_t& operator[] (vertex_t v) const { return tab [v.get_idx ()]; }
+};
 
 
 template <typename elt_t> class move_map_t {
@@ -419,4 +430,3 @@ public:
   elt_t& operator[] (move_t m)             { return tab [m.get_idx ()]; }
   const elt_t& operator[] (move_t m) const { return tab [m.get_idx ()]; }
 };
-
