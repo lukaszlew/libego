@@ -40,7 +40,7 @@ public:
     board = board_; 
     act_player = first_player;
     player_for_each (pl)
-      last_v [pl] = vertex_no_v;
+      last_v [pl] = vertex_any;
     move_no = 0;
   }
 
@@ -110,9 +110,8 @@ namespace simple_playout_benchmark {
 
 
   board_t    mc_board[1];
-  board_t    mc_board_copy[1];
   
-  static void run (board_t const * start_board, 
+  void run (board_t const * start_board, 
                    uint playout_cnt, 
                    player_t first_player, 
                    ostream& out) 
@@ -126,13 +125,10 @@ namespace simple_playout_benchmark {
     
     player_for_each (pl) win_cnt [pl] = 0;
 
-    mc_board->load (start_board);
-    memcpy (mc_board_copy, mc_board, sizeof (mc_board));
-
     seconds_begin = get_seconds ();
     
     rep (ii, playout_cnt) {
-      memcpy (mc_board, mc_board_copy, sizeof (mc_board));
+      mc_board->load (start_board);
       simple_playout_t sp (mc_board, first_player);
       status = sp.run ();
       

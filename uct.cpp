@@ -252,7 +252,7 @@ public:
 
   tree_t () {
     history [0] = node_pool->malloc ();
-    history [0]->init (vertex_no_v);
+    history [0]->init (vertex_any);
   }
 
   void history_reset () {

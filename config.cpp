@@ -77,7 +77,7 @@ const bool board_ac           = false;
 const bool player_ac          = paranoic;
 const bool color_ac           = paranoic;
 const bool coord_ac           = paranoic;
-const bool v_ac               = paranoic;
+const bool vertex_ac          = paranoic;
 
 
 

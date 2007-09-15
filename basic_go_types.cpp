@@ -39,12 +39,12 @@ namespace vertex_aux {
 
   const uint bits_used = 9;     // on 19x19 cnt == 441 < 512 == 1 << 9;
   //static_assert (cnt <= (1 << bits_used));
-
+  //static_assert (cnt > (1 << (bits_used-1)));
   const uint dNS = (board_size + 2);
   const uint dWE = 1;
 
   const uint pass_idx = 0;
-  const uint no_v_idx = 1;
+  const uint any_idx  = 1; // TODO any
   const uint resign_idx = 2;
 }
 
@@ -165,9 +165,8 @@ namespace coord {
 
   typedef int t;
 
-  bool is_ok (t coord) { return uint (coord) < board_size; }
-
-  
+  bool is_ok (t coord) { return (coord < int (board_size)) & (coord >= -1); }
+  bool is_on_board (t coord) { return uint (coord) < board_size; }
 
   void check (t coo) { 
     unused (coo);
@@ -177,8 +176,8 @@ namespace coord {
   void check2 (t row, t col) { 
     if (!coord_ac) return;
     if (row == -1 && col == -1) return;
-    assertc (coord_ac, is_ok (row)); 
-    assertc (coord_ac, is_ok (col)); 
+    assertc (coord_ac, is_on_board (row)); 
+    assertc (coord_ac, is_on_board (col)); 
   }
 
   char col_tab[20] = "ABCDEFGHJKLMNOPQRST";
@@ -226,8 +225,7 @@ public:
   bool in_range ()          const { return idx < vertex_aux::cnt; }
   void next ()                    { idx++; }
 
-
-  void check ()             const { assertc (v_ac, in_range ()); }
+  void check ()             const { assertc (vertex_ac, in_range ()); }
 
   coord::t row () { return idx / vertex_aux::dNS - 1; }
 
@@ -241,12 +239,12 @@ public:
     d = r+c;
     return coord::is_ok (r) & coord::is_ok (c) & (d >= int((board_size-1)/2)) & (d < int(board_size + board_size/2));
 #else
-    return coord::is_ok (row ()) & coord::is_ok (col ());
+    return coord::is_on_board (row ()) & coord::is_on_board (col ());
 #endif
   }
 
   void check_is_on_board () { 
-    assertc (v_ac, is_on_board ()); 
+    assertc (vertex_ac, is_on_board ()); 
   }
 
   vertex_t N () { return vertex_t (idx - vertex_aux::dNS); }
@@ -265,7 +263,7 @@ public:
     
     if (idx == vertex_aux::pass_idx) {
       return "PASS";
-    } else if (idx == vertex_aux::no_v_idx) {
+    } else if (idx == vertex_aux::any_idx) {
       return "NO_V";
     } else if (idx == vertex_aux::resign_idx) {
       return "resign";
@@ -281,7 +279,7 @@ public:
 };
   
 const vertex_t vertex_pass    = vertex_t (vertex_aux::pass_idx);
-const vertex_t vertex_no_v    = vertex_t (vertex_aux::no_v_idx);
+const vertex_t vertex_any     = vertex_t (vertex_aux::any_idx);
 const vertex_t vertex_resign  = vertex_t (vertex_aux::resign_idx); // TODO is it inlined (x2)?
 
 
@@ -300,6 +298,14 @@ public:
 
   move_t (player_t player, vertex_t v) { 
     idx = move_aux::player_mask [player.get_idx ()] | v.get_idx (); // TODO replace
+  }
+
+  move_t () {
+    move_t (player_black, vertex_any);
+  }
+
+  move_t (int idx_) {
+    idx = idx_;
   }
 
   player_t get_player () { 
@@ -344,10 +350,10 @@ public:
   for (coord::t rc = 0; rc < int(board_size); rc = coord::t (rc+1))
 
 
+#define vertex_for_each_all(vv) for (vertex_t vv = 0; vv.in_range (); vv.next ()) // TODO 0 works??? // TODO player the same way!
 
-#define v_for_each_all(vv) for (vertex_t vv = 0; vv.in_range (); vv.next ()) // TODO 0 works??? // TODO player the same way!
-
-#define v_for_each_onboard(vv)                                       \
+// misses some offboard vertices (for speed) 
+#define vertex_for_each_faster(vv)                                       \
   for (vertex_t vv = vertex_t(vertex_aux::dNS+vertex_aux::dWE);                \
        vv.get_idx () <= board_size * (vertex_aux::dNS + vertex_aux::dWE);      \
        vv.next ())
@@ -355,7 +361,7 @@ public:
 
 #ifdef Ho
 
-  #define v_for_each_nbr(center_v, nbr_v, block) {  \
+  #define vertex_for_each_nbr(center_v, nbr_v, block) {  \
     center_v.check_is_on_board ();                  \
     vertex_t nbr_v;                                 \
     nbr_v = center_v.N (); block;                   \
@@ -368,7 +374,7 @@ public:
 
 #else
 
-  #define v_for_each_nbr(center_v, nbr_v, block) {  \
+  #define vertex_for_each_nbr(center_v, nbr_v, block) {  \
     center_v.check_is_on_board ();                  \
     vertex_t nbr_v;                                 \
     nbr_v = center_v.N (); block;                   \
@@ -377,7 +383,7 @@ public:
     nbr_v = center_v.S (); block;                   \
   }
     
-  #define v_for_each_diag_nbr(center_v, nbr_v, block) {  \
+  #define vertex_for_each_diag_nbr(center_v, nbr_v, block) {  \
     center_v.check_is_on_board ();                       \
     vertex_t nbr_v;                                      \
     nbr_v = center_v.NW (); block;                       \
@@ -386,22 +392,20 @@ public:
     nbr_v = center_v.SE (); block;                       \
     }
   
-  #define pl_v_for_each_9_nbr(center_v, pl, nbr_v, i) { \
+  #define player_vertex_for_each_9_nbr(center_v, pl, nbr_v, i) { \
     v::check_is_on_board (center_v);                    \
-    move::t    nbr_v;                                   \
+    move_t    nbr_v;                                    \
     player_for_each (pl) {                              \
       nbr_v = center_v;                                 \
       i;                                                \
-      v_for_each_nbr      (center_v, nbr_v, i);         \
-      v_for_each_diag_nbr (center_v, nbr_v, i);         \
+      vertex_for_each_nbr      (center_v, nbr_v, i);         \
+      vertex_for_each_diag_nbr (center_v, nbr_v, i);         \
     }                                                   \
   }
   
 #endif
 
-#define pl_v_for_each(pl, vv) player_for_each(pl) v_for_each_onboard(vv)
-
-#define move_for_each_all(m) for (move::t m = 0; m.in_range (); m.next ())
+#define move_for_each_all(m) for (move_t m = 0; m.in_range (); m.next ())
 
 
 /********************************************************************************/
@@ -421,6 +425,19 @@ public:
   elt_t tab [vertex_aux::cnt];
   elt_t& operator[] (vertex_t v)             { return tab [v.get_idx ()]; }
   const elt_t& operator[] (vertex_t v) const { return tab [v.get_idx ()]; }
+
+  string to_string () {
+    ostringstream out;
+    coord_for_each (row) {
+      coord_for_each (col) {
+        vertex_t v = vertex_t (row, col);
+        out << tab [v.get_idx ()] << " ";
+      }
+      out << endl;
+    }
+    return out.str ();
+  }
+
 };
 
 

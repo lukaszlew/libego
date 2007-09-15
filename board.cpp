@@ -60,7 +60,7 @@ public:
   move_map_t <hash_t> hashes;
 
   zobrist_t (random_pm_t& pm) {
-    pl_v_for_each (pl, v) {
+    player_for_each (pl) vertex_for_each_all (v) {
       move_t m = move_t (pl, v);
       hashes [m].randomize (pm);
     }
@@ -197,7 +197,7 @@ public:
 public:                         // macros
 
   #define empty_v_for_each(board, vv, i) {                              \
-    vertex_t vv = vertex_no_v;                                          \
+    vertex_t vv = vertex_any;                                          \
     rep (ev_i, (board)->empty_v_cnt) {                                  \
       vv = (board)->empty_v [ev_i];                                     \
       i;                                                                \
@@ -221,7 +221,7 @@ public:                         // consistency checks
     vertex_map_t <bool> noticed;
     player_map_t <uint> exp_player_v_cnt;
 
-    v_for_each_all (v) noticed[v] = false;
+    vertex_for_each_all (v) noticed[v] = false;
 
     assert (empty_v_cnt <= board_area);
 
@@ -232,7 +232,7 @@ public:                         // consistency checks
 
     player_for_each (pl) exp_player_v_cnt [pl] = 0;
 
-    v_for_each_onboard (v) {
+    vertex_for_each_all (v) {
       assert ((color_at[v] == color::empty) == noticed[v]);
       if (color_at[v] == color::empty) {
         assert (empty_pos[v] < empty_v_cnt);
@@ -252,7 +252,7 @@ public:                         // consistency checks
   void check_color_at () const {
     if (!board_color_at_ac) return;
 
-    v_for_each_all (v) {
+    vertex_for_each_all (v) {
       color::check (color_at[v]);
       assert ((color_at[v] != color::off_board) == (v.is_on_board ()));
     }
@@ -261,7 +261,7 @@ public:                         // consistency checks
   void check_nbr_cnt () const {
     if (!board_nbr_cnt_ac) return;
     
-    v_for_each_onboard (v) {
+    vertex_for_each_all (v) {
       coord::t r;
       coord::t c;
       uint nbr_color_cnt[color::cnt];
@@ -272,12 +272,12 @@ public:                         // consistency checks
       r = v.row ();
       c = v.col ();
 
-      assert (coord::is_ok (r)); // checking the macro
-      assert (coord::is_ok (c));
+      assert (coord::is_on_board (r)); // checking the macro
+      assert (coord::is_on_board (c));
           
       color_for_each (col) nbr_color_cnt [col] = 0;
           
-      v_for_each_nbr (v, nbr_v, nbr_color_cnt [color_at [nbr_v]]++);
+      vertex_for_each_nbr (v, nbr_v, nbr_color_cnt [color_at [nbr_v]]++);
           
       expected_nbr_cnt =        // definition of nbr_cnt[v]
         + ((nbr_color_cnt [color::black] + nbr_color_cnt [color::off_board]) 
@@ -294,13 +294,13 @@ public:                         // consistency checks
   void check_chain_at () const {
     if (!chain_at_ac) return;
 
-    v_for_each_onboard (v) { // whether same color neighbours have same root and liberties
+    vertex_for_each_all (v) { // whether same color neighbours have same root and liberties
       // TODO what about off_board and empty?
       if (color::is_player (color_at[v])) {
 
         assert (chain_lib_cnt[ chain_id [v]] != 0);
 
-        v_for_each_nbr (v, nbr_v, {
+        vertex_for_each_nbr (v, nbr_v, {
           if (color_at[v] == color_at[nbr_v]) 
             assert (chain_id [v] == chain_id [nbr_v]);
         });
@@ -310,7 +310,7 @@ public:                         // consistency checks
 
   void check_chain_next_v () const {
     if (!chain_next_v_ac) return;
-    v_for_each_all (v) {
+    vertex_for_each_all (v) {
       chain_next_v[v].check ();
       if (!color::is_player (color_at[v])) 
         assert (chain_next_v[v] == v);
@@ -328,10 +328,10 @@ public:                         // consistency checks
     
     act_chain_no = 0;
 
-    v_for_each_all (v) chain_no[v] = no_chain;
+    vertex_for_each_all (v) chain_no[v] = no_chain;
 
     // TODO what about empty and off_board?
-    v_for_each_onboard (v) {
+    vertex_for_each_all (v) {
       if (color::is_player(color_at[v]) && chain_no[v] == no_chain) { // chain not visited yet
         color::t        act_color;
 
@@ -356,7 +356,7 @@ public:                         // consistency checks
           assert (chain_no[act_v] == no_chain);
           chain_no[act_v] = act_chain_no;
           
-          v_for_each_nbr (act_v, nbr_v, {
+          vertex_for_each_nbr (act_v, nbr_v, {
             if (color_at[nbr_v] == color::empty) lib_cnt++;
             if (color_at[nbr_v] == act_color) {
               if (chain_no[nbr_v] == act_chain_no) forward_off_board_cnt++; 
@@ -396,7 +396,7 @@ public:                         // consistency checks
 
     if (!board_ac) return;
 
-    v_for_each_onboard (v)
+    vertex_for_each_all (v)
       if (color_at[v] == color::empty)
         assert (is_eyelike (player, v) || play_no_pass (player, v) >= play_ss_suicide);
   }
@@ -416,9 +416,9 @@ public:                         // board interface
     empty_v_cnt = 0;
     player_for_each (pl) player_v_cnt [pl] = 0;
 #ifndef Ho
-    ko_v = vertex_no_v;             // only Go
+    ko_v = vertex_any;             // only Go
 #endif
-    v_for_each_all (v) {
+    vertex_for_each_all (v) {
       color_at      [v] = color::off_board;
       nbr_cnt       [v] = nbr_cnt_t (0, 0, nbr_cnt_aux::max);
       chain_next_v  [v] = v;
@@ -431,7 +431,7 @@ public:                         // board interface
         empty_v    [empty_v_cnt++]  = v;
 
         off_board_cnt = 0;
-        v_for_each_nbr (v, nbr_v, if (!nbr_v.is_on_board ()) off_board_cnt++);
+        vertex_for_each_nbr (v, nbr_v, if (!nbr_v.is_on_board ()) off_board_cnt++);
         rep (ii, off_board_cnt) nbr_cnt [v].off_board_inc ();
       }
     }
@@ -446,7 +446,7 @@ public:                         // board interface
 
     new_hash.set_zero ();
 
-    v_for_each_onboard (v) {
+    vertex_for_each_all (v) {
       if (color::is_player (color_at[v])) {
         new_hash ^= zobrist->of_pl_v (player_t (color_at[v]), v);
       }
@@ -487,13 +487,13 @@ public:                         // board interface
 
     last_empty_v_cnt = empty_v_cnt;
 #ifndef Ho
-    ko_v             = vertex_no_v;
+    ko_v             = vertex_any;
 #endif
     last_player      = player;
 
     place_stone (player, v);
 
-    v_for_each_nbr (v, nbr_v, process_new_nbr (nbr_v, player, v));
+    vertex_for_each_nbr (v, nbr_v, process_new_nbr (nbr_v, player, v));
 
     if (chain_lib_cnt [chain_id [v]] == 0) {
       assertc (board_ac, last_empty_v_cnt - empty_v_cnt == 1);
@@ -507,7 +507,7 @@ public:                         // board interface
 
   no_inline
   play_ret_t play_eye (player_t player, vertex_t v) {
-    v_for_each_nbr (v, nbr_v, assertc (board_ac, color_at[nbr_v] == color::opponent (player) || color_at[nbr_v] == color::off_board));
+    vertex_for_each_nbr (v, nbr_v, assertc (board_ac, color_at[nbr_v] == color::opponent (player) || color_at[nbr_v] == color::off_board));
 
 #ifndef Ho
     if (v == ko_v && player == last_player.other ()) // only Go
@@ -515,10 +515,10 @@ public:                         // board interface
 #endif
 
     uint all_nbr_live = true;
-    v_for_each_nbr (v, nbr_v, all_nbr_live &= (--chain_lib_cnt [chain_id [nbr_v]] != 0));
+    vertex_for_each_nbr (v, nbr_v, all_nbr_live &= (--chain_lib_cnt [chain_id [nbr_v]] != 0));
 
     if (all_nbr_live) {
-      v_for_each_nbr (v, nbr_v, chain_lib_cnt [chain_id [nbr_v]]++);
+      vertex_for_each_nbr (v, nbr_v, chain_lib_cnt [chain_id [nbr_v]]++);
       return play_ss_suicide;
     }
 
@@ -527,9 +527,9 @@ public:                         // board interface
 
     place_stone (player, v);
     
-    v_for_each_nbr (v, nbr_v, nbr_cnt [nbr_v].player_inc (player));
+    vertex_for_each_nbr (v, nbr_v, nbr_cnt [nbr_v].player_inc (player));
 
-    v_for_each_nbr (v, nbr_v, if ((chain_lib_cnt [chain_id [nbr_v]] == 0)) remove_chain (nbr_v));
+    vertex_for_each_nbr (v, nbr_v, if ((chain_lib_cnt [chain_id [nbr_v]] == 0)) remove_chain (nbr_v));
 
     assertc (board_ac, chain_lib_cnt [chain_id [v]] != 0);
 
@@ -537,7 +537,7 @@ public:                         // board interface
     if (last_empty_v_cnt == empty_v_cnt) { // if captured exactly one stone, end this was eye (only Go)
       ko_v = empty_v [empty_v_cnt - 1]; // then ko formed
     } else {
-      ko_v = vertex_no_v;
+      ko_v = vertex_any;
     }
 #endif
 
@@ -600,7 +600,7 @@ public:                         // board interface
     assertc (board_ac, act_v == v);
 
     do {
-      v_for_each_nbr (act_v, nbr_v, {
+      vertex_for_each_nbr (act_v, nbr_v, {
         nbr_cnt[nbr_v].player_dec (player_t (old_color));
         chain_lib_cnt [chain_id [nbr_v]]++;
       });
@@ -651,7 +651,7 @@ public:                         // utils
     if (! nbr_cnt[v].player_cnt_is_max (player)) return false;
 
     color_for_each (col) diag_color_cnt [col] = 0; // memset is slower
-    v_for_each_diag_nbr (v, diag_v, {
+    vertex_for_each_diag_nbr (v, diag_v, {
       diag_color_cnt [color_at [diag_v]]++;
     });
 
@@ -686,7 +686,7 @@ public:                         // utils
     return player_t (score () <= 0); 
   }
 
-  string to_string (vertex_t mark_v = vertex_no_v) const {
+  string to_string (vertex_t mark_v = vertex_any) const {
     ostringstream out;
 
     #define os(n)      out << " " << n
