@@ -28,6 +28,11 @@
 #include <cassert>
 #include <cmath>
 #include <cstdarg>
+#include <cctype>
+
+#include <vector>
+#include <map>
+
 
 #include <sys/time.h>
 #include <sys/resource.h>
@@ -37,14 +42,18 @@ using namespace std;
 
 #include "config.cpp"
 
+#include "utils.cpp"
+
 #include "gtp.cpp"
 
-#include "utils.cpp"
 #include "basic_go_types.cpp"
 #include "board.cpp"
 #include "stack_board.cpp"
 #include "playout.cpp"
 #include "uct.cpp"
+
+using namespace gnugo;
+
 #include "gtp_board.cpp"
 
 
@@ -152,6 +161,8 @@ gtp_command gtp_general_commands [] = {
 
 
 int main () { 
+  //gtp_t g;
+  //g.run_loop ();
   gtp_append_commands (gtp_commands, gtp_general_commands);
   gtp_append_commands (gtp_commands, gtp_board_commands);
 

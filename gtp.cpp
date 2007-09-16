@@ -1,3 +1,119 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
+ *                                                                           *
+ *  This file is part of Library of Effective GO routines - EGO library      *
+ *                                                                           *
+ *  Copyright 2006, 2007 Lukasz Lew                                          *
+ *                                                                           *
+ *  EGO library is free software; you can redistribute it and/or modify      *
+ *  it under the terms of the GNU General Public License as published by     *
+ *  the Free Software Foundation; either version 2 of the License, or        *
+ *  (at your option) any later version.                                      *
+ *                                                                           *
+ *  EGO library is distributed in the hope that it will be useful,           *
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of           *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            *
+ *  GNU General Public License for more details.                             *
+ *                                                                           *
+ *  You should have received a copy of the GNU General Public License        *
+ *  along with EGO library; if not, write to the Free Software               *
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor,                           *
+ *  Boston, MA  02110-1301  USA                                              *
+ *                                                                           *
+\* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+
+enum gtp_command_status_t {
+  xgtp_success,
+  xgtp_failure,
+  xgtp_panic,
+  xgtp_quit
+};
+
+class gtp_engine_t {
+public:
+  virtual vector <string>& get_command_names () const;
+  virtual gtp_command_status_t exec_command (string command_name, 
+                                             istream& params_stream, 
+                                             ostream& response);
+  virtual ~gtp_engine_t ();
+};
+
+
+class gtp_t {
+
+  map <string, gtp_engine_t*> engine_of_cmd_name;
+
+  istream& in;
+  ostream& out;
+
+  string preprocess (string s) {
+    ostringstream ret;
+    for_each (cp, s) {
+      if (*cp == 9) ret << '\32'; 
+      else if (*cp > 0 && *cp <= 9) continue; 
+      else if (*cp >= 11 && *cp <= 31) continue; 
+      else if (*cp == 127) continue; 
+      else if (*cp == '#') break;  // remove comments
+      else ret << *cp;
+    }
+    return ret.str ();
+  }
+
+  string status_marker (gtp_command_status_t status) {
+    switch (status) {
+    case xgtp_success: return "=";
+    case xgtp_failure: return "?";
+    case xgtp_panic:   return "!";
+    case xgtp_quit:    return "=";
+    default: assert (false); exit(1);
+    }
+  }
+
+public:
+
+  gtp_t (istream& in_ = cin, ostream& out_ = cout) : in (in_), out (out_) { }
+
+  void register_engine (gtp_engine_t* gtp_engine) {
+    for_each (cmd_name_it, gtp_engine->get_command_names ()) {
+      engine_of_cmd_name [*cmd_name_it] = gtp_engine;
+    }
+  }
+
+  void run_loop () {
+    string line;
+    int cmd_num;
+    string cmd_name;
+    gtp_command_status_t status;
+
+    while (true) {
+      if (!getline (in, line)) break;
+      line = preprocess (line);
+
+      istringstream line_stream (line);
+      if (!(line_stream >> cmd_num )) { cmd_num = -1; line_stream.clear (); }
+      if (!(line_stream >> cmd_name)) continue; // empty line - continue
+
+      if (engine_of_cmd_name.find (cmd_name) == engine_of_cmd_name.end ()) {
+        out << "? unknown command" << endl; // TODO nbr
+        continue;
+      }
+
+      gtp_engine_t* engine = (*(engine_of_cmd_name.find (cmd_name))).second;
+
+      ostringstream response;
+      status = engine->exec_command (cmd_name, line_stream, response);
+
+      out << status_marker (status);
+      if (cmd_num >= 0) 
+        out << cmd_num;
+      out << " " << response.str () << endl << endl; // TODO take care about tripple endl;
+      
+    }
+  }
+};
+
+namespace gnugo {
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This is GNU Go, a Go program. Contact gnugo@gnu.org, or see   *
  * http://www.gnu.org/software/gnugo/ for more information.      *
@@ -528,3 +644,5 @@ void gtp_append_commands (gtp_command* dst, gtp_command* src) {
   while (dst->name != NULL) dst++;
   while (src->name != NULL) *(dst++) = *(src++);
 }
+
+} // namespace
