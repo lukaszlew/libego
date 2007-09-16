@@ -103,6 +103,15 @@ public:
 const player_t player_black = player_t (player_aux::black_idx);
 const player_t player_white = player_t (player_aux::white_idx);
 
+istream& operator>> (istream& in, player_t& pl) {
+  string s;
+  in >> s;
+  if (s == "b" || s == "B" || s == "Black" || s == "BLACK "|| s == "black" || s == "#") { pl = player_black; return in; }
+  if (s == "w" || s == "W" || s == "White" || s == "WHITE "|| s == "white" || s == "O") { pl = player_white; return in; }
+  in.setstate (ios_base::badbit);
+  return in;
+}
+
 
 //------------------------------------------------------------------------------
 
@@ -180,7 +189,7 @@ namespace coord {
     assertc (coord_ac, is_on_board (col)); 
   }
 
-  char col_tab[20] = "ABCDEFGHJKLMNOPQRST";
+  string col_tab = "ABCDEFGHJKLMNOPQRSTUVWXYZ";
 
   string row_to_string (t row) {
     check (row);
@@ -282,6 +291,26 @@ const vertex_t vertex_pass    = vertex_t (vertex_aux::pass_idx);
 const vertex_t vertex_any     = vertex_t (vertex_aux::any_idx);
 const vertex_t vertex_resign  = vertex_t (vertex_aux::resign_idx); // TODO is it inlined (x2)?
 
+istream& operator>> (istream& in, vertex_t& v) {
+  char c;
+  int n;
+  coord::t row, col;
+  if (!(in >> c >> n)) return in;
+
+  row = board_size - n;
+  
+  col = 0;
+  while (col < int (coord::col_tab.size ())) 
+    if (coord::col_tab[col] == c || coord::col_tab[col] -'A' + 'a' == c ) break;
+  
+  if (col == int (coord::col_tab.size ())) {
+    in.setstate (ios_base::badbit);
+    return in;
+  }
+
+  v = vertex_t (row, col);
+  return in;
+}
 
 //--------------------------------------------------------------------------------
 
