@@ -379,8 +379,8 @@ public:
       
     } while (true);
     
-    player_t winner = play_board->winner ();
-    tree->update_history (1-winner.get_idx()-winner.get_idx()); // result values are 1 for black, -1 for white
+    int winner_idx = play_board->winner ().get_idx ();
+    tree->update_history (1 - winner_idx - winner_idx); // result values are 1 for black, -1 for white
   }
   
 
