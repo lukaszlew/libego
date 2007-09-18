@@ -22,7 +22,7 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-enum gtp_command_status_t {
+enum gtp_status_t {
   xgtp_success,
   xgtp_failure,
   xgtp_panic,
@@ -31,15 +31,15 @@ enum gtp_command_status_t {
 
 class gtp_engine_t {
 public:
-  virtual vector <string>& get_command_names () const;
-  virtual gtp_command_status_t exec_command (string command_name, 
-                                             istream& params_stream, 
-                                             ostream& response);
-  virtual ~gtp_engine_t ();
+  virtual vector <string> get_command_names () const = 0;
+  virtual gtp_status_t exec_command (string command_name, 
+                                             istream& params, 
+                                             ostream& response) = 0;
+  virtual ~gtp_engine_t () {};
 };
 
 
-class gtp_t {
+class gtp_t : public gtp_engine_t {
 
   map <string, gtp_engine_t*> engine_of_cmd_name;
 
@@ -59,7 +59,7 @@ class gtp_t {
     return ret.str ();
   }
 
-  string status_marker (gtp_command_status_t status) {
+  string status_marker (gtp_status_t status) {
     switch (status) {
     case xgtp_success: return "=";
     case xgtp_failure: return "?";
@@ -71,10 +71,72 @@ class gtp_t {
 
 public:
 
-  gtp_t (istream& in_ = cin, ostream& out_ = cout) : in (in_), out (out_) { }
+  virtual vector <string> get_command_names () const {
+    vector <string> commands;
+    commands.push_back ("help");
+    commands.push_back ("list_commands");
+    commands.push_back ("known_command");
+    commands.push_back ("protocol_version");
+    commands.push_back ("quit");
+    commands.push_back ("echo");
+    return commands;
+  };
+
+  virtual gtp_status_t exec_command (string command, 
+                                     istream& params, 
+                                     ostream& response) 
+  {
+    if (command == "help" || command == "list_commands") {
+      // TODO sort
+      // TODO optional new_line
+      for_each (cmd_it, engine_of_cmd_name) { // TODO iterate over map instead of separate vector
+        if (cmd_it != engine_of_cmd_name.begin ()) response << endl;
+        response << (*cmd_it).first;
+      }
+      return xgtp_success;
+    }
+
+    if (command == "known_command") {
+      string known_cmd;
+      if (!(params >> known_cmd)) { response << "syntax error"; return xgtp_failure; }
+
+      if (engine_of_cmd_name.find (known_cmd) == engine_of_cmd_name.end ()) response << "false";
+      else response << "true";
+
+      return xgtp_success; 
+    }
+
+    if (command == "protocol_version") { 
+      response << "2"; 
+      return xgtp_success; 
+    }
+
+    if (command == "quit") 
+      return xgtp_quit;
+
+    if (command == "echo") {
+      string buf;
+      while (params >> buf) 
+        response << buf; // TODO this should by in STL
+      return xgtp_success;
+    }
+
+    fatal_error ("wrong command in gtp_t::exec_command");
+    return xgtp_panic; // formality 
+  }
+
+
+
+
+  ~gtp_t () { };
+
+  gtp_t (istream& in_ = cin, ostream& out_ = cout) : in (in_), out (out_) { 
+    register_engine (this);
+  }
 
   void register_engine (gtp_engine_t* gtp_engine) {
-    for_each (cmd_name_it, gtp_engine->get_command_names ()) {
+    vector<string> commands = gtp_engine->get_command_names ();
+    for_each (cmd_name_it, commands) {
       engine_of_cmd_name [*cmd_name_it] = gtp_engine;
     }
   }
@@ -83,7 +145,7 @@ public:
     string line;
     int cmd_num;
     string cmd_name;
-    gtp_command_status_t status;
+    gtp_status_t status;
 
     while (true) {
       if (!getline (in, line)) break;
@@ -107,6 +169,7 @@ public:
       if (cmd_num >= 0) 
         out << cmd_num;
       out << " " << response.str () << endl << endl; // TODO take care about tripple endl;
+      if (status == xgtp_panic || status == xgtp_quit) break;
       
     }
   }

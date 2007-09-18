@@ -161,8 +161,10 @@ gtp_command gtp_general_commands [] = {
 
 
 int main () { 
-  //gtp_t g;
-  //g.run_loop ();
+  gtp_t g[1];
+  g->run_loop ();
+  return 0;
+
   gtp_append_commands (gtp_commands, gtp_general_commands);
   gtp_append_commands (gtp_commands, gtp_board_commands);
 

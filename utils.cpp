@@ -34,8 +34,8 @@ typedef unsigned long long uint64;
 #define seq(i,a,b)   for (int i = (a); i <= (b); i++)
 #define dseq(i,b,a)  for (int i = (b); i >= (a); i--)
 
-#define var(a,b) typeof(b) a=(b)
-#define for_each(it, c) for(var(it,(c).begin()); it!=(c).end(); ++it)
+#define let(a,b) typeof(b) a=(b)
+#define for_each(it, c) for(let(it,(c).begin()); it!=(c).end(); ++it)
 
 // TODO can it be a function?
 #define swap(a, b) \
@@ -172,6 +172,7 @@ float get_seconds () {
 
 void fatal_error (const char* s) {
   cerr << "Fatal error: " << s << endl;
+  assert (false);
   exit (1);
 }
 
