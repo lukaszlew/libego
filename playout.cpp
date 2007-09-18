@@ -110,6 +110,7 @@ namespace simple_playout_benchmark {
 
 
   board_t    mc_board[1];
+  board_t    mc_board_copy[1];
   
   void run (board_t const * start_board, 
                    uint playout_cnt, 
@@ -124,11 +125,12 @@ namespace simple_playout_benchmark {
     player_map_t <uint> win_cnt;
     
     player_for_each (pl) win_cnt [pl] = 0;
+    mc_board_copy->load (start_board);
 
     seconds_begin = get_seconds ();
     
     rep (ii, playout_cnt) {
-      mc_board->load (start_board);
+      mc_board->load (mc_board_copy);
       simple_playout_t sp (mc_board, first_player);
       status = sp.run ();
       

@@ -115,6 +115,5 @@ public:
     stack_top->load (tmp);
     return true;
   }
-
 };
 

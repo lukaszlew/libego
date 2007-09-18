@@ -300,8 +300,10 @@ istream& operator>> (istream& in, vertex_t& v) {
   row = board_size - n;
   
   col = 0;
-  while (col < int (coord::col_tab.size ())) 
+  while (col < int (coord::col_tab.size ())) {
     if (coord::col_tab[col] == c || coord::col_tab[col] -'A' + 'a' == c ) break;
+    col++;
+  }
   
   if (col == int (coord::col_tab.size ())) {
     in.setstate (ios_base::badbit);
@@ -311,6 +313,8 @@ istream& operator>> (istream& in, vertex_t& v) {
   v = vertex_t (row, col);
   return in;
 }
+
+ostream& operator<< (ostream& out, vertex_t& v) { out << v.to_string (); return out; }
 
 //--------------------------------------------------------------------------------
 

@@ -24,8 +24,8 @@
 typedef unsigned int uint;
 typedef unsigned long long uint64;
 
-#define qqe(...) fprintf(stderr, __VA_ARGS__)
-#define qq(...) fprintf(stdout, __VA_ARGS__)
+//#define qqe(...) fprintf(stderr, __VA_ARGS__)
+#define qq(...) fprintf(stdout, __VA_ARGS__); fflush (stdout);
 
 #define unused(p) (void)(p)
 #define nop unused(0)

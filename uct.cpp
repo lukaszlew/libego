@@ -312,14 +312,12 @@ public:
 class uct_t {
 public:
   
-  stack_board_t*  base_board;
+  stack_board_t&  base_board;
   tree_t          tree[1];      // TODO tree->root should be in sync with top of base_board
   
 public:
   
-  uct_t (stack_board_t* base_board) {
-    this->base_board = base_board;
-  }
+  uct_t (stack_board_t& base_board_) : base_board (base_board_) { }
 
   void root_ensure_children_legality (player_t pl) { // cares about superko in root (only)
     tree->history_reset ();
@@ -327,8 +325,8 @@ public:
     assertc (uct_ac, tree->history_top == 0);
     assertc (uct_ac, tree->act_node ()->first_child [pl] == NULL);
 
-    empty_v_for_each_and_pass (base_board->act_board (), v, {
-      if (base_board->is_legal (pl, v))
+    empty_v_for_each_and_pass (base_board.act_board (), v, {
+      if (base_board.is_legal (pl, v))
         tree->alloc_child (pl, v);
     });
   }
@@ -341,7 +339,7 @@ public:
     vertex_t       v;
     
     
-    play_board->load (base_board->act_board ());
+    play_board->load (base_board.act_board ());
     tree->history_reset ();
     
     player_for_each (pl) 
@@ -395,7 +393,7 @@ public:
     best = tree->history [0]->find_most_explored_child (player);
     assertc (uct_ac, best != NULL);
 
-    //cerr << tree->to_string () << endl;
+    cerr << tree->to_string () << endl;
     if (player == player_black && best->value < -resign_value) return vertex_resign;
     if (player == player_white && best->value >  resign_value) return vertex_resign;
     return best->v;

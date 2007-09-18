@@ -22,125 +22,110 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-// state of engine is in this board
 
 
-stack_board_t gtp_board[1];
+
+class gtp_board_t : public gtp_engine_t {
+
+  stack_board_t& board;
+
+public:
+
+  gtp_board_t (stack_board_t& board_) : board (board_) { }
+
+  virtual vector <string> get_command_names () const {
+    vector <string> commands;
+    commands.push_back ("boardsize");
+    commands.push_back ("clear_board");
+    commands.push_back ("komi");
+    commands.push_back ("load_position");
+    commands.push_back ("play");
+    commands.push_back ("undo");
+    commands.push_back ("showboard");
+    commands.push_back ("playout_benchmark");
+    return commands;
+  };
 
 
-// gtp_* functions
+  virtual gtp_status_t exec_command (string command, istream& params, ostream& response) {
 
 
-int gtp_boardsize (char* s) {
-  int new_board_size;
-  decode_int (s, new_board_size);
-
-  if (new_board_size != int (board_size)) return gtp_failure ("size not supported");
-  return gtp_success("");
-}
-
-
-int gtp_komi (char *s) {
-  float new_komi;
-  decode_float (s, new_komi);
-
-  gtp_board->set_komi (new_komi);
-  return gtp_success("");
-}
+    if (command == "boardsize") {
+      int new_board_size;;
+      if (!(params >> new_board_size)) return gtp_syntax_error;
+      if (new_board_size != int (board_size)) { 
+        response << "unacceptable size"; 
+        return gtp_failure; 
+      }
+      return gtp_success;
+    }
 
 
-int gtp_clear_board (char* s) {
-  unused (s);
-  gtp_board->clear ();
-  return gtp_success("");
-}
+    if (command == "clear_board") {
+      board.clear ();
+      return gtp_success;
+    }
 
 
-int gtp_load_position (char* s) {
-  char f_name[1000];
-
-  decode_str (s, f_name);
-  ifstream fin (f_name);
-
-  if (!fin)                   return gtp_failure ("no such file \"%s\"", f_name);
-  if (!gtp_board->load (fin))  return gtp_failure ("wrong file format");
-
-  return gtp_success("");
-}
+    if (command == "komi") {
+      float new_komi;
+      if (!(params >> new_komi)) return gtp_syntax_error;
+      board.set_komi (new_komi);
+      return gtp_success;
+    }
 
 
-int gtp_play (char* s) {
+    if (command == "load_position") {
+      string file_name;
+      if (!(params >> file_name)) return gtp_syntax_error;
 
-  player_t  pl;
-  vertex_t   v;
+      ifstream fin (file_name.data ()); // TODO cant use string directly ??
 
-  decode_player_v (s, pl, v, return gtp_failure ("syntax error"));
+      if (!fin)        { response << "no such file: " << file_name; return gtp_failure; }
+      if (!board.load (fin)) { response << "wrong file format";           return gtp_failure; }
+      return gtp_success;
+    }
+
+
+    if (command == "play") {
+      player_t  pl;
+      vertex_t   v;
+      if (!(params >> pl >> v)) return gtp_syntax_error;
   
-  if (!gtp_board->try_play (pl, v))
-    return gtp_failure ("illegal move");
-  
-  return gtp_success("");
-}
+      if (!board.try_play (pl, v)) {
+        response << "illegal move";
+        return gtp_failure;
+      }
+
+      return gtp_success;
+    }
 
 
-int gtp_undo (char* s) {
-  unused (s);
-  
-  if (!gtp_board->try_undo ())
-    return gtp_failure ("no more undo");
-  
-  return gtp_success("");
-}
+    if (command == "undo") {
+      if (!board.try_undo ()) {
+        response << "too many undo";
+        return gtp_failure;
+      }
+      return gtp_success;
+    }
+    
 
+    if (command == "showboard") {
+      response << endl << board.act_board ()->to_string();
+      return gtp_success;
+    }
 
-int gtp_showboard (char* s) {
-  unused (s);
+    if (command == "playout_benchmark") {
+      uint playout_cnt;
+      if (!(params >> playout_cnt)) return gtp_syntax_error;
+      simple_playout_benchmark::run (board.act_board (), playout_cnt, player_black, response);
+      return gtp_success;
+    }
 
-  gtp_start_response(GTP_SUCCESS);
-  gtp_printf ("\n%s", gtp_board->act_board ()->to_string().data ());
-  return gtp_finish_response();
-}
+    fatal_error ("wrong command in gtp_board_t::exec_command");
+    return gtp_panic; // formality 
+  } 
+  // end of exec_command
 
-
-int gtp_genmove (char* s) {
-  player_t player;
-  decode_player (s, player);
-
-  vertex_t v;
-  uct_t uct (gtp_board);
-  v = uct.genmove (player);
-
-  if (!gtp_board->try_play (player, v)) fatal_error ("genmove: generated illegal move");
-
-  gtp_start_response(GTP_SUCCESS);
-  gtp_printf ("%s", v.to_string ().data ());
-  return gtp_finish_response();
-}
-
-
-int gtp_playout_benchmark (char *s) {
-  int playout_cnt;
-
-  decode_int (s, playout_cnt);
-
-  ostringstream ss;
-  simple_playout_benchmark::run (gtp_board->act_board (), playout_cnt, player_black, ss);
-
-  gtp_start_response(GTP_SUCCESS);
-  gtp_printf ("\n%s", ss.str ().data ());
-  return gtp_finish_response();
-}
-
-
-gtp_command gtp_board_commands [] = {
-  { "boardsize",         gtp_boardsize },
-  { "clear_board",       gtp_clear_board },
-  { "komi",              gtp_komi },
-  { "load_position",     gtp_load_position },
-  { "play",              gtp_play },
-  { "undo",              gtp_undo },
-  { "showboard",         gtp_showboard },
-  { "genmove",           gtp_genmove },
-  { "playout_benchmark", gtp_playout_benchmark },
-  { NULL, NULL }
 };
+
