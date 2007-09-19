@@ -169,7 +169,7 @@ public: // basic GTP commands
 
     if (command == "echo") {
       string buf;
-      while (params >> buf) 
+      if (getline (params, buf))
         response << buf; // TODO this should by in STL
       return gtp_success;
     }
