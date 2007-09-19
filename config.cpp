@@ -50,7 +50,7 @@ const float explore_rate                  = 0.2;
 const uint  uct_max_depth                 = 1000;
 const uint  uct_max_nodes                 = 1000000;
 const float resign_value                  = 0.99;
-const uint  uct_genmove_playout_cnt       = 100000;
+const uint  uct_genmove_playout_cnt       = 50000;
 const float print_visit_threshold_base    = 500.0;
 const float print_visit_threshold_parent  = 0.02;
 

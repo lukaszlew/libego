@@ -43,6 +43,7 @@ public:
 class gtp_t : public gtp_engine_t {
 
   map <string, gtp_engine_t*> engine_of_cmd_name;
+  string program_name;
 
   string preprocess (string s) {
     ostringstream ret;
@@ -70,7 +71,7 @@ class gtp_t : public gtp_engine_t {
 
 public:
 
-  gtp_t () { 
+  gtp_t (string program_name_ = "libEGO") : program_name (program_name_) { 
     register_engine (*this);
   }
 
@@ -96,7 +97,7 @@ public:
       if (!(line_stream >> cmd_name)) continue; // empty line - continue
 
       if (engine_of_cmd_name.find (cmd_name) == engine_of_cmd_name.end ()) {
-        out << "? unknown command" << endl; // TODO nbr
+        out << "? unknown command" << endl << endl; // TODO nbr
         continue;
       }
 
@@ -130,6 +131,7 @@ public: // basic GTP commands
     commands.push_back ("protocol_version");
     commands.push_back ("quit");
     commands.push_back ("echo");
+    commands.push_back ("name");
     return commands;
   };
 
@@ -169,6 +171,11 @@ public: // basic GTP commands
       string buf;
       while (params >> buf) 
         response << buf; // TODO this should by in STL
+      return gtp_success;
+    }
+
+    if (command == "name") {
+      response << program_name;
       return gtp_success;
     }
 

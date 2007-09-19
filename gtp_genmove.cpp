@@ -24,11 +24,10 @@
 class gtp_genmove_t : public gtp_engine_t {
 
   stack_board_t& board;
-  uct_t& uct;
 
 public:
 
-  gtp_genmove_t (stack_board_t& board_, uct_t& uct_) : board (board_), uct (uct_) { }
+  gtp_genmove_t (stack_board_t& board_, uct_t& uct_) : board (board_) {} //, uct (uct_) { }
 
   virtual vector <string> get_command_names () const {
     vector <string> commands;
@@ -44,7 +43,11 @@ public:
       vertex_t   v;
       if (!(params >> player)) return gtp_syntax_error;
   
-      v = uct.genmove (player);
+      uct_t* uct = new uct_t (board); // TODO Why we need to allocate?
+      v = uct->genmove (player);
+      delete uct;
+
+      cerr << v << endl;
       if (!board.try_play (player, v)) fatal_error ("genmove: generated illegal move");
       response << v;
 
