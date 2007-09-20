@@ -87,7 +87,7 @@ public:
 
   void record_state () {
     stack.resize (stack.size () + 1);
-    stack.back ().load (stack [stack.size () - 2]); // for undo-ing
+    stack.back ().load (&stack [stack.size () - 2]); // for undo-ing
     check ();
   }
 
