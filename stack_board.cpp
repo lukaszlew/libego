@@ -29,14 +29,13 @@ class stack_board_t {
 
 public:
 
-  board_t   stack [max_stack_size];
-  board_t*  stack_top;
+  vector <board_t> stack;//   stack [max_stack_size];
 
 public: 
   
   void check () {
     if (!stack_board_ac) return;
-    assert (stack_top < stack + max_stack_size);
+    assertc (stack_board_ac, stack.size () >= 1);
   }
 
   stack_board_t () {
@@ -44,12 +43,11 @@ public:
   }
 
   void clear () {
-    stack_top = stack;  
-    stack_top->clear ();
+    stack.resize (1);
   }
 
-  board_t const* act_board () const { 
-    return stack_top; 
+  board_t* const act_board () { 
+    return &(stack.back ()); 
   }
 
   bool try_play (player_t player, vertex_t v) {
@@ -60,10 +58,10 @@ public:
 
     if (v == vertex_resign) return true;
 
-    if (stack_top->color_at[v] != color::empty) 
+    if (act_board ()->color_at[v] != color::empty) 
       { revert_state (); return false; }
 
-    if (stack_top->play_no_pass (player, v) != play_ok)
+    if (act_board ()->play_no_pass (player, v) != play_ok)
       { revert_state (); return false; }
 
     if (is_hash_repeated ())    // superko test
@@ -73,7 +71,7 @@ public:
   }
 
   bool try_undo () {
-    if (stack_top <= stack) return false;
+    if (stack.size () <= 1) return false;
     revert_state ();
     return true;
   }
@@ -88,31 +86,34 @@ public:
   }
 
   void record_state () {
-    (stack_top+1)->load (stack_top); // for undo-ing
-    stack_top++;
+    board_t* last = act_board ();
+    stack.resize (stack.size () + 1);
+    stack.back ().load (last); // for undo-ing
     check ();
   }
 
   void revert_state () {
-    stack_top--;
+    stack.pop_back ();
     check ();
   }
 
-  bool is_hash_repeated () const {
-    for (board_t* b = stack_top - 1; b >= stack; b--)
-      if (b->hash == stack_top->hash) return true;
+  bool is_hash_repeated () {
+    dseq (ii, stack.size () - 2, 0) {
+      if (stack[ii].hash == act_board ()->hash) return true;      
+    }
     return false;
   }
 
   void set_komi (float komi) {  // TODO is it proper semantics ?
-    for (board_t* b = stack; b <= stack_top; b++) b->set_komi (komi); 
+    for_each (board_it, stack) 
+      board_it->set_komi (komi);
   }
 
   bool load (istream& ifs) {
     board_t tmp[1];
     if (!tmp->load (ifs)) return false;
     clear ();
-    stack_top->load (tmp);
+    act_board ()->load (tmp);
     return true;
   }
 };

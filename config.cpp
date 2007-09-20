@@ -40,7 +40,6 @@ const uint max_game_length     = board_area * 4;
 const bool playout_print       = false;
 const uint max_playout_length  = board_area * 2;
 const uint mercy_threshold     = 25;
-const uint max_stack_size      = max_game_length;
 
 
 const float initial_value                 = 0.0;
