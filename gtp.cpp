@@ -43,7 +43,6 @@ public:
 class gtp_t : public gtp_engine_t {
 
   map <string, gtp_engine_t*> engine_of_cmd_name;
-  string program_name;
 
   string preprocess (string s) {
     ostringstream ret;
@@ -71,7 +70,7 @@ class gtp_t : public gtp_engine_t {
 
 public:
 
-  gtp_t (string program_name_ = "libEGO") : program_name (program_name_) { 
+  gtp_t () { 
     register_engine (*this);
   }
 
@@ -128,10 +127,8 @@ public: // basic GTP commands
     commands.push_back ("help");
     commands.push_back ("list_commands");
     commands.push_back ("known_command");
-    commands.push_back ("protocol_version");
     commands.push_back ("quit");
     commands.push_back ("echo");
-    commands.push_back ("name");
     return commands;
   };
 
@@ -159,11 +156,6 @@ public: // basic GTP commands
       return gtp_success; 
     }
 
-    if (command == "protocol_version") { 
-      response << "2"; 
-      return gtp_success; 
-    }
-
     if (command == "quit") 
       return gtp_quit;
 
@@ -174,13 +166,49 @@ public: // basic GTP commands
       return gtp_success;
     }
 
-    if (command == "name") {
-      response << program_name;
-      return gtp_success;
-    }
-
     fatal_error ("wrong command in gtp_t::exec_command");
     return gtp_panic; // formality 
+  }
+
+};
+
+
+
+class gtp_static_commands_t : public gtp_engine_t {
+
+public:
+
+  map <string, string> commands_and_responses;
+
+  gtp_static_commands_t () {}
+
+  virtual vector <string> get_command_names () const {
+    vector <string> commands;
+    for_each (cmd_it, commands_and_responses)
+      commands.push_back ((*cmd_it).first);
+    return commands;
+  };
+
+
+  virtual gtp_status_t exec_command (string command, istream& params, ostream& response) {
+    let (cr, commands_and_responses.find (command));
+    if (cr == commands_and_responses.end ()) {
+      fatal_error ("wrong command in gtp_static_commands_t::exec_command");
+      return gtp_panic; // formality 
+    }
+
+    response << (*cr).second;
+    return gtp_success;
+  }
+
+public:
+  
+  void add (string command, string response) {
+    commands_and_responses [command] = response;
+  }
+
+  void extend (string command, string response_ext) {
+    commands_and_responses [command] = commands_and_responses [command] + response_ext;
   }
 
 };

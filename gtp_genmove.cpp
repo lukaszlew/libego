@@ -47,7 +47,6 @@ public:
       v = uct->genmove (player);
       delete uct;
 
-      cerr << v << endl;
       if (!board.try_play (player, v)) fatal_error ("genmove: generated illegal move");
       response << v;
 

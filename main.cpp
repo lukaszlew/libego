@@ -57,14 +57,23 @@ int main () {
   setvbuf (stdout, (char *)NULL, _IONBF, 0);
   setvbuf (stderr, (char *)NULL, _IONBF, 0);
 
+  // setup GTP machinery
+  
   stack_board_t stack_board;
   uct_t         uct (stack_board);
-  
-  gtp_t         gtp;
-  gtp_board_t   gtp_board   (stack_board);
-  gtp_genmove_t gtp_genmove (stack_board, uct);
 
+  gtp_t         gtp;
+
+  gtp_static_commands_t sc;
+  sc.add ("protocol_version", "2");
+  sc.add ("name", "libEGO");
+
+  gtp.register_engine (sc);
+  
+  gtp_board_t   gtp_board   (stack_board);
   gtp.register_engine (gtp_board);
+
+  gtp_genmove_t gtp_genmove (stack_board, uct);
   gtp.register_engine (gtp_genmove);
 
   //TODO "automagic.gtp"
