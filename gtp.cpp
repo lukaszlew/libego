@@ -96,7 +96,7 @@ public:
       if (!(line_stream >> cmd_name)) continue; // empty line - continue
 
       if (engine_of_cmd_name.find (cmd_name) == engine_of_cmd_name.end ()) {
-        out << "? unknown command" << endl << endl; // TODO nbr
+        out << "? unknown command" << endl << endl;
         continue;
       }
 
@@ -104,6 +104,11 @@ public:
 
       ostringstream response;
       status = engine->exec_command (cmd_name, line_stream, response);
+      string response_str = response.str ();
+
+      while (isspace(*(response_str.end ()-1))) {
+        response_str.resize (response_str.size () -1);
+      }
 
       out << status_marker (status);
       if (cmd_num >= 0) 
@@ -112,8 +117,8 @@ public:
       if (status == gtp_syntax_error) 
         out << "syntax error";
       else
-        out << response.str ();
-      out << endl << endl; // TODO take care about tripple endl;
+        out << response_str;
+      out << endl << endl;
 
       if (status == gtp_panic || status == gtp_quit) break;
       
@@ -137,11 +142,8 @@ public: // basic GTP commands
                                      ostream& response) 
   {
     if (command == "help" || command == "list_commands") {
-      // TODO sort
-      // TODO optional new_line
       for_each (cmd_it, engine_of_cmd_name) { // TODO iterate over map instead of separate vector
-        if (cmd_it != engine_of_cmd_name.begin ()) response << endl;
-        response << (*cmd_it).first;
+        response << (*cmd_it).first << endl;
       }
       return gtp_success;
     }
