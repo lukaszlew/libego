@@ -31,6 +31,7 @@ random_pm_t pm(123); // TODO seed it when class
 
 class simple_playout_t {
 public:
+  move_t   history [max_playout_length];
   board_t* board;
   player_t act_player;
   player_map_t <vertex_t>   last_v;
@@ -54,30 +55,27 @@ public:
     start = pm.rand_int (board->empty_v_cnt); 
 
     // search for a move in start ... board->empty_v_cnt-1 interval
-    for (uint ev_i = start; ev_i != board->empty_v_cnt; ev_i++) {   
-      v = board->empty_v [ev_i];
-      if (!board->is_eyelike (act_player, v) &&
-          board->play_no_pass (act_player, v) < play_ss_suicide) 
-      {
-        last_v [act_player] = v;
-        return;
+    #define search_v_in_range(begin, end)                           \
+      for (uint ev_i = begin; ev_i != end; ev_i++) {                \
+        v = board->empty_v [ev_i];                                  \
+        if (!board->is_eyelike (act_player, v) &&                   \
+            board->play_no_pass (act_player, v) < play_ss_suicide)  \
+          {                                                         \
+            history [move_no] = move_t (act_player, v);             \
+            last_v [act_player] = v;                                \
+            return;                                                 \
+          }                                                         \
       }
-    }
 
-    // search for a move in 0 ... start interval
-    for (uint ev_i = 0; ev_i != start; ev_i++) {
-      v = board->empty_v [ev_i];
-      if (!board->is_eyelike (act_player, v) &&
-          board->play_no_pass (act_player, v) < play_ss_suicide)
-      {
-        last_v [act_player] = v;
-        return;
-      }
-    }
+    search_v_in_range (start, board->empty_v_cnt);
+    search_v_in_range (0, start);
 
+    history [move_no] = move_t (act_player, vertex_pass);
     last_v [act_player] = vertex_pass;
 
     board->check_no_more_legal (act_player); // powerfull check
+
+    #undef search_v_in_range
   }
 
 
