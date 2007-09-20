@@ -86,9 +86,8 @@ public:
   }
 
   void record_state () {
-    board_t* last = act_board ();
     stack.resize (stack.size () + 1);
-    stack.back ().load (last); // for undo-ing
+    stack.back ().load (stack [stack.size () - 2]); // for undo-ing
     check ();
   }
 

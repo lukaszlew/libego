@@ -134,6 +134,7 @@ public: // basic GTP commands
     commands.push_back ("known_command");
     commands.push_back ("quit");
     commands.push_back ("echo");
+    commands.push_back ("run_gtp_file");
     return commands;
   };
 
@@ -165,6 +166,14 @@ public: // basic GTP commands
       string buf;
       if (getline (params, buf))
         response << buf; // TODO this should by in STL
+      return gtp_success;
+    }
+
+    if (command == "run_gtp_file") {
+      string file_name;
+      params >> file_name;
+      ifstream filein(file_name.data ());
+      run_loop (filein, response);
       return gtp_success;
     }
 

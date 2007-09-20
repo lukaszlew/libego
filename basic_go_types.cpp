@@ -295,7 +295,14 @@ istream& operator>> (istream& in, vertex_t& v) {
   char c;
   int n;
   coord::t row, col;
-  if (!(in >> c >> n)) return in;
+
+  string str;
+  if (!(in >> str)) return in;
+  if (str == "pass" || str == "PASS" || str == "Pass") { v = vertex_pass; return in; }
+  if (str == "resign" || str == "RESIGN" || str == "Resign") { v = vertex_resign; return in; }
+
+  istringstream in2 (str);
+  if (!(in2 >> c >> n)) return in;
 
   row = board_size - n;
   
