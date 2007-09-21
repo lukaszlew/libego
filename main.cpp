@@ -51,6 +51,8 @@ using namespace std;
 #include "gtp_board.cpp"
 #include "gtp_genmove.cpp"
 
+#include "experiments.cpp"
+
 // main
 
 int main () { 
@@ -67,6 +69,7 @@ int main () {
   gtp_static_commands_t sc;
   sc.add ("protocol_version", "2");
   sc.add ("name", "libEGO");
+  sc.add ("gogui_analyze_commands", ""); // to be extended
 
   gtp.register_engine (sc);
   
@@ -76,7 +79,10 @@ int main () {
   gtp_genmove_t gtp_genmove (stack_board, uct);
   gtp.register_engine (gtp_genmove);
 
-  //TODO "automagic.gtp"
+  all_as_first_t aaf (stack_board, sc);
+  gtp.register_engine (aaf);
+
+  gtp.run_file ("automagic.gtp");
   gtp.run_loop ();
 
   return 0;

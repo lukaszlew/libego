@@ -81,6 +81,12 @@ public:
     }
   }
 
+  void run_file (string file_name, ostream& out = cout) {
+    ifstream in (file_name.data ());
+    run_loop (in, out);
+    in.close ();
+  }
+
   void run_loop (istream& in = cin, ostream& out = cout) {
     string line;
     int cmd_num;
@@ -164,6 +170,9 @@ public: // basic GTP commands
 
     if (command == "echo") {
       string buf;
+      while (params.peek () == ' ')  // eat all spaces in front
+        unused (params.get ());
+
       if (getline (params, buf))
         response << buf; // TODO this should by in STL
       return gtp_success;
