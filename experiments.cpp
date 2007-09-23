@@ -68,7 +68,7 @@ public:
 
   uint playout_no;
   float aaf_fraction;
-  float move_value_unit;
+  float influence_scale;
   
 
 public:
@@ -77,9 +77,12 @@ public:
   { 
     sc.extend ("gogui_analyze_commands", "dboard/AAF.move_value black/AAF.move_value black\n");
     sc.extend ("gogui_analyze_commands", "dboard/AAF.move_value white/AAF.move_value white\n");
+    sc.extend ("gogui_analyze_commands", "none/AAF.set_influence_scale/AAF.set_influence_scale %s\n");
+    sc.extend ("gogui_analyze_commands", "none/AAF.set_playout_number/AAF.set_playout_number %s\n");
+    sc.extend ("gogui_analyze_commands", "none/AAF.set_aaf_fraction/AAF.set_aaf_fraction %s\n");
     playout_no = 50000;
     aaf_fraction = 0.5;
-    move_value_unit = 6.0;
+    influence_scale = 6.0;
   }
 
   void reset () {
@@ -105,6 +108,9 @@ public:
   virtual vector <string> get_command_names () const {
     vector <string> commands;
     commands.push_back ("AAF.move_value");
+    commands.push_back ("AAF.set_influence_scale");
+    commands.push_back ("AAF.set_playout_number");
+    commands.push_back ("AAF.set_aaf_fraction");
     return commands;
   };
 
@@ -124,11 +130,35 @@ public:
 
       vertex_for_each_all (v) {
         means [v] = stat_given_move [move_t (player, v)].mean () - base_mean;
-        means [v] /= move_value_unit;;
+        means [v] /= influence_scale;;
         if (stack_board->act_board()->color_at [v] != color::empty) 
           means [v] = 0.0;
       }
       response << means.to_string ();
+      return gtp_success;
+    }
+
+    if (command == "AAF.set_influence_scale") {
+      if (!(params >> influence_scale)) {
+        response << "influence_scale = " << influence_scale;
+        return gtp_failure;
+      }
+      return gtp_success;
+    }
+
+    if (command == "AAF.set_playout_number") {
+      if (!(params >> playout_no)) {
+        response << "playout_number = " << playout_no;
+        return gtp_failure;
+      }
+      return gtp_success;
+    }
+
+    if (command == "AAF.set_aaf_fraction") {
+      if (!(params >> aaf_fraction)) {
+        response << "aaf_fraction = " << aaf_fraction;
+        return gtp_failure;
+      }
       return gtp_success;
     }
 
