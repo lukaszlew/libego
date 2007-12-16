@@ -357,8 +357,9 @@ public:
           continue;            // try again
         }
         
-        simple_playout_t sp (play_board, act_player);
-        sp.run ();
+        simple_policy_t policy (play_board);
+        playout_t playout (play_board, act_player, policy);
+        playout.run ();
         break;
         
       }

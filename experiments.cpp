@@ -94,15 +94,16 @@ public:
   void do_playout (const board_t* base_board, player_t first_player) {
     board_t mc_board [1];
     mc_board->load (base_board);
-    simple_playout_t sp (mc_board, first_player);
-    sp.run ();
+    simple_policy_t policy (mc_board);
+    playout_t playout (mc_board, first_player, policy);
+    playout.run ();
 
     float score = mc_board->score ();
     stat_unconditional.update (score);
 
-    uint aaf_move_count = uint (float(sp.move_no)*aaf_fraction);
+    uint aaf_move_count = uint (float(playout.move_no)*aaf_fraction);
     rep (m_cnt, aaf_move_count)
-      stat_given_move [sp.history [m_cnt]].update (score);
+      stat_given_move [playout.history [m_cnt]].update (score);
   }
 
   virtual vector <string> get_command_names () const {

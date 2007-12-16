@@ -29,7 +29,54 @@ enum playout_status { playout_ok, playout_mercy, playout_too_long };
 
 random_pm_t pm(123); // TODO seed it when class
 
-class simple_playout_t {
+
+
+
+class simple_policy_t {
+
+  uint start_evi;
+  uint act_evi;
+  uint end_evi;
+
+  board_t* board;
+  player_t act_player;
+
+public:
+
+  simple_policy_t (board_t* board_) : board (board_) { }
+  
+  void prepare_vertex (player_t act_player_) {
+    act_player     = act_player_;
+    start_evi      = pm.rand_int (board->empty_v_cnt); 
+    act_evi        = start_evi;
+    end_evi        = board->empty_v_cnt;
+  }
+
+  vertex_t next_vertex () {
+    vertex_t v;
+    while (true) {
+      if (act_evi == end_evi) {
+        if (end_evi != start_evi) {
+          act_evi = 0;
+          end_evi = start_evi;
+          continue;
+        } else {
+          return vertex_pass;
+
+        }
+      }
+      
+      v = board->empty_v [act_evi++];
+      if (board->is_eyelike (act_player, v)) continue;
+      return v;
+    }
+  }
+
+};
+
+
+
+class playout_t {
 public:
   move_t   history [max_playout_length];
   board_t* board;
@@ -37,7 +84,11 @@ public:
   player_map_t <vertex_t>   last_v;
   uint     move_no;
 
-  simple_playout_t (board_t* board_, player_t first_player) { 
+  simple_policy_t& policy;
+
+  playout_t (board_t* board_, player_t first_player, simple_policy_t& policy_) : 
+    policy (policy_)
+  {
     board = board_; 
     act_player = first_player;
     player_for_each (pl)
@@ -45,45 +96,23 @@ public:
     move_no = 0;
   }
 
-  all_inline 
-  void play_one () {
-
-    vertex_t v;
-    uint start;
-
-    // find random place in vector of empty vertices
-    start = pm.rand_int (board->empty_v_cnt); 
-
-    // search for a move in start ... board->empty_v_cnt-1 interval
-    #define search_v_in_range(begin, end)                           \
-      for (uint ev_i = begin; ev_i != end; ev_i++) {                \
-        v = board->empty_v [ev_i];                                  \
-        if (!board->is_eyelike (act_player, v) &&                   \
-            board->play_no_pass (act_player, v) < play_ss_suicide)  \
-          {                                                         \
-            history [move_no] = move_t (act_player, v);             \
-            last_v [act_player] = v;                                \
-            return;                                                 \
-          }                                                         \
-      }
-
-    search_v_in_range (start, board->empty_v_cnt);
-    search_v_in_range (0, start);
-
-    history [move_no] = move_t (act_player, vertex_pass);
-    last_v [act_player] = vertex_pass;
-
-    board->check_no_more_legal (act_player); // powerfull check
-
-    #undef search_v_in_range
-  }
-
 
   all_inline 
   playout_status run () {
 
     do {
-      play_one ();
+      vertex_t v;
+
+      policy.prepare_vertex (act_player);
+
+      while (true) {
+        v = policy.next_vertex ();
+        if (v == vertex_pass) break;
+        if (board->play_no_pass (act_player, v) < play_ss_suicide) break;
+      }
+
+      history [move_no] = move_t (act_player, v);
+      last_v [act_player] = v;
 
       act_player = act_player.other ();
       move_no++;
@@ -129,8 +158,9 @@ namespace simple_playout_benchmark {
     
     rep (ii, playout_cnt) {
       mc_board->load (mc_board_copy);
-      simple_playout_t sp (mc_board, first_player);
-      status = sp.run ();
+      simple_policy_t policy (mc_board);
+      playout_t playout (mc_board, first_player, policy);
+      status = playout.run ();
       
       switch (status) {
       case playout_ok:
