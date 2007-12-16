@@ -61,7 +61,7 @@ public:
     if (act_board ()->color_at[v] != color::empty) 
       { revert_state (); return false; }
 
-    if (act_board ()->play_no_pass (player, v) != play_ok)
+    if (act_board ()->play_not_pass (player, v) != play_ok)
       { revert_state (); return false; }
 
     if (is_hash_repeated ())    // superko test

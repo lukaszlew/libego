@@ -367,7 +367,7 @@ public:
       tree->uct_descend (act_player);
       v = tree->act_node ()->v;
       
-      if (v != vertex_pass && play_board->play_no_pass (act_player, v) != play_ok) {
+      if (play_board->play (act_player, v) != play_ok) {
         assertc (uct_ac, tree->act_node ()->no_children (act_player.other ()));
         tree->delete_act_node (act_player);
         return;

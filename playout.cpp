@@ -30,8 +30,6 @@ enum playout_status { playout_ok, playout_mercy, playout_too_long };
 random_pm_t pm(123); // TODO seed it when class
 
 
-
-
 class simple_policy_t {
 
   uint start_evi;
@@ -45,8 +43,8 @@ public:
 
   simple_policy_t (board_t* board_) : board (board_) { }
   
-  void prepare_vertex (player_t act_player_) {
-    act_player     = act_player_;
+  void prepare_vertex () {
+    act_player     = board->act_player ();
     start_evi      = pm.rand_int (board->empty_v_cnt); 
     act_evi        = start_evi;
     end_evi        = board->empty_v_cnt;
@@ -62,7 +60,6 @@ public:
           continue;
         } else {
           return vertex_pass;
-
         }
       }
       
@@ -80,20 +77,19 @@ class playout_t {
 public:
   move_t   history [max_playout_length];
   board_t* board;
-  player_t act_player;
   player_map_t <vertex_t>   last_v;
   uint     move_no;
 
   simple_policy_t& policy;
 
-  playout_t (board_t* board_, player_t first_player, simple_policy_t& policy_) : 
-    policy (policy_)
+  playout_t (board_t* board_, player_t first_player, simple_policy_t& policy_) 
+  : policy (policy_)
   {
-    board = board_; 
-    act_player = first_player;
+    board    = board_; 
+    move_no  = 0;
+    
     player_for_each (pl)
       last_v [pl] = vertex_any;
-    move_no = 0;
   }
 
 
@@ -102,19 +98,19 @@ public:
 
     do {
       vertex_t v;
+      play_ret_t status;
+      player_t act_player = board->act_player ();
 
-      policy.prepare_vertex (act_player);
+      policy.prepare_vertex ();
 
-      while (true) {
+      do {
         v = policy.next_vertex ();
-        if (v == vertex_pass) break;
-        if (board->play_no_pass (act_player, v) < play_ss_suicide) break;
-      }
+        status = board->play (act_player, v);
+      } while (status >= play_ss_suicide);
 
       history [move_no] = move_t (act_player, v);
-      last_v [act_player] = v;
+      last_v  [act_player] = v;
 
-      act_player = act_player.other ();
       move_no++;
 
       if ((last_v [player_black] == vertex_pass) & (last_v [player_white] == vertex_pass))    

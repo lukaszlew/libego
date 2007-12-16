@@ -398,7 +398,7 @@ public:                         // consistency checks
 
     vertex_for_each_all (v)
       if (color_at[v] == color::empty)
-        assert (is_eyelike (player, v) || play_no_pass (player, v) >= play_ss_suicide);
+        assert (is_eyelike (player, v) || play_not_pass (player, v) >= play_ss_suicide);
   }
 
 
@@ -415,6 +415,7 @@ public:                         // board interface
     set_komi (7.5);            // standard for chinese rules
     empty_v_cnt = 0;
     player_for_each (pl) player_v_cnt [pl] = 0;
+    last_player = player_white; // act player is other
 #ifndef Ho
     ko_v = vertex_any;             // only Go
 #endif
@@ -469,7 +470,27 @@ public:                         // board interface
   }
 
   flatten all_inline 
-  play_ret_t play_no_pass (player_t player, vertex_t v) {
+  play_ret_t play (player_t player, vertex_t v) {
+    // assertions in lower functions
+    if (v == vertex_pass) { 
+      play_pass (player); 
+      return play_ok; 
+    }
+    return play_not_pass (player, v);
+  }
+
+
+  void play_pass (player_t player) {
+    check ();
+    last_empty_v_cnt = empty_v_cnt;
+#ifndef Ho
+    ko_v             = vertex_any;
+#endif
+    last_player      = player;
+  }
+
+  flatten all_inline 
+  play_ret_t play_not_pass (player_t player, vertex_t v) {
     check ();
     v.check_is_on_board ();
     assertc (board_ac, color_at[v] == color::empty);
@@ -477,10 +498,10 @@ public:                         // board interface
     if (nbr_cnt[v].player_cnt_is_max (player.other ()))
       return play_eye (player, v);
     else 
-      return play_no_eye (player, v);
+      return play_not_eye (player, v);
   }
 
-  play_ret_t play_no_eye (player_t player, vertex_t v) {
+  play_ret_t play_not_eye (player_t player, vertex_t v) {
     check ();
     v.check_is_on_board ();
     assertc (board_ac, color_at[v] == color::empty);
@@ -640,6 +661,8 @@ public:                         // board interface
 
 public:                         // utils
 
+  player_t act_player () const { return last_player.other (); }
+
   bool is_eyelike (player_t player, vertex_t v) { 
 #ifdef Ho
     return nbr_cnt::player_cnt_is_max (nbr_cnt[v], player);
@@ -772,7 +795,7 @@ public:                         // utils
 
     rep (pi, play_cnt) {
       play_ret_t ret;
-      ret = play_no_pass (play_player[pi], play_v[pi]);
+      ret = play_not_pass (play_player[pi], play_v[pi]);
       if (ret != play_ok || last_empty_v_cnt - empty_v_cnt != 1) {
         cerr << "Fatal error: Illegal board configuration in file." << endl;
         exit (1);               // TODO this is a hack
