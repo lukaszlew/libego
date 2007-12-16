@@ -748,6 +748,10 @@ public:                         // utils
     coord_for_each (col) os (coord::col_to_string (col));
     out << endl;
 
+    #undef os
+    #undef o_left
+    #undef o_right
+
     return out.str ();
   }
 

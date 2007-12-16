@@ -370,6 +370,13 @@ public:
 
 };
 
+istream& operator>> (istream& in, move_t& m) {
+  player_t pl;
+  vertex_t v;
+  if (!(in >> pl >> v)) return in;
+  m = move_t (pl, v);
+  return in;
+}
 
 /********************************************************************************/
 
