@@ -71,18 +71,16 @@ public:
 
 };
 
-
-
-class playout_t {
+template <typename policy_t> class playout_t {
 public:
   move_t   history [max_playout_length];
   board_t* board;
   player_map_t <vertex_t>   last_v;
   uint     move_no;
 
-  simple_policy_t& policy;
+  policy_t& policy;
 
-  playout_t (board_t* board_, player_t first_player, simple_policy_t& policy_) 
+  playout_t (board_t* board_, player_t first_player, policy_t& policy_) 
   : policy (policy_)
   {
     board    = board_; 
@@ -155,7 +153,7 @@ namespace simple_playout_benchmark {
     rep (ii, playout_cnt) {
       mc_board->load (mc_board_copy);
       simple_policy_t policy (mc_board);
-      playout_t playout (mc_board, first_player, policy);
+      playout_t<simple_policy_t> playout (mc_board, first_player, policy);
       status = playout.run ();
       
       switch (status) {

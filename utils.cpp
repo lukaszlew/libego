@@ -157,6 +157,39 @@ public:
 
 const float large_float = 1000000000000.0;
 
+template <typename elt_t, uint _max_size> class stack_t {
+public:
+  elt_t tab [_max_size];
+  uint size;
+
+  stack_t () {
+    size = 0;
+  }
+
+  void check () const { 
+    assertc (stack_ac, size <= _max_size);
+  }
+
+  bool is_empty () const { return size == 0; }
+
+  elt_t& top () { assertc (stack_ac, size > 0); return tab [size-1]; }
+
+  void   push_back (elt_t& elt) { tab [size++] = elt; check (); }
+
+
+  elt_t pop_random (random_pm_t& pm) { 
+    assertc (stack_ac, size > 0); 
+    uint idx = pm.rand_int (size);
+    elt_t elt = tab [idx];
+    size--;
+    tab [idx] = tab [size];
+    return elt; 
+  }
+
+  void   pop () { size--; check (); }
+
+};
+
 char getc_non_space (istream& is) {
   char c;
   is.get(c);

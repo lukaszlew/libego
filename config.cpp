@@ -71,6 +71,7 @@ const float print_visit_threshold_parent  = 0.02;
 #endif
 
 const bool pm_ac              = false;
+const bool stack_ac           = false;
 
 const bool paranoic           = false;
 const bool board_ac           = false;

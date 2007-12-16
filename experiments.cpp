@@ -95,7 +95,7 @@ public:
     board_t mc_board [1];
     mc_board->load (base_board);
     simple_policy_t policy (mc_board);
-    playout_t playout (mc_board, first_player, policy);
+    playout_t<simple_policy_t> playout (mc_board, first_player, policy);
     playout.run ();
 
     float score = mc_board->score ();

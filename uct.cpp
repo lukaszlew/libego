@@ -358,7 +358,7 @@ public:
         }
         
         simple_policy_t policy (play_board);
-        playout_t playout (play_board, act_player, policy);
+        playout_t<simple_policy_t> playout (play_board, act_player, policy);
         playout.run ();
         break;
         
