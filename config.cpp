@@ -31,7 +31,7 @@
 
 // constants
 
-const bool use_mercy_rule      = true;
+// board parameters
 
 const uint board_size          = 9;
 const uint board_area          = board_size * board_size;
@@ -39,8 +39,13 @@ const uint max_empty_v_cnt     = board_area;
 const uint max_game_length     = board_area * 4;
 const bool playout_print       = false;
 const uint max_playout_length  = board_area * 2;
+
+// mercy rule
+
+const bool use_mercy_rule      = false;
 const uint mercy_threshold     = 25;
 
+// uct parameters
 
 const float initial_value                 = 0.0;
 const float initial_bias                  = 1.0;
@@ -52,9 +57,6 @@ const float resign_value                  = 0.99;
 const uint  uct_genmove_playout_cnt       = 50000;
 const float print_visit_threshold_base    = 500.0;
 const float print_visit_threshold_parent  = 0.02;
-
-
-const uint  max_gtp_commands              = 256;
 
 
 // consistency checking / debugging control
