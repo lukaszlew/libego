@@ -75,19 +75,15 @@ template <typename policy_t> class playout_t {
 public:
   move_t   history [max_playout_length];
   board_t* board;
-  player_map_t <vertex_t>   last_v;
   uint     move_no;
 
   policy_t& policy;
 
   playout_t (board_t* board_, policy_t& policy_) 
-  : policy (policy_)
+    : policy (policy_)
   {
     board    = board_; 
     move_no  = 0;
-    
-    player_for_each (pl)
-      last_v [pl] = vertex_any;
   }
 
 
@@ -107,12 +103,10 @@ public:
       } while (status >= play_ss_suicide);
 
       history [move_no] = move_t (act_player, v);
-      last_v  [act_player] = v;
 
       move_no++;
 
-      if ((last_v [player_black] == vertex_pass) & (last_v [player_white] == vertex_pass))    
-        return playout_ok;
+      if (board->both_player_pass ()) return playout_ok;
 
       if (move_no >= max_playout_length)                          
         return playout_too_long;
@@ -131,7 +125,7 @@ namespace simple_playout_benchmark {
 
 
   board_t    mc_board[1];
-  board_t    mc_board_copy[1];
+  player_map_t <uint> win_cnt;
   
   void run (board_t const * start_board, 
                    uint playout_cnt, 
@@ -142,15 +136,13 @@ namespace simple_playout_benchmark {
     float      seconds_total;
     
     playout_status  status;
-    player_map_t <uint> win_cnt;
     
     player_for_each (pl) win_cnt [pl] = 0;
-    mc_board_copy->load (start_board);
 
     seconds_begin = get_seconds ();
     
     rep (ii, playout_cnt) {
-      mc_board->load (mc_board_copy);
+      mc_board->load (start_board);
       simple_policy_t policy (mc_board);
       playout_t<simple_policy_t> playout (mc_board, policy);
       status = playout.run ();

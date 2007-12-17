@@ -184,6 +184,7 @@ public:
   uint        last_empty_v_cnt;
 
   player_map_t <uint>        player_v_cnt;
+  player_map_t <vertex_t>    player_last_v;
 
   hash_t      hash;
   int         komi;
@@ -414,7 +415,10 @@ public:                         // board interface
 
     set_komi (7.5);            // standard for chinese rules
     empty_v_cnt = 0;
-    player_for_each (pl) player_v_cnt [pl] = 0;
+    player_for_each (pl) {
+      player_v_cnt [pl] = 0;
+      player_last_v [pl] = vertex_any;
+    }
     last_player = player_white; // act player is other
 #ifndef Ho
     ko_v = vertex_any;             // only Go
@@ -469,6 +473,8 @@ public:                         // board interface
     return float(-komi) + 0.5;
   }
 
+  // PLAY FUNCTIONS
+
   flatten all_inline 
   play_ret_t play (player_t player, vertex_t v) {
     // assertions in lower functions
@@ -482,11 +488,12 @@ public:                         // board interface
 
   void play_pass (player_t player) {
     check ();
-    last_empty_v_cnt = empty_v_cnt;
+    last_empty_v_cnt        = empty_v_cnt;
 #ifndef Ho
-    ko_v             = vertex_any;
+    ko_v                    = vertex_any;
 #endif
-    last_player      = player;
+    last_player             = player;
+    player_last_v [player]  = vertex_pass;
   }
 
   flatten all_inline 
@@ -506,11 +513,12 @@ public:                         // board interface
     v.check_is_on_board ();
     assertc (board_ac, color_at[v] == color::empty);
 
-    last_empty_v_cnt = empty_v_cnt;
+    last_empty_v_cnt        = empty_v_cnt;
 #ifndef Ho
-    ko_v             = vertex_any;
+    ko_v                    = vertex_any;
 #endif
-    last_player      = player;
+    last_player             = player;
+    player_last_v [player]  = v;
 
     place_stone (player, v);
 
@@ -528,8 +536,10 @@ public:                         // board interface
 
   no_inline
   play_ret_t play_eye (player_t player, vertex_t v) {
-    vertex_for_each_nbr (v, nbr_v, assertc (board_ac, color_at[nbr_v] == color::opponent (player) || color_at[nbr_v] == color::off_board));
-
+    vertex_for_each_nbr (v, nbr_v, 
+                         assertc (board_ac, 
+                                  color_at[nbr_v] == color::opponent (player) || 
+                                  color_at[nbr_v] == color::off_board));
 #ifndef Ho
     if (v == ko_v && player == last_player.other ()) // only Go
       return play_ko;
@@ -543,8 +553,9 @@ public:                         // board interface
       return play_ss_suicide;
     }
 
-    last_empty_v_cnt = empty_v_cnt;
-    last_player      = player;
+    last_empty_v_cnt        = empty_v_cnt;
+    last_player             = player;
+    player_last_v [player]  = v;
 
     place_stone (player, v);
     
@@ -662,6 +673,12 @@ public:                         // board interface
 public:                         // utils
 
   player_t act_player () const { return last_player.other (); }
+
+  bool both_player_pass () {
+    return 
+      (player_last_v [player_black] == vertex_pass) & 
+      (player_last_v [player_white] == vertex_pass);
+  }
 
   bool is_eyelike (player_t player, vertex_t v) { 
 #ifdef Ho
