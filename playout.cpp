@@ -41,8 +41,14 @@ class simple_policy_t {
 
 public:
 
-  simple_policy_t (board_t* board_) : board (board_) { }
-  
+  //move_t   history [max_playout_length];
+
+  simple_policy_t () : board (NULL) { }
+
+  void begin_playout (board_t* board_) { 
+    board = board_;
+  }
+
   void prepare_vertex () {
     act_player     = board->act_player ();
     start_evi      = pm.rand_int (board->empty_v_cnt); 
@@ -69,13 +75,22 @@ public:
     }
   }
 
+  void bad_vertex (vertex_t v) {
+  }
+
+  void played_vertex (vertex_t v) { 
+    //history [board->move_no] = move_t (act_player, v);
+  }
+
+  void end_playout (playout_status status) { 
+  }
+
 };
 
 template <typename policy_t> class playout_t {
 public:
-  move_t   history [max_playout_length];
   board_t* board;
-
+  move_t   history [max_playout_length];
   policy_t& policy;
 
   playout_t (board_t* board_, policy_t& policy_) 
@@ -88,30 +103,44 @@ public:
   all_inline 
   playout_status run () {
 
-    do {
+    policy.begin_playout (board);
+    while (true) {
       vertex_t v;
       play_ret_t status;
       player_t act_player = board->act_player ();
 
       policy.prepare_vertex ();
 
-      do {
+      while (true) {
         v = policy.next_vertex ();
         status = board->play (act_player, v);
-      } while (status >= play_ss_suicide);
+        if (status >= play_ss_suicide) {
+          policy.bad_vertex (v);
+          continue;
+        } else {
+          policy.played_vertex (v);
+          break;
+        }
+      }
 
       history [board->move_no] = move_t (act_player, v);
 
-      if (board->both_player_pass ())           
+      if (board->both_player_pass ()) {
+        policy.end_playout (playout_ok);
         return playout_ok;
+      }
 
-      if (board->move_no >= max_playout_length) 
+      if (board->move_no >= max_playout_length) {
+        policy.end_playout (playout_too_long);
         return playout_too_long;
+      }
 
-      if (use_mercy_rule && uint (abs (board->approx_score ())) > mercy_threshold)  
+      if (use_mercy_rule && uint (abs (board->approx_score ())) > mercy_threshold) {
+        policy.end_playout (playout_mercy);
         return playout_mercy;
+      }
 
-    } while (true);
+    }
 
   }
 
@@ -125,9 +154,12 @@ namespace simple_playout_benchmark {
   player_map_t <uint> win_cnt;
   
   void run (board_t const * start_board, 
-                   uint playout_cnt, 
-                   ostream& out) 
+            uint playout_cnt, 
+            ostream& out) 
   {
+    simple_policy_t policy;
+    playout_t<simple_policy_t> playout (mc_board, policy);
+
     float      seconds_begin;
     float      seconds_end;
     float      seconds_total;
@@ -136,8 +168,6 @@ namespace simple_playout_benchmark {
     
     player_for_each (pl) win_cnt [pl] = 0;
 
-    simple_policy_t policy (mc_board);
-    playout_t<simple_policy_t> playout (mc_board, policy);
 
     seconds_begin = get_seconds ();
 

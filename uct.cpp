@@ -357,7 +357,7 @@ public:
           continue;            // try again
         }
         
-        simple_policy_t policy (play_board);
+        simple_policy_t policy;
         // TODO assert act_plauer == board->Act_player ()
         playout_t<simple_policy_t> playout (play_board, policy);
         playout.run ();

@@ -94,7 +94,7 @@ public:
   void do_playout (const board_t* base_board) {
     board_t mc_board [1];
     mc_board->load (base_board);
-    simple_policy_t policy (mc_board);
+    simple_policy_t policy;
     playout_t<simple_policy_t> playout (mc_board, policy);
     playout.run ();
 
