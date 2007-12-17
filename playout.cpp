@@ -27,66 +27,49 @@
 
 enum playout_status { playout_ok, playout_mercy, playout_too_long };
 
-random_pm_t pm(123); // TODO seed it when class
+template <typename policy_t> all_inline 
+playout_status run_playout (board_t* board, policy_t* policy) {
 
-
-template <typename policy_t> class playout_t {
-public:
-  board_t*   board;
-  policy_t*  policy;
-
-  playout_t (board_t* board_, policy_t* policy_) {
-    policy  = policy_;
-    board   = board_; 
-  }
-
-
-  all_inline 
-  playout_status run () {
-
-    policy->begin_playout (board);
+  policy->begin_playout (board);
+  while (true) {
+    vertex_t v;
+    play_ret_t status;
+    player_t act_player = board->act_player ();
+    
+    policy->prepare_vertex ();
+    
     while (true) {
-      vertex_t v;
-      play_ret_t status;
-      player_t act_player = board->act_player ();
-
-      policy->prepare_vertex ();
-
-      while (true) {
-        v = policy->next_vertex ();
-        status = board->play (act_player, v);
-        if (status >= play_ss_suicide) {
-          policy->bad_vertex (v);
-          continue;
-        } else {
-          policy->played_vertex (v);
-          break;
-        }
+      v = policy->next_vertex ();
+      status = board->play (act_player, v);
+      if (status >= play_ss_suicide) {
+        policy->bad_vertex (v);
+        continue;
+      } else {
+        policy->played_vertex (v);
+        break;
       }
-
-      //history [board->move_no] = move_t (act_player, v);
-
-      if (board->both_player_pass ()) {
-        policy->end_playout (playout_ok);
-        return playout_ok;
-      }
-
-      if (board->move_no >= max_playout_length) {
-        policy->end_playout (playout_too_long);
-        return playout_too_long;
-      }
-
-      if (use_mercy_rule && uint (abs (board->approx_score ())) > mercy_threshold) {
-        policy->end_playout (playout_mercy);
-        return playout_mercy;
-      }
-
     }
-
+    
+    if (board->both_player_pass ()) {
+      policy->end_playout (playout_ok);
+      return playout_ok;
+    }
+    
+    if (board->move_no >= max_playout_length) {
+      policy->end_playout (playout_too_long);
+      return playout_too_long;
+    }
+    
+    if (use_mercy_rule && uint (abs (board->approx_score ())) > mercy_threshold) {
+      policy->end_playout (playout_mercy);
+      return playout_mercy;
+    }
   }
+}
 
-};
 
+
+random_pm_t pm(123); // TODO seed it when class
 
 class simple_policy_t {
 protected:
@@ -159,29 +142,25 @@ namespace simple_playout_benchmark {
 
 
   player_map_t <uint> win_cnt;
-  board_t    mc_board[1];
+  board_t mc_board [1];
+
   
   void run (board_t const * start_board, 
             uint playout_cnt, 
             ostream& out) 
   {
+    playout_status status;
+
+    player_for_each (pl) 
+      win_cnt [pl] = 0;
+
     simple_policy_t policy [1];
-    playout_t<simple_policy_t> playout (mc_board, policy);
 
-    float      seconds_begin;
-    float      seconds_end;
-    float      seconds_total;
-    
-    playout_status  status;
-    
-    player_for_each (pl) win_cnt [pl] = 0;
-
-
-    seconds_begin = get_seconds ();
+    float seconds_begin = get_seconds ();
 
     rep (ii, playout_cnt) {
       mc_board->load (start_board);
-      status = playout.run ();
+      status = run_playout (mc_board, policy);
       
       switch (status) {
       case playout_ok:
@@ -195,14 +174,14 @@ namespace simple_playout_benchmark {
       }
     }
     
-    seconds_end = get_seconds ();
+    float seconds_end = get_seconds ();
     
     out << "Initial board:" << endl;
     out << "komi " << start_board->get_komi () << endl;
     
     out << start_board->to_string ();
     
-    seconds_total = seconds_end - seconds_begin;
+    float seconds_total = seconds_end - seconds_begin;
     
     out << "Performance: " << endl
         << "  " << playout_cnt << " playouts" << endl
@@ -211,6 +190,9 @@ namespace simple_playout_benchmark {
     
     out << "Black wins = " << win_cnt [player_black] << endl
         << "White wins = " << win_cnt [player_white] << endl
-        << "P(black win) = " << float (win_cnt [player_black]) / float (win_cnt [player_black] + win_cnt [player_white]) << endl;
+        << "P(black win) = " 
+        << float (win_cnt [player_black]) / 
+           float (win_cnt [player_black] + win_cnt [player_white]) 
+        << endl;
   }
 }

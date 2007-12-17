@@ -359,8 +359,7 @@ public:
         
         simple_policy_t policy [1];
         // TODO assert act_plauer == board->Act_player ()
-        playout_t<simple_policy_t> playout (play_board, policy);
-        playout.run ();
+        run_playout (play_board, policy);
         break;
         
       }
