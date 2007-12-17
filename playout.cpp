@@ -80,7 +80,7 @@ public:
 
   policy_t& policy;
 
-  playout_t (board_t* board_, player_t first_player, policy_t& policy_) 
+  playout_t (board_t* board_, policy_t& policy_) 
   : policy (policy_)
   {
     board    = board_; 
@@ -135,7 +135,6 @@ namespace simple_playout_benchmark {
   
   void run (board_t const * start_board, 
                    uint playout_cnt, 
-                   player_t first_player, 
                    ostream& out) 
   {
     float      seconds_begin;
@@ -153,7 +152,7 @@ namespace simple_playout_benchmark {
     rep (ii, playout_cnt) {
       mc_board->load (mc_board_copy);
       simple_policy_t policy (mc_board);
-      playout_t<simple_policy_t> playout (mc_board, first_player, policy);
+      playout_t<simple_policy_t> playout (mc_board, policy);
       status = playout.run ();
       
       switch (status) {

@@ -91,11 +91,11 @@ public:
       stat_given_move [m].reset ();
   }
 
-  void do_playout (const board_t* base_board, player_t first_player) {
+  void do_playout (const board_t* base_board) {
     board_t mc_board [1];
     mc_board->load (base_board);
     simple_policy_t policy (mc_board);
-    playout_t<simple_policy_t> playout (mc_board, first_player, policy);
+    playout_t<simple_policy_t> playout (mc_board, policy);
     playout.run ();
 
     float score = mc_board->score ();
@@ -124,7 +124,7 @@ public:
 
       reset ();
       rep (ii, playout_no) 
-        do_playout (stack_board->act_board (), player);
+        do_playout (stack_board->act_board ());
 
       float base_mean = stat_unconditional.mean ();
       vertex_map_t<float> means;

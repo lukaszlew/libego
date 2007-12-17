@@ -118,7 +118,7 @@ public:
     if (command == "playout_benchmark") {
       uint playout_cnt;
       if (!(params >> playout_cnt)) return gtp_syntax_error;
-      simple_playout_benchmark::run (board.act_board (), playout_cnt, player_black, response);
+      simple_playout_benchmark::run (board.act_board (), playout_cnt, response);
       return gtp_success;
     }
 

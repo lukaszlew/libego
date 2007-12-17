@@ -1,3 +1,9 @@
+*board
+  - set first player
+  - move history
+  - double pass detection
+  - group size
+
 * features
    - improve portability
    - gogui commands support
