@@ -194,6 +194,7 @@ public:
 #endif
 
   player_t   last_player;      // player who made the last play (other::player is forbidden to retake)
+  uint       move_no;
 
 public:                         // macros
 
@@ -414,14 +415,15 @@ public:                         // board interface
     uint off_board_cnt;
 
     set_komi (7.5);            // standard for chinese rules
-    empty_v_cnt = 0;
+    empty_v_cnt  = 0;
     player_for_each (pl) {
-      player_v_cnt [pl] = 0;
+      player_v_cnt  [pl] = 0;
       player_last_v [pl] = vertex_any;
     }
-    last_player = player_white; // act player is other
+    move_no      = 0;
+    last_player  = player_white; // act player is other
 #ifndef Ho
-    ko_v = vertex_any;             // only Go
+    ko_v         = vertex_any;             // only Go
 #endif
     vertex_for_each_all (v) {
       color_at      [v] = color::off_board;
@@ -494,6 +496,7 @@ public:                         // board interface
 #endif
     last_player             = player;
     player_last_v [player]  = vertex_pass;
+    move_no                += 1;
   }
 
   flatten all_inline 
@@ -519,6 +522,7 @@ public:                         // board interface
 #endif
     last_player             = player;
     player_last_v [player]  = v;
+    move_no                += 1;
 
     place_stone (player, v);
 
@@ -556,6 +560,7 @@ public:                         // board interface
     last_empty_v_cnt        = empty_v_cnt;
     last_player             = player;
     player_last_v [player]  = v;
+    move_no                += 1;
 
     place_stone (player, v);
     

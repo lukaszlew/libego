@@ -101,7 +101,7 @@ public:
     float score = mc_board->score ();
     stat_unconditional.update (score);
 
-    uint aaf_move_count = uint (float(playout.move_no)*aaf_fraction);
+    uint aaf_move_count = uint (float(mc_board->move_no)*aaf_fraction);
     rep (m_cnt, aaf_move_count)
       stat_given_move [playout.history [m_cnt]].update (score);
   }

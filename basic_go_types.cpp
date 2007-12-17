@@ -50,10 +50,6 @@ namespace vertex_aux {
 
 
 namespace move_aux {
-  uint player_mask [player_aux::cnt] = {  // TODO map_t ?
-    player_aux::black_idx << vertex_aux::bits_used, 
-    player_aux::white_idx << vertex_aux::bits_used 
-  };
 
   const uint cnt = player_aux::white_idx << vertex_aux::bits_used | vertex_aux::cnt;
  
@@ -337,7 +333,7 @@ public:
   }
 
   move_t (player_t player, vertex_t v) { 
-    idx = move_aux::player_mask [player.get_idx ()] | v.get_idx (); // TODO replace
+    idx = (player.get_idx () << vertex_aux::bits_used) | v.get_idx ();
   }
 
   move_t () {

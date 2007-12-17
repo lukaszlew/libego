@@ -75,7 +75,6 @@ template <typename policy_t> class playout_t {
 public:
   move_t   history [max_playout_length];
   board_t* board;
-  uint     move_no;
 
   policy_t& policy;
 
@@ -83,7 +82,6 @@ public:
     : policy (policy_)
   {
     board    = board_; 
-    move_no  = 0;
   }
 
 
@@ -102,13 +100,12 @@ public:
         status = board->play (act_player, v);
       } while (status >= play_ss_suicide);
 
-      history [move_no] = move_t (act_player, v);
+      history [board->move_no] = move_t (act_player, v);
 
-      move_no++;
+      if (board->both_player_pass ())           
+        return playout_ok;
 
-      if (board->both_player_pass ()) return playout_ok;
-
-      if (move_no >= max_playout_length)                          
+      if (board->move_no >= max_playout_length) 
         return playout_too_long;
 
       if (use_mercy_rule && uint (abs (board->approx_score ())) > mercy_threshold)  
@@ -139,12 +136,13 @@ namespace simple_playout_benchmark {
     
     player_for_each (pl) win_cnt [pl] = 0;
 
+    simple_policy_t policy (mc_board);
+    playout_t<simple_policy_t> playout (mc_board, policy);
+
     seconds_begin = get_seconds ();
-    
+
     rep (ii, playout_cnt) {
       mc_board->load (start_board);
-      simple_policy_t policy (mc_board);
-      playout_t<simple_policy_t> playout (mc_board, policy);
       status = playout.run ();
       
       switch (status) {
