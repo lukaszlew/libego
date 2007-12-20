@@ -21,44 +21,6 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-class stat_t {
-public:
-  float update_count;
-  float sample_sum;
-  float square_sample_sum;
-
-  stat_t () {
-    reset ();
-  }
-  
-  void reset () {
-    update_count       = 1.0; // TODO 
-    sample_sum         = 0.0; // TODO
-    square_sample_sum  = 0.0; // TODO
-  }
-
-  void update (float sample) {
-    update_count       += 1.0;
-    sample_sum         += sample;
-    square_sample_sum  += sample * sample;
-  }
-
-  float mean () { return sample_sum / update_count; }
-
-  float variance () {
-    // VX = E(X^2) - EX ^ 2
-    float m = mean ();
-    return square_sample_sum / update_count - m * m;
-  }
-
-  float std_dev () { return sqrt (variance ()); }
-
-  float get_update_count () { return update_count; }
-
-};
-
-
-
 class all_as_first_t : public gtp_engine_t {
 public:
 
