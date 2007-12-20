@@ -1,15 +1,10 @@
                Library of Effective GO routines
 
-This is a Library of Effective GO routines (EGO library / lego), a high performance 
+This is a Library of Effective GO routines (EGO library / libEGO), a high performance 
 implementation of Go rules and most popular algorithms used in computer Go. 
 This is also fully functional GTP Go engine.
 
 Newest version can be found at http://www.mimuw.edu.pl/~lew.
-
-                           Request
-
-If You are going to use (part of) this library in Your program, 
-please send me a notice ( for my, and others motivation :-) ).
  
                          Copyright
 
@@ -21,18 +16,17 @@ which may be found in the file COPYING.
                        Installation
 
 Just untar (tar zxfv libego*.tgz), and make.
-./engine_opt runs GTP engine, which will first run commands from automagic.gtp.
+./ego_opt runs GTP engine, which will first run commands from automagic.gtp.
 For other commands just type "help".
 
-If something goes wrong, try compile and run engine_debug.
+If something goes wrong, try make ego_debug; ./ego_debug.
 
                          Library  
 
-If You want to develop a Go program, then first take a look at 
-simple_playout::run in playout.cpp, which is an effective procedure for 
-Monte-Carlo playouts. 
+If You want to develop a Go program, then first take a look at playout.cpp
+where you can find an effective procedure for Monte-Carlo playouts. 
 
-The basic functionality of EGo is board_t class.
+The basic functionality of libEGO is board_t class.
 Most important fields and methods follow:
 
   color::t color_at [v]                        // color of board vertex (intersection) v
