@@ -1,0 +1,2 @@
+twogtp -black ../ego_opt  -white ../ego_opt.prev -auto -size 9 -komi 6.5 -alternate -games 20 -sgffile "ego.prev-ego${1}"
+twogtp -analyze "ego.prev-ego${1}.dat"
