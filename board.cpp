@@ -712,16 +712,11 @@ public:                         // utils
   player_t approx_winner () { return player_t (approx_score () <= 0); }
 
   int score () const {
-    int eye_score;
-
-    eye_score = 0;
+    int eye_score = 0;
 
     empty_v_for_each (this, v, {
-      if (nbr_cnt[v].player_cnt_is_max (player_black)) {
-        eye_score++;
-      } else if (nbr_cnt[v].player_cnt_is_max (player_white)) {
-        eye_score--;
-      }
+        eye_score += nbr_cnt[v].player_cnt_is_max (player_black);
+        eye_score -= nbr_cnt[v].player_cnt_is_max (player_white);
     });
 
     return approx_score () + eye_score;
@@ -729,6 +724,19 @@ public:                         // utils
 
   player_t winner () const { 
     return player_t (score () <= 0); 
+  }
+
+  int vertex_score (vertex_t v) {
+    switch (color_at [v]) {
+    case color::black: return 1;
+    case color::white: return -1;
+    case color::empty: 
+      return 
+        (nbr_cnt[v].player_cnt_is_max (player_black)) -
+        (nbr_cnt[v].player_cnt_is_max (player_white));
+    case color::off_board: return 0;
+    default: assert (false);
+    }
   }
 
   string to_string (vertex_t mark_v = vertex_any) const {

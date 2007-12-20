@@ -462,18 +462,22 @@ public:
   const elt_t& operator[] (player_t pl) const { return tab [pl.get_idx ()]; }
 };
 
-
+#include <iomanip>
 template <typename elt_t> class vertex_map_t {
 public:
   elt_t tab [vertex_aux::cnt];
   elt_t& operator[] (vertex_t v)             { return tab [v.get_idx ()]; }
   const elt_t& operator[] (vertex_t v) const { return tab [v.get_idx ()]; }
 
-  string to_string () {
+  string to_string_2d (int precision = 3) {
     ostringstream out;
+    out << setiosflags (ios_base::fixed) ;
+
     coord_for_each (row) {
       coord_for_each (col) {
         vertex_t v = vertex_t (row, col);
+        out.precision(precision);
+        out.width(precision + 3);
         out << tab [v.get_idx ()] << " ";
       }
       out << endl;

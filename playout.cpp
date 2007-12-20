@@ -141,34 +141,60 @@ public:
 namespace simple_playout_benchmark {
 
 
-  player_map_t <uint> win_cnt;
-  board_t mc_board [1];
+  board_t              mc_board [1];
 
-  
+  vertex_map_t <int>   vertex_score;
+  player_map_t <uint>  win_cnt;
+  uint                 playout_ok_cnt;
+  int                  playout_ok_score;
+
+
+  template <bool score_per_vertex> 
   void run (board_t const * start_board, 
             uint playout_cnt, 
             ostream& out) 
   {
     playout_status status;
+    player_t winner;
+    int score;
+
+    playout_ok_cnt   = 0;
+    playout_ok_score = 0;
 
     player_for_each (pl) 
       win_cnt [pl] = 0;
 
+    vertex_for_each_all (v) 
+      vertex_score [v] = 0;
+
     simple_policy_t policy [1];
 
     float seconds_begin = get_seconds ();
-
+    
     rep (ii, playout_cnt) {
       mc_board->load (start_board);
       status = run_playout (mc_board, policy);
       
       switch (status) {
       case playout_ok:
-        win_cnt [mc_board->winner ()] ++;
+        playout_ok_cnt += 1;
+
+        score = mc_board -> score ();
+        playout_ok_score += score;
+
+        winner = player_t (score <= 0);  // mc_board->winner ()
+        win_cnt [winner] ++;
+
+        if (score_per_vertex) {
+          vertex_for_each_faster (v)
+            vertex_score [v] += mc_board->vertex_score (v);
+        }
         break;
       case playout_mercy:
-        win_cnt [mc_board->approx_winner ()] ++;
-        break;
+        out << "Mercy rule should be off for benchmarking" << endl;
+        return;
+        //win_cnt [mc_board->approx_winner ()] ++;
+        //break;
       case playout_too_long:
         break;
       }
@@ -177,22 +203,40 @@ namespace simple_playout_benchmark {
     float seconds_end = get_seconds ();
     
     out << "Initial board:" << endl;
-    out << "komi " << start_board->get_komi () << endl;
+    out << "komi " << start_board->get_komi () << " for white" << endl;
     
     out << start_board->to_string ();
+    out << endl;
     
+    if (score_per_vertex) {
+      vertex_map_t <float> black_own;
+      vertex_for_each_all (v) 
+        black_own [v] = float(vertex_score [v]) / float (playout_ok_cnt);
+
+      out << "P(black owns vertex) rescaled to [-1, 1] (p*2 - 1): " << endl 
+          << black_own.to_string_2d () 
+          << endl;
+    }
+
+    out << "Black wins    = " << win_cnt [player_black] << endl
+        << "White wins    = " << win_cnt [player_white] << endl
+        << "P(black win)  = " 
+        << float (win_cnt [player_black]) / 
+           float (win_cnt [player_black] + win_cnt [player_white]) 
+        << endl;
+
+    float avg_score = float (playout_ok_score) / float (playout_ok_cnt);
+
+    out << "E(score)      = " 
+        << avg_score - 0.5 
+        << " (without komi = " << avg_score - mc_board->komi << ")" << endl << endl;
+
     float seconds_total = seconds_end - seconds_begin;
     
     out << "Performance: " << endl
         << "  " << playout_cnt << " playouts" << endl
         << "  " << seconds_total << " seconds" << endl
         << "  " << float (playout_cnt) / seconds_total / 1000.0 << " kpps" << endl;
-    
-    out << "Black wins = " << win_cnt [player_black] << endl
-        << "White wins = " << win_cnt [player_white] << endl
-        << "P(black win) = " 
-        << float (win_cnt [player_black]) / 
-           float (win_cnt [player_black] + win_cnt [player_white]) 
-        << endl;
+
   }
 }

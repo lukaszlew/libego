@@ -42,7 +42,7 @@ public:
     commands.push_back ("play");
     commands.push_back ("undo");
     commands.push_back ("showboard");
-    commands.push_back ("playout_benchmark");
+    commands.push_back ("benchmark");
     return commands;
   };
 
@@ -115,10 +115,15 @@ public:
       return gtp_success;
     }
 
-    if (command == "playout_benchmark") {
+    if (command == "benchmark") {
       uint playout_cnt;
+      string p;
       if (!(params >> playout_cnt)) return gtp_syntax_error;
-      simple_playout_benchmark::run (board.act_board (), playout_cnt, response);
+      if (!(params >> p) || p != "+") {
+        simple_playout_benchmark::run<false> (board.act_board (), playout_cnt, response);
+      } else {
+        simple_playout_benchmark::run<true> (board.act_board (), playout_cnt, response);
+      }
       return gtp_success;
     }
 

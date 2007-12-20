@@ -134,7 +134,7 @@ public:
         if (stack_board->act_board()->color_at [v] != color::empty) 
           means [v] = 0.0;
       }
-      response << means.to_string ();
+      response << means.to_string_2d ();
       return gtp_success;
     }
 
