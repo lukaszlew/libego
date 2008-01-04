@@ -478,6 +478,11 @@ public:                         // board interface
   // PLAY FUNCTIONS
 
   flatten all_inline 
+  play_ret_t play_act_player (vertex_t v) {
+    return play (act_player (), v);
+  }
+
+  flatten all_inline 
   play_ret_t play (player_t player, vertex_t v) {
     // assertions in lower functions
     if (v == vertex_pass) { 

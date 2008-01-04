@@ -1,6 +1,6 @@
-OPT   = -O3 -march=i686 -fomit-frame-pointer -DDEBUG -ffast-math -frename-registers
+OPT   = -O3 -march=native -fomit-frame-pointer -DDEBUG -ffast-math -frename-registers
 DEBUG = -ggdb3 -DDEBUG -fno-inline 
-PROF  = -O2 -march=i686 -DDEBUG -ggdb3 -fno-inline 
+PROF  = -O2 -march=native -DDEBUG -ggdb3 -fno-inline 
 
 CFLAGS += -Wall #-static #-Wno-long-long -Wextra -Wno-variadic-macros
 

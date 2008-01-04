@@ -415,7 +415,7 @@ public:
         
         simple_policy_t policy [1];
         // TODO assert act_plauer == board->Act_player ()
-        run_playout (play_board, policy);
+        playout::run (play_board, policy);
         break;
         
       }

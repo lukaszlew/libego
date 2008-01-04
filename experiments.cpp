@@ -57,7 +57,7 @@ public:
     board_t mc_board [1];
     mc_board->load (base_board);
     policy_with_history_t policy [1];
-    run_playout (mc_board, policy);
+    playout::run (mc_board, policy);
 
     float score = mc_board->score ();
     stat_unconditional.update (score);

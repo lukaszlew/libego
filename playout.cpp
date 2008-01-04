@@ -25,22 +25,18 @@
 // namespace simple_playout_t
 
 
-enum playout_status { playout_ok, playout_mercy, playout_too_long };
+namespace playout {
 
-template <typename policy_t> all_inline 
-playout_status run_playout (board_t* board, policy_t* policy) {
+enum status_t { pass_pass, mercy, too_long };
 
-  policy->begin_playout (board);
-  while (true) {
-    vertex_t v;
-    play_ret_t status;
-    player_t act_player = board->act_player ();
-    
+  template <typename policy_t> all_inline
+  void play_move (board_t* board, policy_t* policy) {
     policy->prepare_vertex ();
     
     while (true) {
-      v = policy->next_vertex ();
-      status = board->play (act_player, v);
+      vertex_t   v         = policy->next_vertex ();
+      play_ret_t status    = board->play_act_player (v);
+      
       if (status >= play_ss_suicide) {
         policy->bad_vertex (v);
         continue;
@@ -50,23 +46,33 @@ playout_status run_playout (board_t* board, policy_t* policy) {
       }
     }
     
-    if (board->both_player_pass ()) {
-      policy->end_playout (playout_ok);
-      return playout_ok;
-    }
+  }
+
+  template <typename policy_t> all_inline
+  status_t run (board_t* board, policy_t* policy) {
     
-    if (board->move_no >= max_playout_length) {
-      policy->end_playout (playout_too_long);
-      return playout_too_long;
-    }
-    
-    if (use_mercy_rule && uint (abs (board->approx_score ())) > mercy_threshold) {
-      policy->end_playout (playout_mercy);
-      return playout_mercy;
+    policy->begin_playout (board);
+    while (true) {
+      play_move (board, policy);
+      
+      if (board->both_player_pass ()) {
+        policy->end_playout (pass_pass);
+        return pass_pass;
+      }
+      
+      if (board->move_no >= max_playout_length) {
+        policy->end_playout (too_long);
+        return too_long;
+      }
+      
+      if (use_mercy_rule && uint (abs (board->approx_score ())) > mercy_threshold) {
+        policy->end_playout (mercy);
+        return mercy;
+      }
     }
   }
+  
 }
-
 
 
 random_pm_t pm(123); // TODO seed it when class
@@ -120,7 +126,7 @@ public:
   void played_vertex (vertex_t v) { 
   }
 
-  void end_playout (playout_status status) { 
+  void end_playout (playout::status_t status) { 
   }
 
 };
@@ -154,7 +160,7 @@ namespace simple_playout_benchmark {
             uint playout_cnt, 
             ostream& out) 
   {
-    playout_status status;
+    playout::status_t status;
     player_t winner;
     int score;
 
@@ -173,10 +179,10 @@ namespace simple_playout_benchmark {
     
     rep (ii, playout_cnt) {
       mc_board->load (start_board);
-      status = run_playout (mc_board, policy);
+      status = playout::run (mc_board, policy);
       
       switch (status) {
-      case playout_ok:
+      case playout::pass_pass:
         playout_ok_cnt += 1;
 
         score = mc_board -> score ();
@@ -190,12 +196,12 @@ namespace simple_playout_benchmark {
             vertex_score [v] += mc_board->vertex_score (v);
         }
         break;
-      case playout_mercy:
+      case playout::mercy:
         out << "Mercy rule should be off for benchmarking" << endl;
         return;
         //win_cnt [mc_board->approx_winner ()] ++;
         //break;
-      case playout_too_long:
+      case playout::too_long:
         break;
       }
     }
