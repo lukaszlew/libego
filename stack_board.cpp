@@ -58,7 +58,7 @@ public:
 
     if (v == vertex_resign) return true;
 
-    if (act_board ()->color_at[v] != color::empty) 
+    if (act_board ()->color_at [v] != color_empty) 
       { revert_state (); return false; }
 
     if (act_board ()->play_not_pass (player, v) != play_ok)

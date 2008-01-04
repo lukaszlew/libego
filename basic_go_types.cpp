@@ -110,58 +110,101 @@ istream& operator>> (istream& in, player_t& pl) {
 
 
 //------------------------------------------------------------------------------
+// faster than non-loop
+#define player_for_each(pl) \
+  for (player_t pl = player_black; pl.in_range (); pl.next ())
 
-namespace color {
 
-  enum t {
-    black = 0,
-    white = 1,
-    empty = 2,
-    off_board  = 3
-  };
+// class color
+
+namespace color_aux {
+
+  const uint black_idx = 0;
+  const uint white_idx = 1;
+  const uint empty_idx = 2;
+  const uint off_board_idx  = 3;
+
+  const uint wrong_char_idx = 40;
 
   const uint cnt = 4;
+}
 
-  void check (t color) { 
-    unused (color);
-    assertc (color_ac, (color & (~3)) == 0); 
+
+class color_t {
+  uint idx;
+public:
+
+  color_t () { idx = -1; } // TODO test - remove it
+
+  color_t (uint idx_) { idx = idx_; } // TODO test - remove it
+
+  color_t (player_t pl) { idx = pl.get_idx (); }
+
+  color_t (char c, uint dummy) {  // may return color_wrong_char // TODO dummmy is just to be able to choose the constructor
+     switch (c) {
+     case '#': idx = color_aux::black_idx; break;
+     case 'O': idx = color_aux::white_idx; break;
+     case '.': idx = color_aux::empty_idx; break;
+     case '*': idx = color_aux::off_board_idx; break;
+     default : idx = color_aux::wrong_char_idx; break;
+     }
   }
 
-  bool is_player (t color) { return color <= color::white; } // & (~1)) == 0; }
-  bool is_not_player (t color) { return color > color::white; } // & (~1)) == 0; }
-
-  t opponent (player_t player) {
-    unused (opponent);          // avoids warning
-    unused (player);
-    return t (player.get_idx () ^ 1);
+  void check () const { 
+    assertc (color_ac, (idx & (~3)) == 0); 
   }
 
-  char to_char (t color) { 
-    check (color);
-    switch (color) {
-    case black: return '#';
-    case white: return 'O';
-    case empty: return '.';
-    case off_board:  return ' ';
+  bool is_player     () const { return idx <= color_aux::white_idx; } // & (~1)) == 0; }
+  bool is_not_player () const { return idx  > color_aux::white_idx; } // & (~1)) == 0; }
+
+  player_t to_player () const { return player_t (idx); }
+
+//   t opponent (player_t player) {
+//     unused (opponent);          // avoids warning
+//     unused (player);
+//     return t (player.get_idx () ^ 1);
+//   }
+
+  char to_char () const { 
+    switch (idx) {
+    case color_aux::black_idx:      return '#';
+    case color_aux::white_idx:      return 'O';
+    case color_aux::empty_idx:      return '.';
+    case color_aux::off_board_idx:  return ' ';
     default : assertc (color_ac, false);
     }
     return '?';                 // should not happen
   }
 
-  const t wrong_char = t(4);
+  bool in_range () const { return idx < color_aux::cnt; }
+  void next () { idx++; }
 
-  t of_char (char c) {  // may return t(4)
-     switch (c) {
-     case '#': return black;
-     case 'O': return white;
-     case '.': return empty;
-     case '*': return off_board;
-     default : return wrong_char;
-     }
-  }
+  uint get_idx () const { return idx; }
+  bool operator== (color_t other) const { return idx == other.idx; }
+  bool operator!= (color_t other) const { return idx != other.idx; }
 
-}
+};
 
+const color_t color_black     = color_t (color_aux::black_idx);
+const color_t color_white     = color_t (color_aux::white_idx);
+const color_t color_empty     = color_t (color_aux::empty_idx);
+const color_t color_off_board = color_t (color_aux::off_board_idx);
+
+const color_t color_wrong_char = color_t (color_aux::wrong_char_idx);
+
+// class color_map_t
+
+template <typename elt_t> class color_map_t {
+public:
+  elt_t tab [color_aux::cnt];
+  elt_t& operator[] (color_t col)             { return tab [col.get_idx ()]; }
+  const elt_t& operator[] (color_t col) const { return tab [col.get_idx ()]; }
+};
+
+
+// TODO test it for performance
+#define color_for_each(col) \
+  for (color_t col = color_black; col.in_range (); col.next ())
 
 //--------------------------------------------------------------------------------
 
@@ -222,7 +265,7 @@ public:
     idx = (r+1) * vertex_aux::dNS + (c+1) * vertex_aux::dWE;
   }
 
-  uint get_idx () { return idx; }
+  uint get_idx () const { return idx; }
 
   bool operator== (vertex_t other) const { return idx == other.idx; }
   bool operator!= (vertex_t other) const { return idx != other.idx; }
@@ -232,11 +275,11 @@ public:
 
   void check ()             const { assertc (vertex_ac, in_range ()); }
 
-  coord::t row () { return idx / vertex_aux::dNS - 1; }
+  coord::t row () const { return idx / vertex_aux::dNS - 1; }
 
-  coord::t col () { return idx % vertex_aux::dNS - 1; }
+  coord::t col () const { return idx % vertex_aux::dNS - 1; }
 
-  bool is_on_board () { // TODO Ho here
+  bool is_on_board () const { // TODO Ho here
 #ifdef Ho
     coord::t r, c, d;
     r = row ();
@@ -248,21 +291,21 @@ public:
 #endif
   }
 
-  void check_is_on_board () { 
+  void check_is_on_board () const { 
     assertc (vertex_ac, is_on_board ()); 
   }
 
-  vertex_t N () { return vertex_t (idx - vertex_aux::dNS); }
-  vertex_t W () { return vertex_t (idx - vertex_aux::dWE); }
-  vertex_t E () { return vertex_t (idx + vertex_aux::dWE); }
-  vertex_t S () { return vertex_t (idx + vertex_aux::dNS); }
+  vertex_t N () const { return vertex_t (idx - vertex_aux::dNS); }
+  vertex_t W () const { return vertex_t (idx - vertex_aux::dWE); }
+  vertex_t E () const { return vertex_t (idx + vertex_aux::dWE); }
+  vertex_t S () const { return vertex_t (idx + vertex_aux::dNS); }
 
-  vertex_t NW () { return N ().W (); } // TODO can it be faster?
-  vertex_t NE () { return N ().E (); } // only Go
-  vertex_t SW () { return S ().W (); } // only Go
-  vertex_t SE () { return S ().E (); }
+  vertex_t NW () const { return N ().W (); } // TODO can it be faster?
+  vertex_t NE () const { return N ().E (); } // only Go
+  vertex_t SW () const { return S ().W (); } // only Go
+  vertex_t SE () const { return S ().E (); }
 
-  string to_string () {
+  string to_string () const {
     coord::t r;
     coord::t c;
     
@@ -381,13 +424,6 @@ istream& operator>> (istream& in, move_t& m) {
 // faster than non-loop
 #define player_for_each(pl) \
   for (player_t pl = player_black; pl.in_range (); pl.next ())
-
-
-
-// TODO test it for performance
-#define color_for_each(col) \
-  for (color::t col = color::black; col != color::cnt; col = color::t (col+1))
-
 
 #define coord_for_each(rc) \
   for (coord::t rc = 0; rc < int(board_size); rc = coord::t (rc+1))

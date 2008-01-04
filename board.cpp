@@ -98,12 +98,12 @@ namespace nbr_cnt_aux { // TODO this namespace exists only because we can't have
     (max << f_shift [player_aux::white_idx]) 
   };
   
-  const uint black_inc_val = (1 << f_shift [player_aux::black_idx]) - (1 << f_shift [color::empty]);
-  const uint white_inc_val = (1 << f_shift [player_aux::white_idx]) - (1 << f_shift [color::empty]);
+  const uint black_inc_val = (1 << f_shift [player_aux::black_idx]) - (1 << f_shift [color_aux::empty_idx]);
+  const uint white_inc_val = (1 << f_shift [player_aux::white_idx]) - (1 << f_shift [color_aux::empty_idx]);
   const uint off_board_inc_val  = 
     + (1 << f_shift [player_aux::black_idx]) 
     + (1 << f_shift [player_aux::white_idx]) 
-    - (1 << f_shift [color::empty]);
+    - (1 << f_shift [color_aux::empty_idx]);
   
   const uint player_inc_tab [player_aux::cnt] = { black_inc_val, white_inc_val };
 }
@@ -127,7 +127,7 @@ class nbr_cnt_t {
       bitfield = 
         (black_cnt << nbr_cnt_aux::f_shift [player_aux::black_idx]) +
         (white_cnt << nbr_cnt_aux::f_shift [player_aux::white_idx]) +
-        (empty_cnt << nbr_cnt_aux::f_shift [color::empty]);
+        (empty_cnt << nbr_cnt_aux::f_shift [color_aux::empty_idx]);
     }
   
     //void operator+= (const uint delta) { bitfield += delta; }
@@ -137,7 +137,7 @@ class nbr_cnt_t {
     void player_dec (player_t player) { bitfield -= nbr_cnt_aux::player_inc_tab [player.get_idx ()]; }
 
     uint empty_cnt  () const { 
-      return bitfield >> nbr_cnt_aux::f_shift [color::empty];
+      return bitfield >> nbr_cnt_aux::f_shift [color_aux::empty_idx];
     }
 
     uint player_cnt (player_t pl) const { 
@@ -171,7 +171,7 @@ class board_t {
   
 public:
 
-  vertex_map_t <color::t>    color_at;
+  vertex_map_t <color_t>    color_at;
   vertex_map_t <nbr_cnt_t>   nbr_cnt; // incremental, for fast eye checking
   vertex_map_t <uint>        empty_pos;
   vertex_map_t <vertex_t>    chain_next_v;
@@ -235,12 +235,12 @@ public:                         // consistency checks
     player_for_each (pl) exp_player_v_cnt [pl] = 0;
 
     vertex_for_each_all (v) {
-      assert ((color_at[v] == color::empty) == noticed[v]);
-      if (color_at[v] == color::empty) {
+      assert ((color_at[v] == color_empty) == noticed[v]);
+      if (color_at[v] == color_empty) {
         assert (empty_pos[v] < empty_v_cnt);
         assert (empty_v [empty_pos[v]] == v);
       }
-      if (color::is_player (color_at [v])) exp_player_v_cnt [player_t (color_at[v])]++;
+      if (color_at [v].is_player ()) exp_player_v_cnt [color_at[v].to_player ()]++;
     }
 
     player_for_each (pl) 
@@ -255,8 +255,8 @@ public:                         // consistency checks
     if (!board_color_at_ac) return;
 
     vertex_for_each_all (v) {
-      color::check (color_at[v]);
-      assert ((color_at[v] != color::off_board) == (v.is_on_board ()));
+      color_at [v].check ();
+      assert ((color_at[v] != color_off_board) == (v.is_on_board ()));
     }
   }
 
@@ -266,10 +266,10 @@ public:                         // consistency checks
     vertex_for_each_all (v) {
       coord::t r;
       coord::t c;
-      uint nbr_color_cnt[color::cnt];
+      color_map_t <uint> nbr_color_cnt;
       uint expected_nbr_cnt;
 
-      if (color_at[v] == color::off_board) continue; // TODO is that right?
+      if (color_at[v] == color_off_board) continue; // TODO is that right?
 
       r = v.row ();
       c = v.col ();
@@ -282,12 +282,12 @@ public:                         // consistency checks
       vertex_for_each_nbr (v, nbr_v, nbr_color_cnt [color_at [nbr_v]]++);
           
       expected_nbr_cnt =        // definition of nbr_cnt[v]
-        + ((nbr_color_cnt [color::black] + nbr_color_cnt [color::off_board]) 
+        + ((nbr_color_cnt [color_black] + nbr_color_cnt [color_off_board]) 
            << nbr_cnt_aux::f_shift [player_aux::black_idx])
-        + ((nbr_color_cnt [color::white] + nbr_color_cnt [color::off_board])
+        + ((nbr_color_cnt [color_white] + nbr_color_cnt [color_off_board])
            << nbr_cnt_aux::f_shift [player_aux::white_idx])
-        + ((nbr_color_cnt [color::empty]) 
-           << nbr_cnt_aux::f_shift [color::empty]);
+        + ((nbr_color_cnt [color_empty]) 
+           << nbr_cnt_aux::f_shift [color_aux::empty_idx]);
     
       assert (nbr_cnt[v].bitfield == expected_nbr_cnt);
     }
@@ -298,7 +298,7 @@ public:                         // consistency checks
 
     vertex_for_each_all (v) { // whether same color neighbours have same root and liberties
       // TODO what about off_board and empty?
-      if (color::is_player (color_at[v])) {
+      if (color_at [v].is_player ()) {
 
         assert (chain_lib_cnt[ chain_id [v]] != 0);
 
@@ -314,72 +314,11 @@ public:                         // consistency checks
     if (!chain_next_v_ac) return;
     vertex_for_each_all (v) {
       chain_next_v[v].check ();
-      if (!color::is_player (color_at[v])) 
-        assert (chain_next_v[v] == v);
+      if (!color_at [v].is_player ()) 
+        assert (chain_next_v [v] == v);
     }
   }
 
-  void check_chains () const {        // ... and chain_next_v
-    uint            act_chain_no;
-    uint            chain_id_list [vertex_aux::cnt - 1]; // list; could be smaller
-    vertex_map_t <uint> chain_no;
-
-    const uint      no_chain = 10000;
-
-    if (!chains_ac) return;
-    
-    act_chain_no = 0;
-
-    vertex_for_each_all (v) chain_no[v] = no_chain;
-
-    // TODO what about empty and off_board?
-    vertex_for_each_all (v) {
-      if (color::is_player(color_at[v]) && chain_no[v] == no_chain) { // chain not visited yet
-        color::t        act_color;
-
-        uint lib_cnt;
-        uint forward_off_board_cnt;
-        uint backward_off_board_cnt;
-
-        chain_id_list [act_chain_no] = chain_id [v];
-
-        rep (ch_no, act_chain_no) 
-          assert (chain_id_list [ch_no] != chain_id [v]); // separate chains, separate roots
-        
-        act_color          = color_at[v]; 
-        lib_cnt            = 0;
-        forward_off_board_cnt   = 0;
-        backward_off_board_cnt  = 0;
-        
-        vertex_t act_v = v;
-        do {
-          assert (color_at[act_v] == act_color);
-          assert (chain_id[act_v] == chain_id_list [act_chain_no]);
-          assert (chain_no[act_v] == no_chain);
-          chain_no[act_v] = act_chain_no;
-          
-          vertex_for_each_nbr (act_v, nbr_v, {
-            if (color_at[nbr_v] == color::empty) lib_cnt++;
-            if (color_at[nbr_v] == act_color) {
-              if (chain_no[nbr_v] == act_chain_no) forward_off_board_cnt++; 
-              else {
-                assert (chain_no[nbr_v] == no_chain);
-                backward_off_board_cnt++;
-              }
-            }
-            
-          });
-          
-          act_v = chain_next_v[act_v];
-        } while (act_v != v);
-        
-        assert (forward_off_board_cnt == backward_off_board_cnt);
-        assert (chain_lib_cnt [chain_id [v]] == lib_cnt);
-        
-        act_chain_no++;
-      }
-    }
-  }
   
   void check () const {
     if (!board_ac) return;
@@ -390,7 +329,6 @@ public:                         // consistency checks
     check_nbr_cnt       ();
     check_chain_at      ();
     check_chain_next_v  ();
-    check_chains        ();
   }
 
   void check_no_more_legal (player_t player) { // at the end of the playout
@@ -399,7 +337,7 @@ public:                         // consistency checks
     if (!board_ac) return;
 
     vertex_for_each_all (v)
-      if (color_at[v] == color::empty)
+      if (color_at[v] == color_empty)
         assert (is_eyelike (player, v) || play_not_pass (player, v) >= play_ss_suicide);
   }
 
@@ -426,14 +364,14 @@ public:                         // board interface
     ko_v         = vertex_any;             // only Go
 #endif
     vertex_for_each_all (v) {
-      color_at      [v] = color::off_board;
+      color_at      [v] = color_off_board;
       nbr_cnt       [v] = nbr_cnt_t (0, 0, nbr_cnt_aux::max);
       chain_next_v  [v] = v;
       chain_id      [v] = v.get_idx ();    // TODO is it needed, is it usedt?
       chain_lib_cnt [v.get_idx ()] = nbr_cnt_aux::max; // TODO is it logical? (off_boards)
 
       if (v.is_on_board ()) {
-        color_at   [v]              = color::empty;
+        color_at   [v]              = color_empty;
         empty_pos  [v]              = empty_v_cnt;
         empty_v    [empty_v_cnt++]  = v;
 
@@ -454,8 +392,8 @@ public:                         // board interface
     new_hash.set_zero ();
 
     vertex_for_each_all (v) {
-      if (color::is_player (color_at[v])) {
-        new_hash ^= zobrist->of_pl_v (player_t (color_at[v]), v);
+      if (color_at [v].is_player ()) {
+        new_hash ^= zobrist->of_pl_v (color_at [v].to_player (), v);
       }
     }
     
@@ -508,7 +446,7 @@ public:                         // board interface
   play_ret_t play_not_pass (player_t player, vertex_t v) {
     check ();
     v.check_is_on_board ();
-    assertc (board_ac, color_at[v] == color::empty);
+    assertc (board_ac, color_at[v] == color_empty);
 
     if (nbr_cnt[v].player_cnt_is_max (player.other ()))
       return play_eye (player, v);
@@ -519,7 +457,7 @@ public:                         // board interface
   play_ret_t play_not_eye (player_t player, vertex_t v) {
     check ();
     v.check_is_on_board ();
-    assertc (board_ac, color_at[v] == color::empty);
+    assertc (board_ac, color_at[v] == color_empty);
 
     last_empty_v_cnt        = empty_v_cnt;
 #ifndef Ho
@@ -545,10 +483,13 @@ public:                         // board interface
 
   no_inline
   play_ret_t play_eye (player_t player, vertex_t v) {
-    vertex_for_each_nbr (v, nbr_v, 
-                         assertc (board_ac, 
-                                  color_at[nbr_v] == color::opponent (player) || 
-                                  color_at[nbr_v] == color::off_board));
+    vertex_for_each_nbr (v, nbr_v, {
+      assertc (board_ac, 
+               color_at [nbr_v] == color_t (player.other ()) || 
+               color_at[nbr_v] == color_off_board);
+    });
+
+
 #ifndef Ho
     if (v == ko_v && player == last_player.other ()) // only Go
       return play_ko;
@@ -592,10 +533,10 @@ public:                         // board interface
   {
     nbr_cnt[v].player_inc (new_nbr_player);
 
-    if (color::is_not_player (color_at [v])) return;
+    if (color_at [v].is_not_player ()) return;
     chain_lib_cnt [chain_id [v]] --;
 
-    if (color_at[v] != color::t (new_nbr_player.get_idx ())) { // same color of groups
+    if (color_at[v] != color_t (new_nbr_player.get_idx ())) { // same color of groups
       if (chain_lib_cnt [chain_id [v]] == 0) remove_chain (v);
       return;
     }
@@ -627,12 +568,12 @@ public:                         // board interface
   void remove_chain (vertex_t v){
     vertex_t act_v;
     vertex_t tmp_v;
-    color::t old_color;
+    color_t old_color;
 
     old_color = color_at[v];
     act_v = v;
 
-    assertc (board_ac, color::is_player (old_color));
+    assertc (board_ac, old_color.is_player ());
 
     do {
       remove_stone (act_v);
@@ -643,7 +584,7 @@ public:                         // board interface
 
     do {
       vertex_for_each_nbr (act_v, nbr_v, {
-        nbr_cnt[nbr_v].player_dec (player_t (old_color));
+        nbr_cnt[nbr_v].player_dec (old_color.to_player());
         chain_lib_cnt [chain_id [nbr_v]]++;
       });
 
@@ -657,7 +598,7 @@ public:                         // board interface
   void place_stone (player_t pl, vertex_t v) {
     hash ^= zobrist->of_pl_v (pl, v);
     player_v_cnt[pl]++;
-    color_at[v] = color::t (pl.get_idx ());
+    color_at[v] = color_t (pl.get_idx ());
 
     empty_v_cnt--;
     empty_pos [empty_v [empty_v_cnt]] = empty_pos [v];
@@ -670,9 +611,9 @@ public:                         // board interface
   }
 
   void remove_stone (vertex_t v) {
-    hash ^= zobrist->of_pl_v (player_t(color_at[v]), v);
-    player_v_cnt [color_at[v]]--;
-    color_at[v] = color::empty;
+    hash ^= zobrist->of_pl_v (color_at [v].to_player (), v);
+    player_v_cnt [color_at[v].to_player ()]--;
+    color_at[v] = color_empty;
 
     empty_pos [v] = empty_v_cnt;
     empty_v [empty_v_cnt++] = v;
@@ -694,19 +635,20 @@ public:                         // utils
 #ifdef Ho
     return nbr_cnt::player_cnt_is_max (nbr_cnt[v], player);
 #else
-    int diag_color_cnt[color::cnt];
-
-    assertc (board_ac, color_at [v] == color::empty);
+    color_map_t <int> diag_color_cnt; // TODO
+    assertc (board_ac, color_at [v] == color_empty);
 
     if (! nbr_cnt[v].player_cnt_is_max (player)) return false;
 
-    color_for_each (col) diag_color_cnt [col] = 0; // memset is slower
+    color_for_each (col) 
+      diag_color_cnt [col] = 0; // memset is slower
+
     vertex_for_each_diag_nbr (v, diag_v, {
       diag_color_cnt [color_at [diag_v]]++;
     });
 
-    diag_color_cnt[player.other ().get_idx ()] += (diag_color_cnt[color::off_board] > 0);
-    return diag_color_cnt[player.other ().get_idx ()] < 2;
+    diag_color_cnt [player.other ()] += (diag_color_cnt[color_off_board] > 0);
+    return diag_color_cnt [player.other ()] < 2;
 #endif
   }
 
@@ -732,14 +674,14 @@ public:                         // utils
   }
 
   int vertex_score (vertex_t v) {
-    switch (color_at [v]) {
-    case color::black: return 1;
-    case color::white: return -1;
-    case color::empty: 
+    switch (color_at [v].get_idx ()) {
+    case color_aux::black_idx: return 1;
+    case color_aux::white_idx: return -1;
+    case color_aux::empty_idx: 
       return 
         (nbr_cnt[v].player_cnt_is_max (player_black)) -
         (nbr_cnt[v].player_cnt_is_max (player_white));
-    case color::off_board: return 0;
+    case color_aux::off_board_idx: return 0;
     default: assert (false);
     }
   }
@@ -766,7 +708,7 @@ public:                         // utils
       os (coord::row_to_string (row));
       coord_for_each (col) {
         vertex_t v = vertex_t (row, col);
-        char ch = color::to_char (color_at[v]);
+        char ch = color_at [v].to_char ();
         if      (v == mark_v)        o_left  (ch);
         else if (v == mark_v.E ())   o_right (ch);
         else                         os (ch);
@@ -815,15 +757,15 @@ public:                         // utils
 
     coord_for_each (row) {
       coord_for_each (col) {
-        color::t color;
+        color_t color;
 
         c = getc_non_space (ifs);
-        color = color::of_char (c);
-        if (color == color::wrong_char) return false;
+        color = color_t (c, 0); // TODO 0 is to choose the constructor
+        if (color == color_wrong_char) return false;
         
-        if (color::is_player (color)) {
-          play_player[play_cnt] = player_t (color);
-          play_v[play_cnt] = vertex_t (row, col);
+        if (color.is_player ()) {
+          play_player [play_cnt] = color.to_player ();
+          play_v [play_cnt] = vertex_t (row, col);
           play_cnt++;
           assertc (board_ac, play_cnt < board_area);
         }

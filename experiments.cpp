@@ -93,7 +93,7 @@ public:
       vertex_for_each_all (v) {
         means [v] = stat_given_move [move_t (player, v)].mean () - base_mean;
         means [v] /= influence_scale;;
-        if (stack_board->act_board()->color_at [v] != color::empty) 
+        if (stack_board->act_board()->color_at [v] != color_empty) 
           means [v] = 0.0;
       }
       response << means.to_string_2d ();
