@@ -95,28 +95,32 @@ namespace random_pm_aux {
   const int cnt = (1<<31) - 1;  
 }
 
-class random_pm_t {             // Park - Miller "minimal standard"
 
-  unsigned long seed;
+class random_pm_t {             // Park - Miller "minimal standard" 
+
+  uint seed;
+  //tr1::minstd_rand0 mt; // this is eqivalent when #include <tr1/random>
 
 public:
 
-  random_pm_t (unsigned long seed_ = 12345) { seed = seed_; }
+  random_pm_t (uint seed_ = 12345) //: mt (seed_) 
+  { seed = seed_; }
 
-  void srand (unsigned long _seed) { seed = _seed; }
+  void srand (uint _seed) { }
 
-  unsigned long rand_int () {       // a number between  0 ... cnt - 1
-    unsigned long hi, lo;
+ uint rand_int () {       // a number between  0 ... cnt - 1
+    uint hi, lo;
     lo = 16807 * (seed & 0xffff);
     hi = 16807 * (seed >> 16);
     lo += (hi & 0x7fff) << 16;
     lo += hi >> 15;
     seed = (lo & 0x7FFFFFFF) + (lo >> 31);
     return seed;
+    //return mt (); // equivalen
   }
 
   // n must be between 1 .. (1<<16) + 1
-  inline unsigned long rand_int (uint n) { // 0 .. n-1
+  inline uint rand_int (uint n) { // 0 .. n-1
     assertc (pm_ac, n > 0);
     assertc (pm_ac, n <= (1<<16)+1);
     return ((rand_int () & 0xffff) * n) >> 16;
