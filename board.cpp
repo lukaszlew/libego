@@ -536,7 +536,7 @@ public:                         // board interface
     if (color_at [v].is_not_player ()) return;
     chain_lib_cnt [chain_id [v]] --;
 
-    if (color_at[v] != color_t (new_nbr_player.get_idx ())) { // same color of groups
+    if (color_at[v] != color_t (new_nbr_player)) { // same color of groups
       if (chain_lib_cnt [chain_id [v]] == 0) remove_chain (v);
       return;
     }
@@ -598,7 +598,7 @@ public:                         // board interface
   void place_stone (player_t pl, vertex_t v) {
     hash ^= zobrist->of_pl_v (pl, v);
     player_v_cnt[pl]++;
-    color_at[v] = color_t (pl.get_idx ());
+    color_at[v] = color_t (pl);
 
     empty_v_cnt--;
     empty_pos [empty_v [empty_v_cnt]] = empty_pos [v];
@@ -674,6 +674,14 @@ public:                         // utils
   }
 
   int vertex_score (vertex_t v) {
+    //     color_t::map_t <int> color_to_score;
+    //     color_to_score [color_t::black ()] = 1;
+    //     color_to_score [color_t::white ()] = -1;
+    //     color_to_score [color_t::empty ()] =
+    //       (nbr_cnt[v].player_cnt_is_max (player_t::black ())) -
+    //       (nbr_cnt[v].player_cnt_is_max (player_t::white ()));
+    //     color_to_score [color_t::off_board ()] = 0;
+    //     return color_to_score [color_at [v]];
     switch (color_at [v].get_idx ()) {
     case color_t::black_idx: return 1;
     case color_t::white_idx: return -1;
