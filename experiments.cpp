@@ -25,7 +25,7 @@ class all_as_first_t : public gtp_engine_t {
 public:
 
   stat_t stat_unconditional;
-  move_map_t < stat_t > stat_given_move;
+  move_t::map_t < stat_t > stat_given_move;
   stack_board_t* stack_board;
 
   uint playout_no;
@@ -88,12 +88,12 @@ public:
         do_playout (stack_board->act_board ());
 
       float base_mean = stat_unconditional.mean ();
-      vertex_map_t<float> means;
+      vertex_t::map_t<float> means;
 
       vertex_for_each_all (v) {
         means [v] = stat_given_move [move_t (player, v)].mean () - base_mean;
         means [v] /= influence_scale;;
-        if (stack_board->act_board()->color_at [v] != color_empty) 
+        if (stack_board->act_board()->color_at [v] != color_t::empty ()) 
           means [v] = 0.0;
       }
       response << means.to_string_2d ();

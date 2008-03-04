@@ -120,7 +120,7 @@ public:
   float    value;
   float    bias;
 
-  player_map_t <node_t*> first_child;         // head of list of moves of particular player 
+  player_t::map_t <node_t*> first_child;         // head of list of moves of particular player 
   node_t*  sibling;                           // NULL if last child
 
 public:
@@ -184,7 +184,7 @@ public:
 
   float ucb (player_t pl, float explore_coeff) {  // TODO pl_idx is awfull
     return 
-      (pl == player_black ? value : -value) +
+      (pl == player_t::black () ? value : -value) +
       sqrt (explore_coeff / bias);
   }
 
@@ -254,7 +254,7 @@ public:
   }
 
   void rec_print_children (ostream& out, uint depth, player_t player) {
-    node_t*  child_tab [vertex_aux::cnt]; // rough upper bound for the number of legal move
+    node_t*  child_tab [vertex_t::cnt]; // rough upper bound for the number of legal move
     uint     child_tab_size;
     uint     best_child_idx;
     float    min_visit_cnt;
@@ -271,7 +271,7 @@ public:
     while (child_tab_size > 0) {
       // find best child
       rep(ii, child_tab_size) {
-        if ((player == player_black) == 
+        if ((player == player_t::black ()) == 
             (best_child->value < child_tab [ii]->value))
           best_child_idx = ii;
       }
@@ -308,7 +308,7 @@ public:
 
   tree_t () {
     history [0] = node_pool->malloc ();
-    history [0]->init (vertex_any);
+    history [0]->init (vertex_t::any ());
   }
 
   void history_reset () {
@@ -356,7 +356,7 @@ public:
 
   string to_string () { 
     ostringstream out_str;
-    history [0]->rec_print (out_str, 0, player_black); 
+    history [0]->rec_print (out_str, 0, player_t::black ()); 
     return out_str.str ();
   }
 };
@@ -390,7 +390,7 @@ public:
   flatten 
   void do_playout (player_t first_player){
     board_t    play_board[1]; // TODO test for perfomance + memcpy
-    player_map_t <bool> was_pass;
+    player_t::map_t <bool> was_pass;
     player_t  act_player = first_player;
     vertex_t       v;
     
@@ -429,10 +429,10 @@ public:
         return;
       }
       
-      was_pass [act_player]  = (v == vertex_pass);
+      was_pass [act_player]  = (v == vertex_t::pass ());
       act_player             = act_player.other ();
       
-      if (was_pass [player_black] & was_pass [player_white]) break;
+      if (was_pass [player_t::black ()] & was_pass [player_t::white ()]) break;
       
     } while (true);
     
@@ -451,8 +451,8 @@ public:
     assertc (uct_ac, best != NULL);
 
     cerr << tree->to_string () << endl;
-    if (player == player_black && best->value < -resign_value) return vertex_resign;
-    if (player == player_white && best->value >  resign_value) return vertex_resign;
+    if (player == player_t::black () && best->value < -resign_value) return vertex_t::resign ();
+    if (player == player_t::white () && best->value >  resign_value) return vertex_t::resign ();
     return best->v;
   }
   

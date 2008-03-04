@@ -110,7 +110,7 @@ public:
           end_evi = start_evi;
           continue;
         } else {
-          return vertex_pass;
+          return vertex_t::pass ();
         }
       }
       
@@ -149,8 +149,8 @@ namespace simple_playout_benchmark {
 
   board_t              mc_board [1];
 
-  vertex_map_t <int>   vertex_score;
-  player_map_t <uint>  win_cnt;
+  vertex_t::map_t <int>   vertex_score;
+  player_t::map_t <uint>  win_cnt;
   uint                 playout_ok_cnt;
   int                  playout_ok_score;
 
@@ -215,7 +215,7 @@ namespace simple_playout_benchmark {
     out << endl;
     
     if (score_per_vertex) {
-      vertex_map_t <float> black_own;
+      vertex_t::map_t <float> black_own;
       vertex_for_each_all (v) 
         black_own [v] = float(vertex_score [v]) / float (playout_ok_cnt);
 
@@ -224,11 +224,11 @@ namespace simple_playout_benchmark {
           << endl;
     }
 
-    out << "Black wins    = " << win_cnt [player_black] << endl
-        << "White wins    = " << win_cnt [player_white] << endl
+    out << "Black wins    = " << win_cnt [player_t::black ()] << endl
+        << "White wins    = " << win_cnt [player_t::white ()] << endl
         << "P(black win)  = " 
-        << float (win_cnt [player_black]) / 
-           float (win_cnt [player_black] + win_cnt [player_white]) 
+        << float (win_cnt [player_t::black ()]) / 
+           float (win_cnt [player_t::black ()] + win_cnt [player_t::white ()]) 
         << endl;
 
     float avg_score = float (playout_ok_score) / float (playout_ok_cnt);

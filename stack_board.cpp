@@ -54,11 +54,11 @@ public:
 
     record_state (); // for undo
 
-    if (v == vertex_pass) return true;
+    if (v == vertex_t::pass ()) return true;
 
-    if (v == vertex_resign) return true;
+    if (v == vertex_t::resign ()) return true;
 
-    if (act_board ()->color_at [v] != color_empty) 
+    if (act_board ()->color_at [v] != color_t::empty ()) 
       { revert_state (); return false; }
 
     if (act_board ()->play_not_pass (player, v) != play_ok)
