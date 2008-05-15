@@ -2,7 +2,13 @@ name
 
 echo Benchmarking, please wait ...
 
-benchmark 200000
+benchmark 300000
+benchmark 150000
+benchmark 150000
+benchmark 150000
+benchmark 150000
+benchmark 150000
+
 
 echo This is an automatic run of the 100000 MC playouts.
 echo If it annoys You, just delete "automagic.gtp" file.

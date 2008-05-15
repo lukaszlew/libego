@@ -61,7 +61,7 @@ public:
     if (act_board ()->color_at [v] != color_t::empty ()) 
       { revert_state (); return false; }
 
-    if (act_board ()->is_legal (player,v))
+    if (!act_board ()->is_legal (player,v))
       { revert_state (); return false; }
 
     act_board ()->play_legal (player, v);

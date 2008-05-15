@@ -37,8 +37,7 @@ enum status_t { pass_pass, mercy, too_long };
       player_t   act_player = board->act_player ();
       vertex_t   v          = policy->next_vertex ();
 
-      play_ret_t status     = board->is_legal (act_player, v);
-      if (status >= play_ss_suicide) {
+      if (!board->is_legal (act_player, v)) { // TODO check odwrotnie, likely, unlikely
         policy->bad_vertex (v);
         continue;
       } else {

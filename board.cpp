@@ -22,6 +22,12 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
+//TODO replace is_legal everywhere
+//     commit
+//     add undo
+//     replace stack_board
+
+
 // class hash_t
 
 
@@ -340,7 +346,7 @@ public:                         // consistency checks
 
     vertex_for_each_all (v)
       if (color_at[v] == color_t::empty ())
-        assert (is_eyelike (player, v) || ( is_legal (player, v) != play_ok));
+        assert (is_eyelike (player, v) || !is_legal (player, v));
   }
 
 
@@ -423,48 +429,40 @@ public:                         // board interface
 
 public: // PLAY FUNCTIONS
 
-
+  // checks for move legality
+  // it has to point to empty vertexand empty
+  // can't recognize play_suicide
   flatten all_inline 
-    play_ret_t is_legal (player_t player, vertex_t v) {
+  bool is_legal (player_t player, vertex_t v) {
     check ();
     
     //player_t player = act_player ();
-    if (v == vertex_t::pass ()) return play_ok; 
+    if (v == vertex_t::pass ()) return true;
     v.check_is_on_board ();
 
     if (nbr_cnt[v].player_cnt_is_max (player.other ())) {
       #ifndef Ho
       if (play_eye_is_ko (player, v)) // only Go
-        return play_ko;
+        return false;
       #endif
 
       if (play_eye_is_suicide (player, v))
-        return play_ss_suicide;
-      return play_ok;
-    } else {
-      return play_ok;
-    }
+        return false;
+    } 
+
+    return true;
   }
 
 
-  flatten all_inline 
-  void play_legal_act_player (vertex_t v) {
-    play_legal (act_player (), v);
-  }
 
-
-  flatten all_inline 
-  void play_legal (player_t player, vertex_t v) {
+  // accept pass
+  // will ignore simple-ko ban
+  // will play single stone suicide
+  void play_legal (player_t player, vertex_t v) flatten all_inline {
     check ();
 
-    if (v == vertex_t::pass ()) { 
-      #ifndef Ho
-      ko_v                    = vertex_t::any ();
-      #endif
-      last_empty_v_cnt        = empty_v_cnt;
-      last_player             = player;
-      player_last_v [player]  = vertex_t::pass ();
-      move_no                += 1;
+    if (v == vertex_t::pass ()) {
+      play_pass (player);
       return;
     }
     
@@ -478,6 +476,17 @@ public: // PLAY FUNCTIONS
       assertc (board_ac, last_move_status == play_ok || last_move_status == play_suicide); // TODO clean it up
     }
   
+  }
+
+
+  void play_pass (player_t player) {
+    #ifndef Ho
+    ko_v                    = vertex_t::any ();
+    #endif
+    last_empty_v_cnt        = empty_v_cnt;
+    last_player             = player;
+    player_last_v [player]  = vertex_t::pass ();
+    move_no                += 1;
   }
 
 

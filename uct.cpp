@@ -423,7 +423,7 @@ public:
       tree->uct_descend (act_player);
       v = tree->act_node ()->v;
       
-      if (play_board->is_legal (act_player, v) != play_ok) {
+      if (!play_board->is_legal (act_player, v)) {
         assertc (uct_ac, tree->act_node ()->no_children (act_player.other ()));
         tree->delete_act_node (act_player);
         return;
