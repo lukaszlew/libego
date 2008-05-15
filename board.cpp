@@ -413,12 +413,15 @@ public:                         // board interface
     return float(-komi) + 0.5;
   }
 
-  // PLAY FUNCTIONS
+
+public: // PLAY FUNCTIONS
+
 
   flatten all_inline 
   play_ret_t play_act_player (vertex_t v) {
     return play (act_player (), v);
   }
+
 
   flatten all_inline 
   play_ret_t play (player_t player, vertex_t v) {
@@ -433,14 +436,16 @@ public:                         // board interface
 
   void play_pass (player_t player) {
     check ();
-    last_empty_v_cnt        = empty_v_cnt;
-#ifndef Ho
+
+    #ifndef Ho
     ko_v                    = vertex_t::any ();
-#endif
+    #endif
+    last_empty_v_cnt        = empty_v_cnt;
     last_player             = player;
     player_last_v [player]  = vertex_t::pass ();
     move_no                += 1;
   }
+
 
   flatten all_inline 
   play_ret_t play_not_pass (player_t player, vertex_t v) {
@@ -448,11 +453,38 @@ public:                         // board interface
     v.check_is_on_board ();
     assertc (board_ac, color_at[v] == color_t::empty ());
 
-    if (nbr_cnt[v].player_cnt_is_max (player.other ()))
-      return play_eye (player, v);
-    else 
+    if (nbr_cnt[v].player_cnt_is_max (player.other ())) {
+      #ifndef Ho
+      if (play_eye_is_ko (player, v)) // only Go
+        return play_ko;
+      #endif
+
+
+      if (play_eye_is_suicide (player, v))
+        return play_ss_suicide;
+
+      play_eye_legal (player, v);
+
+      return play_ok;
+    } else {
       return play_not_eye (player, v);
+    }
   }
+
+
+  bool play_eye_is_ko (player_t player, vertex_t v) {
+    return (v == ko_v) & (player == last_player.other ());
+  }
+
+
+  bool play_eye_is_suicide (player_t player, vertex_t v) {
+    uint all_nbr_live = true;
+    vertex_for_each_nbr (v, nbr_v, all_nbr_live &= (--chain_lib_cnt [chain_id [nbr_v]] != 0));
+    vertex_for_each_nbr (v, nbr_v, chain_lib_cnt [chain_id [nbr_v]]++);
+    return all_nbr_live;
+  }
+
+
 
   play_ret_t play_not_eye (player_t player, vertex_t v) {
     check ();
@@ -481,28 +513,10 @@ public:                         // board interface
     return play_ok;
   }
 
+
   no_inline
-  play_ret_t play_eye (player_t player, vertex_t v) {
-    vertex_for_each_nbr (v, nbr_v, {
-      assertc (board_ac, 
-               color_at [nbr_v] == color_t (player.other ()) || 
-               color_at [nbr_v] == color_t::off_board ());
-    });
-
-
-#ifndef Ho
-    if (v == ko_v && player == last_player.other ()) // only Go
-      return play_ko;
-#endif
-
-    uint all_nbr_live = true;
-    vertex_for_each_nbr (v, nbr_v, all_nbr_live &= (--chain_lib_cnt [chain_id [nbr_v]] != 0));
-
-    if (all_nbr_live) {
-      vertex_for_each_nbr (v, nbr_v, chain_lib_cnt [chain_id [nbr_v]]++);
-      return play_ss_suicide;
-    }
-
+  void play_eye_legal (player_t player, vertex_t v) {
+    vertex_for_each_nbr (v, nbr_v, chain_lib_cnt [chain_id [nbr_v]]--);
     last_empty_v_cnt        = empty_v_cnt;
     last_player             = player;
     player_last_v [player]  = v;
@@ -523,9 +537,11 @@ public:                         // board interface
       ko_v = vertex_t::any ();
     }
 #endif
-
-    return play_ok;
   }
+
+
+public: // auxiliary functions
+
 
   void process_new_nbr(vertex_t v, 
                        player_t new_nbr_player,
