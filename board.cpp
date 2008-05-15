@@ -473,7 +473,6 @@ public: // legality functions
   }
 
 
-
   bool play_eye_is_ko (player_t player, vertex_t v) {
     return (v == ko_v) & (player == last_player.other ());
   }
@@ -563,6 +562,7 @@ public: // play move functions
 public: // auxiliary functions
 
 
+  all_inline
   void play_not_eye (player_t player, vertex_t v) {
     check ();
     v.check_is_on_board ();
@@ -612,13 +612,6 @@ public: // auxiliary functions
     basic_play (player, v);
     place_stone (player, v);
     
-
-    //vertex_for_each_nbr (v, nbr_v, {
-    //  nbr_cnt [nbr_v].player_inc (player);
-    //  if ((chain_lib_cnt [chain_id [nbr_v]] == 0)) 
-    //    remove_chain (nbr_v);
-    //});
-
     vertex_for_each_nbr (v, nbr_v, { 
       nbr_cnt [nbr_v].player_inc (player);
     });
