@@ -423,12 +423,20 @@ public:
       tree->uct_descend (act_player);
       v = tree->act_node ()->v;
       
-      if (play_board->play (act_player, v) != play_ok) {
+      if (play_board->is_legal (act_player, v) != play_ok) {
         assertc (uct_ac, tree->act_node ()->no_children (act_player.other ()));
         tree->delete_act_node (act_player);
         return;
       }
       
+      play_board->play_legal (act_player, v);
+
+      if (play_board->last_move_status != play_ok) {
+        assertc (uct_ac, tree->act_node ()->no_children (act_player.other ()));
+        tree->delete_act_node (act_player);
+        return;
+      }
+
       was_pass [act_player]  = (v == vertex_t::pass ());
       act_player             = act_player.other ();
       

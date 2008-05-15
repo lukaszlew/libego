@@ -34,13 +34,15 @@ enum status_t { pass_pass, mercy, too_long };
     policy->prepare_vertex ();
     
     while (true) {
-      vertex_t   v         = policy->next_vertex ();
-      play_ret_t status    = board->play_act_player (v);
-      
+      player_t   act_player = board->act_player ();
+      vertex_t   v          = policy->next_vertex ();
+
+      play_ret_t status     = board->is_legal (act_player, v);
       if (status >= play_ss_suicide) {
         policy->bad_vertex (v);
         continue;
       } else {
+        board->play_legal (act_player, v);
         policy->played_vertex (v);
         break;
       }

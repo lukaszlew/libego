@@ -162,7 +162,7 @@ class nbr_cnt_t {
 // class board_t
 
 
-enum play_ret_t { play_ok, play_suicide, play_ss_suicide, play_ko, play_non_empty };
+enum play_ret_t { play_ok, play_suicide, play_ss_suicide, play_ko };
 
 random_pm_t zobrist_pm;
 const zobrist_t zobrist[1] = { zobrist_t (zobrist_pm) }; // TODO move it to board
@@ -195,6 +195,8 @@ public:
 
   player_t   last_player;      // player who made the last play (other::player is forbidden to retake)
   uint       move_no;
+
+  play_ret_t last_move_status;
 
 public:                         // macros
 
@@ -338,7 +340,7 @@ public:                         // consistency checks
 
     vertex_for_each_all (v)
       if (color_at[v] == color_t::empty ())
-        assert (is_eyelike (player, v) || play_not_pass (player, v) >= play_ss_suicide);
+        assert (is_eyelike (player, v) || ( is_legal (player, v) != play_ok));
   }
 
 
@@ -360,6 +362,7 @@ public:                         // board interface
     }
     move_no      = 0;
     last_player  = player_t::white (); // act player is other
+    last_move_status = play_ok;
 #ifndef Ho
     ko_v         = vertex_t::any ();             // only Go
 #endif
@@ -376,8 +379,12 @@ public:                         // board interface
         empty_v    [empty_v_cnt++]  = v;
 
         off_board_cnt = 0;
-        vertex_for_each_nbr (v, nbr_v, if (!nbr_v.is_on_board ()) off_board_cnt++);
-        rep (ii, off_board_cnt) nbr_cnt [v].off_board_inc ();
+        vertex_for_each_nbr (v, nbr_v, {
+            if (!nbr_v.is_on_board ()) 
+              off_board_cnt++;
+        });
+        rep (ii, off_board_cnt) 
+          nbr_cnt [v].off_board_inc ();
       }
     }
 
@@ -418,40 +425,12 @@ public: // PLAY FUNCTIONS
 
 
   flatten all_inline 
-  play_ret_t play_act_player (vertex_t v) {
-    return play (act_player (), v);
-  }
-
-
-  flatten all_inline 
-  play_ret_t play (player_t player, vertex_t v) {
-    // assertions in lower functions
-    if (v == vertex_t::pass ()) { 
-      play_pass (player); 
-      return play_ok; 
-    }
-    return play_not_pass (player, v);
-  }
-
-
-  void play_pass (player_t player) {
+    play_ret_t is_legal (player_t player, vertex_t v) {
     check ();
-
-    #ifndef Ho
-    ko_v                    = vertex_t::any ();
-    #endif
-    last_empty_v_cnt        = empty_v_cnt;
-    last_player             = player;
-    player_last_v [player]  = vertex_t::pass ();
-    move_no                += 1;
-  }
-
-
-  flatten all_inline 
-  play_ret_t play_not_pass (player_t player, vertex_t v) {
-    check ();
+    
+    //player_t player = act_player ();
+    if (v == vertex_t::pass ()) return play_ok; 
     v.check_is_on_board ();
-    assertc (board_ac, color_at[v] == color_t::empty ());
 
     if (nbr_cnt[v].player_cnt_is_max (player.other ())) {
       #ifndef Ho
@@ -459,16 +438,46 @@ public: // PLAY FUNCTIONS
         return play_ko;
       #endif
 
-
       if (play_eye_is_suicide (player, v))
         return play_ss_suicide;
-
-      play_eye_legal (player, v);
-
       return play_ok;
     } else {
-      return play_not_eye (player, v);
+      return play_ok;
     }
+  }
+
+
+  flatten all_inline 
+  void play_legal_act_player (vertex_t v) {
+    play_legal (act_player (), v);
+  }
+
+
+  flatten all_inline 
+  void play_legal (player_t player, vertex_t v) {
+    check ();
+
+    if (v == vertex_t::pass ()) { 
+      #ifndef Ho
+      ko_v                    = vertex_t::any ();
+      #endif
+      last_empty_v_cnt        = empty_v_cnt;
+      last_player             = player;
+      player_last_v [player]  = vertex_t::pass ();
+      move_no                += 1;
+      return;
+    }
+    
+    v.check_is_on_board ();
+    assertc (board_ac, color_at[v] == color_t::empty ());
+    
+    if (nbr_cnt[v].player_cnt_is_max (player.other ())) {
+      play_eye_legal (player, v);
+    } else {
+      play_not_eye (player, v);
+      assertc (board_ac, last_move_status == play_ok || last_move_status == play_suicide); // TODO clean it up
+    }
+  
   }
 
 
@@ -486,7 +495,7 @@ public: // PLAY FUNCTIONS
 
 
 
-  play_ret_t play_not_eye (player_t player, vertex_t v) {
+  void play_not_eye (player_t player, vertex_t v) {
     check ();
     v.check_is_on_board ();
     assertc (board_ac, color_at[v] == color_t::empty ());
@@ -501,16 +510,36 @@ public: // PLAY FUNCTIONS
 
     place_stone (player, v);
 
-    vertex_for_each_nbr (v, nbr_v, process_new_nbr (nbr_v, player, v));
+    vertex_for_each_nbr (v, nbr_v, {
 
+      nbr_cnt [nbr_v].player_inc (player);
+        
+      if (color_at [nbr_v].is_player ()) {
+        chain_lib_cnt [chain_id [nbr_v]] --; // This should be before 'if' to have good lib_cnt for empty vertices
+      
+        if (color_at [nbr_v] != color_t (player)) { // same color of groups
+          if (chain_lib_cnt [chain_id [nbr_v]] == 0) 
+            remove_chain (nbr_v);
+        } else {
+          if (chain_id [nbr_v] != chain_id [v]) {
+            if (chain_lib_cnt [chain_id [v]] > chain_lib_cnt [chain_id [nbr_v]]) {
+               merge_chains (v, nbr_v);
+            } else {
+               merge_chains (nbr_v, v);
+            }         
+          }
+        }
+      }
+    });
+    
     if (chain_lib_cnt [chain_id [v]] == 0) {
       assertc (board_ac, last_empty_v_cnt - empty_v_cnt == 1);
       remove_chain(v);
       assertc (board_ac, last_empty_v_cnt - empty_v_cnt > 0);
-      return play_suicide;
+      last_move_status = play_suicide;
+    } else {
+      last_move_status = play_ok;
     }
-
-    return play_ok;
   }
 
 
@@ -524,6 +553,13 @@ public: // PLAY FUNCTIONS
 
     place_stone (player, v);
     
+
+    //vertex_for_each_nbr (v, nbr_v, {
+    //  nbr_cnt [nbr_v].player_inc (player);
+    //  if ((chain_lib_cnt [chain_id [nbr_v]] == 0)) 
+    //    remove_chain (nbr_v);
+    //});
+
     vertex_for_each_nbr (v, nbr_v, nbr_cnt [nbr_v].player_inc (player));
 
     vertex_for_each_nbr (v, nbr_v, if ((chain_lib_cnt [chain_id [nbr_v]] == 0)) remove_chain (nbr_v));
@@ -542,30 +578,6 @@ public: // PLAY FUNCTIONS
 
 public: // auxiliary functions
 
-
-  void process_new_nbr(vertex_t v, 
-                       player_t new_nbr_player,
-                       vertex_t new_nbr_v) // TODO moze warto chain id przekazywc do ustalenia?
-  {
-    nbr_cnt[v].player_inc (new_nbr_player);
-
-    if (color_at [v].is_not_player ()) return;
-    chain_lib_cnt [chain_id [v]] --;
-
-    if (color_at[v] != color_t (new_nbr_player)) { // same color of groups
-      if (chain_lib_cnt [chain_id [v]] == 0) remove_chain (v);
-      return;
-    }
-
-    if (chain_id [v] == chain_id [new_nbr_v]) return;
-      
-    if (chain_lib_cnt [chain_id [new_nbr_v]] > chain_lib_cnt [chain_id [v]])
-      merge_chains (new_nbr_v, v);
-    else
-      merge_chains (v, new_nbr_v);
-
-  }
-
   void merge_chains (vertex_t v_base, vertex_t v_new) {
     vertex_t act_v;
 
@@ -579,6 +591,7 @@ public: // auxiliary functions
     
     swap (chain_next_v[v_base], chain_next_v[v_new]);
   }
+
 
   no_inline 
   void remove_chain (vertex_t v){
@@ -600,13 +613,13 @@ public: // auxiliary functions
 
     do {
       vertex_for_each_nbr (act_v, nbr_v, {
-        nbr_cnt[nbr_v].player_dec (old_color.to_player());
+        nbr_cnt [nbr_v].player_dec (old_color.to_player());
         chain_lib_cnt [chain_id [nbr_v]]++;
       });
 
       tmp_v = act_v;
       act_v = chain_next_v[act_v];
-      chain_next_v[tmp_v] = tmp_v;
+      chain_next_v [tmp_v] = tmp_v;
       
     } while (act_v != v);
   }
@@ -633,6 +646,7 @@ public: // auxiliary functions
 
     empty_pos [v] = empty_v_cnt;
     empty_v [empty_v_cnt++] = v;
+    chain_id [v] = v.get_idx ();
 
     assertc (board_ac, empty_v_cnt < vertex_t::cnt);
   }
@@ -799,9 +813,12 @@ public:                         // utils
     }
 
     rep (pi, play_cnt) {
-      play_ret_t ret;
-      ret = play_not_pass (play_player[pi], play_v[pi]);
-      if (ret != play_ok || last_empty_v_cnt - empty_v_cnt != 1) {
+      if (!is_legal (play_player[pi], play_v[pi])) {
+        cerr << "Fatal error: Illegal board configuration in file." << endl;
+        exit (1);               // TODO this is a hack
+      }
+      play_legal (play_player[pi], play_v[pi]);
+      if (last_move_status != play_ok || last_empty_v_cnt - empty_v_cnt != 1) {
         cerr << "Fatal error: Illegal board configuration in file." << endl;
         exit (1);               // TODO this is a hack
       }

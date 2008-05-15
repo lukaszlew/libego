@@ -52,7 +52,7 @@ public:
 
   bool try_play (player_t player, vertex_t v) {
 
-    record_state (); // for undo
+    record_state (); // for undo // TODO move it lower
 
     if (v == vertex_t::pass ()) return true;
 
@@ -61,7 +61,12 @@ public:
     if (act_board ()->color_at [v] != color_t::empty ()) 
       { revert_state (); return false; }
 
-    if (act_board ()->play_not_pass (player, v) != play_ok)
+    if (act_board ()->is_legal (player,v))
+      { revert_state (); return false; }
+
+    act_board ()->play_legal (player, v);
+
+    if (act_board ()->last_move_status != play_ok)
       { revert_state (); return false; }
 
     if (is_hash_repeated ())    // superko test
