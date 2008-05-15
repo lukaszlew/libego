@@ -89,11 +89,11 @@ public:
 
 namespace nbr_cnt_aux { // TODO this namespace exists only because we can't have inlined cont arrays in classes
 
-#ifdef Ho
+  #ifdef Ho
   static const uint max = 6;                 // maximal number of neighbours
-#else
+  #else
   static const uint max = 4;                 // maximal number of neighbours
-#endif
+  #endif
   
   const uint f_size = 4;              // size in bits of each of 3 counters in nbr_cnt::t
   const uint f_shift [3] = { 0 * f_size, 1 * f_size, 2 * f_size };
@@ -174,8 +174,9 @@ random_pm_t zobrist_pm;
 const zobrist_t zobrist[1] = { zobrist_t (zobrist_pm) }; // TODO move it to board
 
 class board_t {
-  
+
 public:
+
 
   vertex_t::map_t <color_t>     color_at;
   vertex_t::map_t <nbr_cnt_t>   nbr_cnt; // incremental, for fast eye checking
@@ -185,26 +186,29 @@ public:
   uint                          chain_lib_cnt [vertex_t::cnt]; // indexed by chain_id
   vertex_t::map_t <uint>        chain_id;
   
-  vertex_t    empty_v [board_area];
-  uint        empty_v_cnt;
-  uint        last_empty_v_cnt;
+  vertex_t                      empty_v [board_area];
+  uint                          empty_v_cnt;
+  uint                          last_empty_v_cnt;
 
   player_t::map_t <uint>        player_v_cnt;
   player_t::map_t <vertex_t>    player_last_v;
 
-  hash_t      hash;
-  int         komi;
+  hash_t                        hash;
+  int                           komi;
 
   #ifndef Ho
-  vertex_t        ko_v;             // vertex forbidden by ko (only Go)
+  vertex_t                      ko_v;             // vertex forbidden by ko (only Go)
   #endif
 
-  player_t   last_player;      // player who made the last play (other::player is forbidden to retake)
-  uint       move_no;
+  player_t                      last_player;      // player who made the last play (other::player is forbidden to retake)
+  uint                          move_no;
 
-  play_ret_t last_move_status;
+  play_ret_t                    last_move_status;
+  move_t                        move_history [max_game_length];
+
 
 public:                         // macros
+
 
   #define empty_v_for_each(board, vv, i) {                              \
     vertex_t vv = vertex_t::any ();                                     \
@@ -213,6 +217,7 @@ public:                         // macros
       i;                                                                \
     }                                                                   \
   }
+
   
   #define empty_v_for_each_and_pass(board, vv, i) {                     \
     vertex_t vv = vertex_t::pass ();                                    \
@@ -223,7 +228,9 @@ public:                         // macros
     }                                                                   \
   }
 
+
 public:                         // consistency checks
+
 
   void check_empty_v () const {
     if (!board_empty_v_ac) return;
@@ -255,9 +262,11 @@ public:                         // consistency checks
       assert (exp_player_v_cnt [pl] == player_v_cnt [pl]);
   }
 
+
   void check_hash () const {
     assertc (board_hash_ac, hash == recalc_hash ());
   }
+
 
   void check_color_at () const {
     if (!board_color_at_ac) return;
@@ -267,6 +276,7 @@ public:                         // consistency checks
       assert ((color_at[v] != color_t::off_board()) == (v.is_on_board ()));
     }
   }
+
 
   void check_nbr_cnt () const {
     if (!board_nbr_cnt_ac) return;
@@ -301,6 +311,7 @@ public:                         // consistency checks
     }
   }
 
+
   void check_chain_at () const {
     if (!chain_at_ac) return;
 
@@ -317,6 +328,7 @@ public:                         // consistency checks
       }
     }
   }
+
 
   void check_chain_next_v () const {
     if (!chain_next_v_ac) return;
@@ -339,6 +351,7 @@ public:                         // consistency checks
     check_chain_next_v  ();
   }
 
+
   void check_no_more_legal (player_t player) { // at the end of the playout
     unused (player);
 
@@ -352,10 +365,12 @@ public:                         // consistency checks
 
 public:                         // board interface
 
+
   board_t () { 
     clear (); 
     if (color_at[0] == 11) print_cerr (); // TODO LOL hack - need tu use it somwhere 
   }
+
   
   void clear () {
     uint off_board_cnt;
@@ -369,9 +384,9 @@ public:                         // board interface
     move_no      = 0;
     last_player  = player_t::white (); // act player is other
     last_move_status = play_ok;
-#ifndef Ho
+    #ifndef Ho
     ko_v         = vertex_t::any ();             // only Go
-#endif
+    #endif
     vertex_for_each_all (v) {
       color_at      [v] = color_t::off_board ();
       nbr_cnt       [v] = nbr_cnt_t (0, 0, nbr_cnt_aux::max);
@@ -399,6 +414,7 @@ public:                         // board interface
     check ();
   }
 
+
   hash_t recalc_hash () const {
     hash_t new_hash;
 
@@ -413,14 +429,17 @@ public:                         // board interface
     return new_hash;
   }
 
+
   void load (const board_t* save_board) { 
     memcpy(this, save_board, sizeof(board_t)); 
     check ();
   }
   
+
   void set_komi (float fkomi) { 
     komi = int (ceil (-fkomi));
   }
+
 
   float get_komi () const { 
     return float(-komi) + 0.5;
@@ -489,6 +508,7 @@ public: // legality functions
     #endif
   }
 
+
 public: // play move functions
 
 
@@ -499,7 +519,7 @@ public: // play move functions
     check ();
 
     if (v == vertex_t::pass ()) {
-      basic_play_vertex (player, vertex_t::pass ());
+      basic_play (player, vertex_t::pass ());
       return;
     }
     
@@ -515,6 +535,26 @@ public: // play move functions
   
   }
 
+  
+  // very slow function
+  bool undo () {
+    uint game_length = move_no;
+    move_t replay [max_game_length];
+
+    if (game_length == 0) 
+      return false;
+
+    rep (mn, game_length-1)
+      replay [mn] = move_history [mn];
+
+    clear ();
+
+    rep (mn, game_length-1)
+      play_legal (replay [mn].get_player (), replay [mn].get_vertex ());
+
+    return true;
+  }
+
 
 public: // auxiliary functions
 
@@ -524,7 +564,7 @@ public: // auxiliary functions
     v.check_is_on_board ();
     assertc (board_ac, color_at[v] == color_t::empty ());
 
-    basic_play_vertex (player, v);
+    basic_play (player, v);
 
     place_stone (player, v);
 
@@ -561,12 +601,11 @@ public: // auxiliary functions
   }
 
 
-
   no_inline
   void play_eye_legal (player_t player, vertex_t v) {
     vertex_for_each_nbr (v, nbr_v, chain_lib_cnt [chain_id [nbr_v]]--);
 
-    basic_play_vertex (player, v);
+    basic_play (player, v);
     place_stone (player, v);
     
 
@@ -576,29 +615,36 @@ public: // auxiliary functions
     //    remove_chain (nbr_v);
     //});
 
-    vertex_for_each_nbr (v, nbr_v, nbr_cnt [nbr_v].player_inc (player));
+    vertex_for_each_nbr (v, nbr_v, { 
+      nbr_cnt [nbr_v].player_inc (player);
+    });
 
-    vertex_for_each_nbr (v, nbr_v, if ((chain_lib_cnt [chain_id [nbr_v]] == 0)) remove_chain (nbr_v));
+    vertex_for_each_nbr (v, nbr_v, {
+      if ((chain_lib_cnt [chain_id [nbr_v]] == 0)) 
+        remove_chain (nbr_v);
+    });
 
     assertc (board_ac, chain_lib_cnt [chain_id [v]] != 0);
 
-#ifndef Ho
+    #ifndef Ho
     if (last_empty_v_cnt == empty_v_cnt) { // if captured exactly one stone, end this was eye (only Go)
       ko_v = empty_v [empty_v_cnt - 1]; // then ko formed
     } else {
       ko_v = vertex_t::any ();
     }
-#endif
+    #endif
   }
 
 
-  void basic_play_vertex (player_t player, vertex_t v) {
+  void basic_play (player_t player, vertex_t v) {
+    assertc (board_ac, move_no <= max_game_length);
     #ifndef Ho
     ko_v                    = vertex_t::any ();
     #endif
     last_empty_v_cnt        = empty_v_cnt;
     last_player             = player;
     player_last_v [player]  = v;
+    move_history [move_no]  = move_t (player, v);
     move_no                += 1;
   }
 
@@ -649,6 +695,7 @@ public: // auxiliary functions
     } while (act_v != v);
   }
 
+
   void place_stone (player_t pl, vertex_t v) {
     hash ^= zobrist->of_pl_v (pl, v);
     player_v_cnt[pl]++;
@@ -664,6 +711,7 @@ public: // auxiliary functions
     chain_lib_cnt [v.get_idx ()] = nbr_cnt[v].empty_cnt ();
   }
 
+
   void remove_stone (vertex_t v) {
     hash ^= zobrist->of_pl_v (color_at [v].to_player (), v);
     player_v_cnt [color_at[v].to_player ()]--;
@@ -676,9 +724,12 @@ public: // auxiliary functions
     assertc (board_ac, empty_v_cnt < vertex_t::cnt);
   }
 
+
 public:                         // utils
 
+
   player_t act_player () const { return last_player.other (); }
+
 
   bool both_player_pass () {
     return 
@@ -686,11 +737,14 @@ public:                         // utils
       (player_last_v [player_t::white ()] == vertex_t::pass ());
   }
 
+
   int approx_score () const {
     return komi + player_v_cnt[player_t::black ()] -  player_v_cnt[player_t::white ()];
   }
 
+
   player_t approx_winner () { return player_t (approx_score () <= 0); }
+
 
   int score () const {
     int eye_score = 0;
@@ -703,9 +757,11 @@ public:                         // utils
     return approx_score () + eye_score;
   }
 
+
   player_t winner () const { 
     return player_t (score () <= 0); 
   }
+
 
   int vertex_score (vertex_t v) {
     //     color_t::map_t <int> color_to_score;
@@ -728,6 +784,7 @@ public:                         // utils
     }
   }
 
+
   string to_string (vertex_t mark_v = vertex_t::any ()) const {
     ostringstream out;
 
@@ -735,18 +792,18 @@ public:                         // utils
     #define o_left(n)  out << "(" << n
     #define o_right(n) out << ")" << n
     
-#ifndef Ho
+    #ifndef Ho
     out << " ";
-#endif
+    #endif
     if (board_size < 10) out << " "; else out << "  ";
     coord_for_each (col) os (coord::col_to_string (col));
     out << endl;
 
     coord_for_each (row) {
       if (board_size >= 10 && board_size - row < 10) out << " ";
-#ifdef Ho
+    #ifdef Ho
       rep (ii, row) out << " ";
-#endif
+    #endif
       os (coord::row_to_string (row));
       coord_for_each (col) {
         vertex_t v = vertex_t (row, col);
@@ -761,9 +818,9 @@ public:                         // utils
     }
     
     if (board_size < 10) out << "  "; else out << "   ";
-#ifdef Ho
+    #ifdef Ho
     rep (ii, board_size) out << " ";
-#endif
+    #endif
     coord_for_each (col) os (coord::col_to_string (col));
     out << endl;
 
@@ -774,9 +831,11 @@ public:                         // utils
     return out.str ();
   }
 
+
   void print_cerr (vertex_t v = vertex_t::pass ()) const {
     cerr << to_string (v);
   }
+
 
   bool load (istream& ifs) {
     uint       bs;
