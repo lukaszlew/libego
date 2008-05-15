@@ -195,9 +195,9 @@ public:
   hash_t      hash;
   int         komi;
 
-#ifndef Ho
+  #ifndef Ho
   vertex_t        ko_v;             // vertex forbidden by ko (only Go)
-#endif
+  #endif
 
   player_t   last_player;      // player who made the last play (other::player is forbidden to retake)
   uint       move_no;
@@ -427,7 +427,7 @@ public:                         // board interface
   }
 
 
-public: // PLAY FUNCTIONS
+public: // legality functions
 
   // checks for move legality
   // it has to point to empty vertexand empty
@@ -455,41 +455,6 @@ public: // PLAY FUNCTIONS
 
 
 
-  // accept pass
-  // will ignore simple-ko ban
-  // will play single stone suicide
-  void play_legal (player_t player, vertex_t v) flatten all_inline {
-    check ();
-
-    if (v == vertex_t::pass ()) {
-      play_pass (player);
-      return;
-    }
-    
-    v.check_is_on_board ();
-    assertc (board_ac, color_at[v] == color_t::empty ());
-    
-    if (nbr_cnt[v].player_cnt_is_max (player.other ())) {
-      play_eye_legal (player, v);
-    } else {
-      play_not_eye (player, v);
-      assertc (board_ac, last_move_status == play_ok || last_move_status == play_suicide); // TODO clean it up
-    }
-  
-  }
-
-
-  void play_pass (player_t player) {
-    #ifndef Ho
-    ko_v                    = vertex_t::any ();
-    #endif
-    last_empty_v_cnt        = empty_v_cnt;
-    last_player             = player;
-    player_last_v [player]  = vertex_t::pass ();
-    move_no                += 1;
-  }
-
-
   bool play_eye_is_ko (player_t player, vertex_t v) {
     return (v == ko_v) & (player == last_player.other ());
   }
@@ -503,19 +468,63 @@ public: // PLAY FUNCTIONS
   }
 
 
+  bool is_eyelike (player_t player, vertex_t v) { 
+    #ifdef Ho
+    return nbr_cnt::player_cnt_is_max (nbr_cnt[v], player);
+    #else
+    color_t::map_t <int> diag_color_cnt; // TODO
+    assertc (board_ac, color_at [v] == color_t::empty ());
+
+    if (! nbr_cnt[v].player_cnt_is_max (player)) return false;
+
+    color_for_each (col) 
+      diag_color_cnt [col] = 0; // memset is slower
+
+    vertex_for_each_diag_nbr (v, diag_v, {
+      diag_color_cnt [color_at [diag_v]]++;
+    });
+
+    diag_color_cnt [player.other ()] += (diag_color_cnt [color_t::off_board ()] > 0);
+    return diag_color_cnt [player.other ()] < 2;
+    #endif
+  }
+
+public: // play move functions
+
+
+  // accept pass
+  // will ignore simple-ko ban
+  // will play single stone suicide
+  void play_legal (player_t player, vertex_t v) flatten all_inline {
+    check ();
+
+    if (v == vertex_t::pass ()) {
+      basic_play_vertex (player, vertex_t::pass ());
+      return;
+    }
+    
+    v.check_is_on_board ();
+    assertc (board_ac, color_at[v] == color_t::empty ());
+    
+    if (nbr_cnt[v].player_cnt_is_max (player.other ())) {
+      play_eye_legal (player, v);
+    } else {
+      play_not_eye (player, v);
+      assertc (board_ac, last_move_status == play_ok || last_move_status == play_suicide); // TODO invent complete suicide testing
+    }
+  
+  }
+
+
+public: // auxiliary functions
+
 
   void play_not_eye (player_t player, vertex_t v) {
     check ();
     v.check_is_on_board ();
     assertc (board_ac, color_at[v] == color_t::empty ());
 
-    last_empty_v_cnt        = empty_v_cnt;
-#ifndef Ho
-    ko_v                    = vertex_t::any ();
-#endif
-    last_player             = player;
-    player_last_v [player]  = v;
-    move_no                += 1;
+    basic_play_vertex (player, v);
 
     place_stone (player, v);
 
@@ -552,14 +561,12 @@ public: // PLAY FUNCTIONS
   }
 
 
+
   no_inline
   void play_eye_legal (player_t player, vertex_t v) {
     vertex_for_each_nbr (v, nbr_v, chain_lib_cnt [chain_id [nbr_v]]--);
-    last_empty_v_cnt        = empty_v_cnt;
-    last_player             = player;
-    player_last_v [player]  = v;
-    move_no                += 1;
 
+    basic_play_vertex (player, v);
     place_stone (player, v);
     
 
@@ -585,7 +592,16 @@ public: // PLAY FUNCTIONS
   }
 
 
-public: // auxiliary functions
+  void basic_play_vertex (player_t player, vertex_t v) {
+    #ifndef Ho
+    ko_v                    = vertex_t::any ();
+    #endif
+    last_empty_v_cnt        = empty_v_cnt;
+    last_player             = player;
+    player_last_v [player]  = v;
+    move_no                += 1;
+  }
+
 
   void merge_chains (vertex_t v_base, vertex_t v_new) {
     vertex_t act_v;
@@ -668,27 +684,6 @@ public:                         // utils
     return 
       (player_last_v [player_t::black ()] == vertex_t::pass ()) & 
       (player_last_v [player_t::white ()] == vertex_t::pass ());
-  }
-
-  bool is_eyelike (player_t player, vertex_t v) { 
-#ifdef Ho
-    return nbr_cnt::player_cnt_is_max (nbr_cnt[v], player);
-#else
-    color_t::map_t <int> diag_color_cnt; // TODO
-    assertc (board_ac, color_at [v] == color_t::empty ());
-
-    if (! nbr_cnt[v].player_cnt_is_max (player)) return false;
-
-    color_for_each (col) 
-      diag_color_cnt [col] = 0; // memset is slower
-
-    vertex_for_each_diag_nbr (v, diag_v, {
-      diag_color_cnt [color_at [diag_v]]++;
-    });
-
-    diag_color_cnt [player.other ()] += (diag_color_cnt [color_t::off_board ()] > 0);
-    return diag_color_cnt [player.other ()] < 2;
-#endif
   }
 
   int approx_score () const {
