@@ -508,6 +508,10 @@ public: // legality functions
     #endif
   }
 
+  bool is_hash_repeated () {
+    //assert (false);
+    return false;
+  }
 
 public: // play move functions
 

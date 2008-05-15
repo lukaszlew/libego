@@ -29,95 +29,68 @@ class stack_board_t {
 
 public:
 
-  vector <board_t> stack;//   stack [max_stack_size];
+  board_t board [1];//   stack [max_stack_size];
 
 public: 
   
   void check () {
     if (!stack_board_ac) return;
-    assertc (stack_board_ac, stack.size () >= 1);
   }
 
-  stack_board_t () {
-    clear ();
-  }
+  stack_board_t () { }
 
   void clear () {
-    stack.resize (1);
+    board->clear ();
   }
 
   board_t* const act_board () { 
-    return &(stack.back ()); 
+    return board;
   }
 
   bool try_play (player_t player, vertex_t v) {
 
-    record_state (); // for undo // TODO move it lower
+    if (v == vertex_t::resign ()) assert (false); // TODO
 
-    if (v == vertex_t::pass ()) return true;
 
-    if (v == vertex_t::resign ()) return true;
+    if (v != vertex_t::pass () && board->color_at [v] != color_t::empty ()) 
+      return false; 
 
-    if (act_board ()->color_at [v] != color_t::empty ()) 
-      { revert_state (); return false; }
+    if (!board->is_legal (player,v))
+      return false;
 
-    if (!act_board ()->is_legal (player,v))
-      { revert_state (); return false; }
+    board->play_legal (player, v);
 
-    act_board ()->play_legal (player, v);
+    if (board->last_move_status != play_ok)
+      { board->undo (); return false; } // TODO assert success of undo
 
-    if (act_board ()->last_move_status != play_ok)
-      { revert_state (); return false; }
-
-    if (is_hash_repeated ())    // superko test
-      { revert_state (); return false; }
+    if (board->is_hash_repeated ())    // superko test
+      { board->undo (); return false; } // -------||---------
 
     return true;
   }
 
   bool try_undo () {
-    if (stack.size () <= 1) return false;
-    revert_state ();
-    return true;
+    return board->undo ();
   }
 
   bool is_legal (player_t pl, vertex_t v) {            // slow function
     bool undo_res;
     if (!try_play (pl, v)) return false;
-    undo_res = try_undo ();
+    undo_res = board->undo ();
     assertc (stack_board_ac, undo_res == true);
 
     return true;
   }
 
-  void record_state () {
-    stack.resize (stack.size () + 1);
-    stack.back ().load (&stack [stack.size () - 2]); // for undo-ing
-    check ();
-  }
-
-  void revert_state () {
-    stack.pop_back ();
-    check ();
-  }
-
-  bool is_hash_repeated () {
-    dseq (ii, stack.size () - 2, 0) {
-      if (stack[ii].hash == act_board ()->hash) return true;      
-    }
-    return false;
-  }
-
   void set_komi (float komi) {  // TODO is it proper semantics ?
-    for_each (board_it, stack) 
-      board_it->set_komi (komi);
+    board->set_komi (komi);
   }
 
   bool load (istream& ifs) {
     board_t tmp[1];
     if (!tmp->load (ifs)) return false;
     clear ();
-    act_board ()->load (tmp);
+    board->load (tmp);
     return true;
   }
 };
