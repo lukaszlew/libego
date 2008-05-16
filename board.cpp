@@ -205,6 +205,7 @@ public:
 
   play_ret_t                    last_move_status;
   move_t                        move_history [max_game_length];
+  uint                          hash_history [max_game_length];
 
 
 public:                         // macros
@@ -507,10 +508,16 @@ public: // legality functions
     #endif
   }
 
+
+  // this is slow function
   bool is_hash_repeated () {
-    //assert (false);
+    rep (mn, move_no) {
+      if (hash.lock () == hash_history [mn]) 
+        return true;
+    }
     return false;
   }
+
 
 public: // play move functions
 
@@ -633,7 +640,7 @@ public: // auxiliary functions
   }
 
 
-  void basic_play (player_t player, vertex_t v) {
+  void basic_play (player_t player, vertex_t v) { // Warning: has to be called before place_stone, because of hash storing
     assertc (board_ac, move_no <= max_game_length);
     #ifndef Ho
     ko_v                    = vertex_t::any ();
@@ -642,6 +649,7 @@ public: // auxiliary functions
     last_player             = player;
     player_last_v [player]  = v;
     move_history [move_no]  = move_t (player, v);
+    hash_history [move_no]  = hash.lock ();
     move_no                += 1;
   }
 

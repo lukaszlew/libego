@@ -49,10 +49,14 @@ public:
 
   bool try_play (player_t player, vertex_t v) {
 
-    if (v == vertex_t::resign ()) assert (false); // TODO
+    if (v == vertex_t::resign ()) assert (false); // TODO handle it outside
 
+    if (v == vertex_t::pass ()) {
+      board->play_legal (player, v);      
+      return true;
+    }
 
-    if (v != vertex_t::pass () && board->color_at [v] != color_t::empty ()) 
+    if (board->color_at [v] != color_t::empty ()) 
       return false; 
 
     if (!board->is_legal (player,v))
