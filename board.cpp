@@ -22,12 +22,6 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-//TODO replace is_legal everywhere
-//     commit
-//     add undo
-//     replace stack_board
-
-
 // class hash_t
 
 

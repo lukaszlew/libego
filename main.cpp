@@ -44,7 +44,6 @@ using namespace std;
 #include "utils.cpp"
 #include "basic_go_types.cpp"
 #include "board.cpp"
-#include "stack_board.cpp"
 #include "playout.cpp"
 #include "uct.cpp"
 
@@ -62,10 +61,10 @@ int main () {
 
   // setup GTP machinery
   
-  stack_board_t stack_board;
-  uct_t         uct (stack_board);
+  board_t  board;
+  uct_t    uct (board);
 
-  gtp_t         gtp;
+  gtp_t   gtp;
 
   gtp_static_commands_t sc;
   sc.add ("protocol_version", "2");
@@ -74,13 +73,13 @@ int main () {
 
   gtp.register_engine (sc);
   
-  gtp_board_t   gtp_board   (stack_board);
+  gtp_board_t   gtp_board   (board);
   gtp.register_engine (gtp_board);
 
-  gtp_genmove_t gtp_genmove (stack_board, uct);
+  gtp_genmove_t gtp_genmove (board, uct);
   gtp.register_engine (gtp_genmove);
 
-  all_as_first_t aaf (stack_board, sc);
+  all_as_first_t aaf (board, sc);
   gtp.register_engine (aaf);
 
   gtp.run_file ("automagic.gtp");

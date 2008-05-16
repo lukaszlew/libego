@@ -347,7 +347,7 @@ public:
     }
   }
 
-  // TODO free history (for sync with stack_bard)
+  // TODO free history (for sync with base board)
   
   void update_history (float sample) {
     rep (hi, history_top+1) 
@@ -368,12 +368,12 @@ public:
 class uct_t {
 public:
   
-  stack_board_t&  base_board;
+  board_t&        base_board;
   tree_t          tree[1];      // TODO tree->root should be in sync with top of base_board
   
 public:
   
-  uct_t (stack_board_t& base_board_) : base_board (base_board_) { }
+  uct_t (board_t& base_board_) : base_board (base_board_) { }
 
   void root_ensure_children_legality (player_t pl) { // cares about superko in root (only)
     tree->history_reset ();
@@ -381,8 +381,8 @@ public:
     assertc (uct_ac, tree->history_top == 0);
     assertc (uct_ac, tree->act_node ()->first_child [pl] == NULL);
 
-    empty_v_for_each_and_pass (base_board.act_board (), v, {
-      if (base_board.is_legal (pl, v))
+    empty_v_for_each_and_pass (&base_board, v, {
+      if (base_board.is_strict_legal (pl, v))
         tree->alloc_child (pl, v);
     });
   }
@@ -395,7 +395,7 @@ public:
     vertex_t       v;
     
     
-    play_board->load (base_board.act_board ());
+    play_board->load (&base_board);
     tree->history_reset ();
     
     player_for_each (pl) 

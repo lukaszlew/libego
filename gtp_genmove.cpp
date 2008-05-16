@@ -23,11 +23,11 @@
 
 class gtp_genmove_t : public gtp_engine_t {
 
-  stack_board_t& board;
+  board_t& board;
 
 public:
 
-  gtp_genmove_t (stack_board_t& board_, uct_t& uct_) : board (board_) {} //, uct (uct_) { }
+  gtp_genmove_t (board_t& board_, uct_t& uct_) : board (board_) {} //, uct (uct_) { }
 
   virtual vector <string> get_command_names () const {
     vector <string> commands;

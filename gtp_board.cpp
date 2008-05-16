@@ -27,11 +27,11 @@
 
 class gtp_board_t : public gtp_engine_t {
 
-  stack_board_t& board;
+  board_t& board;
 
 public:
 
-  gtp_board_t (stack_board_t& board_) : board (board_) { }
+  gtp_board_t (board_t& board_) : board (board_) { }
 
   virtual vector <string> get_command_names () const {
     vector <string> commands;
@@ -82,7 +82,7 @@ public:
       ifstream fin (file_name.data ()); // TODO cant use string directly ??
 
       if (!fin)        { response << "no such file: " << file_name; return gtp_failure; }
-      if (!board.load (fin)) { response << "wrong file format";           return gtp_failure; }
+      if (!board.load_from_ascii (fin)) { response << "wrong file format";           return gtp_failure; }
       return gtp_success;
     }
 
@@ -102,7 +102,7 @@ public:
 
 
     if (command == "undo") {
-      if (!board.try_undo ()) {
+      if (board.undo () == false) {
         response << "too many undo";
         return gtp_failure;
       }
@@ -111,7 +111,7 @@ public:
     
 
     if (command == "showboard") {
-      response << endl << board.act_board ()->to_string();
+      response << endl << board.to_string();
       return gtp_success;
     }
 
@@ -120,9 +120,9 @@ public:
       string p;
       if (!(params >> playout_cnt)) return gtp_syntax_error;
       if (!(params >> p) || p != "+") {
-        simple_playout_benchmark::run<false> (board.act_board (), playout_cnt, response);
+        simple_playout_benchmark::run<false> (&board, playout_cnt, response);
       } else {
-        simple_playout_benchmark::run<true> (board.act_board (), playout_cnt, response);
+        simple_playout_benchmark::run<true>  (&board, playout_cnt, response);
       }
       return gtp_success;
     }

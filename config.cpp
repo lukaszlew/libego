@@ -93,7 +93,6 @@ const bool chain_at_ac        = paranoic;
 const bool chain_next_v_ac    = paranoic;
 const bool chains_ac          = paranoic;
 
-const bool stack_board_ac     = false;
 const bool playout_ac         = false;
 const bool uct_ac             = false;
 const bool tree_ac            = false;

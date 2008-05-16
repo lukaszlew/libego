@@ -6,7 +6,7 @@ CFLAGS += -Wall #-static #-Wno-long-long -Wextra -Wno-variadic-macros
 
 GPP    = g++ $(CFLAGS) 
 
-FILES  = Makefile config.cpp utils.cpp basic_go_types.cpp board.cpp stack_board.cpp utils.cpp playout.cpp gtp.cpp uct.cpp main.cpp gtp_board.cpp gtp_genmove.cpp experiments.cpp
+FILES  = Makefile config.cpp utils.cpp basic_go_types.cpp board.cpp utils.cpp playout.cpp gtp.cpp uct.cpp main.cpp gtp_board.cpp gtp_genmove.cpp experiments.cpp
 
 all: ego_opt
 

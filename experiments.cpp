@@ -26,7 +26,7 @@ public:
 
   stat_t stat_unconditional;
   move_t::map_t < stat_t > stat_given_move;
-  stack_board_t* stack_board;
+  board_t* board;
 
   uint playout_no;
   float aaf_fraction;
@@ -35,7 +35,7 @@ public:
 
 public:
 
-  all_as_first_t (stack_board_t& stack_board_, gtp_static_commands_t& sc) : stack_board (&stack_board_) 
+  all_as_first_t (board_t& board_, gtp_static_commands_t& sc) : board (&board_) 
   { 
     sc.extend ("gogui_analyze_commands", "dboard/AAF.move_value black/AAF.move_value black\n");
     sc.extend ("gogui_analyze_commands", "dboard/AAF.move_value white/AAF.move_value white\n");
@@ -85,7 +85,7 @@ public:
 
       reset ();
       rep (ii, playout_no) 
-        do_playout (stack_board->act_board ());
+        do_playout (board);
 
       float base_mean = stat_unconditional.mean ();
       vertex_t::map_t<float> means;
@@ -93,7 +93,7 @@ public:
       vertex_for_each_all (v) {
         means [v] = stat_given_move [move_t (player, v)].mean () - base_mean;
         means [v] /= influence_scale;;
-        if (stack_board->act_board()->color_at [v] != color_t::empty ()) 
+        if (board->color_at [v] != color_t::empty ()) 
           means [v] = 0.0;
       }
       response << means.to_string_2d ();
