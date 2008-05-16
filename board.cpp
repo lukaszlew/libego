@@ -199,8 +199,6 @@ public:
 
   play_ret_t                    last_move_status;
   move_t                        move_history [max_game_length];
-  uint                          hash_history [max_game_length];
-
 
 public:                         // macros
 
@@ -499,10 +497,12 @@ public: // legality functions
   }
 
 
-  // this is slow function
+  // this is very very slow function
   bool is_hash_repeated () {
-    rep (mn, move_no) {
-      if (hash.lock () == hash_history [mn]) 
+    board_t tmp_board;
+    rep (mn, move_no-1) {
+      tmp_board.play_legal (move_history [mn].get_player (), move_history [mn].get_vertex ());
+      if (hash == tmp_board.hash) 
         return true;
     }
     return false;
@@ -691,7 +691,6 @@ public: // auxiliary functions
     last_player             = player;
     player_last_v [player]  = v;
     move_history [move_no]  = move_t (player, v);
-    hash_history [move_no]  = hash.lock ();
     move_no                += 1;
   }
 
