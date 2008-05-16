@@ -360,7 +360,7 @@ public:                         // consistency checks
 
     vertex_for_each_all (v)
       if (color_at[v] == color_t::empty ())
-        assert (is_eyelike (player, v) || !is_legal (player, v));
+        assert (is_eyelike (player, v) || is_pseudo_legal (player, v) == false);
   }
 
 
@@ -449,11 +449,12 @@ public:                         // board interface
 
 public: // legality functions
 
+
   // checks for move legality
   // it has to point to empty vertexand empty
   // can't recognize play_suicide
   flatten all_inline 
-  bool is_legal (player_t player, vertex_t v) {
+  bool is_pseudo_legal (player_t player, vertex_t v) {
     check ();
     
     //player_t player = act_player ();
@@ -474,16 +475,11 @@ public: // legality functions
   }
 
 
-  bool play_eye_is_ko (player_t player, vertex_t v) {
-    return (v == ko_v) & (player == last_player.other ());
-  }
-
-
-  bool play_eye_is_suicide (player_t player, vertex_t v) {
-    uint all_nbr_live = true;
-    vertex_for_each_nbr (v, nbr_v, all_nbr_live &= (--chain_lib_cnt [chain_id [nbr_v]] != 0));
-    vertex_for_each_nbr (v, nbr_v, chain_lib_cnt [chain_id [nbr_v]]++);
-    return all_nbr_live;
+  // a very slow function
+  bool is_strict_legal (player_t pl, vertex_t v) {            // slow function
+    if (try_play (pl, v) == false) return false;
+    sure_undo ();
+    return true;
   }
 
 
@@ -520,6 +516,37 @@ public: // legality functions
 
 
 public: // play move functions
+
+
+  // very slow function
+  bool try_play (player_t player, vertex_t v) {
+    if (v == vertex_t::pass ()) {
+      play_legal (player, v);      
+      return true;
+    }
+
+    v.check_is_on_board ();
+
+    if (color_at [v] != color_t::empty ()) 
+      return false; 
+
+    if (is_pseudo_legal (player,v) == false)
+      return false;
+
+    play_legal (player, v);
+
+    if (last_move_status != play_ok) {
+      sure_undo ();
+      return false;
+    }
+
+    if (is_hash_repeated ()) {
+      sure_undo ();
+      return false;
+    }
+
+    return true;
+  }
 
 
   // accept pass
@@ -566,7 +593,28 @@ public: // play move functions
   }
 
 
+  // very slow function 
+  void sure_undo () {
+    if (undo () == false) {
+      cerr << "sure_undo failed\n";
+      exit (1);
+    }
+  }
+
 public: // auxiliary functions
+
+
+  bool play_eye_is_ko (player_t player, vertex_t v) {
+    return (v == ko_v) & (player == last_player.other ());
+  }
+
+
+  bool play_eye_is_suicide (player_t player, vertex_t v) {
+    uint all_nbr_live = true;
+    vertex_for_each_nbr (v, nbr_v, all_nbr_live &= (--chain_lib_cnt [chain_id [nbr_v]] != 0));
+    vertex_for_each_nbr (v, nbr_v, chain_lib_cnt [chain_id [nbr_v]]++);
+    return all_nbr_live;
+  }
 
 
   all_inline
@@ -842,13 +890,13 @@ public:                         // utils
   }
 
 
-  bool load (istream& ifs) {
-    uint       bs;
-    char c;
+  bool load_from_ascii (istream& ifs) {
+    uint     bs;
+    char     c;
 
     player_t  play_player[board_area];
-    vertex_t       play_v[board_area];
-    uint       play_cnt;
+    vertex_t  play_v[board_area];
+    uint      play_cnt;
 
     clear ();
 
@@ -865,14 +913,15 @@ public:                         // utils
       coord_for_each (col) {
         color_t color;
 
-        c = getc_non_space (ifs);
-        color = color_t (c, 0); // TODO 0 is to choose the constructor
+        c      = getc_non_space (ifs);
+        color  = color_t (c, 0); // TODO 0 is to choose the constructor
+
         if (color == color_t::wrong_char ()) return false;
         
         if (color.is_player ()) {
-          play_player [play_cnt] = color.to_player ();
-          play_v [play_cnt] = vertex_t (row, col);
-          play_cnt++;
+          play_player [play_cnt]  = color.to_player ();
+          play_v [play_cnt]       = vertex_t (row, col);
+          play_cnt += 1;
           assertc (board_ac, play_cnt < board_area);
         }
       }
@@ -880,17 +929,15 @@ public:                         // utils
       if (getc_non_space (ifs) != '\n') return false;
     }
 
+    board_t  tmp_board [1];
     rep (pi, play_cnt) {
-      if (!is_legal (play_player[pi], play_v[pi])) {
-        cerr << "Fatal error: Illegal board configuration in file." << endl;
-        exit (1);               // TODO this is a hack
-      }
-      play_legal (play_player[pi], play_v[pi]);
-      if (last_move_status != play_ok || last_empty_v_cnt - empty_v_cnt != 1) {
-        cerr << "Fatal error: Illegal board configuration in file." << endl;
-        exit (1);               // TODO this is a hack
-      }
+      if (tmp_board->is_strict_legal (play_player[pi], play_v[pi]) == false) 
+        return false;
+      bool ret = tmp_board->try_play (play_player[pi], play_v[pi]);
+      assertc (board_ac, ret == true);
     }
+
+    this->load (tmp_board);
 
     return true;
   }

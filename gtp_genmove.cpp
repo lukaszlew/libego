@@ -46,8 +46,13 @@ public:
       uct_t* uct = new uct_t (board); // TODO Why we need to allocate?
       v = uct->genmove (player);
       delete uct;
+      
+      
 
-      if (!board.try_play (player, v)) fatal_error ("genmove: generated illegal move");
+      if (v != vertex_t::resign () &&
+          board.try_play (player, v) == false)
+        fatal_error ("genmove: generated illegal move");
+
       response << v;
 
       return gtp_success;

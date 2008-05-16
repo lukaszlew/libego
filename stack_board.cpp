@@ -48,42 +48,15 @@ public:
   }
 
   bool try_play (player_t player, vertex_t v) {
-
-    if (v == vertex_t::resign ()) assert (false); // TODO handle it outside
-
-    if (v == vertex_t::pass ()) {
-      board->play_legal (player, v);      
-      return true;
-    }
-
-    if (board->color_at [v] != color_t::empty ()) 
-      return false; 
-
-    if (!board->is_legal (player,v))
-      return false;
-
-    board->play_legal (player, v);
-
-    if (board->last_move_status != play_ok)
-      { board->undo (); return false; } // TODO assert success of undo
-
-    if (board->is_hash_repeated ())    // superko test
-      { board->undo (); return false; } // -------||---------
-
-    return true;
+    return board->try_play (player, v);
   }
 
   bool try_undo () {
     return board->undo ();
   }
 
-  bool is_legal (player_t pl, vertex_t v) {            // slow function
-    bool undo_res;
-    if (!try_play (pl, v)) return false;
-    undo_res = board->undo ();
-    assertc (stack_board_ac, undo_res == true);
-
-    return true;
+  bool is_legal (player_t player, vertex_t v) {
+    return board->is_strict_legal (player, v);
   }
 
   void set_komi (float komi) {  // TODO is it proper semantics ?
@@ -91,11 +64,7 @@ public:
   }
 
   bool load (istream& ifs) {
-    board_t tmp[1];
-    if (!tmp->load (ifs)) return false;
-    clear ();
-    board->load (tmp);
-    return true;
+    return board->load_from_ascii (ifs);
   }
 };
 

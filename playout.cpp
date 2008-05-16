@@ -37,7 +37,7 @@ enum status_t { pass_pass, mercy, too_long };
       player_t   act_player = board->act_player ();
       vertex_t   v          = policy->next_vertex ();
 
-      if (!board->is_legal (act_player, v)) { // TODO check odwrotnie, likely, unlikely
+      if (board->is_pseudo_legal (act_player, v) == false) { // TODO check odwrotnie, likely, unlikely
         policy->bad_vertex (v);
         continue;
       } else {

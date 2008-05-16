@@ -92,7 +92,7 @@ public:
       vertex_t   v;
       if (!(params >> pl >> v)) return gtp_syntax_error;
   
-      if (!board.try_play (pl, v)) {
+      if (v != vertex_t::resign () && board.try_play (pl, v) == false) {
         response << "illegal move";
         return gtp_failure;
       }
