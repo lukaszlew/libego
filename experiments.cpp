@@ -56,7 +56,7 @@ public:
   void do_playout (const board_t* base_board) {
     board_t mc_board [1];
     mc_board->load (base_board);
-    policy_with_history_t policy [1];
+    simple_policy_t policy [1];
     playout::run (mc_board, policy);
 
     float score = mc_board->score ();
@@ -64,7 +64,7 @@ public:
 
     uint aaf_move_count = uint (float(mc_board->move_no)*aaf_fraction);
     rep (m_cnt, aaf_move_count)
-      stat_given_move [policy->history [m_cnt]].update (score);
+      stat_given_move [mc_board->move_history [m_cnt]].update (score);
   }
 
   virtual vector <string> get_command_names () const {

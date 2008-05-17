@@ -133,17 +133,6 @@ public:
 };
 
 
-class policy_with_history_t : public simple_policy_t {
-public:
-
-  move_t     history [max_playout_length];
-
-  void played_vertex (vertex_t v) { 
-    history [board->move_no] = move_t (act_player, v);
-  }
-
-};
-
 
 namespace simple_playout_benchmark {
 
