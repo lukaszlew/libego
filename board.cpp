@@ -569,8 +569,10 @@ public: // play move functions
   
   // very slow function
   bool undo () {
-    uint game_length = move_no;
     move_t replay [max_game_length];
+
+    uint   game_length  = move_no;
+    float  old_komi     = get_komi ();
 
     if (game_length == 0) 
       return false;
@@ -579,6 +581,7 @@ public: // play move functions
       replay [mn] = move_history [mn];
 
     clear ();
+    set_komi (old_komi); // TODO maybe last_player should be preserverd as well
 
     rep (mn, game_length-1)
       play_legal (replay [mn].get_player (), replay [mn].get_vertex ());
@@ -774,7 +777,7 @@ public: // auxiliary functions
 public:                         // utils
 
 
-  player_t act_player () const { return last_player.other (); }
+  player_t act_player () const { return last_player.other (); } // TODO/FIXME last_player should be preserverd in undo function
 
 
   bool both_player_pass () {
