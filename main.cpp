@@ -55,7 +55,7 @@ using namespace std;
 
 // main
 
-int main () { 
+int main (int argc, char** argv) { 
   setvbuf (stdout, (char *)NULL, _IONBF, 0);
   setvbuf (stderr, (char *)NULL, _IONBF, 0);
 
@@ -76,13 +76,25 @@ int main () {
   gtp_board_t   gtp_board   (board);
   gtp.register_engine (gtp_board);
 
-  gtp_genmove_t gtp_genmove (board, uct);
+  gtp_genmove_t<uct_t> gtp_genmove (board, uct);
   gtp.register_engine (gtp_genmove);
 
   all_as_first_t aaf (board, sc);
   gtp.register_engine (aaf);
 
-  gtp.run_file ("automagic.gtp");
+  if (argc == 1) {
+    if (gtp.run_file ("automagic.gtp") == false) 
+      cerr << "GTP file not found: automagic.gtp" << endl;
+  }
+
+  rep (arg_i, argc) {
+    if (arg_i > 0) {
+      if (gtp.run_file (argv [arg_i]) == false)
+        cerr << "GTP file not found: " << argv [arg_i] << endl;
+    }
+
+  }
+  
   gtp.run_loop ();
 
   return 0;

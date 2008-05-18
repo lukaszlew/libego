@@ -21,13 +21,14 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+template <typename engine_t>
 class gtp_genmove_t : public gtp_engine_t {
 
   board_t& board;
 
 public:
 
-  gtp_genmove_t (board_t& board_, uct_t& uct_) : board (board_) {} //, uct (uct_) { }
+  gtp_genmove_t (board_t& board_, engine_t& engine_) : board (board_) {} //, engine (engine_) { }
 
   virtual vector <string> get_command_names () const {
     vector <string> commands;
@@ -43,9 +44,9 @@ public:
       vertex_t   v;
       if (!(params >> player)) return gtp_syntax_error;
   
-      uct_t* uct = new uct_t (board); // TODO Why we need to allocate?
-      v = uct->genmove (player);
-      delete uct;
+      engine_t* engine = new engine_t (board); // TODO Why we need to allocate?
+      v = engine->genmove (player);
+      delete engine;
       
       
 

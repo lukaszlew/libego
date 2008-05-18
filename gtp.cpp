@@ -81,10 +81,15 @@ public:
     }
   }
 
-  void run_file (string file_name, ostream& out = cout) {
+  bool run_file (string file_name, ostream& out = cout) {
     ifstream in (file_name.data ());
-    run_loop (in, out);
-    in.close ();
+    if (in) {
+      run_loop (in, out);
+      in.close ();
+      return true;
+    } else {
+      return false;
+    }
   }
 
   void run_loop (istream& in = cin, ostream& out = cout) {
