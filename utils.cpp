@@ -106,9 +106,10 @@ public:
   random_pm_t (uint seed_ = 12345) //: mt (seed_) 
   { seed = seed_; }
 
-  void srand (uint _seed) { }
+  void set_seed (uint _seed) { seed = _seed; }
+  uint get_seed () { return seed; }
 
- uint rand_int () {       // a number between  0 ... cnt - 1
+  uint rand_int () {       // a number between  0 ... cnt - 1
     uint hi, lo;
     lo = 16807 * (seed & 0xffff);
     hi = 16807 * (seed >> 16);
