@@ -40,6 +40,7 @@
 
 using namespace std;
 
+
 #include "config.cpp"
 #include "utils.cpp"
 #include "basic_go_types.cpp"
@@ -53,35 +54,9 @@ using namespace std;
 
 #include "experiments.cpp"
 
-// main
 
-int main (int argc, char** argv) { 
-  setvbuf (stdout, (char *)NULL, _IONBF, 0);
-  setvbuf (stderr, (char *)NULL, _IONBF, 0);
-
-  // setup GTP machinery
-  
-  board_t  board;
-  uct_t    uct (board);
-
-  gtp_t   gtp;
-
-  gtp_static_commands_t sc;
-  sc.add ("protocol_version", "2");
-  sc.add ("name", "libEGO");
-  sc.add ("gogui_analyze_commands", ""); // to be extended
-
-  gtp.register_engine (sc);
-  
-  gtp_board_t   gtp_board   (board);
-  gtp.register_engine (gtp_board);
-
-  gtp_genmove_t<uct_t> gtp_genmove (board, uct);
-  gtp.register_engine (gtp_genmove);
-
-  all_as_first_t aaf (board, sc);
-  gtp.register_engine (aaf);
-
+// goes through GTP files given in command line
+void process_command_line (gtp_t& gtp, int argc, char** argv) {
   if (argc == 1) {
     if (gtp.run_file ("automagic.gtp") == false) 
       cerr << "GTP file not found: automagic.gtp" << endl;
@@ -92,9 +67,44 @@ int main (int argc, char** argv) {
       if (gtp.run_file (argv [arg_i]) == false)
         cerr << "GTP file not found: " << argv [arg_i] << endl;
     }
-
   }
+}
+
+
+// main
+
+int main (int argc, char** argv) { 
+  // to work well with gogui
+  setvbuf (stdout, (char *)NULL, _IONBF, 0);
+  setvbuf (stderr, (char *)NULL, _IONBF, 0);
+
+  // board state and engines
+  board_t         board;
+  uct_t           uct (board);
+  all_as_first_t  aaf (board);
+
+  // GTP machinery
+  gtp_t                 gtp;
+  gtp_static_commands_t sc;
+  gtp_board_t           gtp_board (board);
+  gtp_genmove_t<uct_t>  gtp_genmove (board, uct);
   
+  // some static commands
+  sc.add ("protocol_version", "2");
+  sc.add ("name", "libEGO");
+  sc.add ("gogui_analyze_commands", ""); // to be extended
+  aaf.register_static_commands (sc);
+
+  // connecting pipes
+  gtp.register_engine (sc);
+  gtp.register_engine (gtp_board);
+  gtp.register_engine (gtp_genmove);
+  gtp.register_engine (aaf);
+
+  // arguments
+  process_command_line (gtp, argc, argv);
+  
+  // command-answer GTP loop
   gtp.run_loop ();
 
   return 0;
