@@ -368,7 +368,7 @@ public:                         // board interface
   void clear () {
     uint off_board_cnt;
 
-    set_komi (7.5);            // standard for chinese rules
+    set_komi (default_komi);            // standard for chinese rules
     empty_v_cnt  = 0;
     player_for_each (pl) {
       player_v_cnt  [pl] = 0;
