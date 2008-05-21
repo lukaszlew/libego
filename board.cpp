@@ -453,7 +453,7 @@ public: // legality functions
     if (v == vertex_t::pass ()) return true;
     v.check_is_on_board ();
 
-    if (nbr_cnt[v].player_cnt_is_max (player.other ())) {
+    if (unlikely (nbr_cnt[v].player_cnt_is_max (player.other ()))) {
       #ifndef Ho
       if (play_eye_is_ko (player, v)) // only Go
         return false;

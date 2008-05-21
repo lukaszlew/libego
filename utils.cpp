@@ -214,13 +214,20 @@ void fatal_error (const char* s) {
   exit (1);
 }
 
+
 #if 1
+
+#define likely(x)   __builtin_expect(!!(x), 1)
+#define unlikely(x) __builtin_expect(!!(x), 0)
 
 #define no_inline   __attribute__((noinline))
 #define flatten     __attribute__((flatten))
 #define all_inline  __attribute__((always_inline))
 
 #else
+
+#define likely(x)   (x)
+#define unlikely(x) (x)
 
 #define no_inline
 #define flatten  
