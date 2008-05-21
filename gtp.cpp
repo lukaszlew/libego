@@ -184,9 +184,10 @@ public: // basic GTP commands
     }
 
     if (command == "run_gtp_file") {
+      // TODO error checking
       string file_name;
       params >> file_name;
-      ifstream filein(file_name.data ());
+      ifstream filein (file_name.data ());
       run_loop (filein, response);
       return gtp_success;
     }

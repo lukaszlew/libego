@@ -27,7 +27,7 @@
 
 namespace playout {
 
-enum status_t { pass_pass, mercy, too_long };
+  enum status_t { pass_pass, mercy, too_long };
 
   template <typename policy_t> all_inline
   void play_move (board_t* board, policy_t* policy) {

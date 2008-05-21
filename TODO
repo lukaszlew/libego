@@ -2,11 +2,7 @@
 
 * features
   * board
-    - move history
     - group size
-    - simple replay undo
-    - better is legal
-    - make stack_board obsolete  
 
   - improve portability
   - gogui commands support

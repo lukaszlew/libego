@@ -55,6 +55,7 @@ using namespace std;
 
 #include "gtp.cpp"
 #include "gtp_board.cpp"
+#include "gtp_sgf.cpp"
 #include "gtp_genmove.cpp"
 
 #include "experiments.cpp"
@@ -86,6 +87,7 @@ int main (int argc, char** argv) {
 
   // board state and engines
   board_t         board;
+  sgf_tree_t      sgf_tree;
   uct_t           uct (board);
   all_as_first_t  aaf (board);
 
@@ -93,6 +95,7 @@ int main (int argc, char** argv) {
   gtp_t                 gtp;
   gtp_static_commands_t sc;
   gtp_board_t           gtp_board (board);
+  gtp_sgf_t             gtp_sgf (sgf_tree);
   gtp_genmove_t<uct_t>  gtp_genmove (board, uct);
   
   // some static commands
@@ -104,6 +107,7 @@ int main (int argc, char** argv) {
   // connecting pipes
   gtp.register_engine (sc);
   gtp.register_engine (gtp_board);
+  gtp.register_engine (gtp_sgf);
   gtp.register_engine (gtp_genmove);
   gtp.register_engine (aaf);
 
