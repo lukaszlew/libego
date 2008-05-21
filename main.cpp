@@ -33,6 +33,8 @@
 
 #include <vector>
 #include <map>
+#include <list>
+#include <stack>
 
 #include <sys/time.h>
 #include <sys/resource.h>
@@ -43,8 +45,11 @@ using namespace std;
 
 #include "config.cpp"
 #include "utils.cpp"
+
 #include "basic_go_types.cpp"
 #include "board.cpp"
+#include "sgf.cpp"
+
 #include "playout.cpp"
 #include "uct.cpp"
 
@@ -53,6 +58,7 @@ using namespace std;
 #include "gtp_genmove.cpp"
 
 #include "experiments.cpp"
+
 
 
 // goes through GTP files given in command line
