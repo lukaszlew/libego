@@ -82,6 +82,8 @@ istream& operator>> (istream& in, player_t& pl) {
   return in;
 }
 
+ostream& operator<< (ostream& out, player_t& pl) { out << pl.to_string (); return out; }
+
 // faster than non-loop
 #define player_for_each(pl) \
   for (player_t pl = player_t::black (); pl.in_range (); pl.next ())
@@ -190,6 +192,7 @@ namespace coord { // TODO class
 
   string col_tab = "ABCDEFGHJKLMNOPQRSTUVWXYZ";
 
+  // TODO to gtp string
   string row_to_string (t row) {
     check (row);
     ostringstream ss;
@@ -238,6 +241,7 @@ public:
   vertex_t () { } // TODO is it needed
   vertex_t (uint _idx) { idx = _idx; }
 
+ // TODO make this constructor a static function
   vertex_t (coord::t r, coord::t c) {
     coord::check2 (r, c);
     idx = (r+1) * dNS + (c+1) * dWE;
@@ -296,9 +300,9 @@ public:
     coord::t c;
     
     if (idx == pass_idx) {
-      return "PASS";
+      return "pass";
     } else if (idx == any_idx) {
-      return "NO_V";
+      return "any";
     } else if (idx == resign_idx) {
       return "resign";
     } else {
@@ -338,8 +342,25 @@ public:
   static vertex_t pass   () { return vertex_t (vertex_t::pass_idx); }
   static vertex_t any    () { return vertex_t (vertex_t::any_idx); }
   static vertex_t resign () { return vertex_t (vertex_t::resign_idx); }
+
+  static vertex_t of_sgf_coords (string s) {
+    if (s == "") return pass ();
+    if (s == "tt" && board_size <= 19) return pass ();
+    if (s.size () != 2 ) return any ();
+    coord::t col = s[0] - 'a';
+    coord::t row = s[1] - 'a';
+    
+    if (coord::is_on_board (row) &&
+        coord::is_on_board (col)) {
+      return vertex_t (row, col);
+    } else {
+      return any ();
+    }
+  }
 };
   
+
+// TODO of_gtp_string
 istream& operator>> (istream& in, vertex_t& v) {
   char c;
   int n;
