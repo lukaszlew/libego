@@ -28,14 +28,20 @@
 
 class gtp_sgf_t : public gtp_engine_t {
 public:
-  sgf_tree_t& sgf_tree;
+  sgf_tree_t&       sgf_tree;
+  gtp_t&            gtp;
+  board_t&          base_board;
+  
 
-  gtp_sgf_t (sgf_tree_t& _sgf_tree) : sgf_tree (_sgf_tree) { }
+  gtp_sgf_t (sgf_tree_t& _sgf_tree, gtp_t& _gtp, board_t& _base_board) : 
+    sgf_tree (_sgf_tree), gtp (_gtp), base_board (_base_board)
+  { }
 
   virtual vector <string> get_command_names () const {
     vector <string> commands;
     commands.push_back ("sgf.load");
     commands.push_back ("sgf.save");
+    commands.push_back ("sgf.exec_gtp");
     return commands;
   };
 
@@ -78,7 +84,67 @@ public:
       return gtp_success;
     }
 
+    // ---------------------------------------------------------------------
+    if (command == "sgf.exec_gtp") {
+      if (!sgf_tree.is_loaded ()) {
+        response << "SGF file not loaded" << endl;
+        return gtp_failure;
+      }
+
+      if (sgf_tree.properties ().get_board_size () != board_size) {
+        response << "invalid board size";
+        return gtp_failure;
+      }
+
+      board_t save_board;
+      save_board.load (&base_board);
+      
+      base_board.clear ();
+      base_board.set_komi (sgf_tree.properties ().get_komi ());
+
+      exec_embedded_gtp_rec (sgf_tree.game_node (), response);
+
+      base_board.load (&save_board);
+
+      return gtp_success;
+    }
+
+    // ---------------------------------------------------------------------
     fatal_error ("this should not happen!: error number = 0x994827");
     return gtp_panic;
   }
+
+  
+  void exec_embedded_gtp_rec (sgf_node_t* current_node, ostream& response) {
+    list <vertex_t> vertex_list;
+    vertex_list = current_node->properties.get_vertices_to_play (color_t::empty ());
+    if (vertex_list.empty () == false) {
+      response << "sgf.exec_gtp: AE property in SGF not implemented" << endl;
+      return;
+    }
+
+    player_for_each (pl) {
+      vertex_list = current_node->properties.get_vertices_to_play (pl);
+      for_each (vi, vertex_list) {
+        if (base_board.try_play (pl, *vi) == false) {
+          response << "sgf.exec_gtp: bad move in SGF: " << pl << " " << *vi << endl;
+          return;
+        }
+      }
+    }
+
+    board_t node_board;
+    node_board.load (&base_board);
+    
+    istringstream embedded_gtp (current_node->properties.get_embedded_gtp ());
+    //embedded_gtp << ; // we get a string bu need a stream
+    gtp.run_loop (embedded_gtp, response); // TODO make gtp filter out double newlines
+
+    for_each (child, current_node->children) {
+      base_board.load (&node_board);
+      exec_embedded_gtp_rec (&(*child), response); // LOL itearator is imitationg a pointer but we need a true pointer
+    }
+    
+  }
+  
 };

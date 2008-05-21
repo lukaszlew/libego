@@ -95,7 +95,7 @@ int main (int argc, char** argv) {
   gtp_t                 gtp;
   gtp_static_commands_t sc;
   gtp_board_t           gtp_board (board);
-  gtp_sgf_t             gtp_sgf (sgf_tree);
+  gtp_sgf_t             gtp_sgf (sgf_tree, gtp, board);
   gtp_genmove_t<uct_t>  gtp_genmove (board, uct);
   
   // some static commands

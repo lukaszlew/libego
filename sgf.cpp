@@ -22,18 +22,23 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
+const string embedded_gtp_tag = "@gtp";
+
+
 class sgf_node_properties_t {
 public:
-  map <string, list <string> > properties;
+  map <string, list <string> > property_map;
+
 
   void add (string name, string value) {
     // TODO check existance
-    properties [name] . push_back (value);
+    property_map [name] . push_back (value);
   }
   
+
   string to_sgf_string () {
     ostringstream out;
-    for_each (prop, properties) {
+    for_each (prop, property_map) {
       out << prop->first; // prop_name
       for_each (prop_value, prop->second) {
         out << "[" << *prop_value << "]";
@@ -42,12 +47,77 @@ public:
     return out.str ();
   }
 
+
+  string get_comment () { 
+    ostringstream out;
+    list <string> comments = property_map ["C"];
+    for_each (comment, comments) 
+      out << *comment << endl;
+    return out.str ();
+  }
+
+
+  string get_embedded_gtp () { 
+    string comment = get_comment (); // TODO tolower 
+    int gtppos = comment.find (embedded_gtp_tag);
+    if (gtppos == -1) return "";
+    gtppos += embedded_gtp_tag.size ();
+    //cerr << comment << endl << comment.size () << endl << gtppos << endl <<
+    //  comment.find (embedded_gtp_tag) << "+" << embedded_gtp_tag.size () << endl << flush;
+    return comment.substr (gtppos); 
+  }
+
+  // color to allow add empty
+  list <vertex_t> get_vertices_to_play (color_t color) { 
+    list <vertex_t> ret;
+
+      #define add_moves(prop_name)                              \
+      {                                                         \
+        list <string> prop_values = property_map [prop_name];   \
+        for_each (sgf_coord, prop_values) {                     \
+          ret.push_back (vertex_t::of_sgf_coords (*sgf_coord)); \
+        }                                                       \
+      }
+      
+    if (color == color_t::empty ()) {
+      add_moves ("AE")
+    } else if (color == color_t::black ()) {
+      add_moves ("B");
+      add_moves ("AB");
+    } else if (color == color_t::white ()) {
+      add_moves ("W");
+      add_moves ("AW");
+    } else {
+      fatal_error ("get_moves: illegal color");
+    }
+    
+    #undef add_moves
+
+    return ret;
+  }
+
+  list <vertex_t> get_vertices_to_clear () { return get_vertices_to_play (color_t::empty ()); }
+
+  list <vertex_t> get_vertices_to_play (player_t pl) { 
+    return get_vertices_to_play (color_t (pl));
+  }
+
+  string get_single_property (string prop_name, string default_value = "") {
+    if (property_map [prop_name].size () == 0) return default_value;
+    if (property_map [prop_name].size () > 1) {
+      cerr << "warning: multiple property value for: " << prop_name << endl;
+    } 
+    return property_map [prop_name].front ();
+  }
+
+  uint  get_board_size () { return atoi (get_single_property ("SZ", "19").data ()); }
+  float get_komi       () { return atof (get_single_property ("KM", "0.0").data ()); }
+
 };
 
 
 
 // class sgf_node_t
-
 
 class sgf_node_t {
 public:
@@ -74,8 +144,7 @@ public:
     if (print_braces) out << ")";
 
     return out.str ();
-  }
-  
+  }  
 };
 
 
@@ -83,7 +152,6 @@ public:
 
 
 class sgf_tree_t {
-public:
   sgf_node_t* root;
 
 public:
@@ -184,11 +252,25 @@ public:
     return true;
   }
 
+
   string to_sgf_string () {
     ostringstream out;
     for_each (it, root->children) 
       out << it->to_sgf_string () << endl; 
     return out.str ();
+  }
+  
+
+  bool is_loaded () { return root->children.size () > 0; }
+
+
+  sgf_node_t* game_node () {
+    assert (is_loaded ());
+    return & (root->children.front ());
+  }
+
+  sgf_node_properties_t& properties () {
+    return game_node ()->properties;
   }
 
 };
