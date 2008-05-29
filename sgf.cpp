@@ -39,9 +39,11 @@ public:
   string to_sgf_string () {
     ostringstream out;
     for_each (prop, property_map) {
-      out << prop->first; // prop_name
-      for_each (prop_value, prop->second) {
-        out << "[" << *prop_value << "]";
+      if (prop->second.size () > 0) {
+        out << prop->first; // prop_name
+        for_each (prop_value, prop->second) {
+          out << "[" << *prop_value << "]";
+        }
       }
     }
     return out.str ();
@@ -57,6 +59,10 @@ public:
     return out.str ();
   }
 
+  void set_comment (string comment) { 
+    property_map ["C"].clear ();
+    add ("C", comment);
+  }
 
   string get_embedded_gtp () { 
     string comment = get_comment (); // TODO tolower 

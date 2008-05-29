@@ -96,7 +96,7 @@ public:
   }
 
 
-  void run_loop (istream& in = cin, ostream& out = cout) {
+  void run_loop (istream& in = cin, ostream& out = cout, bool echo_commands = false) {
     string line;
     int cmd_num;
     string cmd_name;
@@ -104,7 +104,8 @@ public:
 
     while (true) {
       if (!getline (in, line)) break;
-      //cout << "*" << line << endl;
+      if (echo_commands) out << line << endl;
+
       line = preprocess (line);
 
       istringstream line_stream (line);

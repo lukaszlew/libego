@@ -41,7 +41,7 @@ public:
     vector <string> commands;
     commands.push_back ("sgf.load");
     commands.push_back ("sgf.save");
-    commands.push_back ("sgf.exec_gtp");
+    commands.push_back ("sgf.gtp.exec");
     return commands;
   };
 
@@ -85,7 +85,7 @@ public:
     }
 
     // ---------------------------------------------------------------------
-    if (command == "sgf.exec_gtp") {
+    if (command == "sgf.gtp.exec") {
       if (!sgf_tree.is_loaded ()) {
         response << "SGF file not loaded" << endl;
         return gtp_failure;
@@ -116,10 +116,11 @@ public:
 
   
   void exec_embedded_gtp_rec (sgf_node_t* current_node, ostream& response) {
+    // update position
     list <vertex_t> vertex_list;
     vertex_list = current_node->properties.get_vertices_to_play (color_t::empty ());
     if (vertex_list.empty () == false) {
-      response << "sgf.exec_gtp: AE property in SGF not implemented" << endl;
+      response << "sgf.gtp.exec: AE property in SGF not implemented" << endl;
       return;
     }
 
@@ -127,19 +128,23 @@ public:
       vertex_list = current_node->properties.get_vertices_to_play (pl);
       for_each (vi, vertex_list) {
         if (base_board.try_play (pl, *vi) == false) {
-          response << "sgf.exec_gtp: bad move in SGF: " << pl << " " << *vi << endl;
+          response << "sgf.gtp.exec: bad move in SGF: " << pl << " " << *vi << endl;
           return;
         }
       }
     }
 
+    // save board
     board_t node_board;
     node_board.load (&base_board);
-    
-    istringstream embedded_gtp (current_node->properties.get_embedded_gtp ());
-    //embedded_gtp << ; // we get a string bu need a stream
-    gtp.run_loop (embedded_gtp, response); // TODO make gtp filter out double newlines
 
+    // process gtp
+    istringstream embedded_gtp (current_node->properties.get_embedded_gtp ());
+    ostringstream embedded_response;
+    gtp.run_loop (embedded_gtp, embedded_response, true); // TODO make gtp filter out double newlines
+    current_node->properties.set_comment (embedded_response.str ());
+
+    // recursove call
     for_each (child, current_node->children) {
       base_board.load (&node_board);
       exec_embedded_gtp_rec (&(*child), response); // LOL itearator is imitationg a pointer but we need a true pointer
