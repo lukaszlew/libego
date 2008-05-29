@@ -195,12 +195,6 @@ public:
 
 };
 
-char getc_non_space (istream& is) {
-  char c;
-  is.get(c);
-  if (c == ' ' || c == '\t') return getc_non_space (is);
-  return c;
-}
 
 float get_seconds () {
   rusage usage [1];
@@ -214,20 +208,59 @@ void fatal_error (const char* s) {
   exit (1);
 }
 
+// string/stream opereations
 
-#if 1
+
+char getc_non_space (istream& is) {
+  char c;
+  is.get(c);
+  if (c == ' ' || c == '\t') return getc_non_space (is);
+  return c;
+}
+
+bool is_all_whitespace (string s) {
+  for_each (cp, s) 
+    if (!isspace (*cp))
+      return false;
+  return true;
+}
+
+
+string remove_empty_lines (string s) {
+  istringstream in (s);
+  ostringstream out;
+  string line;
+  while (getline (in, line)) {
+    if (is_all_whitespace (line)) continue;
+    out << line << endl;
+  }
+  return out.str ();
+}
+
+
+
+// macros used in linux kernel
+#if 0
 
 #define likely(x)   __builtin_expect(!!(x), 1)
 #define unlikely(x) __builtin_expect(!!(x), 0)
+
+#else
+
+#define likely(x)   (x)
+#define unlikely(x) (x)
+
+#endif
+
+
+
+#if 1
 
 #define no_inline   __attribute__((noinline))
 #define flatten     __attribute__((flatten))
 #define all_inline  __attribute__((always_inline))
 
 #else
-
-#define likely(x)   (x)
-#define unlikely(x) (x)
 
 #define no_inline
 #define flatten  

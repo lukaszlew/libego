@@ -51,8 +51,9 @@ public:
   string get_comment () { 
     ostringstream out;
     list <string> comments = property_map ["C"];
-    for_each (comment, comments) 
+    for_each (comment, comments) {
       out << *comment << endl;
+    }
     return out.str ();
   }
 
@@ -62,8 +63,6 @@ public:
     int gtppos = comment.find (embedded_gtp_tag);
     if (gtppos == -1) return "";
     gtppos += embedded_gtp_tag.size ();
-    //cerr << comment << endl << comment.size () << endl << gtppos << endl <<
-    //  comment.find (embedded_gtp_tag) << "+" << embedded_gtp_tag.size () << endl << flush;
     return comment.substr (gtppos); 
   }
 
@@ -166,7 +165,7 @@ public:
 
   bool parse_property_value (istream& in, string& prop_value) {
     char c;
-    while (in >> c) {
+    while (in.get (c)) {
       switch (c) {
       case '\\':
         in >> c;

@@ -70,9 +70,11 @@ class gtp_t : public gtp_engine_t {
 
 public:
 
+
   gtp_t () { 
     register_engine (*this);
   }
+
 
   void register_engine (gtp_engine_t& gtp_engine) {
     vector<string> commands = gtp_engine.get_command_names ();
@@ -80,6 +82,7 @@ public:
       engine_of_cmd_name [*cmd_name_it] = &gtp_engine;
     }
   }
+
 
   bool run_file (string file_name, ostream& out = cout) {
     ifstream in (file_name.data ());
@@ -92,6 +95,7 @@ public:
     }
   }
 
+
   void run_loop (istream& in = cin, ostream& out = cout) {
     string line;
     int cmd_num;
@@ -100,6 +104,7 @@ public:
 
     while (true) {
       if (!getline (in, line)) break;
+      //cout << "*" << line << endl;
       line = preprocess (line);
 
       istringstream line_stream (line);
@@ -107,7 +112,7 @@ public:
       if (!(line_stream >> cmd_name)) continue; // empty line - continue
 
       if (engine_of_cmd_name.find (cmd_name) == engine_of_cmd_name.end ()) {
-        out << "? unknown command" << endl << endl;
+        out << "? unknown command: \"" << cmd_name << "\"" << endl << endl;
         continue;
       }
 
@@ -117,21 +122,28 @@ public:
       status = engine->exec_command (cmd_name, line_stream, response);
       string response_str = response.str ();
 
-      while (isspace(*(response_str.end ()-1))) {
-        response_str.resize (response_str.size () -1);
+      response_str = remove_empty_lines (response_str);
+      
+      // make sure there is no \n or`whitespace on the end of string
+      while (isspace ( *(response_str.end ()-1) )) {
+        response_str.resize (response_str.size () - 1);
       }
 
       out << status_marker (status);
+
       if (cmd_num >= 0) 
         out << cmd_num;
-      out << " ";
-      if (status == gtp_syntax_error) 
-        out << "syntax error";
-      else
-        out << response_str;
-      out << endl << endl;
 
-      if (status == gtp_panic || status == gtp_quit) break;
+      out << " ";
+
+      if (status == gtp_syntax_error) 
+        out << "syntax error" << endl;
+
+      out << response_str << endl << endl;
+
+      if (status == gtp_panic || 
+          status == gtp_quit) 
+        break;
       
     }
   }
