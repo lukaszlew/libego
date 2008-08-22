@@ -22,22 +22,25 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-// namespace simple_playout_t
+enum playout_status_t { pass_pass, mercy, too_long };
 
 
-namespace playout {
+template <typename policy_t> class playout_t {
+public:
+  board_t*  board;
+  policy_t  policy[1];
 
-  enum status_t { pass_pass, mercy, too_long };
+  playout_t (board_t*  board_) : board(board_) {}
 
-  template <typename policy_t> all_inline
-  void play_move (board_t* board, policy_t* policy) {
+  all_inline
+  void play_move () {
     policy->prepare_vertex ();
     
     while (true) {
       player_t   act_player = board->act_player ();
       vertex_t   v          = policy->next_vertex ();
 
-      if (board->is_pseudo_legal (act_player, v) == false) { // TODO check odwrotnie, likely, unlikely
+      if (board->is_pseudo_legal (act_player, v) == false) {
         policy->bad_vertex (v);
         continue;
       } else {
@@ -46,15 +49,14 @@ namespace playout {
         break;
       }
     }
-    
   }
 
-  template <typename policy_t> all_inline
-  status_t run (board_t* board, policy_t* policy) {
+  all_inline
+  playout_status_t run () {
     
     policy->begin_playout (board);
     while (true) {
-      play_move (board, policy);
+      play_move ();
       
       if (board->both_player_pass ()) {
         policy->end_playout (pass_pass);
@@ -73,7 +75,7 @@ namespace playout {
     }
   }
   
-}
+};
 
 
 random_pm_t pm(123); // TODO seed it when class
@@ -127,7 +129,7 @@ public:
   void played_vertex (vertex_t v) { 
   }
 
-  void end_playout (playout::status_t status) { 
+  void end_playout (playout_status_t status) { 
   }
 
 };
@@ -136,13 +138,12 @@ public:
 
 namespace simple_playout_benchmark {
 
-
-  board_t              mc_board [1];
+  board_t                 mc_board [1];
 
   vertex_t::map_t <int>   vertex_score;
   player_t::map_t <uint>  win_cnt;
-  uint                 playout_ok_cnt;
-  int                  playout_ok_score;
+  uint                    playout_ok_cnt;
+  int                     playout_ok_score;
 
 
   template <bool score_per_vertex> 
@@ -150,7 +151,7 @@ namespace simple_playout_benchmark {
             uint playout_cnt, 
             ostream& out) 
   {
-    playout::status_t status;
+    playout_status_t status;
     player_t winner;
     int score;
 
@@ -163,16 +164,15 @@ namespace simple_playout_benchmark {
     vertex_for_each_all (v) 
       vertex_score [v] = 0;
 
-    simple_policy_t policy [1];
+    playout_t<simple_policy_t> playout (mc_board);
 
     float seconds_begin = get_seconds ();
     
     rep (ii, playout_cnt) {
       mc_board->load (start_board);
-      status = playout::run (mc_board, policy);
-      
+      status = playout.run ();
       switch (status) {
-      case playout::pass_pass:
+      case pass_pass:
         playout_ok_cnt += 1;
 
         score = mc_board -> score ();
@@ -186,12 +186,12 @@ namespace simple_playout_benchmark {
             vertex_score [v] += mc_board->vertex_score (v);
         }
         break;
-      case playout::mercy:
+      case mercy:
         out << "Mercy rule should be off for benchmarking" << endl;
         return;
         //win_cnt [mc_board->approx_winner ()] ++;
         //break;
-      case playout::too_long:
+      case too_long:
         break;
       }
     }

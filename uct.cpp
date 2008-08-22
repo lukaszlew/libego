@@ -413,9 +413,8 @@ public:
           continue;            // try again
         }
         
-        simple_policy_t policy [1];
         // TODO assert act_plauer == board->Act_player ()
-        playout::run (play_board, policy);
+        playout_t<simple_policy_t> (play_board).run ();
         break;
         
       }
