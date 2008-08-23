@@ -371,7 +371,7 @@ public:                         // board interface
     move_no      = 0;
     last_player  = player_t::white (); // act player is other
     last_move_status = play_ok;
-    ko_v         = vertex_t::any ();             // only Go
+    ko_v         = vertex_t::any ();
     vertex_for_each_all (v) {
       color_at      [v] = color_t::off_board ();
       nbr_cnt       [v] = nbr_cnt_t (0, 0, nbr_cnt_aux::max);
@@ -440,18 +440,13 @@ public: // legality functions
   flatten all_inline 
   bool is_pseudo_legal (player_t player, vertex_t v) {
     check ();
-    
-    //player_t player = act_player ();
-    if (v == vertex_t::pass ()) return true;
-    v.check_is_on_board ();
+    //v.check_is_on_board (); // TODO check v = pass || onboard
 
-    if (unlikely (nbr_cnt[v].player_cnt_is_max (player.other ()))) {
-      if (play_eye_is_ko (player, v)) // only Go
-        return false;
-      if (play_eye_is_suicide (player, v))
-        return false;
-    } 
-    return true;
+    return 
+      v == vertex_t::pass () || 
+      !nbr_cnt[v].player_cnt_is_max (player.other ()) || 
+      !play_eye_is_ko (player, v) && 
+      !play_eye_is_suicide (player, v);
   }
 
 
@@ -659,7 +654,7 @@ public: // auxiliary functions
 
     assertc (board_ac, chain_lib_cnt [chain_id [v]] != 0);
 
-    if (last_empty_v_cnt == empty_v_cnt) { // if captured exactly one stone, end this was eye (only Go)
+    if (last_empty_v_cnt == empty_v_cnt) { // if captured exactly one stone, end this was eye
       ko_v = empty_v [empty_v_cnt - 1]; // then ko formed
     } else {
       ko_v = vertex_t::any ();
