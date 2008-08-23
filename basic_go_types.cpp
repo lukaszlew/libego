@@ -261,24 +261,9 @@ public:
 
   coord::t col () const { return idx % dNS - 1; }
 
-  bool is_on_board () const { // TODO Ho here
-    #ifdef Ho
-
-    coord::t r, c, d;
-    r = row ();
-    c = col ();
-    d = r+c;
-    return 
-      coord::is_ok (r) & 
-      coord::is_ok (c) & 
-      (d >= int((board_size-1)/2)) & 
-      (d < int(board_size + board_size/2));
-
-    #else
-
+  // this usualy can be achieved quicker by color_at lookup
+  bool is_on_board () const {
     return coord::is_on_board (row ()) & coord::is_on_board (col ());
-
-    #endif
   }
 
   void check_is_on_board () const { 
@@ -397,57 +382,41 @@ ostream& operator<< (ostream& out, vertex_t& v) { out << v.to_string (); return 
 #define vertex_for_each_all(vv) for (vertex_t vv = 0; vv.in_range (); vv.next ()) // TODO 0 works??? // TODO player the same way!
 
 // misses some offboard vertices (for speed) 
-#define vertex_for_each_faster(vv)                                       \
-  for (vertex_t vv = vertex_t(vertex_t::dNS+vertex_t::dWE);                \
-       vv.get_idx () <= board_size * (vertex_t::dNS + vertex_t::dWE);      \
+#define vertex_for_each_faster(vv)                                      \
+  for (vertex_t vv = vertex_t(vertex_t::dNS+vertex_t::dWE);             \
+       vv.get_idx () <= board_size * (vertex_t::dNS + vertex_t::dWE);   \
        vv.next ())
 
 
-#ifdef Ho
-
-  #define vertex_for_each_nbr(center_v, nbr_v, block) {  \
-    center_v.check_is_on_board ();                  \
-    vertex_t nbr_v;                                 \
-    nbr_v = center_v.N (); block;                   \
-    nbr_v = center_v.NE(); block;                   \
-    nbr_v = center_v.W (); block;                   \
-    nbr_v = center_v.E (); block;                   \
-    nbr_v = center_v.SW(); block;                   \
-    nbr_v = center_v.S (); block;                   \
+#define vertex_for_each_nbr(center_v, nbr_v, block) {   \
+    center_v.check_is_on_board ();                      \
+    vertex_t nbr_v;                                     \
+    nbr_v = center_v.N (); block;                       \
+    nbr_v = center_v.W (); block;                       \
+    nbr_v = center_v.E (); block;                       \
+    nbr_v = center_v.S (); block;                       \
   }
 
-#else
-  
-  #define vertex_for_each_nbr(center_v, nbr_v, block) {  \
-    center_v.check_is_on_board ();                  \
-    vertex_t nbr_v;                                 \
-    nbr_v = center_v.N (); block;                   \
-    nbr_v = center_v.W (); block;                   \
-    nbr_v = center_v.E (); block;                   \
-    nbr_v = center_v.S (); block;                   \
-  }
-    
-  #define vertex_for_each_diag_nbr(center_v, nbr_v, block) {  \
-    center_v.check_is_on_board ();                       \
-    vertex_t nbr_v;                                      \
-    nbr_v = center_v.NW (); block;                       \
-    nbr_v = center_v.NE (); block;                       \
-    nbr_v = center_v.SW (); block;                       \
-    nbr_v = center_v.SE (); block;                       \
-    }
-
-  #define player_vertex_for_each_9_nbr(center_v, pl, nbr_v, i) { \
-    v::check_is_on_board (center_v);                    \
-    move_t    nbr_v;                                    \
-    player_for_each (pl) {                              \
-      nbr_v = center_v;                                 \
-      i;                                                \
-      vertex_for_each_nbr      (center_v, nbr_v, i);         \
-      vertex_for_each_diag_nbr (center_v, nbr_v, i);         \
-    }                                                   \
+#define vertex_for_each_diag_nbr(center_v, nbr_v, block) {      \
+    center_v.check_is_on_board ();                              \
+    vertex_t nbr_v;                                             \
+    nbr_v = center_v.NW (); block;                              \
+    nbr_v = center_v.NE (); block;                              \
+    nbr_v = center_v.SW (); block;                              \
+    nbr_v = center_v.SE (); block;                              \
   }
 
-#endif
+#define player_vertex_for_each_9_nbr(center_v, pl, nbr_v, i) {  \
+    v::check_is_on_board (center_v);                            \
+    move_t    nbr_v;                                            \
+    player_for_each (pl) {                                      \
+      nbr_v = center_v;                                         \
+      i;                                                        \
+      vertex_for_each_nbr      (center_v, nbr_v, i);            \
+      vertex_for_each_diag_nbr (center_v, nbr_v, i);            \
+    }                                                           \
+  }
+
 
 //--------------------------------------------------------------------------------
 

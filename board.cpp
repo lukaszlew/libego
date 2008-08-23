@@ -83,11 +83,7 @@ public:
 
 namespace nbr_cnt_aux { // TODO this namespace exists only because we can't have inlined cont arrays in classes
 
-  #ifdef Ho
-  static const uint max = 6;                 // maximal number of neighbours
-  #else
   static const uint max = 4;                 // maximal number of neighbours
-  #endif
   
   const uint f_size = 4;              // size in bits of each of 3 counters in nbr_cnt::t
   const uint f_shift [3] = { 0 * f_size, 1 * f_size, 2 * f_size };
@@ -190,9 +186,7 @@ public:
   hash_t                        hash;
   int                           komi;
 
-  #ifndef Ho
-  vertex_t                      ko_v;             // vertex forbidden by ko (only Go)
-  #endif
+  vertex_t                      ko_v;             // vertex forbidden by ko
 
   player_t                      last_player;      // player who made the last play (other::player is forbidden to retake)
   uint                          move_no;
@@ -377,9 +371,7 @@ public:                         // board interface
     move_no      = 0;
     last_player  = player_t::white (); // act player is other
     last_move_status = play_ok;
-    #ifndef Ho
     ko_v         = vertex_t::any ();             // only Go
-    #endif
     vertex_for_each_all (v) {
       color_at      [v] = color_t::off_board ();
       nbr_cnt       [v] = nbr_cnt_t (0, 0, nbr_cnt_aux::max);
@@ -454,15 +446,11 @@ public: // legality functions
     v.check_is_on_board ();
 
     if (unlikely (nbr_cnt[v].player_cnt_is_max (player.other ()))) {
-      #ifndef Ho
       if (play_eye_is_ko (player, v)) // only Go
         return false;
-      #endif
-
       if (play_eye_is_suicide (player, v))
         return false;
     } 
-
     return true;
   }
 
@@ -476,9 +464,6 @@ public: // legality functions
 
 
   bool is_eyelike (player_t player, vertex_t v) { 
-    #ifdef Ho
-    return nbr_cnt::player_cnt_is_max (nbr_cnt[v], player);
-    #else
     color_t::map_t <int> diag_color_cnt; // TODO
     assertc (board_ac, color_at [v] == color_t::empty ());
 
@@ -493,7 +478,6 @@ public: // legality functions
 
     diag_color_cnt [player.other ()] += (diag_color_cnt [color_t::off_board ()] > 0);
     return diag_color_cnt [player.other ()] < 2;
-    #endif
   }
 
 
@@ -675,21 +659,17 @@ public: // auxiliary functions
 
     assertc (board_ac, chain_lib_cnt [chain_id [v]] != 0);
 
-    #ifndef Ho
     if (last_empty_v_cnt == empty_v_cnt) { // if captured exactly one stone, end this was eye (only Go)
       ko_v = empty_v [empty_v_cnt - 1]; // then ko formed
     } else {
       ko_v = vertex_t::any ();
     }
-    #endif
   }
 
 
   void basic_play (player_t player, vertex_t v) { // Warning: has to be called before place_stone, because of hash storing
     assertc (board_ac, move_no <= max_game_length);
-    #ifndef Ho
     ko_v                    = vertex_t::any ();
-    #endif
     last_empty_v_cnt        = empty_v_cnt;
     last_player             = player;
     player_last_v [player]  = v;
@@ -841,18 +821,13 @@ public:                         // utils
     #define o_left(n)  out << "(" << n
     #define o_right(n) out << ")" << n
     
-    #ifndef Ho
     out << " ";
-    #endif
     if (board_size < 10) out << " "; else out << "  ";
     coord_for_each (col) os (coord::col_to_string (col));
     out << endl;
 
     coord_for_each (row) {
       if (board_size >= 10 && board_size - row < 10) out << " ";
-    #ifdef Ho
-      rep (ii, row) out << " ";
-    #endif
       os (coord::row_to_string (row));
       coord_for_each (col) {
         vertex_t v = vertex_t (row, col);
@@ -867,9 +842,6 @@ public:                         // utils
     }
     
     if (board_size < 10) out << "  "; else out << "   ";
-    #ifdef Ho
-    rep (ii, board_size) out << " ";
-    #endif
     coord_for_each (col) os (coord::col_to_string (col));
     out << endl;
 

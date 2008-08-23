@@ -22,13 +22,6 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-// set to 1 in the following line if You want to play Ho (Hexagonal Go) instead of Go
-#if 0 
-
-#define Ho
-
-#endif
-
 // constants
 
 // board parameters
