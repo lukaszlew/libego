@@ -452,11 +452,10 @@ public: // legality functions
 
 
   bool is_eyelike (player_t player, vertex_t v) { 
-    color_t::map_t <int> diag_color_cnt; // TODO
     assertc (board_ac, color_at [v] == color_t::empty ());
-
     if (! nbr_cnt[v].player_cnt_is_max (player)) return false;
 
+    color_t::map_t <int> diag_color_cnt; // TODO
     color_for_each (col) 
       diag_color_cnt [col] = 0; // memset is slower
 
@@ -464,8 +463,7 @@ public: // legality functions
       diag_color_cnt [color_at [diag_v]]++;
     });
 
-    diag_color_cnt [player.other ()] += (diag_color_cnt [color_t::off_board ()] > 0);
-    return diag_color_cnt [player.other ()] < 2;
+    return diag_color_cnt [player.other ()] + (diag_color_cnt [color_t::off_board ()] > 0) < 2;
   }
 
 
