@@ -77,82 +77,77 @@ public:
 };
 
 
-
-// namespace nbr_cnt_aux
-
-
-namespace nbr_cnt_aux { // TODO this namespace exists only because we can't have inlined cont arrays in classes
-
-  static const uint max = 4;                 // maximal number of neighbours
-  
-  const uint f_size = 4;              // size in bits of each of 3 counters in nbr_cnt::t
-  const uint f_shift [3] = { 0 * f_size, 1 * f_size, 2 * f_size };
-  const uint f_mask = (1 << f_size) - 1;
-  
-  const uint player_cnt_is_max_mask [player_t::cnt] = {  // TODO player_map_t
-    (max << f_shift [player_t::black_idx]), 
-    (max << f_shift [player_t::white_idx]) 
-  };
-  
-  const uint black_inc_val = (1 << f_shift [player_t::black_idx]) - (1 << f_shift [color_t::empty_idx]);
-  const uint white_inc_val = (1 << f_shift [player_t::white_idx]) - (1 << f_shift [color_t::empty_idx]);
-  const uint off_board_inc_val  = 
-    + (1 << f_shift [player_t::black_idx]) 
-    + (1 << f_shift [player_t::white_idx]) 
-    - (1 << f_shift [color_t::empty_idx]);
-  
-  const uint player_inc_tab [player_t::cnt] = { black_inc_val, white_inc_val };
-}
-
-
 // class nbr_cnt_t
 
 
 class nbr_cnt_t {
+public:
 
-  public:
-    uint bitfield;
+  static const uint f_shift [3];
+  static const uint player_cnt_is_max_mask [player_t::cnt];
+  static const uint player_inc_tab [player_t::cnt];
 
-    nbr_cnt_t () { }
+  static const uint max = 4;                 // maximal number of neighbours
+  static const uint f_size = 4;              // size in bits of each of 3 counters in nbr_cnt::t
+  static const uint f_mask = (1 << f_size) - 1;
+  static const uint black_inc_val;
+  static const uint white_inc_val;
+  static const uint off_board_inc_val;
 
-    nbr_cnt_t (uint black_cnt, uint white_cnt, uint empty_cnt) {
-      assertc (nbr_cnt_ac, black_cnt <= nbr_cnt_aux::max);
-      assertc (nbr_cnt_ac, white_cnt <= nbr_cnt_aux::max);
-      assertc (nbr_cnt_ac, empty_cnt <= nbr_cnt_aux::max);
-      
-      bitfield = 
-        (black_cnt << nbr_cnt_aux::f_shift [player_t::black_idx]) +
-        (white_cnt << nbr_cnt_aux::f_shift [player_t::white_idx]) +
-        (empty_cnt << nbr_cnt_aux::f_shift [color_t::empty_idx]);
-    }
+
+public:
+  uint bitfield;
+
+  nbr_cnt_t () { }
   
-    //void operator+= (const uint delta) { bitfield += delta; }
+  nbr_cnt_t (uint black_cnt, uint white_cnt, uint empty_cnt) {
+    assertc (nbr_cnt_ac, black_cnt <= max);
+    assertc (nbr_cnt_ac, white_cnt <= max);
+    assertc (nbr_cnt_ac, empty_cnt <= max);
+      
+    bitfield = 
+      (black_cnt << f_shift [player_t::black_idx]) +
+      (white_cnt << f_shift [player_t::white_idx]) +
+      (empty_cnt << f_shift [color_t::empty_idx]);
+  }
+  
+  void off_board_inc () { bitfield += off_board_inc_val; }
+  void player_inc (player_t player) { bitfield += player_inc_tab [player.get_idx ()]; }
+  void player_dec (player_t player) { bitfield -= player_inc_tab [player.get_idx ()]; }
 
-    void off_board_inc () { bitfield += nbr_cnt_aux::off_board_inc_val; }
-    void player_inc (player_t player) { bitfield += nbr_cnt_aux::player_inc_tab [player.get_idx ()]; }
-    void player_dec (player_t player) { bitfield -= nbr_cnt_aux::player_inc_tab [player.get_idx ()]; }
+  uint empty_cnt  () const { return bitfield >> f_shift [color_t::empty_idx]; }
 
-    uint empty_cnt  () const { 
-      return bitfield >> nbr_cnt_aux::f_shift [color_t::empty_idx];
-    }
+  uint player_cnt (player_t pl) const { return (bitfield >> f_shift [pl.get_idx ()]) & f_mask; }
 
-    uint player_cnt (player_t pl) const { 
-      return (bitfield >> nbr_cnt_aux::f_shift [pl.get_idx ()]) & nbr_cnt_aux::f_mask; 
-    }
+  uint player_cnt_is_max (player_t pl) const { 
+    return 
+      (bitfield & player_cnt_is_max_mask [pl.get_idx ()]) == 
+      player_cnt_is_max_mask [pl.get_idx ()]; 
+  }
 
-
-    uint player_cnt_is_max (player_t pl) const { 
-      return (bitfield & nbr_cnt_aux::player_cnt_is_max_mask [pl.get_idx ()]) == nbr_cnt_aux::player_cnt_is_max_mask [pl.get_idx ()]; 
-    }
-
-    void check () {
-      if (!nbr_cnt_ac) return;
-      assert (empty_cnt () <= nbr_cnt_aux::max);
-      assert (player_cnt (player_t::black ()) <= nbr_cnt_aux::max);
-      assert (player_cnt (player_t::white ()) <= nbr_cnt_aux::max);
-    }
-
+  void check () {
+    if (!nbr_cnt_ac) return;
+    assert (empty_cnt () <= max);
+    assert (player_cnt (player_t::black ()) <= max);
+    assert (player_cnt (player_t::white ()) <= max);
+  }
 };
+
+const uint nbr_cnt_t::black_inc_val = (1 << nbr_cnt_t::f_shift [player_t::black_idx]) - (1 << nbr_cnt_t::f_shift [color_t::empty_idx]);
+const uint nbr_cnt_t::white_inc_val = (1 << nbr_cnt_t::f_shift [player_t::white_idx]) - (1 << nbr_cnt_t::f_shift [color_t::empty_idx]);
+const uint nbr_cnt_t::off_board_inc_val  = 
+    + (1 << nbr_cnt_t::f_shift [player_t::black_idx]) 
+    + (1 << nbr_cnt_t::f_shift [player_t::white_idx]) 
+    - (1 << nbr_cnt_t::f_shift [color_t::empty_idx]);
+
+
+const uint nbr_cnt_t::f_shift [3] = { 0 * f_size, 1 * f_size, 2 * f_size };
+const uint nbr_cnt_t::player_cnt_is_max_mask [player_t::cnt] = {  // TODO player_map_t
+  (max << f_shift [player_t::black_idx]), 
+  (max << f_shift [player_t::white_idx]) 
+};
+
+const uint nbr_cnt_t::player_inc_tab [player_t::cnt] = { nbr_cnt_t::black_inc_val, nbr_cnt_t::white_inc_val };
 
 
 // class board_t
@@ -288,11 +283,11 @@ public:                         // consistency checks
           
       expected_nbr_cnt =        // definition of nbr_cnt[v]
         + ((nbr_color_cnt [color_t::black ()] + nbr_color_cnt [color_t::off_board ()]) 
-           << nbr_cnt_aux::f_shift [player_t::black_idx])
+           << nbr_cnt_t::f_shift [player_t::black_idx])
         + ((nbr_color_cnt [color_t::white ()] + nbr_color_cnt [color_t::off_board ()])
-           << nbr_cnt_aux::f_shift [player_t::white_idx])
+           << nbr_cnt_t::f_shift [player_t::white_idx])
         + ((nbr_color_cnt [color_t::empty ()]) 
-           << nbr_cnt_aux::f_shift [color_t::empty_idx]);
+           << nbr_cnt_t::f_shift [color_t::empty_idx]);
     
       assert (nbr_cnt[v].bitfield == expected_nbr_cnt);
     }
@@ -374,10 +369,10 @@ public:                         // board interface
     ko_v         = vertex_t::any ();
     vertex_for_each_all (v) {
       color_at      [v] = color_t::off_board ();
-      nbr_cnt       [v] = nbr_cnt_t (0, 0, nbr_cnt_aux::max);
+      nbr_cnt       [v] = nbr_cnt_t (0, 0, nbr_cnt_t::max);
       chain_next_v  [v] = v;
       chain_id      [v] = v.get_idx ();    // TODO is it needed, is it usedt?
-      chain_lib_cnt [v.get_idx ()] = nbr_cnt_aux::max; // TODO is it logical? (off_boards)
+      chain_lib_cnt [v.get_idx ()] = nbr_cnt_t::max; // TODO is it logical? (off_boards)
 
       if (v.is_on_board ()) {
         color_at   [v]              = color_t::empty ();

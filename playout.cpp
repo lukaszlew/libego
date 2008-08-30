@@ -83,9 +83,9 @@ random_pm_t pm(123); // TODO seed it when class
 class simple_policy_t {
 protected:
 
-  uint start_evi;
+  uint to_check_cnt;
   uint act_evi;
-  uint end_evi;
+
   board_t* board;
   player_t act_player;
 
@@ -99,27 +99,19 @@ public:
 
   void prepare_vertex () {
     act_player     = board->act_player ();
-    start_evi      = pm.rand_int (board->empty_v_cnt); 
-    act_evi        = start_evi;
-    end_evi        = board->empty_v_cnt;
+    to_check_cnt   = board->empty_v_cnt;
+    act_evi        = pm.rand_int (board->empty_v_cnt); 
   }
 
   vertex_t next_vertex () {
     vertex_t v;
     while (true) {
-      if (act_evi == end_evi) {
-        if (end_evi != start_evi) {
-          act_evi = 0;
-          end_evi = start_evi;
-          continue;
-        } else {
-          return vertex_t::pass ();
-        }
-      }
-      
-      v = board->empty_v [act_evi++];
-      if (board->is_eyelike (act_player, v)) continue;
-      return v;
+      if (to_check_cnt == 0) return vertex_t::pass ();
+      to_check_cnt--;
+      v = board->empty_v [act_evi];
+      act_evi++;
+      if (act_evi == board->empty_v_cnt) act_evi = 0;
+      if (!board->is_eyelike (act_player, v)) return v;
     }
   }
 

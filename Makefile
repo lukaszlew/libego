@@ -1,4 +1,4 @@
-OPT   = -O3 -march=native -fomit-frame-pointer -DDEBUG -ffast-math -frename-registers
+OPT   = -O3 -march=native -fomit-frame-pointer -DDEBUG -ffast-math -frename-registers -ggdb3 
 DEBUG = -ggdb3 -DDEBUG -fno-inline 
 PROF  = -O2 -march=native -DDEBUG -ggdb3 -fno-inline 
 

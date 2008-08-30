@@ -1,5 +1,8 @@
 echo Benchmarking, please wait ...
 benchmark 200000
 benchmark 200000
+benchmark 200000
+benchmark 200000
+benchmark 200000
 echo Try commands 'help' 'load_position positions/ld_difficult' 'benchmark 100000 +'
 echo Send questions to lukasz.lew@gmail.com.
