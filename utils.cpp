@@ -24,7 +24,8 @@
 typedef unsigned int uint;
 typedef unsigned long long uint64;
 
-//#define qqe(...) fprintf(stderr, __VA_ARGS__)
+// standard macros
+
 #define qq(...) fprintf(stdout, __VA_ARGS__); fflush (stdout);
 
 #define unused(p) (void)(p)
@@ -37,15 +38,11 @@ typedef unsigned long long uint64;
 #define let(a,b) typeof(b) a=(b)
 #define for_each(it, c) for(let(it,(c).begin()); it!=(c).end(); ++it)
 
-// TODO can it be a function?
-#define swap(a, b) \
-  do {\
-    typeof(a) tmp_a = a;\
-    typeof(b) tmp_b = b;\
-    b = tmp_a;\
-    a = tmp_b;\
-  } while (0);
+#define assertc(aspect, expr) assert((aspect) ? (expr) : true)
 
+const float large_float = 1000000000000.0;
+
+// cc_clock_t
 
 class cc_clock_t {
   double  sample_cnt;
@@ -93,13 +90,11 @@ public:
     return s.str ();
   }
 };
-
 #define cc_measure(cc_clock, instr) { cc_clock.start (); instr; cc_clock.stop (); }
 
-// TODO can it be a function?
-#define assertc(aspect, expr) assert((aspect) ? (expr) : true)
 
 // class random_pm_t
+
 
 class random_pm_t {             // Park - Miller "minimal standard" 
 
@@ -167,7 +162,6 @@ public:
 
 };
 
-const float large_float = 1000000000000.0;
 
 template <typename elt_t, uint _max_size> class stack_t {
 public:
@@ -203,6 +197,9 @@ public:
 };
 
 
+// some usefull functions
+
+
 float get_seconds () {
   rusage usage [1];
   getrusage (RUSAGE_SELF, usage);
@@ -214,6 +211,7 @@ void fatal_error (const char* s) {
   assert (false);
   exit (1);
 }
+
 
 // string/stream opereations
 
@@ -232,7 +230,6 @@ bool is_all_whitespace (string s) {
   return true;
 }
 
-
 string remove_empty_lines (string s) {
   istringstream in (s);
   ostringstream out;
@@ -245,8 +242,9 @@ string remove_empty_lines (string s) {
 }
 
 
+// g++ extensions
 
-// macros used in linux kernel
+
 #if 0
 
 #define likely(x)   __builtin_expect(!!(x), 1)
