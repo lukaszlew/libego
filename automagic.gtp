@@ -1,17 +1,5 @@
-name
-
 echo Benchmarking, please wait ...
-
 benchmark 200000
 benchmark 200000
-benchmark 200000
-benchmark 200000
-benchmark 200000
-
-echo This is an automatic run of the 100000 MC playouts.
-echo If it annoys You, just delete "automagic.gtp" file.
-
-echo Type "help" for list of commands.
-echo Type "load_position positions/ld_difficult" to load a position from this file.
-echo Add "+" in "benchmark 100000 +" if you want per-vertex stats.
-echo Write to me (Lukasz Lew <lukasz.lew@gmail.com>) if you want to report bug/help/send postcard/anything.
+echo Try commands 'help' 'load_position positions/ld_difficult' 'benchmark 100000 +'
+echo Send questions to lukasz.lew@gmail.com.

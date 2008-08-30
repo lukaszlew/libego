@@ -54,11 +54,17 @@ class cc_clock_t {
   double  overhead;
 public:
 
-  cc_clock_t () : sample_cnt (0), sample_sum (0) { 
+  cc_clock_t () {
+    reset ();
     uint64 t1, t2;
     t1 = get_cc_time ();
     t2 = get_cc_time ();
     overhead = double (t2 - t1);
+  }
+
+  void reset () {
+    sample_cnt = 0;
+    sample_sum = 0;
   }
 
   volatile uint64 get_cc_time () {

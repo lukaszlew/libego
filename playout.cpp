@@ -144,7 +144,7 @@ namespace simple_playout_benchmark {
   player_t::map_t <uint>  win_cnt;
   uint                    playout_ok_cnt;
   int                     playout_ok_score;
-
+  cc_clock_t              cc_clock;
 
   template <bool score_per_vertex> 
   void run (board_t const * start_board, 
@@ -164,10 +164,13 @@ namespace simple_playout_benchmark {
     vertex_for_each_all (v) 
       vertex_score [v] = 0;
 
+    cc_clock.reset ();
+
     playout_t<simple_policy_t> playout (mc_board);
 
+    cc_clock.start ();
     float seconds_begin = get_seconds ();
-    
+
     rep (ii, playout_cnt) {
       mc_board->load (start_board);
       status = playout.run ();
@@ -197,6 +200,7 @@ namespace simple_playout_benchmark {
     }
     
     float seconds_end = get_seconds ();
+    cc_clock.stop ();
     
     out << "Initial board:" << endl;
     out << "komi " << start_board->get_komi () << " for white" << endl;
@@ -228,11 +232,14 @@ namespace simple_playout_benchmark {
         << " (without komi = " << avg_score - mc_board->komi << ")" << endl << endl;
 
     float seconds_total = seconds_end - seconds_begin;
-    
+    float cc_per_playout = cc_clock.ticks () / double (playout_cnt);
+
     out << "Performance: " << endl
         << "  " << playout_cnt << " playouts" << endl
         << "  " << seconds_total << " seconds" << endl
-        << "  " << float (playout_cnt) / seconds_total / 1000.0 << " kpps" << endl;
-
+        << "  " << float (playout_cnt) / seconds_total / 1000.0 << " kpps" << endl
+        << "  " << cc_per_playout << " ccpp (clock cycles per playout)" << endl
+        << "  " << 1000000.0 / cc_per_playout  << " kpps/GHz (clock independent)" << endl
+      ;
   }
 }
