@@ -21,30 +21,43 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+
+class aaf_stats_t {
+public:
+  stat_t unconditional;
+  move_t::map_t <stat_t> given_move;
+
+  void reset () {
+    unconditional.reset ();
+    move_for_each_all (m)
+      given_move [m].reset ();
+  }
+
+  void update (move_t* move_history, uint move_count, float score) {
+    unconditional.update (score);
+    rep (ii, move_count)
+      given_move [move_history [ii]].update (score);
+  }
+
+  float norm_mean_given_move (const move_t& m) {
+    return given_move[m].mean () - unconditional.mean ();   // ineffective in loop
+  }
+};
+
+
 class all_as_first_t : public gtp_engine_t {
 public:
-
-  stat_t stat_unconditional;
-  move_t::map_t < stat_t > stat_given_move;
-  board_t* board;
-
-  uint playout_no;
-  float aaf_fraction;
-  float influence_scale;
+  board_t*    board;
+  aaf_stats_t aaf_stats;
+  uint        playout_no;
+  float       aaf_fraction;
+  float       influence_scale;
   
-
 public:
-  
   all_as_first_t (board_t& board_) : board (&board_) { 
     playout_no = 50000;
     aaf_fraction = 0.5;
     influence_scale = 6.0;
-  }
-
-  void reset () {
-    stat_unconditional.reset ();
-    move_for_each_all (m)
-      stat_given_move [m].reset ();
   }
 
   template <typename gtp_static_commands_t>
@@ -62,11 +75,9 @@ public:
     playout_t<simple_policy_t> (mc_board).run ();
 
     float score = mc_board->score ();
-    stat_unconditional.update (score);
-
     uint aaf_move_count = uint (float(mc_board->move_no)*aaf_fraction);
-    rep (m_cnt, aaf_move_count)
-      stat_given_move [mc_board->move_history [m_cnt]].update (score);
+
+    aaf_stats.update (mc_board->move_history, aaf_move_count, score);
   }
 
   virtual vector <string> get_command_names () const {
@@ -76,25 +87,19 @@ public:
     commands.push_back ("AAF.set_playout_number");
     commands.push_back ("AAF.set_aaf_fraction");
     return commands;
-  };
+  }
 
 
   virtual gtp_status_t exec_command (string command, istream& params, ostream& response) {
-    
     if (command == "AAF.move_value") {
       player_t  player;
       if (!(params >> player)) return gtp_syntax_error;
-
-      reset ();
+      aaf_stats.reset ();
       rep (ii, playout_no) 
         do_playout (board);
-
-      float base_mean = stat_unconditional.mean ();
       vertex_t::map_t<float> means;
-
       vertex_for_each_all (v) {
-        means [v] = stat_given_move [move_t (player, v)].mean () - base_mean;
-        means [v] /= influence_scale;;
+        means [v] = aaf_stats.norm_mean_given_move (move_t(player, v)) / influence_scale;;
         if (board->color_at [v] != color_t::empty ()) 
           means [v] = 0.0;
       }
@@ -128,8 +133,6 @@ public:
 
     fatal_error ("wrong command in gtp_genmove_t::exec_command");
     return gtp_panic; // formality 
-
   }
 
 };
-
