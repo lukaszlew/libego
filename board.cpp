@@ -83,19 +83,18 @@ public:
 class nbr_cnt_t {
 public:
 
-  static const uint f_shift [3];
-  static const uint player_cnt_is_max_mask [player_t::cnt];
-  static const uint player_inc_tab [player_t::cnt];
-
   static const uint max = 4;                 // maximal number of neighbours
   static const uint f_size = 4;              // size in bits of each of 3 counters in nbr_cnt::t
   static const uint f_mask = (1 << f_size) - 1;
-  static const uint black_inc_val;
-  static const uint white_inc_val;
-  static const uint off_board_inc_val;
-
-
+  static const uint f_shift_black = 0 * f_size;
+  static const uint f_shift_white = 1 * f_size;
+  static const uint f_shift_empty = 2 * f_size;
+  static const uint black_inc_val = (1 << f_shift_black) - (1 << f_shift_empty);
+  static const uint white_inc_val = (1 << f_shift_white) - (1 << f_shift_empty);
+  static const uint off_board_inc_val = (1 << f_shift_black) + (1 << f_shift_white) - (1 << f_shift_empty);
+  
 public:
+
   uint bitfield;
 
   nbr_cnt_t () { }
@@ -104,25 +103,27 @@ public:
     assertc (nbr_cnt_ac, black_cnt <= max);
     assertc (nbr_cnt_ac, white_cnt <= max);
     assertc (nbr_cnt_ac, empty_cnt <= max);
-      
     bitfield = 
-      (black_cnt << f_shift [player_t::black_idx]) +
-      (white_cnt << f_shift [player_t::white_idx]) +
-      (empty_cnt << f_shift [color_t::empty_idx]);
+      (black_cnt << f_shift_black) +
+      (white_cnt << f_shift_white) +
+      (empty_cnt << f_shift_empty);
   }
   
-  void off_board_inc () { bitfield += off_board_inc_val; }
+  static const uint player_inc_tab [player_t::cnt];
   void player_inc (player_t player) { bitfield += player_inc_tab [player.get_idx ()]; }
   void player_dec (player_t player) { bitfield -= player_inc_tab [player.get_idx ()]; }
+  void off_board_inc () { bitfield += off_board_inc_val; }
 
-  uint empty_cnt  () const { return bitfield >> f_shift [color_t::empty_idx]; }
+  uint empty_cnt  () const { return bitfield >> f_shift_empty; }
 
+  static const uint f_shift [3];
   uint player_cnt (player_t pl) const { return (bitfield >> f_shift [pl.get_idx ()]) & f_mask; }
 
+  static const uint player_cnt_is_max_mask [player_t::cnt];
   uint player_cnt_is_max (player_t pl) const { 
     return 
-      (bitfield & player_cnt_is_max_mask [pl.get_idx ()]) == 
-      player_cnt_is_max_mask [pl.get_idx ()]; 
+      (player_cnt_is_max_mask [pl.get_idx ()] & bitfield) == 
+       player_cnt_is_max_mask [pl.get_idx ()]; 
   }
 
   void check () {
@@ -133,18 +134,15 @@ public:
   }
 };
 
-const uint nbr_cnt_t::black_inc_val = (1 << nbr_cnt_t::f_shift [player_t::black_idx]) - (1 << nbr_cnt_t::f_shift [color_t::empty_idx]);
-const uint nbr_cnt_t::white_inc_val = (1 << nbr_cnt_t::f_shift [player_t::white_idx]) - (1 << nbr_cnt_t::f_shift [color_t::empty_idx]);
-const uint nbr_cnt_t::off_board_inc_val  = 
-    + (1 << nbr_cnt_t::f_shift [player_t::black_idx]) 
-    + (1 << nbr_cnt_t::f_shift [player_t::white_idx]) 
-    - (1 << nbr_cnt_t::f_shift [color_t::empty_idx]);
+const uint nbr_cnt_t::f_shift [3] = { 
+  nbr_cnt_t::f_shift_black, 
+  nbr_cnt_t::f_shift_white, 
+  nbr_cnt_t::f_shift_empty, 
+};
 
-
-const uint nbr_cnt_t::f_shift [3] = { 0 * f_size, 1 * f_size, 2 * f_size };
 const uint nbr_cnt_t::player_cnt_is_max_mask [player_t::cnt] = {  // TODO player_map_t
-  (max << f_shift [player_t::black_idx]), 
-  (max << f_shift [player_t::white_idx]) 
+  (max << f_shift_black), 
+  (max << f_shift_white) 
 };
 
 const uint nbr_cnt_t::player_inc_tab [player_t::cnt] = { nbr_cnt_t::black_inc_val, nbr_cnt_t::white_inc_val };
@@ -283,11 +281,11 @@ public:                         // consistency checks
           
       expected_nbr_cnt =        // definition of nbr_cnt[v]
         + ((nbr_color_cnt [color_t::black ()] + nbr_color_cnt [color_t::off_board ()]) 
-           << nbr_cnt_t::f_shift [player_t::black_idx])
+           << nbr_cnt_t::f_shift_black)
         + ((nbr_color_cnt [color_t::white ()] + nbr_color_cnt [color_t::off_board ()])
-           << nbr_cnt_t::f_shift [player_t::white_idx])
+           << nbr_cnt_t::f_shift_white)
         + ((nbr_color_cnt [color_t::empty ()]) 
-           << nbr_cnt_t::f_shift [color_t::empty_idx]);
+           << nbr_cnt_t::f_shift_empty);
     
       assert (nbr_cnt[v].bitfield == expected_nbr_cnt);
     }

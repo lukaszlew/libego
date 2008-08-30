@@ -99,15 +99,11 @@ public:
 // TODO can it be a function?
 #define assertc(aspect, expr) assert((aspect) ? (expr) : true)
 
-
-// namespace pm
-
-namespace random_pm_aux {
-  const int cnt = (1<<31) - 1;  
-}
-
+// class random_pm_t
 
 class random_pm_t {             // Park - Miller "minimal standard" 
+
+  static const int cnt = (1<<31) - 1;  
 
   uint seed;
   //tr1::minstd_rand0 mt; // this is eqivalent when #include <tr1/random>
