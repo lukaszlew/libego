@@ -132,8 +132,8 @@ namespace simple_playout_benchmark {
 
   Board               mc_board [1];
 
-  Vertex::Map <int>   vertex_score;
-  Player::Map <uint>  win_cnt;
+  FastMap<Vertex, int>   vertex_score;
+  FastMap<Player, uint>  win_cnt;
   uint                playout_ok_cnt;
   int                 playout_ok_score;
   PerformanceTimer    perf_timer;
@@ -201,12 +201,12 @@ namespace simple_playout_benchmark {
     out << endl;
     
     if (score_per_vertex) {
-      Vertex::Map <float> black_own;
+      FastMap<Vertex, float> black_own;
       vertex_for_each_all (v) 
         black_own [v] = float(vertex_score [v]) / float (playout_ok_cnt);
 
       out << "P(black owns vertex) rescaled to [-1, 1] (p*2 - 1): " << endl 
-          << black_own.to_string_2d () 
+          << to_string_2d (black_own) 
           << endl;
     }
 

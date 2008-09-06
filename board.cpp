@@ -57,7 +57,7 @@ public:
 class Zobrist {
 public:
 
-  Move::Map <Hash> hashes;
+  FastMap<Move, Hash> hashes;
 
   Zobrist (PmRandom& pm) {
     player_for_each (pl) vertex_for_each_all (v) {
@@ -161,31 +161,31 @@ class Board {
 public:
 
 
-  Vertex::Map <Color>       color_at;
-  Vertex::Map <NbrCounter>  nbr_cnt; // incremental, for fast eye checking
-  Vertex::Map <uint>        empty_pos;
-  Vertex::Map <Vertex>      chain_next_v;
+  FastMap<Vertex, Color>       color_at;
+  FastMap<Vertex, NbrCounter>  nbr_cnt; // incremental, for fast eye checking
+  FastMap<Vertex, uint>        empty_pos;
+  FastMap<Vertex, Vertex>      chain_next_v;
 
-  uint                      chain_lib_cnt [Vertex::cnt]; // indexed by chain_id
-  Vertex::Map <uint>        chain_id;
+  uint                         chain_lib_cnt [Vertex::cnt]; // indexed by chain_id
+  FastMap<Vertex, uint>        chain_id;
   
-  Vertex                    empty_v [board_area];
-  uint                      empty_v_cnt;
-  uint                      last_empty_v_cnt;
+  Vertex                       empty_v [board_area];
+  uint                         empty_v_cnt;
+  uint                         last_empty_v_cnt;
 
-  Player::Map <uint>        player_v_cnt;
-  Player::Map <Vertex>      player_last_v;
+  FastMap<Player, uint>        player_v_cnt;
+  FastMap<Player, Vertex>      player_last_v;
 
-  Hash                      hash;
-  int                       komi;
+  Hash                         hash;
+  int                          komi;
 
-  Vertex                    ko_v;             // vertex forbidden by ko
+  Vertex                       ko_v;             // vertex forbidden by ko
 
-  Player                    last_player;      // player who made the last play (other::player is forbidden to retake)
-  uint                      move_no;
+  Player                       last_player;      // player who made the last play (other::player is forbidden to retake)
+  uint                         move_no;
 
-  play_ret_t                last_move_status;
-  Move                      move_history [max_game_length];
+  play_ret_t                   last_move_status;
+  Move                         move_history [max_game_length];
 
 public:                         // macros
 
@@ -215,8 +215,8 @@ public:                         // consistency checks
   void check_empty_v () const {
     if (!board_empty_v_ac) return;
 
-    Vertex::Map <bool> noticed;
-    Player::Map <uint> exp_player_v_cnt;
+    FastMap<Vertex, bool> noticed;
+    FastMap<Player, uint> exp_player_v_cnt;
 
     vertex_for_each_all (v) noticed[v] = false;
 
@@ -264,7 +264,7 @@ public:                         // consistency checks
     vertex_for_each_all (v) {
       coord::t r;
       coord::t c;
-      Color::Map <uint> nbr_color_cnt;
+      FastMap<Color, uint> nbr_color_cnt;
       uint expected_nbr_cnt;
 
       if (color_at[v] == Color::off_board()) continue; // TODO is that right?
@@ -455,7 +455,7 @@ public: // legality functions
     assertc (board_ac, color_at [v] == Color::empty ());
     if (! nbr_cnt[v].player_cnt_is_max (player)) return false;
 
-    Color::Map <int> diag_color_cnt; // TODO
+    FastMap<Color, int> diag_color_cnt; // TODO
     color_for_each (col) 
       diag_color_cnt [col] = 0; // memset is slower
 
@@ -779,7 +779,7 @@ public:                         // utils
 
 
   int vertex_score (Vertex v) {
-    //     Color::Map <int> Coloro_score;
+    //     FastMap<Color, int> Coloro_score;
     //     Coloro_score [Color::black ()] = 1;
     //     Coloro_score [Color::white ()] = -1;
     //     Coloro_score [Color::empty ()] =

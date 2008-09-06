@@ -25,7 +25,7 @@
 class AafStats {
 public:
   Stat unconditional;
-  Move::Map <Stat> given_move;
+  FastMap<Move, Stat> given_move;
 
   void reset () {
     unconditional.reset ();
@@ -84,13 +84,13 @@ public:
       aaf_stats.reset ();
       rep (ii, playout_no) 
         do_playout (board);
-      Vertex::Map<float> means;
+      FastMap<Vertex, float> means;
       vertex_for_each_all (v) {
         means [v] = aaf_stats.norm_mean_given_move (Move(player, v)) / influence_scale;;
         if (board->color_at [v] != Color::empty ()) 
           means [v] = 0.0;
       }
-      response << means.to_string_2d ();
+      response << to_string_2d (means);
       return gtp_success;
     }
 

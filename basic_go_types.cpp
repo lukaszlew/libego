@@ -22,7 +22,6 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-
 class Player { // TODO check is check always checked in constructors
 
   uint idx;
@@ -62,16 +61,7 @@ public:
   
   static Player black () { return Player (black_idx); }
   static Player white () { return Player (white_idx); }
-
-  template <typename elt_t> class Map {
-  public:
-    elt_t tab [cnt];
-    elt_t& operator[] (Player pl)             { return tab [pl.get_idx ()]; }
-    const elt_t& operator[] (Player pl) const { return tab [pl.get_idx ()]; }
-  };
-
 };
-
 
 istream& operator>> (istream& in, Player& pl) {
   string s;
@@ -151,17 +141,6 @@ public:
   static Color empty ()      { return Color (empty_idx); }
   static Color off_board  () { return Color (off_board_idx); }
   static Color wrong_char () { return Color (wrong_char_idx); }
-
-
-  // class color_Map
-  
-  template <typename elt_t> class Map {
-  public:
-    elt_t tab [Color::cnt];
-    elt_t& operator[] (Color col)             { return tab [col.get_idx ()]; }
-    const elt_t& operator[] (Color col) const { return tab [col.get_idx ()]; }
-  };
-
 };
 
 // TODO test it for performance
@@ -299,31 +278,6 @@ public:
     }
   }
 
-
-  template <typename elt_t> class Map {
-  public:
-    elt_t tab [cnt];
-    elt_t& operator[] (Vertex v)             { return tab [v.get_idx ()]; }
-    const elt_t& operator[] (Vertex v) const { return tab [v.get_idx ()]; }
-    
-    string to_string_2d (int precision = 3) {
-      ostringstream out;
-      out << setiosflags (ios_base::fixed) ;
-      
-      coord_for_each (row) {
-        coord_for_each (col) {
-          Vertex v = Vertex (row, col);
-          out.precision(precision);
-          out.width(precision + 3);
-          out << tab [v.get_idx ()] << " ";
-        }
-        out << endl;
-      }
-      return out.str ();
-    }
-    
-  };
-
   static Vertex pass   () { return Vertex (Vertex::pass_idx); }
   static Vertex any    () { return Vertex (Vertex::any_idx); }
   static Vertex resign () { return Vertex (Vertex::resign_idx); }
@@ -343,7 +297,6 @@ public:
     }
   }
 };
-  
 
 // TODO of_gtp_string
 istream& operator>> (istream& in, Vertex& v) {
@@ -465,15 +418,8 @@ public:
 
   bool in_range ()          const { return idx < cnt; }
   void next ()                    { idx++; }
-
-  template <typename elt_t> class Map {
-  public:
-    elt_t tab [cnt];
-    elt_t& operator[] (Move m)             { return tab [m.get_idx ()]; }
-    const elt_t& operator[] (Move m) const { return tab [m.get_idx ()]; }
-  };
-
 };
+
 
 istream& operator>> (istream& in, Move& m) {
   Player pl;
@@ -482,6 +428,25 @@ istream& operator>> (istream& in, Move& m) {
   m = Move (pl, v);
   return in;
 }
+
+  
+template <typename T>
+string to_string_2d (FastMap<Vertex, T>& map, int precision = 3) {
+  ostringstream out;
+  out << setiosflags (ios_base::fixed) ;
+  
+  coord_for_each (row) {
+    coord_for_each (col) {
+      Vertex v = Vertex (row, col);
+      out.precision(precision);
+      out.width(precision + 3);
+      out << map [v] << " ";
+    }
+    out << endl;
+  }
+  return out.str ();
+}
+    
 
 #define move_for_each_all(m) for (Move m = 0; m.in_range (); m.next ())
 

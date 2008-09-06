@@ -120,7 +120,7 @@ public:
   float    value;
   float    bias;
 
-  Player::Map <Node*> first_child;         // head of list of moves of particular player 
+  FastMap<Player, Node*> first_child;         // head of list of moves of particular player 
   Node*  sibling;                           // NULL if last child
 
 public:
@@ -390,7 +390,7 @@ public:
   flatten 
   void do_playout (Player first_player){
     Board    play_board[1]; // TODO test for perfomance + memcpy
-    Player::Map <bool> was_pass;
+    FastMap<Player, bool> was_pass;
     Player  act_player = first_player;
     Vertex       v;
     
