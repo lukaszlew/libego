@@ -25,20 +25,20 @@
 enum playout_status_t { pass_pass, mercy, too_long };
 
 
-template <typename policy_t> class playout_t {
+template <typename policy_t> class Playout {
 public:
-  board_t*  board;
+  Board*  board;
   policy_t  policy[1];
 
-  playout_t (board_t*  board_) : board(board_) {}
+  Playout (Board*  board_) : board(board_) {}
 
   all_inline
   void play_move () {
     policy->prepare_vertex ();
     
     while (true) {
-      player_t   act_player = board->act_player ();
-      vertex_t   v          = policy->next_vertex ();
+      Player   act_player = board->act_player ();
+      Vertex   v          = policy->next_vertex ();
 
       if (board->is_pseudo_legal (act_player, v) == false) {
         policy->bad_vertex (v);
@@ -78,22 +78,22 @@ public:
 };
 
 
-random_pm_t pm(123); // TODO seed it when class
+PmRandom pm(123); // TODO seed it when class
 
-class simple_policy_t {
+class SimplePolicy {
 protected:
 
   uint to_check_cnt;
   uint act_evi;
 
-  board_t* board;
-  player_t act_player;
+  Board* board;
+  Player act_player;
 
 public:
 
-  simple_policy_t () : board (NULL) { }
+  SimplePolicy () : board (NULL) { }
 
-  void begin_playout (board_t* board_) { 
+  void begin_playout (Board* board_) { 
     board = board_;
   }
 
@@ -103,10 +103,10 @@ public:
     act_evi        = pm.rand_int (board->empty_v_cnt); 
   }
 
-  vertex_t next_vertex () {
-    vertex_t v;
+  Vertex next_vertex () {
+    Vertex v;
     while (true) {
-      if (to_check_cnt == 0) return vertex_t::pass ();
+      if (to_check_cnt == 0) return Vertex::pass ();
       to_check_cnt--;
       v = board->empty_v [act_evi];
       act_evi++;
@@ -115,10 +115,10 @@ public:
     }
   }
 
-  void bad_vertex (vertex_t v) {
+  void bad_vertex (Vertex v) {
   }
 
-  void played_vertex (vertex_t v) { 
+  void played_vertex (Vertex v) { 
   }
 
   void end_playout (playout_status_t status) { 
@@ -130,21 +130,21 @@ public:
 
 namespace simple_playout_benchmark {
 
-  board_t                 mc_board [1];
+  Board               mc_board [1];
 
-  vertex_t::map_t <int>   vertex_score;
-  player_t::map_t <uint>  win_cnt;
-  uint                    playout_ok_cnt;
-  int                     playout_ok_score;
-  cc_clock_t              cc_clock;
+  Vertex::Map <int>   vertex_score;
+  Player::Map <uint>  win_cnt;
+  uint                playout_ok_cnt;
+  int                 playout_ok_score;
+  PerformanceTimer    perf_timer;
 
   template <bool score_per_vertex> 
-  void run (board_t const * start_board, 
+  void run (Board const * start_board, 
             uint playout_cnt, 
             ostream& out) 
   {
     playout_status_t status;
-    player_t winner;
+    Player winner;
     int score;
 
     playout_ok_cnt   = 0;
@@ -156,11 +156,11 @@ namespace simple_playout_benchmark {
     vertex_for_each_all (v) 
       vertex_score [v] = 0;
 
-    cc_clock.reset ();
+    perf_timer.reset ();
 
-    playout_t<simple_policy_t> playout (mc_board);
+    Playout<SimplePolicy> playout (mc_board);
 
-    cc_clock.start ();
+    perf_timer.start ();
     float seconds_begin = get_seconds ();
 
     rep (ii, playout_cnt) {
@@ -173,7 +173,7 @@ namespace simple_playout_benchmark {
         score = mc_board -> score ();
         playout_ok_score += score;
 
-        winner = player_t (score <= 0);  // mc_board->winner ()
+        winner = Player (score <= 0);  // mc_board->winner ()
         win_cnt [winner] ++;
 
         if (score_per_vertex) {
@@ -192,7 +192,7 @@ namespace simple_playout_benchmark {
     }
     
     float seconds_end = get_seconds ();
-    cc_clock.stop ();
+    perf_timer.stop ();
     
     out << "Initial board:" << endl;
     out << "komi " << start_board->get_komi () << " for white" << endl;
@@ -201,7 +201,7 @@ namespace simple_playout_benchmark {
     out << endl;
     
     if (score_per_vertex) {
-      vertex_t::map_t <float> black_own;
+      Vertex::Map <float> black_own;
       vertex_for_each_all (v) 
         black_own [v] = float(vertex_score [v]) / float (playout_ok_cnt);
 
@@ -210,11 +210,11 @@ namespace simple_playout_benchmark {
           << endl;
     }
 
-    out << "Black wins    = " << win_cnt [player_t::black ()] << endl
-        << "White wins    = " << win_cnt [player_t::white ()] << endl
+    out << "Black wins    = " << win_cnt [Player::black ()] << endl
+        << "White wins    = " << win_cnt [Player::white ()] << endl
         << "P(black win)  = " 
-        << float (win_cnt [player_t::black ()]) / 
-           float (win_cnt [player_t::black ()] + win_cnt [player_t::white ()]) 
+        << float (win_cnt [Player::black ()]) / 
+           float (win_cnt [Player::black ()] + win_cnt [Player::white ()]) 
         << endl;
 
     float avg_score = float (playout_ok_score) / float (playout_ok_cnt);
@@ -224,7 +224,7 @@ namespace simple_playout_benchmark {
         << " (without komi = " << avg_score - mc_board->komi << ")" << endl << endl;
 
     float seconds_total = seconds_end - seconds_begin;
-    float cc_per_playout = cc_clock.ticks () / double (playout_cnt);
+    float cc_per_playout = perf_timer.ticks () / double (playout_cnt);
 
     out << "Performance: " << endl
         << "  " << playout_cnt << " playouts" << endl

@@ -22,21 +22,21 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 template <typename engine_t>
-class gtp_genmove_t : public gtp_engine_t {
+class GtpGenmove : public GtpEngine {
 
-  board_t& board;
+  Board& board;
 
 public:
 
-  gtp_genmove_t (gtp_t& gtp, board_t& board_, engine_t& engine_) : board (board_) { //, engine (engine_) { }
+  GtpGenmove (Gtp& gtp, Board& board_, engine_t& engine_) : board (board_) { //, engine (engine_) { }
     gtp.add_gtp_command (this, "genmove");
   } 
 
-  virtual gtp_status_t exec_command (string command, istream& params, ostream& response) {
+  virtual GtpStatus exec_command (string command, istream& params, ostream& response) {
 
     if (command == "genmove") {
-      player_t  player;
-      vertex_t   v;
+      Player  player;
+      Vertex   v;
       if (!(params >> player)) return gtp_syntax_error;
   
       engine_t* engine = new engine_t (board); // TODO Why we need to allocate?
@@ -45,7 +45,7 @@ public:
       
       
 
-      if (v != vertex_t::resign () &&
+      if (v != Vertex::resign () &&
           board.try_play (player, v) == false)
         fatal_error ("genmove: generated illegal move");
 
@@ -54,7 +54,7 @@ public:
       return gtp_success;
     }
 
-    fatal_error ("wrong command in gtp_genmove_t::exec_command");
+    fatal_error ("wrong command in GtpGenmove::exec_command");
     return gtp_panic; // formality 
   } 
   // end of exec_command

@@ -22,7 +22,7 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-enum gtp_status_t {
+enum GtpStatus {
   gtp_success,
   gtp_failure,
   gtp_syntax_error,
@@ -30,17 +30,17 @@ enum gtp_status_t {
   gtp_quit
 };
 
-class gtp_engine_t {
+class GtpEngine {
 public:
-  gtp_engine_t () {}
-  virtual ~gtp_engine_t () {}
-  virtual gtp_status_t exec_command (string command_name, istream& params, ostream& response) = 0;
+  GtpEngine () {}
+  virtual ~GtpEngine () {}
+  virtual GtpStatus exec_command (string command_name, istream& params, ostream& response) = 0;
 };
 
 
-class gtp_t : public gtp_engine_t {
+class Gtp : public GtpEngine {
 public:
-  gtp_t () { 
+  Gtp () { 
     add_gtp_command (this, "help");
     add_gtp_command (this, "list_commands");
     add_gtp_command (this, "known_command");
@@ -62,7 +62,7 @@ public:
   }
 
   
-  void add_gtp_command (gtp_engine_t* engine, string name) {
+  void add_gtp_command (GtpEngine* engine, string name) {
     assert(!is_command(name));
     engine_of_cmd_name [name] = engine;
   }
@@ -78,7 +78,7 @@ public:
     //cout << "P " << name << " -> " << endl <<      command_to_response [name] << endl;
   }
   
-  void add_gogui_command (gtp_engine_t* engine, string type, string name, string params) {
+  void add_gogui_command (GtpEngine* engine, string type, string name, string params) {
     if (!is_command(name)) add_gtp_command (engine, name);
     string ext = type + "/" + name + " " + params + "/" + name + " " + params + "\n";
     extend_static_command ("gogui_analyze_commands", ext);
@@ -100,7 +100,7 @@ public:
     string line;
     int cmd_num;
     string cmd_name;
-    gtp_status_t status;
+    GtpStatus status;
 
     while (true) {
       if (!getline (in, line)) break;
@@ -117,7 +117,7 @@ public:
         continue;
       }
 
-      gtp_engine_t* engine = (*(engine_of_cmd_name.find (cmd_name))).second;
+      GtpEngine* engine = (*(engine_of_cmd_name.find (cmd_name))).second;
 
       ostringstream response;
       status = engine->exec_command (cmd_name, line_stream, response);
@@ -151,7 +151,7 @@ public:
 
 public: // basic GTP commands
 
-  virtual gtp_status_t exec_command (string command, istream& params, ostream& response) {
+  virtual GtpStatus exec_command (string command, istream& params, ostream& response) {
 
     if (is_static_command (command)) {
       response << command_to_response.find (command)->second;
@@ -197,7 +197,7 @@ public: // basic GTP commands
       return gtp_success;
     }
 
-    fatal_error ("wrong command in gtp_t::exec_command");
+    fatal_error ("wrong command in Gtp::exec_command");
     return gtp_panic; // formality 
   }
 
@@ -215,7 +215,7 @@ private:
     return ret.str ();
   }
 
-  string status_marker (gtp_status_t status) {
+  string status_marker (GtpStatus status) {
     switch (status) {
     case gtp_success: return "=";
     case gtp_failure: return "?";
@@ -227,6 +227,6 @@ private:
   }
 
 private:
-  map <string, gtp_engine_t*> engine_of_cmd_name;
+  map <string, GtpEngine*> engine_of_cmd_name;
   map <string, string>        command_to_response;
 };

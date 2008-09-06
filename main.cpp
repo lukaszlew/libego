@@ -63,7 +63,7 @@ using namespace std;
 
 
 // goes through GTP files given in command line
-void process_command_line (gtp_t& gtp, int argc, char** argv) {
+void process_command_line (Gtp& gtp, int argc, char** argv) {
   if (argc == 1) {
     if (gtp.run_file ("automagic.gtp") == false) 
       cerr << "GTP file not found: automagic.gtp" << endl;
@@ -85,16 +85,16 @@ int main (int argc, char** argv) {
   setvbuf (stdout, (char *)NULL, _IONBF, 0);
   setvbuf (stderr, (char *)NULL, _IONBF, 0);
 
-  gtp_t        gtp;
-  board_t      board;
-  sgf_tree_t   sgf_tree;
+  Gtp      gtp;
+  Board    board;
+  SgfTree  sgf_tree;
 
-  gtp_board_t     gtp_board (gtp, board);
-  gtp_sgf_t       gtp_sgf (gtp, sgf_tree, board);
-  all_as_first_t  aaf (gtp, board);
+  GtpBoard    gtp_board (gtp, board);
+  GtpSgf      gtp_sgf (gtp, sgf_tree, board);
+  AllAsFirst  aaf (gtp, board);
 
-  uct_t uct (board);
-  gtp_genmove_t<uct_t>  gtp_genmove (gtp, board, uct);
+  Uct uct (board);
+  GtpGenmove<Uct>  gtp_genmove (gtp, board, uct);
   
   // arguments
   process_command_line (gtp, argc, argv);

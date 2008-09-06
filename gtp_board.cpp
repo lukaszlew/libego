@@ -25,13 +25,13 @@
 
 
 
-class gtp_board_t : public gtp_engine_t {
+class GtpBoard : public GtpEngine {
 
-  board_t& board;
+  Board& board;
 
 public:
 
-  gtp_board_t (gtp_t& gtp, board_t& board_) : board (board_) { 
+  GtpBoard (Gtp& gtp, Board& board_) : board (board_) { 
     gtp.add_gtp_command (this, "boardsize");
     gtp.add_gtp_command (this, "clear_board");
     gtp.add_gtp_command (this, "komi");
@@ -42,7 +42,7 @@ public:
     gtp.add_gtp_command (this, "benchmark");
   }
 
-  virtual gtp_status_t exec_command (string command, istream& params, ostream& response) {
+  virtual GtpStatus exec_command (string command, istream& params, ostream& response) {
 
 
     if (command == "boardsize") {
@@ -83,11 +83,11 @@ public:
 
 
     if (command == "play") {
-      player_t  pl;
-      vertex_t   v;
+      Player pl;
+      Vertex v;
       if (!(params >> pl >> v)) return gtp_syntax_error;
   
-      if (v != vertex_t::resign () && board.try_play (pl, v) == false) {
+      if (v != Vertex::resign () && board.try_play (pl, v) == false) {
         response << "illegal move";
         return gtp_failure;
       }
@@ -122,7 +122,7 @@ public:
       return gtp_success;
     }
 
-    fatal_error ("wrong command in gtp_board_t::exec_command");
+    fatal_error ("wrong command in GtpBoard::exec_command");
     return gtp_panic; // formality 
   } 
   // end of exec_command

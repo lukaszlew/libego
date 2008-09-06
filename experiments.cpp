@@ -22,10 +22,10 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-class aaf_stats_t {
+class AafStats {
 public:
-  stat_t unconditional;
-  move_t::map_t <stat_t> given_move;
+  Stat unconditional;
+  Move::Map <Stat> given_move;
 
   void reset () {
     unconditional.reset ();
@@ -33,28 +33,28 @@ public:
       given_move [m].reset ();
   }
 
-  void update (move_t* move_history, uint move_count, float score) {
+  void update (Move* move_history, uint move_count, float score) {
     unconditional.update (score);
     rep (ii, move_count)
       given_move [move_history [ii]].update (score);
   }
 
-  float norm_mean_given_move (const move_t& m) {
+  float norm_mean_given_move (const Move& m) {
     return given_move[m].mean () - unconditional.mean ();   // ineffective in loop
   }
 };
 
 
-class all_as_first_t : public gtp_engine_t {
+class AllAsFirst : public GtpEngine {
 public:
-  board_t*    board;
-  aaf_stats_t aaf_stats;
+  Board*      board;
+  AafStats    aaf_stats;
   uint        playout_no;
   float       aaf_fraction;
   float       influence_scale;
   
 public:
-  all_as_first_t (gtp_t& gtp, board_t& board_) : board (&board_) { 
+  AllAsFirst (Gtp& gtp, Board& board_) : board (&board_) { 
     playout_no = 50000;
     aaf_fraction = 0.5;
     influence_scale = 6.0;
@@ -66,10 +66,10 @@ public:
     gtp.add_gogui_command (this, "none",   "AAF.set_aaf_fraction",    "%s");
   }
     
-  void do_playout (const board_t* base_board) {
-    board_t mc_board [1];
+  void do_playout (const Board* base_board) {
+    Board mc_board [1];
     mc_board->load (base_board);
-    playout_t<simple_policy_t> (mc_board).run ();
+    Playout<SimplePolicy> (mc_board).run ();
 
     float score = mc_board->score ();
     uint aaf_move_count = uint (float(mc_board->move_no)*aaf_fraction);
@@ -77,17 +77,17 @@ public:
     aaf_stats.update (mc_board->move_history, aaf_move_count, score);
   }
 
-  virtual gtp_status_t exec_command (string command, istream& params, ostream& response) {
+  virtual GtpStatus exec_command (string command, istream& params, ostream& response) {
     if (command == "AAF.move_value") {
-      player_t  player;
+      Player player;
       if (!(params >> player)) return gtp_syntax_error;
       aaf_stats.reset ();
       rep (ii, playout_no) 
         do_playout (board);
-      vertex_t::map_t<float> means;
+      Vertex::Map<float> means;
       vertex_for_each_all (v) {
-        means [v] = aaf_stats.norm_mean_given_move (move_t(player, v)) / influence_scale;;
-        if (board->color_at [v] != color_t::empty ()) 
+        means [v] = aaf_stats.norm_mean_given_move (Move(player, v)) / influence_scale;;
+        if (board->color_at [v] != Color::empty ()) 
           means [v] = 0.0;
       }
       response << means.to_string_2d ();
@@ -118,7 +118,7 @@ public:
       return gtp_success;
     }
 
-    fatal_error ("wrong command in all_as_first_t::exec_command");
+    fatal_error ("wrong command in AllAsFirst::exec_command");
     return gtp_panic; // formality 
   }
 

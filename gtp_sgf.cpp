@@ -26,21 +26,21 @@
 
 // class gtp_sgf
 
-class gtp_sgf_t : public gtp_engine_t {
+class GtpSgf : public GtpEngine {
 public:
-  sgf_tree_t&       sgf_tree;
-  gtp_t&            gtp;
-  board_t&          base_board;
+  SgfTree&       sgf_tree;
+  Gtp&            gtp;
+  Board&          base_board;
   
 
-  gtp_sgf_t (gtp_t& _gtp, sgf_tree_t& _sgf_tree, board_t& _base_board) : 
+  GtpSgf (Gtp& _gtp, SgfTree& _sgf_tree, Board& _base_board) : 
     sgf_tree (_sgf_tree), gtp (_gtp), base_board (_base_board) {
     gtp.add_gtp_command (this, "sgf.load");
     gtp.add_gtp_command (this, "sgf.save");
     gtp.add_gtp_command (this, "sgf.gtp.exec");
   }
 
-  virtual gtp_status_t exec_command (string command, istream& params, ostream& response) {
+  virtual GtpStatus exec_command (string command, istream& params, ostream& response) {
     // ---------------------------------------------------------------------
     if (command == "sgf.load") {
       string file_name;
@@ -91,7 +91,7 @@ public:
         return gtp_failure;
       }
 
-      board_t save_board;
+      Board save_board;
       save_board.load (&base_board);
       
       base_board.clear ();
@@ -110,10 +110,10 @@ public:
   }
 
   
-  void exec_embedded_gtp_rec (sgf_node_t* current_node, ostream& response) {
+  void exec_embedded_gtp_rec (SgfNode* current_node, ostream& response) {
     // update position
-    list <vertex_t> vertex_list;
-    vertex_list = current_node->properties.get_vertices_to_play (color_t::empty ());
+    list <Vertex> vertex_list;
+    vertex_list = current_node->properties.get_vertices_to_play (Color::empty ());
     if (vertex_list.empty () == false) {
       response << "sgf.gtp.exec: AE property in SGF not implemented" << endl;
       return;
@@ -130,7 +130,7 @@ public:
     }
 
     // save board
-    board_t node_board;
+    Board node_board;
     node_board.load (&base_board);
 
     // process gtp

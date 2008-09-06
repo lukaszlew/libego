@@ -25,7 +25,7 @@
 const string embedded_gtp_tag = "@gtp";
 
 
-class sgf_node_properties_t {
+class SgfNodeProperties {
 public:
   map <string, list <string> > property_map;
 
@@ -73,23 +73,23 @@ public:
   }
 
   // color to allow add empty
-  list <vertex_t> get_vertices_to_play (color_t color) { 
-    list <vertex_t> ret;
+  list <Vertex> get_vertices_to_play (Color color) { 
+    list <Vertex> ret;
 
       #define add_moves(prop_name)                              \
       {                                                         \
         list <string> prop_values = property_map [prop_name];   \
         for_each (sgf_coord, prop_values) {                     \
-          ret.push_back (vertex_t::of_sgf_coords (*sgf_coord)); \
+          ret.push_back (Vertex::of_sgf_coords (*sgf_coord)); \
         }                                                       \
       }
       
-    if (color == color_t::empty ()) {
+    if (color == Color::empty ()) {
       add_moves ("AE")
-    } else if (color == color_t::black ()) {
+    } else if (color == Color::black ()) {
       add_moves ("B");
       add_moves ("AB");
-    } else if (color == color_t::white ()) {
+    } else if (color == Color::white ()) {
       add_moves ("W");
       add_moves ("AW");
     } else {
@@ -101,10 +101,10 @@ public:
     return ret;
   }
 
-  list <vertex_t> get_vertices_to_clear () { return get_vertices_to_play (color_t::empty ()); }
+  list <Vertex> get_vertices_to_clear () { return get_vertices_to_play (Color::empty ()); }
 
-  list <vertex_t> get_vertices_to_play (player_t pl) { 
-    return get_vertices_to_play (color_t (pl));
+  list <Vertex> get_vertices_to_play (Player pl) { 
+    return get_vertices_to_play (Color (pl));
   }
 
   string get_single_property (string prop_name, string default_value = "") {
@@ -122,16 +122,16 @@ public:
 
 
 
-// class sgf_node_t
+// class SgfNode
 
-class sgf_node_t {
+class SgfNode {
 public:
-  list <sgf_node_t>      children;
-  sgf_node_properties_t  properties;
+  list <SgfNode>      children;
+  SgfNodeProperties  properties;
 
 
-  sgf_node_t* add_child () {
-    children.push_back (sgf_node_t ());
+  SgfNode* add_child () {
+    children.push_back (SgfNode ());
     return &(children.back ());
   }
 
@@ -153,18 +153,18 @@ public:
 };
 
 
-// class sgf_tree_t
+// class SgfTree
 
 
-class sgf_tree_t {
-  sgf_node_t* root;
+class SgfTree {
+  SgfNode* root;
 
 public:
 
-  sgf_tree_t () : root (new sgf_node_t) { }
+  SgfTree () : root (new SgfNode) { }
 
   
-  ~sgf_tree_t () {
+  ~SgfTree () {
     delete root;
   }
 
@@ -194,11 +194,11 @@ public:
   
   // constructor
   bool parse_sgf (istream& in) {
-    sgf_node_t* new_root = new sgf_node_t;
+    SgfNode* new_root = new SgfNode;
     #define return_fail { delete new_root; return false; }
 
-    sgf_node_t*         current = new_root;
-    stack <sgf_node_t*> cb_stack; // come-back-here-later-nodes
+    SgfNode*         current = new_root;
+    stack <SgfNode*> cb_stack; // come-back-here-later-nodes
 
     string              buffer;
     string              prop_name;
@@ -269,12 +269,12 @@ public:
   bool is_loaded () { return root->children.size () > 0; }
 
 
-  sgf_node_t* game_node () {
+  SgfNode* game_node () {
     assert (is_loaded ());
     return & (root->children.front ());
   }
 
-  sgf_node_properties_t& properties () {
+  SgfNodeProperties& properties () {
     return game_node ()->properties;
   }
 

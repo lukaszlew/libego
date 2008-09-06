@@ -43,16 +43,16 @@ typedef unsigned long long uint64;
 
 const float large_float = 1000000000000.0;
 
-// cc_clock_t
+// PerformanceTimer
 
-class cc_clock_t {
+class PerformanceTimer {
   double  sample_cnt;
   double  sample_sum;
   uint64  start_time;
   double  overhead;
 public:
 
-  cc_clock_t () {
+  PerformanceTimer () {
     reset ();
     uint64 t1, t2;
     t1 = get_cc_time ();
@@ -94,10 +94,10 @@ public:
 #define cc_measure(cc_clock, instr) { cc_clock.start (); instr; cc_clock.stop (); }
 
 
-// class random_pm_t
+// class PmRandom
 
 
-class random_pm_t {             // Park - Miller "minimal standard" 
+class PmRandom {             // Park - Miller "minimal standard" 
 
   static const int cnt = (1<<31) - 1;  
 
@@ -106,7 +106,7 @@ class random_pm_t {             // Park - Miller "minimal standard"
 
 public:
 
-  random_pm_t (uint seed_ = 12345) //: mt (seed_) 
+  PmRandom (uint seed_ = 12345) //: mt (seed_) 
   { seed = seed_; }
 
   void set_seed (uint _seed) { seed = _seed; }
@@ -164,12 +164,13 @@ public:
 };
 
 
-template <typename elt_t, uint _max_size> class stack_t {
+// TODO use Stack in Board
+template <typename elt_t, uint _max_size> class Stack {
 public:
   elt_t tab [_max_size];
   uint size;
 
-  stack_t () {
+  Stack () {
     size = 0;
   }
 
@@ -184,7 +185,7 @@ public:
   void   push_back (elt_t& elt) { tab [size++] = elt; check (); }
 
 
-  elt_t pop_random (random_pm_t& pm) { 
+  elt_t pop_random (PmRandom& pm) { 
     assertc (stack_ac, size > 0); 
     uint idx = pm.rand_int (size);
     elt_t elt = tab [idx];
