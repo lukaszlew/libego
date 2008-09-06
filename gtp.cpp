@@ -22,19 +22,49 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-enum GtpStatus {
-  gtp_success,
-  gtp_failure,
-  gtp_syntax_error,
-  gtp_panic,
-  gtp_quit
+class GtpResult {
+public:
+  GtpResult () : status_ (status_success) { }
+
+  static GtpResult success (string response = "") { return GtpResult (status_success, response); }
+  static GtpResult failure (string response = "") { return GtpResult (status_failure, response); }
+  static GtpResult syntax_error () { return GtpResult (status_failure, "syntax error"); }
+  static GtpResult quit () { return GtpResult (status_quit); }
+
+
+  string status_marker () {
+    switch (status_) {
+    case status_success: return "=";
+    case status_failure: return "?";
+    case status_quit:    return "=";
+    default: assert (false); exit(1);
+    }
+  }
+
+  bool quit_loop () {
+    return status_ == status_quit;
+  }
+
+  string response () { return response_; }
+
+private:
+
+  enum GtpStatus {
+    status_success,
+    status_failure,
+    status_quit
+  };
+
+  GtpResult (GtpStatus status, string response="") : status_ (status), response_ (response) { }
+
+  GtpStatus status_;
+  string response_;
 };
+
 
 class GtpEngine {
 public:
-  GtpEngine () {}
-  virtual ~GtpEngine () {}
-  virtual GtpStatus exec_command (string command_name, istream& params, ostream& response) = 0;
+  virtual GtpResult exec_command (string command_name, istream& params) = 0;
 };
 
 
@@ -97,18 +127,17 @@ public:
 
 
   void run_loop (istream& in = cin, ostream& out = cout, bool echo_commands = false) {
-    string line;
     int cmd_num;
-    string cmd_name;
-    GtpStatus status;
 
     while (true) {
+      string line;
       if (!getline (in, line)) break;
       if (echo_commands) out << line << endl;
 
       line = preprocess (line);
 
       istringstream line_stream (line);
+      string cmd_name;
       if (!(line_stream >> cmd_num )) { cmd_num = -1; line_stream.clear (); }
       if (!(line_stream >> cmd_name)) continue; // empty line - continue
 
@@ -118,10 +147,8 @@ public:
       }
 
       GtpEngine* engine = (*(engine_of_cmd_name.find (cmd_name))).second;
-
-      ostringstream response;
-      status = engine->exec_command (cmd_name, line_stream, response);
-      string response_str = response.str ();
+      GtpResult result = engine->exec_command (cmd_name, line_stream);
+      string response_str = result.response ();
 
       response_str = remove_empty_lines (response_str);
       
@@ -130,62 +157,51 @@ public:
         response_str.resize (response_str.size () - 1);
       }
 
-      out << status_marker (status);
+      //  print respult
+      out << result.status_marker ();
+      if (cmd_num >= 0) out << cmd_num;
+      out << " " << response_str << endl << endl;
 
-      if (cmd_num >= 0) 
-        out << cmd_num;
-
-      out << " ";
-
-      if (status == gtp_syntax_error) 
-        out << "syntax error" << endl;
-
-      out << response_str << endl << endl;
-
-      if (status == gtp_panic || 
-          status == gtp_quit) 
-        break;
-      
+      if (result.quit_loop ()) break;
     }
   }
 
 public: // basic GTP commands
 
-  virtual GtpStatus exec_command (string command, istream& params, ostream& response) {
+  virtual GtpResult exec_command (string command, istream& params) {
 
     if (is_static_command (command)) {
-      response << command_to_response.find (command)->second;
-      return gtp_success;
+      return GtpResult::success (command_to_response.find (command)->second);
     }
 
     if (command == "help" || command == "list_commands") {
+      string response;
       for_each (cmd_it, engine_of_cmd_name) { // TODO iterate over map instead of separate vector
-        response << (*cmd_it).first << endl;
+        response += (*cmd_it).first + "\n";
       }
-      return gtp_success;
+      return GtpResult::success (response);
     }
 
     if (command == "known_command") {
       string known_cmd;
-      if (!(params >> known_cmd)) return gtp_syntax_error;
+      if (!(params >> known_cmd)) return GtpResult::syntax_error ();
 
-      if (engine_of_cmd_name.find (known_cmd) == engine_of_cmd_name.end ()) response << "false";
-      else response << "true";
-
-      return gtp_success; 
+      if (engine_of_cmd_name.find (known_cmd) == engine_of_cmd_name.end ()) 
+        return GtpResult::success ("false"); 
+      else 
+        return GtpResult::success ("true"); 
     }
 
     if (command == "quit") 
-      return gtp_quit;
+      return GtpResult::quit ();
 
     if (command == "echo") {
-      string buf;
+      string response;
       while (params.peek () == ' ')  // eat all spaces in front
         unused (params.get ());
 
-      if (getline (params, buf))
-        response << buf; // TODO this should by in STL
-      return gtp_success;
+      getline (params, response);
+      return GtpResult::success (response);
     }
 
     if (command == "run_gtp_file") {
@@ -193,12 +209,13 @@ public: // basic GTP commands
       string file_name;
       params >> file_name;
       ifstream filein (file_name.data ());
+      ostringstream response;
       run_loop (filein, response);
-      return gtp_success;
+      return GtpResult::success (response.str ());
     }
 
     fatal_error ("wrong command in Gtp::exec_command");
-    return gtp_panic; // formality 
+    assert (false);
   }
 
 private:
@@ -215,18 +232,7 @@ private:
     return ret.str ();
   }
 
-  string status_marker (GtpStatus status) {
-    switch (status) {
-    case gtp_success: return "=";
-    case gtp_failure: return "?";
-    case gtp_syntax_error: return "?";
-    case gtp_panic:   return "!";
-    case gtp_quit:    return "=";
-    default: assert (false); exit(1);
-    }
-  }
-
 private:
   map <string, GtpEngine*> engine_of_cmd_name;
-  map <string, string>        command_to_response;
+  map <string, string>     command_to_response;
 };

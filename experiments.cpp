@@ -77,10 +77,10 @@ public:
     aaf_stats.update (mc_board->move_history, aaf_move_count, score);
   }
 
-  virtual GtpStatus exec_command (string command, istream& params, ostream& response) {
+  virtual GtpResult exec_command (string command, istream& params) {
     if (command == "AAF.move_value") {
       Player player;
-      if (!(params >> player)) return gtp_syntax_error;
+      if (!(params >> player)) return GtpResult::syntax_error ();
       aaf_stats.reset ();
       rep (ii, playout_no) 
         do_playout (board);
@@ -90,36 +90,32 @@ public:
         if (board->color_at [v] != Color::empty ()) 
           means [v] = 0.0;
       }
-      response << to_string_2d (means);
-      return gtp_success;
+      return GtpResult::success (to_string_2d (means));
     }
 
     if (command == "AAF.set_influence_scale") {
       if (!(params >> influence_scale)) {
-        response << "influence_scale = " << influence_scale;
-        return gtp_failure;
+        return GtpResult::failure ("influence_scale = " + to_string (influence_scale));
       }
-      return gtp_success;
+      return GtpResult::success ();
     }
 
     if (command == "AAF.set_playout_number") {
       if (!(params >> playout_no)) {
-        response << "playout_number = " << playout_no;
-        return gtp_failure;
+        return GtpResult::failure ("playout_number = " + to_string (playout_no));
       }
-      return gtp_success;
+      return GtpResult::success ();
     }
 
     if (command == "AAF.set_aaf_fraction") {
       if (!(params >> aaf_fraction)) {
-        response << "aaf_fraction = " << aaf_fraction;
-        return gtp_failure;
+        return GtpResult::failure ("aaf_fraction = " + to_string (aaf_fraction));
       }
-      return gtp_success;
+      return GtpResult::success ();
     }
 
     fatal_error ("wrong command in AllAsFirst::exec_command");
-    return gtp_panic; // formality 
+    assert (false);
   }
 
 };

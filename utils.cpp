@@ -227,6 +227,12 @@ void fatal_error (const char* s) {
 
 // string/stream opereations
 
+template <typename T> 
+string to_string (T f) {
+  ostringstream s;
+  s << f;
+  return s.str ();
+}
 
 char getc_non_space (istream& is) {
   char c;

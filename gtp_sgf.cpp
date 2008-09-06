@@ -40,55 +40,50 @@ public:
     gtp.add_gtp_command (this, "sgf.gtp.exec");
   }
 
-  virtual GtpStatus exec_command (string command, istream& params, ostream& response) {
+  virtual GtpResult exec_command (string command, istream& params) {
     // ---------------------------------------------------------------------
     if (command == "sgf.load") {
       string file_name;
 
-      if (!(params >> file_name)) return gtp_syntax_error;
+      if (!(params >> file_name)) return GtpResult::syntax_error ();
 
       ifstream sgf_stream (file_name.data ());
       if (!sgf_stream) {
-        response << "file not found: " << file_name << endl;
-        return gtp_failure;
+        return GtpResult::failure ("file not found: " + file_name);
       }
 
       if (sgf_tree.parse_sgf (sgf_stream) == false) {
-        response << "invalid SGF file" << endl;
-        return gtp_failure;
+        return GtpResult::failure ("invalid SGF file");
       }
 
-      return gtp_success;
+      return GtpResult::success ();
     }
 
     // ---------------------------------------------------------------------
     if (command == "sgf.save") {
       string file_name;
 
-      if (!(params >> file_name)) return gtp_syntax_error;
+      if (!(params >> file_name)) return GtpResult::syntax_error ();
 
       ofstream sgf_stream (file_name.data ());
       if (!sgf_stream) {
-        response << "file cound not be created: " << file_name << endl;
-        return gtp_failure;
+        return GtpResult::failure ("file cound not be created: " + file_name);
       }
       
       sgf_stream << sgf_tree.to_sgf_string () << endl;
       sgf_stream.close ();
 
-      return gtp_success;
+      return GtpResult::success ();
     }
 
     // ---------------------------------------------------------------------
     if (command == "sgf.gtp.exec") {
       if (!sgf_tree.is_loaded ()) {
-        response << "SGF file not loaded" << endl;
-        return gtp_failure;
+        return GtpResult::failure ("SGF file not loaded");
       }
 
       if (sgf_tree.properties ().get_board_size () != board_size) {
-        response << "invalid board size";
-        return gtp_failure;
+        return GtpResult::failure ("invalid board size");
       }
 
       Board save_board;
@@ -97,16 +92,17 @@ public:
       base_board.clear ();
       base_board.set_komi (sgf_tree.properties ().get_komi ());
 
+      ostringstream response;
       exec_embedded_gtp_rec (sgf_tree.game_node (), response);
 
       base_board.load (&save_board);
 
-      return gtp_success;
+      return GtpResult::success (response.str ());
     }
 
     // ---------------------------------------------------------------------
     fatal_error ("this should not happen!: error number = 0x994827");
-    return gtp_panic;
+    assert (false);
   }
 
   

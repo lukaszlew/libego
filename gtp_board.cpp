@@ -42,88 +42,88 @@ public:
     gtp.add_gtp_command (this, "benchmark");
   }
 
-  virtual GtpStatus exec_command (string command, istream& params, ostream& response) {
-
+  virtual GtpResult exec_command (string command, istream& params) {
 
     if (command == "boardsize") {
       int new_board_size;;
-      if (!(params >> new_board_size)) return gtp_syntax_error;
+      if (!(params >> new_board_size)) return GtpResult::syntax_error ();
       if (new_board_size != int (board_size)) { 
-        response << "unacceptable size"; 
-        return gtp_failure; 
+        return GtpResult::failure ("unacceptable size"); 
       }
-      return gtp_success;
+      return GtpResult::success ();
     }
 
 
     if (command == "clear_board") {
       board.clear ();
-      return gtp_success;
+      return GtpResult::success ();
     }
 
 
     if (command == "komi") {
       float new_komi;
-      if (!(params >> new_komi)) return gtp_syntax_error;
+      if (!(params >> new_komi)) return GtpResult::syntax_error ();
       board.set_komi (new_komi);
-      return gtp_success;
+      return GtpResult::success ();
     }
 
 
     if (command == "load_position") {
       string file_name;
-      if (!(params >> file_name)) return gtp_syntax_error;
+      if (!(params >> file_name)) return GtpResult::syntax_error ();
 
       ifstream fin (file_name.data ()); // TODO cant use string directly ??
 
-      if (!fin)        { response << "no such file: " << file_name; return gtp_failure; }
-      if (!board.load_from_ascii (fin)) { response << "wrong file format";           return gtp_failure; }
-      return gtp_success;
+      if (!fin) 
+        return GtpResult::failure ("no such file: " + file_name); 
+
+      if (!board.load_from_ascii (fin)) 
+        return GtpResult::failure ("wrong file format");
+
+      return GtpResult::success ();
     }
 
 
     if (command == "play") {
       Player pl;
       Vertex v;
-      if (!(params >> pl >> v)) return gtp_syntax_error;
+      if (!(params >> pl >> v)) return GtpResult::syntax_error ();
   
       if (v != Vertex::resign () && board.try_play (pl, v) == false) {
-        response << "illegal move";
-        return gtp_failure;
+        return GtpResult::failure ("illegal move");
       }
 
-      return gtp_success;
+      return GtpResult::success ();
     }
 
 
     if (command == "undo") {
       if (board.undo () == false) {
-        response << "too many undo";
-        return gtp_failure;
+        return GtpResult::failure ("too many undo");
       }
-      return gtp_success;
+      return GtpResult::success ();
     }
     
 
     if (command == "showboard") {
-      response << endl << board.to_string();
-      return gtp_success;
+      return GtpResult::success ("\n" + board.to_string());
     }
 
     if (command == "benchmark") {
       uint playout_cnt;
       string p;
-      if (!(params >> playout_cnt)) return gtp_syntax_error;
+      if (!(params >> playout_cnt)) return GtpResult::syntax_error ();
+      ostringstream response;
       if (!(params >> p) || p != "+") {
         simple_playout_benchmark::run<false> (&board, playout_cnt, response);
       } else {
         simple_playout_benchmark::run<true>  (&board, playout_cnt, response);
       }
-      return gtp_success;
+      return GtpResult::success (response.str ());
     }
 
     fatal_error ("wrong command in GtpBoard::exec_command");
-    return gtp_panic; // formality 
+    assert(false);
   } 
   // end of exec_command
 
