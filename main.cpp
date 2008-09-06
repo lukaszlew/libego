@@ -85,32 +85,17 @@ int main (int argc, char** argv) {
   setvbuf (stdout, (char *)NULL, _IONBF, 0);
   setvbuf (stderr, (char *)NULL, _IONBF, 0);
 
-  // board state and engines
-  board_t         board;
-  sgf_tree_t      sgf_tree;
-  uct_t           uct (board);
-  all_as_first_t  aaf (board);
+  gtp_t        gtp;
+  board_t      board;
+  sgf_tree_t   sgf_tree;
 
-  // GTP machinery
-  gtp_t                 gtp;
-  gtp_static_commands_t sc;
-  gtp_board_t           gtp_board (board);
-  gtp_sgf_t             gtp_sgf (sgf_tree, gtp, board);
-  gtp_genmove_t<uct_t>  gtp_genmove (board, uct);
+  gtp_board_t     gtp_board (gtp, board);
+  gtp_sgf_t       gtp_sgf (gtp, sgf_tree, board);
+  all_as_first_t  aaf (gtp, board);
+
+  uct_t uct (board);
+  gtp_genmove_t<uct_t>  gtp_genmove (gtp, board, uct);
   
-  // some static commands
-  sc.add ("protocol_version", "2");
-  sc.add ("name", "libEGO");
-  sc.add ("gogui_analyze_commands", ""); // to be extended
-  aaf.register_static_commands (sc);
-
-  // connecting pipes
-  gtp.register_engine (sc);
-  gtp.register_engine (gtp_board);
-  gtp.register_engine (gtp_sgf);
-  gtp.register_engine (gtp_genmove);
-  gtp.register_engine (aaf);
-
   // arguments
   process_command_line (gtp, argc, argv);
   

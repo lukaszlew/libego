@@ -33,17 +33,12 @@ public:
   board_t&          base_board;
   
 
-  gtp_sgf_t (sgf_tree_t& _sgf_tree, gtp_t& _gtp, board_t& _base_board) : 
-    sgf_tree (_sgf_tree), gtp (_gtp), base_board (_base_board)
-  { }
-
-  virtual vector <string> get_command_names () const {
-    vector <string> commands;
-    commands.push_back ("sgf.load");
-    commands.push_back ("sgf.save");
-    commands.push_back ("sgf.gtp.exec");
-    return commands;
-  };
+  gtp_sgf_t (gtp_t& _gtp, sgf_tree_t& _sgf_tree, board_t& _base_board) : 
+    sgf_tree (_sgf_tree), gtp (_gtp), base_board (_base_board) {
+    gtp.add_gtp_command (this, "sgf.load");
+    gtp.add_gtp_command (this, "sgf.save");
+    gtp.add_gtp_command (this, "sgf.gtp.exec");
+  }
 
   virtual gtp_status_t exec_command (string command, istream& params, ostream& response) {
     // ---------------------------------------------------------------------

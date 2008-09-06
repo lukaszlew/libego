@@ -32,57 +32,57 @@ enum gtp_status_t {
 
 class gtp_engine_t {
 public:
-  virtual vector <string> get_command_names () const = 0;
-  virtual gtp_status_t exec_command (string command_name, 
-                                             istream& params, 
-                                             ostream& response) = 0;
-  virtual ~gtp_engine_t () {};
+  gtp_engine_t () {}
+  virtual ~gtp_engine_t () {}
+  virtual gtp_status_t exec_command (string command_name, istream& params, ostream& response) = 0;
 };
 
 
 class gtp_t : public gtp_engine_t {
-
-  map <string, gtp_engine_t*> engine_of_cmd_name;
-
-  string preprocess (string s) {
-    ostringstream ret;
-    for_each (cp, s) {
-      if (*cp == 9) ret << '\32'; 
-      else if (*cp > 0 && *cp <= 9) continue; 
-      else if (*cp >= 11 && *cp <= 31) continue; 
-      else if (*cp == 127) continue; 
-      else if (*cp == '#') break;  // remove comments
-      else ret << *cp;
-    }
-    return ret.str ();
-  }
-
-  string status_marker (gtp_status_t status) {
-    switch (status) {
-    case gtp_success: return "=";
-    case gtp_failure: return "?";
-    case gtp_syntax_error: return "?";
-    case gtp_panic:   return "!";
-    case gtp_quit:    return "=";
-    default: assert (false); exit(1);
-    }
-  }
-
 public:
-
-
   gtp_t () { 
-    register_engine (*this);
+    add_gtp_command (this, "help");
+    add_gtp_command (this, "list_commands");
+    add_gtp_command (this, "known_command");
+    add_gtp_command (this, "quit");
+    add_gtp_command (this, "echo");
+    add_gtp_command (this, "run_gtp_file");
+
+    add_static_command ("protocol_version", "2");
+    add_static_command ("name", "libego");
+    add_static_command ("gogui_analyze_commands", ""); // to be extended
   }
 
-
-  void register_engine (gtp_engine_t& gtp_engine) {
-    vector<string> commands = gtp_engine.get_command_names ();
-    for_each (cmd_name_it, commands) {
-      engine_of_cmd_name [*cmd_name_it] = &gtp_engine;
-    }
+  bool is_command (string name) {
+    return engine_of_cmd_name.find (name) != engine_of_cmd_name.end ();
   }
 
+  bool is_static_command (string name) {
+    return command_to_response.find (name) != command_to_response.end ();
+  }
+
+  
+  void add_gtp_command (gtp_engine_t* engine, string name) {
+    assert(!is_command(name));
+    engine_of_cmd_name [name] = engine;
+  }
+
+  void add_static_command (string name, string response) {
+    command_to_response [name] = response;
+    add_gtp_command (this, name);
+  }
+
+  void extend_static_command (string name, string response_ext) {
+    if (!is_command(name)) add_gtp_command (this, name);
+    command_to_response [name] = command_to_response [name] + response_ext;
+    //cout << "P " << name << " -> " << endl <<      command_to_response [name] << endl;
+  }
+  
+  void add_gogui_command (gtp_engine_t* engine, string type, string name, string params) {
+    if (!is_command(name)) add_gtp_command (engine, name);
+    string ext = type + "/" + name + " " + params + "/" + name + " " + params + "\n";
+    extend_static_command ("gogui_analyze_commands", ext);
+  }
 
   bool run_file (string file_name, ostream& out = cout) {
     ifstream in (file_name.data ());
@@ -151,21 +151,13 @@ public:
 
 public: // basic GTP commands
 
-  virtual vector <string> get_command_names () const {
-    vector <string> commands;
-    commands.push_back ("help");
-    commands.push_back ("list_commands");
-    commands.push_back ("known_command");
-    commands.push_back ("quit");
-    commands.push_back ("echo");
-    commands.push_back ("run_gtp_file");
-    return commands;
-  };
+  virtual gtp_status_t exec_command (string command, istream& params, ostream& response) {
 
-  virtual gtp_status_t exec_command (string command, 
-                                     istream& params, 
-                                     ostream& response) 
-  {
+    if (is_static_command (command)) {
+      response << command_to_response.find (command)->second;
+      return gtp_success;
+    }
+
     if (command == "help" || command == "list_commands") {
       for_each (cmd_it, engine_of_cmd_name) { // TODO iterate over map instead of separate vector
         response << (*cmd_it).first << endl;
@@ -209,45 +201,32 @@ public: // basic GTP commands
     return gtp_panic; // formality 
   }
 
-};
-
-
-
-class gtp_static_commands_t : public gtp_engine_t {
-
-public:
-
-  map <string, string> commands_and_responses;
-
-  gtp_static_commands_t () {}
-
-  virtual vector <string> get_command_names () const {
-    vector <string> commands;
-    for_each (cmd_it, commands_and_responses)
-      commands.push_back ((*cmd_it).first);
-    return commands;
-  };
-
-
-  virtual gtp_status_t exec_command (string command, istream& params, ostream& response) {
-    let (cr, commands_and_responses.find (command));
-    if (cr == commands_and_responses.end ()) {
-      fatal_error ("wrong command in gtp_static_commands_t::exec_command");
-      return gtp_panic; // formality 
+private:
+  string preprocess (string s) {
+    ostringstream ret;
+    for_each (cp, s) {
+      if (*cp == 9) ret << '\32'; 
+      else if (*cp > 0 && *cp <= 9) continue; 
+      else if (*cp >= 11 && *cp <= 31) continue; 
+      else if (*cp == 127) continue; 
+      else if (*cp == '#') break;  // remove comments
+      else ret << *cp;
     }
-
-    response << (*cr).second;
-    return gtp_success;
+    return ret.str ();
   }
 
-public:
-  
-  void add (string command, string response) {
-    commands_and_responses [command] = response;
+  string status_marker (gtp_status_t status) {
+    switch (status) {
+    case gtp_success: return "=";
+    case gtp_failure: return "?";
+    case gtp_syntax_error: return "?";
+    case gtp_panic:   return "!";
+    case gtp_quit:    return "=";
+    default: assert (false); exit(1);
+    }
   }
 
-  void extend (string command, string response_ext) {
-    commands_and_responses [command] = commands_and_responses [command] + response_ext;
-  }
-
+private:
+  map <string, gtp_engine_t*> engine_of_cmd_name;
+  map <string, string>        command_to_response;
 };

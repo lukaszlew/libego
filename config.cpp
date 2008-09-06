@@ -90,3 +90,4 @@ const bool playout_ac         = false;
 const bool uct_ac             = false;
 const bool tree_ac            = false;
 const bool pool_ac            = false;
+const bool gtp_ac             = true;

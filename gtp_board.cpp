@@ -31,21 +31,16 @@ class gtp_board_t : public gtp_engine_t {
 
 public:
 
-  gtp_board_t (board_t& board_) : board (board_) { }
-
-  virtual vector <string> get_command_names () const {
-    vector <string> commands;
-    commands.push_back ("boardsize");
-    commands.push_back ("clear_board");
-    commands.push_back ("komi");
-    commands.push_back ("load_position");
-    commands.push_back ("play");
-    commands.push_back ("undo");
-    commands.push_back ("showboard");
-    commands.push_back ("benchmark");
-    return commands;
-  };
-
+  gtp_board_t (gtp_t& gtp, board_t& board_) : board (board_) { 
+    gtp.add_gtp_command (this, "boardsize");
+    gtp.add_gtp_command (this, "clear_board");
+    gtp.add_gtp_command (this, "komi");
+    gtp.add_gtp_command (this, "load_position");
+    gtp.add_gtp_command (this, "play");
+    gtp.add_gtp_command (this, "undo");
+    gtp.add_gtp_command (this, "showboard");
+    gtp.add_gtp_command (this, "benchmark");
+  }
 
   virtual gtp_status_t exec_command (string command, istream& params, ostream& response) {
 

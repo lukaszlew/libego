@@ -28,14 +28,9 @@ class gtp_genmove_t : public gtp_engine_t {
 
 public:
 
-  gtp_genmove_t (board_t& board_, engine_t& engine_) : board (board_) {} //, engine (engine_) { }
-
-  virtual vector <string> get_command_names () const {
-    vector <string> commands;
-    commands.push_back ("genmove");
-    return commands;
-  };
-
+  gtp_genmove_t (gtp_t& gtp, board_t& board_, engine_t& engine_) : board (board_) { //, engine (engine_) { }
+    gtp.add_gtp_command (this, "genmove");
+  } 
 
   virtual gtp_status_t exec_command (string command, istream& params, ostream& response) {
 

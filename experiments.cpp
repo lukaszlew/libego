@@ -54,19 +54,16 @@ public:
   float       influence_scale;
   
 public:
-  all_as_first_t (board_t& board_) : board (&board_) { 
+  all_as_first_t (gtp_t& gtp, board_t& board_) : board (&board_) { 
     playout_no = 50000;
     aaf_fraction = 0.5;
     influence_scale = 6.0;
-  }
 
-  template <typename gtp_static_commands_t>
-  void register_static_commands (gtp_static_commands_t& sc) {
-    sc.extend ("gogui_analyze_commands", "dboard/AAF.move_value black/AAF.move_value black\n");
-    sc.extend ("gogui_analyze_commands", "dboard/AAF.move_value white/AAF.move_value white\n");
-    sc.extend ("gogui_analyze_commands", "none/AAF.set_influence_scale/AAF.set_influence_scale %s\n");
-    sc.extend ("gogui_analyze_commands", "none/AAF.set_playout_number/AAF.set_playout_number %s\n");
-    sc.extend ("gogui_analyze_commands", "none/AAF.set_aaf_fraction/AAF.set_aaf_fraction %s\n");
+    gtp.add_gogui_command (this, "dboard", "AAF.move_value",          "black");
+    gtp.add_gogui_command (this, "dboard", "AAF.move_value",          "white");
+    gtp.add_gogui_command (this, "none",   "AAF.set_influence_scale", "%s");
+    gtp.add_gogui_command (this, "none",   "AAF.set_playout_number",  "%s");
+    gtp.add_gogui_command (this, "none",   "AAF.set_aaf_fraction",    "%s");
   }
     
   void do_playout (const board_t* base_board) {
@@ -79,16 +76,6 @@ public:
 
     aaf_stats.update (mc_board->move_history, aaf_move_count, score);
   }
-
-  virtual vector <string> get_command_names () const {
-    vector <string> commands;
-    commands.push_back ("AAF.move_value");
-    commands.push_back ("AAF.set_influence_scale");
-    commands.push_back ("AAF.set_playout_number");
-    commands.push_back ("AAF.set_aaf_fraction");
-    return commands;
-  }
-
 
   virtual gtp_status_t exec_command (string command, istream& params, ostream& response) {
     if (command == "AAF.move_value") {
@@ -131,7 +118,7 @@ public:
       return gtp_success;
     }
 
-    fatal_error ("wrong command in gtp_genmove_t::exec_command");
+    fatal_error ("wrong command in all_as_first_t::exec_command");
     return gtp_panic; // formality 
   }
 
