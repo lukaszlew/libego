@@ -438,8 +438,8 @@ public: // legality functions
     return 
       v == Vertex::pass () || 
       !nbr_cnt[v].player_cnt_is_max (player.other ()) || 
-      !play_eye_is_ko (player, v) && 
-      !play_eye_is_suicide (player, v);
+      (!play_eye_is_ko (player, v) && 
+       !play_eye_is_suicide (player, v));
   }
 
 

@@ -21,9 +21,6 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-typedef unsigned int uint;
-typedef unsigned long long uint64;
-
 // standard macros
 
 #define qq(...) fprintf(stdout, __VA_ARGS__); fflush (stdout);
@@ -99,7 +96,7 @@ public:
 
 class PmRandom {             // Park - Miller "minimal standard" 
 
-  static const int cnt = (1<<31) - 1;  
+  static const int cnt = (uint(1)<<31) - 1;  
 
   uint seed;
   //tr1::minstd_rand0 mt; // this is eqivalent when #include <tr1/random>

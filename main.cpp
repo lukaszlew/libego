@@ -30,6 +30,8 @@
 #include <cmath>
 #include <cstdarg>
 #include <cctype>
+#include <cstdlib>
+#include <cstring>
 
 #include <vector>
 #include <map>
