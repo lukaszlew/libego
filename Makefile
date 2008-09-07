@@ -2,9 +2,9 @@ OPT   = -O3 -march=native -fomit-frame-pointer -DDEBUG -ffast-math -frename-regi
 DEBUG = -ggdb3 -DDEBUG -fno-inline 
 PROF  = -O2 -march=native -DDEBUG -ggdb3 -fno-inline 
 
-CFLAGS += -Wall -Wextra #-static #-Wno-long-long -Wextra -Wno-variadic-macros
+CFLAGS += -Wall -Wextra -Wswitch-enum #-static #-Wno-long-long -Wno-variadic-macros
 
-GPP    = g++ $(CFLAGS) 
+GPP    = g++-4.2 $(CFLAGS) 
 
 FILES  = Makefile config.cpp basic_go_types.cpp board.cpp utils.cpp playout.cpp sgf.cpp gtp.cpp uct.cpp main.cpp gtp_board.cpp gtp_sgf.cpp gtp_genmove.cpp experiments.cpp
 
