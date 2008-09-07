@@ -153,13 +153,12 @@ const uint NbrCounter::player_inc_tab [Player::cnt] = { NbrCounter::black_inc_va
 
 enum play_ret_t { play_ok, play_suicide, play_ss_suicide, play_ko };
 
-PmRandom zobrist_pm;
-const Zobrist zobrist[1] = { Zobrist (zobrist_pm) }; // TODO move it to board
 
 class Board {
 
 public:
 
+  static const Zobrist zobrist[1];
 
   FastMap<Vertex, Color>       color_at;
   FastMap<Vertex, NbrCounter>  nbr_cnt; // incremental, for fast eye checking
@@ -191,22 +190,22 @@ public:                         // macros
 
 
   #define empty_v_for_each(board, vv, i) {                              \
-    Vertex vv = Vertex::any ();                                     \
-    rep (ev_i, (board)->empty_v_cnt) {                                  \
-      vv = (board)->empty_v [ev_i];                                     \
-      i;                                                                \
-    }                                                                   \
-  }
+      Vertex vv = Vertex::any ();                                       \
+      rep (ev_i, (board)->empty_v_cnt) {                                \
+        vv = (board)->empty_v [ev_i];                                   \
+        i;                                                              \
+      }                                                                 \
+    }
 
   
   #define empty_v_for_each_and_pass(board, vv, i) {                     \
-    Vertex vv = Vertex::pass ();                                    \
-    i;                                                                  \
-    rep (ev_i, (board)->empty_v_cnt) {                                  \
-      vv = (board)->empty_v [ev_i];                                     \
+      Vertex vv = Vertex::pass ();                                      \
       i;                                                                \
-    }                                                                   \
-  }
+      rep (ev_i, (board)->empty_v_cnt) {                                \
+        vv = (board)->empty_v [ev_i];                                   \
+        i;                                                              \
+      }                                                                 \
+    }
 
 
 public:                         // consistency checks
@@ -897,5 +896,7 @@ public:                         // utils
     if (color_at[Vertex (0)] == Color::white ()) print_cerr (); // TODO LOL hack - need tu use it somwhere 
     return true;
   }
-
 };
+
+PmRandom zobrist_pm;
+const Zobrist Board::zobrist[1] = { Zobrist (zobrist_pm) }; // TODO move it to board

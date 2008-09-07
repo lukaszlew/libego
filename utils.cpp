@@ -30,8 +30,8 @@
 #define nop unused(0)
 
 #define rep(i,n)     for (int i = 0;   i < (int)(n); i++)
-#define seq(i,a,b)   for (int i = (a); i <= (b); i++)
-#define dseq(i,b,a)  for (int i = (b); i >= (a); i--)
+#define seq(i,a,b)   for (let (i, a); i <= (b); i++)
+#define dseq(i,b,a)  for (let (i, b); i >= (a); i--)
 
 #define let(a,b) typeof(b) a=(b)
 #define for_each(it, c) for(let(it,(c).begin()); it!=(c).end(); ++it)

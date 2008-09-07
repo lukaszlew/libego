@@ -414,7 +414,8 @@ public:
         }
         
         // TODO assert act_plauer == board->Act_player ()
-        Playout<SimplePolicy> (play_board).run ();
+        SimplePolicy policy;
+        Playout<SimplePolicy> (&policy, play_board).run ();
         break;
         
       }

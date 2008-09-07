@@ -25,12 +25,13 @@
 enum playout_status_t { pass_pass, mercy, too_long };
 
 
-template <typename policy_t> class Playout {
+// ----------------------------------------------------------------------
+template <typename Policy> class Playout {
 public:
-  Board*  board;
-  policy_t  policy[1];
+  Policy*  policy;
+  Board*   board;
 
-  Playout (Board*  board_) : board(board_) {}
+  Playout (Policy* policy_, Board*  board_) : policy (policy_), board (board_) {}
 
   all_inline
   void play_move () {
@@ -77,11 +78,11 @@ public:
   
 };
 
-
-PmRandom pm(123); // TODO seed it when class
-
+// ----------------------------------------------------------------------
 class SimplePolicy {
 protected:
+
+  static PmRandom pm; // TODO make it non-static
 
   uint to_check_cnt;
   uint act_evi;
@@ -126,8 +127,9 @@ public:
 
 };
 
+PmRandom SimplePolicy::pm(123);
 
-
+// ----------------------------------------------------------------------
 namespace simple_playout_benchmark {
 
   Board               mc_board [1];
@@ -158,7 +160,8 @@ namespace simple_playout_benchmark {
 
     perf_timer.reset ();
 
-    Playout<SimplePolicy> playout (mc_board);
+    SimplePolicy policy;
+    Playout<SimplePolicy> playout(&policy, mc_board);
 
     perf_timer.start ();
     float seconds_begin = get_seconds ();

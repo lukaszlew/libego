@@ -69,7 +69,9 @@ public:
   void do_playout (const Board* base_board) {
     Board mc_board [1];
     mc_board->load (base_board);
-    Playout<SimplePolicy> (mc_board).run ();
+
+    SimplePolicy policy;
+    Playout<SimplePolicy> (&policy, mc_board).run ();
 
     float score = mc_board->score ();
     uint aaf_move_count = uint (float(mc_board->move_no)*aaf_fraction);
