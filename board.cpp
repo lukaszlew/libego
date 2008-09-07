@@ -463,7 +463,7 @@ public: // legality functions
       diag_color_cnt [color_at [diag_v]]++;
     });
 
-    return diag_color_cnt [player.other ()] + (diag_color_cnt [Color::off_board ()] > 0) < 2;
+    return diag_color_cnt [Color (player.other ())] + (diag_color_cnt [Color::off_board ()] > 0) < 2;
   }
 
 
@@ -894,7 +894,7 @@ public:                         // utils
     this->load (tmp_board);
 
     // if (false)
-    if (color_at[0] == Color::white ()) print_cerr (); // TODO LOL hack - need tu use it somwhere 
+    if (color_at[Vertex (0)] == Color::white ()) print_cerr (); // TODO LOL hack - need tu use it somwhere 
     return true;
   }
 

@@ -34,8 +34,8 @@ public:
   const static uint cnt = 2;
 
 
-  Player () { idx = -1; }
-  Player (uint _idx) { idx = _idx; check ();}
+  explicit Player () { idx = -1; }
+  explicit Player (uint _idx) { idx = _idx; check ();}
 
   bool operator== (Player other) const { return idx == other.idx; }
 
@@ -93,13 +93,13 @@ public:
 
   const static uint cnt = 4;
 
-  Color () { idx = -1; } // TODO test - remove it
+  explicit Color () { idx = -1; } // TODO test - remove it
 
-  Color (uint idx_) { idx = idx_; } // TODO test - remove it
+  explicit Color (uint idx_) { idx = idx_; } // TODO test - remove it
 
-  Color (Player pl) { idx = pl.get_idx (); }
+  explicit Color (Player pl) { idx = pl.get_idx (); }
 
-  Color (char c) {  // may return color_wrong_char
+  explicit Color (char c) {  // may return color_wrong_char
      switch (c) {
      case '#': idx = black_idx; break;
      case 'O': idx = white_idx; break;
@@ -217,8 +217,8 @@ public:
 
   const static uint cnt = (board_size + 2) * (board_size + 2);
 
-  Vertex () { } // TODO is it needed
-  Vertex (uint _idx) { idx = _idx; }
+  explicit Vertex () { } // TODO is it needed
+  explicit Vertex (uint _idx) { idx = _idx; }
 
  // TODO make this constructor a static function
   Vertex (coord::t r, coord::t c) {
@@ -332,7 +332,7 @@ istream& operator>> (istream& in, Vertex& v) {
 ostream& operator<< (ostream& out, Vertex& v) { out << v.to_string (); return out; }
 
 
-#define vertex_for_each_all(vv) for (Vertex vv = 0; vv.in_range (); vv.next ()) // TODO 0 works??? // TODO player the same way!
+#define vertex_for_each_all(vv) for (Vertex vv = Vertex(0); vv.in_range (); vv.next ()) // TODO 0 works??? // TODO player the same way!
 
 // misses some offboard vertices (for speed) 
 #define vertex_for_each_faster(vv)                                  \
@@ -387,15 +387,15 @@ public:
     Vertex (idx & ((1 << Vertex::bits_used) - 1)).check ();
   }
 
-  Move (Player player, Vertex v) { 
+  explicit Move (Player player, Vertex v) { 
     idx = (player.get_idx () << Vertex::bits_used) | v.get_idx ();
   }
 
-  Move () {
+  explicit Move () {
     Move (Player::black (), Vertex::any ());
   }
 
-  Move (int idx_) {
+  explicit Move (int idx_) {
     idx = idx_;
   }
 
@@ -448,6 +448,6 @@ string to_string_2d (FastMap<Vertex, T>& map, int precision = 3) {
 }
     
 
-#define move_for_each_all(m) for (Move m = 0; m.in_range (); m.next ())
+#define move_for_each_all(m) for (Move m = Move (0); m.in_range (); m.next ())
 
 /********************************************************************************/
