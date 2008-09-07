@@ -27,10 +27,10 @@ public:
   Stat unconditional;
   FastMap<Move, Stat> given_move;
 
-  void reset () {
-    unconditional.reset ();
+  void reset (float prior = 1.0) {
+    unconditional.reset (prior);
     move_for_each_all (m)
-      given_move [m].reset ();
+      given_move [m].reset (prior);
   }
 
   void update (Move* move_history, uint move_count, float score) {
@@ -52,18 +52,25 @@ public:
   uint        playout_no;
   float       aaf_fraction;
   float       influence_scale;
-  
+  float       prior;
+  bool        progress_dots;
+
 public:
   AllAsFirst (Gtp& gtp, Board& board_) : board (&board_) { 
-    playout_no = 50000;
-    aaf_fraction = 0.5;
-    influence_scale = 6.0;
+    playout_no       = 50000;
+    aaf_fraction     = 0.5;
+    influence_scale  = 6.0;
+    prior            = 1.0;
+    progress_dots    = false;
 
-    gtp.add_gogui_command (this, "dboard", "AAF.move_value",          "black");
-    gtp.add_gogui_command (this, "dboard", "AAF.move_value",          "white");
-    gtp.add_gogui_command (this, "none",   "AAF.set_influence_scale", "%s");
-    gtp.add_gogui_command (this, "none",   "AAF.set_playout_number",  "%s");
-    gtp.add_gogui_command (this, "none",   "AAF.set_aaf_fraction",    "%s");
+    gtp.add_gogui_command (this, "dboard", "AAF.move_value", "black");
+    gtp.add_gogui_command (this, "dboard", "AAF.move_value", "white");
+
+    gtp.add_gogui_param_float ("AAF.params", "prior",            &prior);
+    gtp.add_gogui_param_float ("AAF.params", "aaf_fraction",     &aaf_fraction);
+    gtp.add_gogui_param_float ("AAF.params", "influence_scale",  &influence_scale);
+    gtp.add_gogui_param_uint  ("AAF.params", "playout_number",   &playout_no);
+    gtp.add_gogui_param_bool  ("AAF.params", "20_progress_dots", &progress_dots);
   }
     
   void do_playout (const Board* base_board) {
@@ -83,9 +90,13 @@ public:
     if (command == "AAF.move_value") {
       Player player;
       if (!(params >> player)) return GtpResult::syntax_error ();
-      aaf_stats.reset ();
-      rep (ii, playout_no) 
+      aaf_stats.reset (prior);
+      rep (ii, playout_no) {
+        if (progress_dots && (ii * 20) % playout_no == 0) cerr << "." << flush;
         do_playout (board);
+      }
+      if (progress_dots) cerr << endl;
+
       FastMap<Vertex, float> means;
       vertex_for_each_all (v) {
         means [v] = aaf_stats.norm_mean_given_move (Move(player, v)) / influence_scale;;

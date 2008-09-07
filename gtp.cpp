@@ -64,6 +64,96 @@ public:
   virtual GtpResult exec_command (string command_name, istream& params) = 0;
 };
 
+
+// ----------------------------------------------------------------------
+class GoguiParam {
+public:
+  static GoguiParam String (string name, string* ptr) {
+    GoguiParam ret;
+    ret.type = type_string;
+    ret.string_param = ptr;
+    ret.name = name;
+    return ret;
+  }
+
+  static GoguiParam Float (string name, float* ptr) {
+    GoguiParam ret;
+    ret.type = type_float;
+    ret.float_param = ptr;
+    ret.name = name;
+    return ret;
+  }
+
+  static GoguiParam Uint (string name, uint* ptr) {
+    GoguiParam ret;
+    ret.type = type_uint;
+    ret.uint_param = ptr;
+    ret.name = name;
+    return ret;
+  }
+
+  static GoguiParam Bool (string name, bool* ptr) {
+    GoguiParam ret;
+    ret.type = type_bool;
+    ret.bool_param = ptr;
+    ret.name = name;
+    return ret;
+  }
+
+  string gogui_string () {
+    string ret = type_to_string () + " " + name + " " + value_to_string (); 
+    return ret;
+  }
+
+  string type_to_string () {
+    switch (type) {
+    case type_string:  return "[string]";
+    case type_float:   return "[string]";
+    case type_uint:    return "[string]";
+    case type_bool:    return "[bool]";
+    }
+    assert (false);
+  }
+
+  string value_to_string () {
+    switch (type) {
+    case type_string:  return *string_param;
+    case type_float:   return to_string(*float_param);
+    case type_uint:    return to_string(*uint_param);
+    case type_bool:    return to_string(*bool_param);
+    }
+    assert (false);
+  }
+
+  bool set_value(istream& in) {
+    switch (type) {
+    case type_string:  return !!(in >> *string_param);
+    case type_float:   return !!(in >> *float_param);
+    case type_uint:    return !!(in >> *uint_param);
+    case type_bool:    return !!(in >> *bool_param);
+    }
+    assert (false);
+  }
+
+  // ----------
+  string name; 
+
+  // emulation of sum type
+  enum Type {
+    type_string,
+    type_float,
+    type_uint,
+    type_bool,
+  } type;
+  
+  union {
+    string* string_param;
+    float*  float_param;
+    uint*   uint_param;
+    bool*   bool_param;
+  };
+};
+
 // ----------------------------------------------------------------------
 class Gtp : public GtpCommand {
 public:
@@ -86,7 +176,11 @@ public:
   bool is_static_command (string name) {
     return command_to_response.find (name) != command_to_response.end ();
   }
-  
+
+  bool is_gogui_param_command (string name) {
+    return command_to_gogui_params.find (name) != command_to_gogui_params.end ();
+  }
+
   void add_gtp_command (GtpCommand* command, string name) {
     assert(!is_command(name));
     command_of_name [name] = command;
@@ -103,12 +197,35 @@ public:
     //cout << "P " << name << " -> " << endl <<      command_to_response [name] << endl;
   }
   
-  void add_gogui_command (GtpCommand* command, string type, string name, string params) {
+  void add_gogui_command (GtpCommand* command, string type, string name,
+                          string params, bool extend_only_if_new = false) {
+    if (extend_only_if_new && is_command (name)) return;
     if (!is_command(name)) add_gtp_command (command, name);
     string ext = type + "/" + name + " " + params + "/" + name + " " + params + "\n";
     extend_static_command ("gogui_analyze_commands", ext);
   }
 
+  void add_gogui_param_string (string cmd_name, string param_name, string* ptr) {
+    add_gogui_command (this, "param", cmd_name, "", true);
+    command_to_gogui_params[cmd_name].push_back (GoguiParam::String(param_name, ptr));
+  }
+
+  void add_gogui_param_float (string cmd_name, string param_name, float* ptr) {
+    add_gogui_command (this, "param", cmd_name, "", true);
+    command_to_gogui_params[cmd_name].push_back (GoguiParam::Float(param_name, ptr));
+  }
+
+  void add_gogui_param_uint (string cmd_name, string param_name, uint* ptr) {
+    add_gogui_command (this, "param", cmd_name, "", true);
+    command_to_gogui_params[cmd_name].push_back (GoguiParam::Uint(param_name, ptr));
+  }
+
+  void add_gogui_param_bool (string cmd_name, string param_name, bool* ptr) {
+    add_gogui_command (this, "param", cmd_name, "", true);
+    command_to_gogui_params[cmd_name].push_back (GoguiParam::Bool(param_name, ptr));
+  }
+
+public:
   bool run_file (string file_name, ostream& out = cout) {
     ifstream in (file_name.data ());
     if (in) {
@@ -150,6 +267,31 @@ public: // basic GTP commands
 
     if (is_static_command (command)) {
       return GtpResult::success (command_to_response.find (command)->second);
+    }
+    
+    if (is_gogui_param_command (command)) {
+      let (gogui_params, command_to_gogui_params [command]);
+      string param_name;
+      if (!(params >> param_name)) {
+        // print values of all params
+        string ret;
+        for_each (param_it, gogui_params) {
+          ret += param_it->gogui_string () + "\n";
+        }
+        return GtpResult::success (ret);
+      } else {
+        // print value of a param
+        for_each (param_it, gogui_params) {
+          if (param_it->name == param_name) {
+            // param found
+            return
+              param_it->set_value (params) 
+              ? GtpResult::success ()
+              : GtpResult::failure ();
+          }
+        }
+        return GtpResult::failure ();
+      }
     }
 
     if (command == "help" || command == "list_commands") {
@@ -208,6 +350,9 @@ private:
   }
 
 private:
-  map <string, GtpCommand*> command_of_name;
-  map <string, string>      command_to_response;
+
+  map <string, GtpCommand*>          command_of_name;
+  map <string, string>               command_to_response;
+  map <string, vector<GoguiParam> >  command_to_gogui_params;
 };
+
