@@ -61,7 +61,6 @@ using namespace std;
 #include "experiments.cpp"
 
 
-
 // goes through GTP files given in command line
 void process_command_line (Gtp& gtp, int argc, char** argv) {
   if (argc == 1) {

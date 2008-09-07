@@ -21,7 +21,7 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-
+// ----------------------------------------------------------------------
 class AafStats {
 public:
   Stat unconditional;
@@ -44,8 +44,8 @@ public:
   }
 };
 
-
-class AllAsFirst : public GtpEngine {
+// ----------------------------------------------------------------------
+class AllAsFirst : public GtpCommand {
 public:
   Board*      board;
   AafStats    aaf_stats;
@@ -114,8 +114,6 @@ public:
       return GtpResult::success ();
     }
 
-    fatal_error ("wrong command in AllAsFirst::exec_command");
     assert (false);
   }
-
 };

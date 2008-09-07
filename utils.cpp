@@ -248,17 +248,21 @@ bool is_all_whitespace (string s) {
   return true;
 }
 
-string remove_empty_lines (string s) {
-  istringstream in (s);
+void remove_empty_lines (string* s) {
+  istringstream in (*s);
   ostringstream out;
   string line;
   while (getline (in, line)) {
     if (is_all_whitespace (line)) continue;
     out << line << endl;
   }
-  return out.str ();
+  *s = out.str ();
 }
 
+void remove_trailing_whitespace (string* str) {
+  while (isspace ( *(str->end ()-1) ))
+    str->resize (str->size () - 1);
+}
 
 // g++ extensions
 

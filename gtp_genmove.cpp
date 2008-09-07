@@ -22,13 +22,9 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 template <typename engine_t>
-class GtpGenmove : public GtpEngine {
-
-  Board& board;
-
+class GtpGenmove : public GtpCommand {
 public:
-
-  GtpGenmove (Gtp& gtp, Board& board_, engine_t& engine_) : board (board_) { //, engine (engine_) { }
+  GtpGenmove (Gtp& gtp, Board& board_, engine_t& engine_) : board (board_) { //, engine (engine_)
     gtp.add_gtp_command (this, "genmove");
   } 
 
@@ -42,12 +38,11 @@ public:
       engine_t* engine = new engine_t (board); // TODO Why we need to allocate?
       v = engine->genmove (player);
       delete engine;
-      
-      
 
       if (v != Vertex::resign () &&
-          board.try_play (player, v) == false)
+          board.try_play (player, v) == false) {
         fatal_error ("genmove: generated illegal move");
+      }
 
       return GtpResult::success (to_string (v));
     }
@@ -55,5 +50,7 @@ public:
     fatal_error ("wrong command in GtpGenmove::exec_command");
     assert (false);
   } 
-  // end of exec_command
+
+private:
+  Board& board;
 };

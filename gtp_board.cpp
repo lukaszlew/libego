@@ -21,14 +21,7 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-
-
-
-
-class GtpBoard : public GtpEngine {
-
-  Board& board;
-
+class GtpBoard : public GtpCommand {
 public:
 
   GtpBoard (Gtp& gtp, Board& board_) : board (board_) { 
@@ -53,12 +46,10 @@ public:
       return GtpResult::success ();
     }
 
-
     if (command == "clear_board") {
       board.clear ();
       return GtpResult::success ();
     }
-
 
     if (command == "komi") {
       float new_komi;
@@ -67,11 +58,9 @@ public:
       return GtpResult::success ();
     }
 
-
     if (command == "load_position") {
       string file_name;
       if (!(params >> file_name)) return GtpResult::syntax_error ();
-
       ifstream fin (file_name.data ()); // TODO cant use string directly ??
 
       if (!fin) 
@@ -83,28 +72,25 @@ public:
       return GtpResult::success ();
     }
 
-
     if (command == "play") {
       Player pl;
       Vertex v;
-      if (!(params >> pl >> v)) return GtpResult::syntax_error ();
+      if (!(params >> pl >> v))
+        return GtpResult::syntax_error ();
   
-      if (v != Vertex::resign () && board.try_play (pl, v) == false) {
+      if (v != Vertex::resign () && board.try_play (pl, v) == false)
         return GtpResult::failure ("illegal move");
-      }
 
       return GtpResult::success ();
     }
 
-
     if (command == "undo") {
-      if (board.undo () == false) {
+      if (board.undo () == false)
         return GtpResult::failure ("too many undo");
-      }
+
       return GtpResult::success ();
     }
     
-
     if (command == "showboard") {
       return GtpResult::success ("\n" + board.to_string());
     }
@@ -122,10 +108,10 @@ public:
       return GtpResult::success (response.str ());
     }
 
-    fatal_error ("wrong command in GtpBoard::exec_command");
     assert(false);
   } 
-  // end of exec_command
 
+private:
+  Board& board;
 };
 

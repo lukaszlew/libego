@@ -26,12 +26,12 @@
 
 // class gtp_sgf
 
-class GtpSgf : public GtpEngine {
+class GtpSgf : public GtpCommand {
 public:
-  SgfTree&       sgf_tree;
-  Gtp&            gtp;
-  Board&          base_board;
-  
+  SgfTree&  sgf_tree;
+  Gtp&      gtp;
+  Board&    base_board;
+
 
   GtpSgf (Gtp& _gtp, SgfTree& _sgf_tree, Board& _base_board) : 
     sgf_tree (_sgf_tree), gtp (_gtp), base_board (_base_board) {

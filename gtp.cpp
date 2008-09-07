@@ -21,16 +21,24 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-
+// ----------------------------------------------------------------------
 class GtpResult {
 public:
   GtpResult () : status_ (status_success) { }
-
   static GtpResult success (string response = "") { return GtpResult (status_success, response); }
   static GtpResult failure (string response = "") { return GtpResult (status_failure, response); }
   static GtpResult syntax_error () { return GtpResult (status_failure, "syntax error"); }
   static GtpResult quit () { return GtpResult (status_quit); }
 
+  bool quit_loop () { return status_ == status_quit; }
+  string to_string () { return status_marker () + " " + response_ + "\n\n"; }
+
+private:
+  enum Status {
+    status_success,
+    status_failure,
+    status_quit
+  };
 
   string status_marker () {
     switch (status_) {
@@ -41,34 +49,23 @@ public:
     }
   }
 
-  bool quit_loop () {
-    return status_ == status_quit;
+  GtpResult (Status status, string response="") : status_ (status), response_ (response) {
+    remove_empty_lines         (&response_);
+    remove_trailing_whitespace (&response_);
   }
 
-  string response () { return response_; }
-
-private:
-
-  enum GtpStatus {
-    status_success,
-    status_failure,
-    status_quit
-  };
-
-  GtpResult (GtpStatus status, string response="") : status_ (status), response_ (response) { }
-
-  GtpStatus status_;
+  Status status_;
   string response_;
 };
 
-
-class GtpEngine {
+// ----------------------------------------------------------------------
+class GtpCommand {
 public:
   virtual GtpResult exec_command (string command_name, istream& params) = 0;
 };
 
-
-class Gtp : public GtpEngine {
+// ----------------------------------------------------------------------
+class Gtp : public GtpCommand {
 public:
   Gtp () { 
     add_gtp_command (this, "help");
@@ -77,24 +74,22 @@ public:
     add_gtp_command (this, "quit");
     add_gtp_command (this, "echo");
     add_gtp_command (this, "run_gtp_file");
-
     add_static_command ("protocol_version", "2");
     add_static_command ("name", "libego");
     add_static_command ("gogui_analyze_commands", ""); // to be extended
   }
 
   bool is_command (string name) {
-    return engine_of_cmd_name.find (name) != engine_of_cmd_name.end ();
+    return command_of_name.find (name) != command_of_name.end ();
   }
 
   bool is_static_command (string name) {
     return command_to_response.find (name) != command_to_response.end ();
   }
-
   
-  void add_gtp_command (GtpEngine* engine, string name) {
+  void add_gtp_command (GtpCommand* command, string name) {
     assert(!is_command(name));
-    engine_of_cmd_name [name] = engine;
+    command_of_name [name] = command;
   }
 
   void add_static_command (string name, string response) {
@@ -108,8 +103,8 @@ public:
     //cout << "P " << name << " -> " << endl <<      command_to_response [name] << endl;
   }
   
-  void add_gogui_command (GtpEngine* engine, string type, string name, string params) {
-    if (!is_command(name)) add_gtp_command (engine, name);
+  void add_gogui_command (GtpCommand* command, string type, string name, string params) {
+    if (!is_command(name)) add_gtp_command (command, name);
     string ext = type + "/" + name + " " + params + "/" + name + " " + params + "\n";
     extend_static_command ("gogui_analyze_commands", ext);
   }
@@ -125,42 +120,25 @@ public:
     }
   }
 
-
   void run_loop (istream& in = cin, ostream& out = cout, bool echo_commands = false) {
-    int cmd_num;
-
     while (true) {
       string line;
       if (!getline (in, line)) break;
       if (echo_commands) out << line << endl;
-
-      line = preprocess (line);
+      preprocess (&line);
 
       istringstream line_stream (line);
       string cmd_name;
-      if (!(line_stream >> cmd_num )) { cmd_num = -1; line_stream.clear (); }
       if (!(line_stream >> cmd_name)) continue; // empty line - continue
 
-      if (engine_of_cmd_name.find (cmd_name) == engine_of_cmd_name.end ()) {
-        out << "? unknown command: \"" << cmd_name << "\"" << endl << endl;
+      if (!is_command (cmd_name)) {
+        out << GtpResult::failure("unknown command: \"" + cmd_name + "\"").to_string ();
         continue;
       }
 
-      GtpEngine* engine = (*(engine_of_cmd_name.find (cmd_name))).second;
-      GtpResult result = engine->exec_command (cmd_name, line_stream);
-      string response_str = result.response ();
-
-      response_str = remove_empty_lines (response_str);
-      
-      // make sure there is no \n or`whitespace on the end of string
-      while (isspace ( *(response_str.end ()-1) )) {
-        response_str.resize (response_str.size () - 1);
-      }
-
-      //  print respult
-      out << result.status_marker ();
-      if (cmd_num >= 0) out << cmd_num;
-      out << " " << response_str << endl << endl;
+      GtpCommand* command = (*(command_of_name.find (cmd_name))).second;
+      GtpResult result = command->exec_command (cmd_name, line_stream);
+      out << result.to_string ();
 
       if (result.quit_loop ()) break;
     }
@@ -176,7 +154,7 @@ public: // basic GTP commands
 
     if (command == "help" || command == "list_commands") {
       string response;
-      for_each (cmd_it, engine_of_cmd_name) { // TODO iterate over map instead of separate vector
+      for_each (cmd_it, command_of_name) { // TODO iterate over map instead of separate vector
         response += (*cmd_it).first + "\n";
       }
       return GtpResult::success (response);
@@ -185,15 +163,12 @@ public: // basic GTP commands
     if (command == "known_command") {
       string known_cmd;
       if (!(params >> known_cmd)) return GtpResult::syntax_error ();
-
-      if (engine_of_cmd_name.find (known_cmd) == engine_of_cmd_name.end ()) 
-        return GtpResult::success ("false"); 
-      else 
-        return GtpResult::success ("true"); 
+      return GtpResult::success (is_command(known_cmd) ? "true" : "false");
     }
 
-    if (command == "quit") 
+    if (command == "quit") {
       return GtpResult::quit ();
+    }
 
     if (command == "echo") {
       string response;
@@ -219,9 +194,9 @@ public: // basic GTP commands
   }
 
 private:
-  string preprocess (string s) {
+  void preprocess (string* s) {
     ostringstream ret;
-    for_each (cp, s) {
+    for_each (cp, *s) {
       if (*cp == 9) ret << '\32'; 
       else if (*cp > 0 && *cp <= 9) continue; 
       else if (*cp >= 11 && *cp <= 31) continue; 
@@ -229,10 +204,10 @@ private:
       else if (*cp == '#') break;  // remove comments
       else ret << *cp;
     }
-    return ret.str ();
+    *s = ret.str ();
   }
 
 private:
-  map <string, GtpEngine*> engine_of_cmd_name;
-  map <string, string>     command_to_response;
+  map <string, GtpCommand*> command_of_name;
+  map <string, string>      command_to_response;
 };
