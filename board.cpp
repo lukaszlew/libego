@@ -348,7 +348,7 @@ public:                         // board interface
 
   Board () { 
     clear (); 
-    if (color_at[0] == 11) print_cerr (); // TODO LOL hack - need tu use it somwhere 
+    cout << ""; // TODO remove this stupid statement
   }
 
   
@@ -439,7 +439,7 @@ public: // legality functions
       v == Vertex::pass () || 
       !nbr_cnt[v].player_cnt_is_max (player.other ()) || 
       (!play_eye_is_ko (player, v) && 
-       !play_eye_is_suicide (player, v));
+       !play_eye_is_suicide (v));
   }
 
 
@@ -576,7 +576,7 @@ public: // auxiliary functions
   }
 
 
-  bool play_eye_is_suicide (Player player, Vertex v) {
+  bool play_eye_is_suicide (Vertex v) {
     uint all_nbr_live = true;
     vertex_for_each_nbr (v, nbr_v, all_nbr_live &= (--chain_lib_cnt [chain_id [nbr_v]] != 0));
     vertex_for_each_nbr (v, nbr_v, chain_lib_cnt [chain_id [nbr_v]]++);
@@ -868,7 +868,7 @@ public:                         // utils
         Color color;
 
         c      = getc_non_space (ifs);
-        color  = Color (c, 0); // TODO 0 is to choose the constructor
+        color  = Color (c); // TODO 0 is to choose the constructor
 
         if (color == Color::wrong_char ()) return false;
         
@@ -893,6 +893,8 @@ public:                         // utils
 
     this->load (tmp_board);
 
+    // if (false)
+    if (color_at[0] == Color::white ()) print_cerr (); // TODO LOL hack - need tu use it somwhere 
     return true;
   }
 

@@ -2,7 +2,7 @@ OPT   = -O3 -march=native -fomit-frame-pointer -DDEBUG -ffast-math -frename-regi
 DEBUG = -ggdb3 -DDEBUG -fno-inline 
 PROF  = -O2 -march=native -DDEBUG -ggdb3 -fno-inline 
 
-CFLAGS += -Wall #-static #-Wno-long-long -Wextra -Wno-variadic-macros
+CFLAGS += -Wall -Wextra #-static #-Wno-long-long -Wextra -Wno-variadic-macros
 
 GPP    = g++ $(CFLAGS) 
 

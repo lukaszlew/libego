@@ -115,13 +115,13 @@ public:
     }
   }
 
-  void bad_vertex (Vertex v) {
+  void bad_vertex (Vertex) {
   }
 
-  void played_vertex (Vertex v) { 
+  void played_vertex (Vertex) { 
   }
 
-  void end_playout (playout_status_t status) { 
+  void end_playout (playout_status_t) { 
   }
 
 };

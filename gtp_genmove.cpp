@@ -25,6 +25,7 @@ template <typename engine_t>
 class GtpGenmove : public GtpCommand {
 public:
   GtpGenmove (Gtp& gtp, Board& board_, engine_t& engine_) : board (board_) { //, engine (engine_)
+    unused (engine_);
     gtp.add_gtp_command (this, "genmove");
   } 
 

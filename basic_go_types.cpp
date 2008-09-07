@@ -99,7 +99,7 @@ public:
 
   Color (Player pl) { idx = pl.get_idx (); }
 
-  Color (char c, uint dummy) {  // may return color_wrong_char // TODO dummmy is just to be able to choose the constructor
+  Color (char c) {  // may return color_wrong_char
      switch (c) {
      case '#': idx = black_idx; break;
      case 'O': idx = white_idx; break;

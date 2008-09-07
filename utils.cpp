@@ -62,7 +62,7 @@ public:
     sample_sum = 0;
   }
 
-  volatile uint64 get_cc_time () {
+  uint64 get_cc_time () volatile {
     uint64 ret;
     __asm__ __volatile__("rdtsc" : "=A" (ret) : :);
     return ret;
