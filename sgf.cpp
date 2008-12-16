@@ -2,7 +2,7 @@
  *                                                                           *
  *  This file is part of Library of Effective GO routines - EGO library      *
  *                                                                           *
- *  Copyright 2006, 2007, 2008 Lukasz Lew                                    *
+ *  Copyright 2006 and onwards, Lukasz Lew                                   *
  *                                                                           *
  *  EGO library isfree software; you can redistribute it and/or modify       *
  *  it under the terms of the GNU General Public License as published by     *

@@ -4,11 +4,12 @@ This is a Library of Effective GO routines (EGO library / libEGO), a high perfor
 implementation of Go rules and most popular algorithms used in computer Go. 
 This is also fully functional GTP Go engine.
 
-Newest version can be found at http://www.mimuw.edu.pl/~lew.
- 
+Newest version can be found using git repository:
+git clone git://github.com/lukaszlew/libego.git  
+
                          Copyright
 
-All files Copyright 2006, 2007 Łukasz Lew 
+All files Copyright 2006 and onwards Łukasz Lew 
 
 All files in this package are under General Public License, 
 which may be found in the file COPYING.
@@ -26,35 +27,13 @@ If something goes wrong, try make ego_debug; ./ego_debug.
 If You want to develop a Go program, then first take a look at playout.cpp
 where you can find an effective procedure for Monte-Carlo playouts. 
 
-The basic functionality of libEGO is board_t class.
-Most important fields and methods follow:
-
-  color::t color_at [v]                        // color of board vertex (intersection) v
-  hash::t  hash                                // zobrist hash of current position
-
-  void clear ()                                // clears the board
-  void set_komi (float komi)                   // sets the komi, usually should be negative, as white is minimizing player
-
-  void load (board_t* save_board)              // loads a board position from board save_board
-  bool load (istream& ifs)                     // loads a board from text file such as those in ./positions directory
-
-  empty_v_for_each (board, v, { do_it (v); })  // macro that calls do_it for every empty intersection
-  bool is_eyelike (player::t pl, v::t v)       // checks whether v is an eye of player pl
-  play_ret_t play (player::t pl, v::t v)       // plays a move of player pl on vertex v
-
-  int score ()                                 // result of the game, draw (0) is assumed a win for white
-  int approx_score ()                          // fast approximation of score
-  player::t winner ()                          // returns a winner 
-
-  void print (ostream& out, v::t v = v::pass)  // prints a current position to stream out with a vertex mark_v marked
-
                           Thanks              
 
 My girlfriend for her endless support and patience.
 Benjamin Tauber for many hours of extreme programming.
 Jakub Pawlewicz for the idea of pseudo-liberties and find-union algorithms.
 Dave Hillis for the idea of mercy rule.
-Markus Enzenberger for his computer go bibliography.
+Markus Enzenberger for his computer go bibliography and GoGui.
 Don Dailey for setting up CGOS server.
 And last but not least, a whole computer Go community for a 
 stimulating mixture of cooperation and competition.
@@ -62,4 +41,3 @@ stimulating mixture of cooperation and competition.
                           Contact
 
 Lukasz Lew <lukasz.lew@gmail.com>
-
