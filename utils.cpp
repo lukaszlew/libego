@@ -225,8 +225,9 @@ void fatal_error (const char* s) {
 // string/stream opereations
 
 template <typename T> 
-string to_string (T f) {
+string to_string (T f, int precision = 2) {
   ostringstream s;
+  s.precision(precision);
   s << f;
   return s.str ();
 }
