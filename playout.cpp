@@ -30,6 +30,8 @@ template <typename Policy> class Playout {
 public:
   Policy*  policy;
   Board*   board;
+  Move*    move_history;
+  uint     move_history_length;
 
   Playout (Policy* policy_, Board*  board_) : policy (policy_), board (board_) {}
 
@@ -54,22 +56,27 @@ public:
 
   all_inline
   playout_status_t run () {
+    uint begin_move_no = board->move_no;
+    move_history = board->move_history + board->move_no;
     
     policy->begin_playout (board);
     while (true) {
       play_move ();
       
       if (board->both_player_pass ()) {
+        move_history_length = board->move_no - begin_move_no;
         policy->end_playout (pass_pass);
         return pass_pass;
       }
       
       if (board->move_no >= max_playout_length) {
+        move_history_length = board->move_no - begin_move_no;
         policy->end_playout (too_long);
         return too_long;
       }
       
       if (use_mercy_rule && uint (abs (board->approx_score ())) > mercy_threshold) {
+        move_history_length = board->move_no - begin_move_no;
         policy->end_playout (mercy);
         return mercy;
       }

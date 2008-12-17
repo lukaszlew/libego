@@ -78,12 +78,13 @@ public:
     mc_board->load (base_board);
 
     SimplePolicy policy;
-    Playout<SimplePolicy> (&policy, mc_board).run ();
+    Playout<SimplePolicy> playout(&policy, mc_board);
+    playout.run ();
 
+    uint aaf_move_count = uint (float(playout.move_history_length)*aaf_fraction);
     float score = mc_board->score ();
-    uint aaf_move_count = uint (float(mc_board->move_no)*aaf_fraction);
 
-    aaf_stats.update (mc_board->move_history, aaf_move_count, score);
+    aaf_stats.update (playout.move_history, aaf_move_count, score);
   }
 
   virtual GtpResult exec_command (string command, istream& params) {
