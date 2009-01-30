@@ -23,13 +23,15 @@
 
 // standard macros
 
-#define qq(...) fprintf(stdout, __VA_ARGS__); fflush (stdout);
+#define qq(x) cerr << x << flush;
+#define qqv(x) cerr << #x << " = " << x << endl << flush;
+
 
 //TODO rename to ignore
 #define unused(p) (void)(p)
 #define nop unused(0)
 
-#define rep(i,n)     for (int i = 0;   i < (int)(n); i++)
+#define rep(i,n)     for (uint i = 0;   i < (uint)(n); i++)
 #define seq(i,a,b)   for (let (i, a); i <= (b); i++)
 #define dseq(i,b,a)  for (let (i, b); i >= (a); i--)
 
@@ -78,7 +80,7 @@ public:
     sample_cnt += 1.0;
     sample_sum += double (stop_time - start_time) - overhead;
   }
-  
+
   double ticks () { return sample_sum / sample_cnt; }
 
   string to_string (float unit = 1.0) {
@@ -94,16 +96,16 @@ public:
 // class PmRandom
 
 
-class PmRandom {             // Park - Miller "minimal standard" 
+class PmRandom {             // Park - Miller "minimal standard"
 
-  static const int cnt = (uint(1)<<31) - 1;  
+  static const int cnt = (uint(1)<<31) - 1;
 
   uint seed;
   //tr1::minstd_rand0 mt; // this is eqivalent when #include <tr1/random>
 
 public:
 
-  PmRandom (uint seed_ = 12345) //: mt (seed_) 
+  PmRandom (uint seed_ = 12345) //: mt (seed_)
   { seed = seed_; }
 
   void set_seed (uint _seed) { seed = _seed; }
@@ -129,11 +131,11 @@ public:
 
   void test () {
     uint start = rand_int ();
-    
+
     uint n = 1;
     uint max = 0;
     uint sum = start;
-    
+
     while (true) {
       uint r = rand_int ();
       if (r == start) break;
@@ -167,11 +169,11 @@ public:
   elt_t tab [_max_size];
   uint size;
 
-  Stack () {
-    size = 0;
-  }
+  Stack () { clear (); }
 
-  void check () const { 
+  void clear () { size = 0; }
+
+  void check () const {
     assertc (stack_ac, size <= _max_size);
   }
 
@@ -179,16 +181,17 @@ public:
 
   elt_t& top () { assertc (stack_ac, size > 0); return tab [size-1]; }
 
-  void   push_back (elt_t& elt) { tab [size++] = elt; check (); }
+  void push_back (elt_t& elt) { tab [size++] = elt; check (); }
+  elt_t& new_top() { size += 1; check();  return tab [size-1]; }
 
 
-  elt_t pop_random (PmRandom& pm) { 
-    assertc (stack_ac, size > 0); 
+  elt_t pop_random (PmRandom& pm) {
+    assertc (stack_ac, size > 0);
     uint idx = pm.rand_int (size);
     elt_t elt = tab [idx];
     size--;
     tab [idx] = tab [size];
-    return elt; 
+    return elt;
   }
 
   void   pop () { size--; check (); }
@@ -198,11 +201,17 @@ public:
 
 // very simple and useful FastMap
 
-template <typename idx_t, typename elt_t> class FastMap {
+template <typename idx_t, typename elt_t>
+class FastMap {
   elt_t tab [idx_t::cnt];
 public:
   elt_t& operator[] (idx_t pl)             { return tab [pl.get_idx ()]; }
   const elt_t& operator[] (idx_t pl) const { return tab [pl.get_idx ()]; }
+  void memset(uint val) { memset(tab, val, sizeof(elt_t)*idx_t::cnt); }
+  void SetAll(const elt_t& val) {
+    rep (ii, idx_t::cnt)
+      tab[ii] = val;
+  }
 };
 
 
@@ -224,10 +233,10 @@ void fatal_error (const char* s) {
 
 // string/stream opereations
 
-template <typename T> 
-string to_string (T f, int precision = 2) {
+template <typename T>
+string to_string (T f, int precision = -1) {
   ostringstream s;
-  s.precision(precision);
+  if (precision > 0) s.precision(precision);
   s << f;
   return s.str ();
 }
@@ -240,7 +249,7 @@ char getc_non_space (istream& is) {
 }
 
 bool is_all_whitespace (string s) {
-  for_each (cp, s) 
+  for_each (cp, s)
     if (!isspace (*cp))
       return false;
   return true;
@@ -288,7 +297,7 @@ void remove_trailing_whitespace (string* str) {
 #else
 
 #define no_inline
-#define flatten  
+#define flatten
 #define all_inline
 
 #endif

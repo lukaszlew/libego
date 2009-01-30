@@ -107,27 +107,6 @@ public:
       return GtpResult::success (to_string_2d (means));
     }
 
-    if (command == "AAF.set_influence_scale") {
-      if (!(params >> influence_scale)) {
-        return GtpResult::failure ("influence_scale = " + to_string (influence_scale));
-      }
-      return GtpResult::success ();
-    }
-
-    if (command == "AAF.set_playout_number") {
-      if (!(params >> playout_no)) {
-        return GtpResult::failure ("playout_number = " + to_string (playout_no));
-      }
-      return GtpResult::success ();
-    }
-
-    if (command == "AAF.set_aaf_fraction") {
-      if (!(params >> aaf_fraction)) {
-        return GtpResult::failure ("aaf_fraction = " + to_string (aaf_fraction));
-      }
-      return GtpResult::success ();
-    }
-
     assert (false);
   }
 };

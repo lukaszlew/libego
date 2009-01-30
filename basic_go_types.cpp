@@ -49,9 +49,9 @@ public:
   
   string to_string () const {
     if (idx == black_idx)
-      return "#";
+      return "B";
     else
-      return "O";
+      return "W";
   }
 
   bool in_range () const { return idx < cnt; } // TODO do it like check
