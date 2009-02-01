@@ -96,423 +96,72 @@ const uint NbrCounter::player_inc_tab [Player::cnt] = {
 
 enum play_ret_t { play_ok, play_suicide, play_ss_suicide, play_ko };
 
-class Board {
-
-public:
-
-  static const Zobrist zobrist[1];
-
-  FastMap<Vertex, Color>       color_at;
-  FastMap<Vertex, NbrCounter>  nbr_cnt; // incremental, for fast eye checking
-  FastMap<Vertex, uint>        empty_pos;
-  FastMap<Vertex, Vertex>      chain_next_v;
-
-  uint                         chain_lib_cnt [Vertex::cnt]; // indexed by chain_id
-  FastMap<Vertex, uint>        chain_id;
-  
-  // TODO use FastStack
-  Vertex                       empty_v [board_area];
-  uint                         empty_v_cnt;
-  uint                         last_empty_v_cnt;
-
-  FastMap<Player, uint>        player_v_cnt;
-  FastMap<Player, Vertex>      player_last_v;
-
-  Hash                         hash;
-  int                          komi;
-
-  Vertex                       ko_v;             // vertex forbidden by ko
-
-  Player                       last_player;      // player who made the last play (other::player is forbidden to retake)
-  uint                         move_no;
-
-  play_ret_t                   last_move_status;
-
-  // TODO use FastStack in Board
-  Move                         move_history [max_game_length];
-
-public:                         // macros
 
 
-  #define empty_v_for_each(board, vv, i) {                              \
-      Vertex vv = Vertex::any ();                                       \
-      rep (ev_i, (board)->empty_v_cnt) {                                \
-        vv = (board)->empty_v [ev_i];                                   \
-        i;                                                              \
-      }                                                                 \
-    }
-
-  
-  #define empty_v_for_each_and_pass(board, vv, i) {                     \
-      Vertex vv = Vertex::pass ();                                      \
+#define empty_v_for_each(board, vv, i) {                                \
+    Vertex vv = Vertex::any ();                                         \
+    rep (ev_i, (board)->empty_v_cnt) {                                  \
+      vv = (board)->empty_v [ev_i];                                     \
       i;                                                                \
-      rep (ev_i, (board)->empty_v_cnt) {                                \
-        vv = (board)->empty_v [ev_i];                                   \
-        i;                                                              \
-      }                                                                 \
-    }
-
-
-public:                         // consistency checks
-
-
-  void check_empty_v () const {
-    if (!board_empty_v_ac) return;
-
-    FastMap<Vertex, bool> noticed;
-    FastMap<Player, uint> exp_player_v_cnt;
-
-    vertex_for_each_all (v) noticed[v] = false;
-
-    assert (empty_v_cnt <= board_area);
-
-    empty_v_for_each (this, v, {
-      assert (noticed [v] == false);
-      noticed [v] = true;
-    });
-
-    player_for_each (pl) exp_player_v_cnt [pl] = 0;
-
-    vertex_for_each_all (v) {
-      assert ((color_at[v] == Color::empty ()) == noticed[v]);
-      if (color_at[v] == Color::empty ()) {
-        assert (empty_pos[v] < empty_v_cnt);
-        assert (empty_v [empty_pos[v]] == v);
-      }
-      if (color_at [v].is_player ()) exp_player_v_cnt [color_at[v].to_player ()]++;
-    }
-
-    player_for_each (pl) 
-      assert (exp_player_v_cnt [pl] == player_v_cnt [pl]);
-  }
-
-
-  void check_hash () const {
-    assertc (board_hash_ac, hash == recalc_hash ());
-  }
-
-
-  void check_color_at () const {
-    if (!board_color_at_ac) return;
-
-    vertex_for_each_all (v) {
-      assert ((color_at[v] != Color::off_board()) == (v.is_on_board ()));
-    }
-  }
-
-
-  void check_nbr_cnt () const {
-    if (!board_nbr_cnt_ac) return;
-    
-    vertex_for_each_all (v) {
-      coord::t r;
-      coord::t c;
-      FastMap<Color, uint> nbr_color_cnt;
-      uint expected_nbr_cnt;
-
-      if (color_at[v] == Color::off_board()) continue; // TODO is that right?
-
-      r = v.row ();
-      c = v.col ();
-
-      assert (coord::is_on_board (r)); // checking the macro
-      assert (coord::is_on_board (c));
-          
-      color_for_each (col) nbr_color_cnt [col] = 0;
-          
-      vertex_for_each_nbr (v, nbr_v, nbr_color_cnt [color_at [nbr_v]]++);
-          
-      expected_nbr_cnt =        // definition of nbr_cnt[v]
-        + ((nbr_color_cnt [Color::black ()] + nbr_color_cnt [Color::off_board ()]) 
-           << NbrCounter::f_shift_black)
-        + ((nbr_color_cnt [Color::white ()] + nbr_color_cnt [Color::off_board ()])
-           << NbrCounter::f_shift_white)
-        + ((nbr_color_cnt [Color::empty ()]) 
-           << NbrCounter::f_shift_empty);
-    
-      assert (nbr_cnt[v].bitfield == expected_nbr_cnt);
-    }
-  }
-
-
-  void check_chain_at () const {
-    if (!chain_at_ac) return;
-
-    vertex_for_each_all (v) { // whether same color neighbours have same root and liberties
-      // TODO what about off_board and empty?
-      if (color_at [v].is_player ()) {
-
-        assert (chain_lib_cnt[ chain_id [v]] != 0);
-
-        vertex_for_each_nbr (v, nbr_v, {
-          if (color_at[v] == color_at[nbr_v]) 
-            assert (chain_id [v] == chain_id [nbr_v]);
-        });
-      }
-    }
-  }
-
-
-  void check_chain_next_v () const {
-    if (!chain_next_v_ac) return;
-    vertex_for_each_all (v) {
-      chain_next_v[v].check ();
-      if (!color_at [v].is_player ()) 
-        assert (chain_next_v [v] == v);
-    }
+    }                                                                   \
   }
 
   
-  void check () const {
-    if (!board_ac) return;
-
-    check_empty_v       ();
-    check_hash          ();
-    check_color_at      ();
-    check_nbr_cnt       ();
-    check_chain_at      ();
-    check_chain_next_v  ();
+#define empty_v_for_each_and_pass(board, vv, i) {                       \
+    Vertex vv = Vertex::pass ();                                        \
+    i;                                                                  \
+    rep (ev_i, (board)->empty_v_cnt) {                                  \
+      vv = (board)->empty_v [ev_i];                                     \
+      i;                                                                \
+    }                                                                   \
   }
 
-
-  void check_no_more_legal (Player player) { // at the end of the playout
-    unused (player);
-
-    if (!board_ac) return;
-
-    vertex_for_each_all (v)
-      if (color_at[v] == Color::empty ())
-        assert (is_eyelike (player, v) || is_pseudo_legal (player, v) == false);
-  }
-
-
+class Board {
 public:                         // board interface
 
+  Board ();
 
-  Board () { 
-    clear (); 
-    cout << ""; // TODO remove this stupid statement
-  }
+  void clear ();
 
-  
-  void clear () {
-    uint off_board_cnt;
+  Hash recalc_hash () const;
 
-    set_komi (default_komi);            // standard for chinese rules
-    empty_v_cnt  = 0;
-    player_for_each (pl) {
-      player_v_cnt  [pl] = 0;
-      player_last_v [pl] = Vertex::any ();
-    }
-    move_no      = 0;
-    last_player  = Player::white (); // act player is other
-    last_move_status = play_ok;
-    ko_v         = Vertex::any ();
-    vertex_for_each_all (v) {
-      color_at      [v] = Color::off_board ();
-      nbr_cnt       [v] = NbrCounter (0, 0, NbrCounter::max);
-      chain_next_v  [v] = v;
-      chain_id      [v] = v.get_idx ();    // TODO is it needed, is it usedt?
-      chain_lib_cnt [v.get_idx ()] = NbrCounter::max; // TODO is it logical? (off_boards)
+  void load (const Board* save_board);
 
-      if (v.is_on_board ()) {
-        color_at   [v]              = Color::empty ();
-        empty_pos  [v]              = empty_v_cnt;
-        empty_v    [empty_v_cnt++]  = v;
+  void set_komi (float fkomi);
 
-        off_board_cnt = 0;
-        vertex_for_each_nbr (v, nbr_v, {
-            if (!nbr_v.is_on_board ()) 
-              off_board_cnt++;
-        });
-        rep (ii, off_board_cnt) 
-          nbr_cnt [v].off_board_inc ();
-      }
-    }
-
-    hash = recalc_hash ();
-
-    check ();
-  }
-
-
-  Hash recalc_hash () const {
-    Hash new_hash;
-
-    new_hash.set_zero ();
-
-    vertex_for_each_all (v) {
-      if (color_at [v].is_player ()) {
-        new_hash ^= zobrist->of_pl_v (color_at [v].to_player (), v);
-      }
-    }
-    
-    return new_hash;
-  }
-
-
-  void load (const Board* save_board) { 
-    memcpy(this, save_board, sizeof(Board)); 
-    check ();
-  }
-  
-
-  void set_komi (float fkomi) { 
-    komi = int (ceil (-fkomi));
-  }
-
-
-  float get_komi () const { 
-    return float(-komi) + 0.5;
-  }
-
+  float get_komi () const;
 
 public: // legality functions
-
 
   // checks for move legality
   // it has to point to empty vertexand empty
   // can't recognize play_suicide
-  flatten all_inline 
-  bool is_pseudo_legal (Player player, Vertex v) {
-    check ();
-    //v.check_is_on_board (); // TODO check v = pass || onboard
-
-    return 
-      v == Vertex::pass () || 
-      !nbr_cnt[v].player_cnt_is_max (player.other ()) || 
-      (!play_eye_is_ko (player, v) && 
-       !play_eye_is_suicide (v));
-  }
-
+  bool is_pseudo_legal (Player player, Vertex v);
 
   // a very slow function
-  bool is_strict_legal (Player pl, Vertex v) {            // slow function
-    if (try_play (pl, v) == false) return false;
-    sure_undo ();
-    return true;
-  }
+  bool is_strict_legal (Player pl, Vertex v);
 
+  bool is_eyelike (Player player, Vertex v);
 
-  bool is_eyelike (Player player, Vertex v) { 
-    assertc (board_ac, color_at [v] == Color::empty ());
-    if (! nbr_cnt[v].player_cnt_is_max (player)) return false;
-
-    FastMap<Color, int> diag_color_cnt; // TODO
-    color_for_each (col) 
-      diag_color_cnt [col] = 0; // memset is slower
-
-    vertex_for_each_diag_nbr (v, diag_v, {
-      diag_color_cnt [color_at [diag_v]]++;
-    });
-
-    return diag_color_cnt [Color (player.other ())] + (diag_color_cnt [Color::off_board ()] > 0) < 2;
-  }
-
-
-  // this is very very slow function
-  bool is_hash_repeated () {
-    Board tmp_board;
-    rep (mn, move_no-1) {
-      tmp_board.play_legal (move_history [mn].get_player (), move_history [mn].get_vertex ());
-      if (hash == tmp_board.hash) 
-        return true;
-    }
-    return false;
-  }
-
+  // this is very slow function
+  bool is_hash_repeated ();
 
 public: // play move functions
 
 
   // very slow function
-  bool try_play (Player player, Vertex v) {
-    if (v == Vertex::pass ()) {
-      play_legal (player, v);      
-      return true;
-    }
-
-    v.check_is_on_board ();
-
-    if (color_at [v] != Color::empty ()) 
-      return false; 
-
-    if (is_pseudo_legal (player,v) == false)
-      return false;
-
-    play_legal (player, v);
-
-    if (last_move_status != play_ok) {
-      sure_undo ();
-      return false;
-    }
-
-    if (is_hash_repeated ()) {
-      sure_undo ();
-      return false;
-    }
-
-    return true;
-  }
-
+  bool try_play (Player player, Vertex v);
 
   // accept pass
   // will ignore simple-ko ban
   // will play single stone suicide
-  void play_legal (Player player, Vertex v) flatten all_inline {
-    check ();
-
-    if (v == Vertex::pass ()) {
-      basic_play (player, Vertex::pass ());
-      return;
-    }
-    
-    v.check_is_on_board ();
-    assertc (board_ac, color_at[v] == Color::empty ());
-    
-    if (nbr_cnt[v].player_cnt_is_max (player.other ())) {
-      play_eye_legal (player, v);
-    } else {
-      play_not_eye (player, v);
-      assertc (board_ac, last_move_status == play_ok || last_move_status == play_suicide); // TODO invent complete suicide testing
-    }
-  
-  }
+  void play_legal (Player player, Vertex v);
 
   
-  // very slow function
-  bool undo () {
-    Move replay [max_game_length];
-
-    uint   game_length  = move_no;
-    float  old_komi     = get_komi ();
-
-    if (game_length == 0) 
-      return false;
-
-    rep (mn, game_length-1)
-      replay [mn] = move_history [mn];
-
-    clear ();
-    set_komi (old_komi); // TODO maybe last_player should be preserverd as well
-
-    rep (mn, game_length-1)
-      play_legal (replay [mn].get_player (), replay [mn].get_vertex ());
-
-    return true;
-  }
-
-
   // very slow function 
-  void sure_undo () {
-    if (undo () == false) {
-      cerr << "sure_undo failed\n";
-      exit (1);
-    }
-  }
+  bool undo ();
 
 public: // auxiliary functions
-
 
   bool play_eye_is_ko (Player player, Vertex v) {
     return (v == ko_v) & (player == last_player.other ());
@@ -742,105 +391,470 @@ public:                         // utils
     }
   }
 
+  bool load_from_ascii (istream& ifs);
+  string to_string (Vertex mark_v = Vertex::any ()) const;
+  void print_cerr (Vertex v = Vertex::pass ()) const;
 
-  string to_string (Vertex mark_v = Vertex::any ()) const {
-    ostringstream out;
+public:
 
-    #define os(n)      out << " " << n
-    #define o_left(n)  out << "(" << n
-    #define o_right(n) out << ")" << n
-    
-    out << " ";
-    if (board_size < 10) out << " "; else out << "  ";
-    coord_for_each (col) os (coord::col_to_string (col));
-    out << endl;
+  static const Zobrist zobrist[1];
 
-    coord_for_each (row) {
-      if (board_size >= 10 && board_size - row < 10) out << " ";
-      os (coord::row_to_string (row));
-      coord_for_each (col) {
-        Vertex v = Vertex (row, col);
-        char ch = color_at [v].to_char ();
-        if      (v == mark_v)        o_left  (ch);
-        else if (v == mark_v.E ())   o_right (ch);
-        else                         os (ch);
+  FastMap<Vertex, Color>       color_at;
+  FastMap<Vertex, NbrCounter>  nbr_cnt; // incremental, for fast eye checking
+  FastMap<Vertex, uint>        empty_pos;
+  FastMap<Vertex, Vertex>      chain_next_v;
+
+  uint                         chain_lib_cnt [Vertex::cnt]; // indexed by chain_id
+  FastMap<Vertex, uint>        chain_id;
+  
+  // TODO use FastStack
+  Vertex                       empty_v [board_area];
+  uint                         empty_v_cnt;
+  uint                         last_empty_v_cnt;
+
+  FastMap<Player, uint>        player_v_cnt;
+  FastMap<Player, Vertex>      player_last_v;
+
+  Hash                         hash;
+  int                          komi;
+
+  Vertex                       ko_v;             // vertex forbidden by ko
+
+  Player                       last_player;      // player who made the last play (other::player is forbidden to retake)
+  uint                         move_no;
+
+  play_ret_t                   last_move_status;
+
+  // TODO use FastStack in Board
+  Move                         move_history [max_game_length];
+
+
+public:                         // consistency checks
+
+
+  void check_empty_v () const {
+    if (!board_empty_v_ac) return;
+
+    FastMap<Vertex, bool> noticed;
+    FastMap<Player, uint> exp_player_v_cnt;
+
+    vertex_for_each_all (v) noticed[v] = false;
+
+    assert (empty_v_cnt <= board_area);
+
+    empty_v_for_each (this, v, {
+      assert (noticed [v] == false);
+      noticed [v] = true;
+    });
+
+    player_for_each (pl) exp_player_v_cnt [pl] = 0;
+
+    vertex_for_each_all (v) {
+      assert ((color_at[v] == Color::empty ()) == noticed[v]);
+      if (color_at[v] == Color::empty ()) {
+        assert (empty_pos[v] < empty_v_cnt);
+        assert (empty_v [empty_pos[v]] == v);
       }
-      if (board_size >= 10 && board_size - row < 10) out << " ";
-      os (coord::row_to_string (row));
-      out << endl;
+      if (color_at [v].is_player ()) exp_player_v_cnt [color_at[v].to_player ()]++;
     }
-    
-    if (board_size < 10) out << "  "; else out << "   ";
-    coord_for_each (col) os (coord::col_to_string (col));
-    out << endl;
 
-    #undef os
-    #undef o_left
-    #undef o_right
-
-    return out.str ();
+    player_for_each (pl) 
+      assert (exp_player_v_cnt [pl] == player_v_cnt [pl]);
   }
 
 
-  void print_cerr (Vertex v = Vertex::pass ()) const {
-    cerr << to_string (v);
+  void check_hash () const {
+    assertc (board_hash_ac, hash == recalc_hash ());
   }
 
 
-  bool load_from_ascii (istream& ifs) {
-    uint     bs;
-    char     c;
+  void check_color_at () const {
+    if (!board_color_at_ac) return;
 
-    Player    play_player[board_area];
-    Vertex  play_v[board_area];
-    uint      play_cnt;
+    vertex_for_each_all (v) {
+      assert ((color_at[v] != Color::off_board()) == (v.is_on_board ()));
+    }
+  }
 
-    clear ();
 
-    play_cnt = 0;
+  void check_nbr_cnt () const {
+    if (!board_nbr_cnt_ac) return;
+    
+    vertex_for_each_all (v) {
+      coord::t r;
+      coord::t c;
+      FastMap<Color, uint> nbr_color_cnt;
+      uint expected_nbr_cnt;
 
-    if (!ifs) return false;
+      if (color_at[v] == Color::off_board()) continue; // TODO is that right?
 
-    ifs >> bs;
-    if (bs != board_size) return false;
+      r = v.row ();
+      c = v.col ();
 
-    if (getc_non_space (ifs) != '\n') return false;
+      assert (coord::is_on_board (r)); // checking the macro
+      assert (coord::is_on_board (c));
+          
+      color_for_each (col) nbr_color_cnt [col] = 0;
+          
+      vertex_for_each_nbr (v, nbr_v, nbr_color_cnt [color_at [nbr_v]]++);
+          
+      expected_nbr_cnt =        // definition of nbr_cnt[v]
+        + ((nbr_color_cnt [Color::black ()] + nbr_color_cnt [Color::off_board ()]) 
+           << NbrCounter::f_shift_black)
+        + ((nbr_color_cnt [Color::white ()] + nbr_color_cnt [Color::off_board ()])
+           << NbrCounter::f_shift_white)
+        + ((nbr_color_cnt [Color::empty ()]) 
+           << NbrCounter::f_shift_empty);
+    
+      assert (nbr_cnt[v].bitfield == expected_nbr_cnt);
+    }
+  }
 
-    coord_for_each (row) {
-      coord_for_each (col) {
-        Color color;
 
-        c      = getc_non_space (ifs);
-        color  = Color (c); // TODO 0 is to choose the constructor
+  void check_chain_at () const {
+    if (!chain_at_ac) return;
 
-        if (color == Color::wrong_char ()) return false;
-        
-        if (color.is_player ()) {
-          play_player [play_cnt]  = color.to_player ();
-          play_v [play_cnt]       = Vertex (row, col);
-          play_cnt += 1;
-          assertc (board_ac, play_cnt < board_area);
-        }
+    vertex_for_each_all (v) { // whether same color neighbours have same root and liberties
+      // TODO what about off_board and empty?
+      if (color_at [v].is_player ()) {
+
+        assert (chain_lib_cnt[ chain_id [v]] != 0);
+
+        vertex_for_each_nbr (v, nbr_v, {
+          if (color_at[v] == color_at[nbr_v]) 
+            assert (chain_id [v] == chain_id [nbr_v]);
+        });
       }
-
-      if (getc_non_space (ifs) != '\n') return false;
     }
+  }
 
-    Board  tmp_board [1];
-    rep (pi, play_cnt) {
-      if (tmp_board->is_strict_legal (play_player[pi], play_v[pi]) == false) 
-        return false;
-      bool ret = tmp_board->try_play (play_player[pi], play_v[pi]);
-      assertc (board_ac, ret == true);
+
+  void check_chain_next_v () const {
+    if (!chain_next_v_ac) return;
+    vertex_for_each_all (v) {
+      chain_next_v[v].check ();
+      if (!color_at [v].is_player ()) 
+        assert (chain_next_v [v] == v);
     }
+  }
 
-    this->load (tmp_board);
+  
+  void check () const {
+    if (!board_ac) return;
 
-    // if (false)
-    if (color_at[Vertex (0)] == Color::white ()) print_cerr (); // TODO LOL hack - need tu use it somwhere 
-    return true;
+    check_empty_v       ();
+    check_hash          ();
+    check_color_at      ();
+    check_nbr_cnt       ();
+    check_chain_at      ();
+    check_chain_next_v  ();
+  }
+
+
+  void check_no_more_legal (Player player) { // at the end of the playout
+    unused (player);
+
+    if (!board_ac) return;
+
+    vertex_for_each_all (v)
+      if (color_at[v] == Color::empty ())
+        assert (is_eyelike (player, v) || is_pseudo_legal (player, v) == false);
   }
 };
+
+
+bool Board::undo () {
+  Move replay [max_game_length];
+
+  uint   game_length  = move_no;
+  float  old_komi     = get_komi ();
+
+  if (game_length == 0) 
+    return false;
+  
+  rep (mn, game_length-1)
+    replay [mn] = move_history [mn];
+
+  clear ();
+  set_komi (old_komi); // TODO maybe last_player should be preserverd as well
+
+  rep (mn, game_length-1)
+    play_legal (replay [mn].get_player (), replay [mn].get_vertex ());
+
+  return true;
+}
+
+bool Board::is_strict_legal (Player pl, Vertex v) {
+  if (try_play (pl, v) == false) return false;
+  bool ok = undo ();
+  assert(ok);
+  return true;
+}
+
+
+bool Board::is_hash_repeated () {
+  Board tmp_board;
+  rep (mn, move_no-1) {
+    tmp_board.play_legal (move_history [mn].get_player (),
+                          move_history [mn].get_vertex ());
+    if (hash == tmp_board.hash) 
+      return true;
+  }
+  return false;
+}
+
+bool Board::try_play (Player player, Vertex v) {
+  if (v == Vertex::pass ()) {
+    play_legal (player, v);      
+    return true;
+  }
+
+  v.check_is_on_board ();
+  
+  if (color_at [v] != Color::empty ()) 
+    return false; 
+  
+  if (is_pseudo_legal (player,v) == false)
+    return false;
+  
+  play_legal (player, v);
+  
+  if (last_move_status != play_ok) {
+    bool ok = undo ();
+    assert(ok);
+    return false;
+  }
+  
+  if (is_hash_repeated ()) {
+    bool ok = undo ();
+    assert(ok);
+    return false;
+  }
+
+  return true;
+}
+
+string Board::to_string (Vertex mark_v) const {
+  ostringstream out;
+
+#define os(n)      out << " " << n
+#define o_left(n)  out << "(" << n
+#define o_right(n) out << ")" << n
+    
+  out << " ";
+  if (board_size < 10) out << " "; else out << "  ";
+  coord_for_each (col) os (coord::col_to_string (col));
+  out << endl;
+
+  coord_for_each (row) {
+    if (board_size >= 10 && board_size - row < 10) out << " ";
+    os (coord::row_to_string (row));
+    coord_for_each (col) {
+      Vertex v = Vertex (row, col);
+      char ch = color_at [v].to_char ();
+      if      (v == mark_v)        o_left  (ch);
+      else if (v == mark_v.E ())   o_right (ch);
+      else                         os (ch);
+    }
+    if (board_size >= 10 && board_size - row < 10) out << " ";
+    os (coord::row_to_string (row));
+    out << endl;
+  }
+    
+  if (board_size < 10) out << "  "; else out << "   ";
+  coord_for_each (col) os (coord::col_to_string (col));
+  out << endl;
+
+#undef os
+#undef o_left
+#undef o_right
+
+  return out.str ();
+}
+
+
+void Board::print_cerr (Vertex v) const {
+  cerr << to_string (v);
+}
+
+
+bool Board::load_from_ascii (istream& ifs) {
+  uint     bs;
+  char     c;
+
+  Player    play_player[board_area];
+  Vertex  play_v[board_area];
+  uint      play_cnt;
+
+  clear ();
+
+  play_cnt = 0;
+
+  if (!ifs) return false;
+
+  ifs >> bs;
+  if (bs != board_size) return false;
+
+  if (getc_non_space (ifs) != '\n') return false;
+
+  coord_for_each (row) {
+    coord_for_each (col) {
+      Color color;
+
+      c      = getc_non_space (ifs);
+      color  = Color (c); // TODO 0 is to choose the constructor
+
+      if (color == Color::wrong_char ()) return false;
+        
+      if (color.is_player ()) {
+        play_player [play_cnt]  = color.to_player ();
+        play_v [play_cnt]       = Vertex (row, col);
+        play_cnt += 1;
+        assertc (board_ac, play_cnt < board_area);
+      }
+    }
+
+    if (getc_non_space (ifs) != '\n') return false;
+  }
+
+  Board  tmp_board [1];
+  rep (pi, play_cnt) {
+    if (tmp_board->is_strict_legal (play_player[pi], play_v[pi]) == false) 
+      return false;
+    bool ret = tmp_board->try_play (play_player[pi], play_v[pi]);
+    assertc (board_ac, ret == true);
+  }
+
+  this->load (tmp_board);
+
+  // if (false)
+  if (color_at[Vertex (0)] == Color::white ()) print_cerr (); // TODO LOL hack - need tu use it somwhere 
+  return true;
+}
+
+
+void Board::clear () {
+  uint off_board_cnt;
+
+  set_komi (default_komi);            // standard for chinese rules
+  empty_v_cnt  = 0;
+  player_for_each (pl) {
+    player_v_cnt  [pl] = 0;
+    player_last_v [pl] = Vertex::any ();
+  }
+  move_no      = 0;
+  last_player  = Player::white (); // act player is other
+  last_move_status = play_ok;
+  ko_v         = Vertex::any ();
+  vertex_for_each_all (v) {
+    color_at      [v] = Color::off_board ();
+    nbr_cnt       [v] = NbrCounter (0, 0, NbrCounter::max);
+    chain_next_v  [v] = v;
+    chain_id      [v] = v.get_idx ();    // TODO is it needed, is it usedt?
+    chain_lib_cnt [v.get_idx ()] = NbrCounter::max; // TODO is it logical? (off_boards)
+
+    if (v.is_on_board ()) {
+      color_at   [v]              = Color::empty ();
+      empty_pos  [v]              = empty_v_cnt;
+      empty_v    [empty_v_cnt++]  = v;
+
+      off_board_cnt = 0;
+      vertex_for_each_nbr (v, nbr_v, {
+          if (!nbr_v.is_on_board ()) 
+            off_board_cnt++;
+        });
+      rep (ii, off_board_cnt) 
+        nbr_cnt [v].off_board_inc ();
+    }
+  }
+
+  hash = recalc_hash ();
+
+  check ();
+}
+
+
+Hash Board::recalc_hash () const {
+  Hash new_hash;
+
+  new_hash.set_zero ();
+
+  vertex_for_each_all (v) {
+    if (color_at [v].is_player ()) {
+      new_hash ^= zobrist->of_pl_v (color_at [v].to_player (), v);
+    }
+  }
+    
+  return new_hash;
+}
+
+Board::Board () { 
+  clear (); 
+}
+
+void Board::load (const Board* save_board) { 
+    memcpy(this, save_board, sizeof(Board)); 
+    check ();
+  }
+
+  void Board::set_komi (float fkomi) { 
+    komi = int (ceil (-fkomi));
+  }
+
+
+  float Board::get_komi () const { 
+    return float(-komi) + 0.5;
+  }
+
+  bool Board::is_pseudo_legal (Player player, Vertex v) {
+    check ();
+    return 
+      v == Vertex::pass () || 
+      !nbr_cnt[v].player_cnt_is_max (player.other ()) || 
+      (!play_eye_is_ko (player, v) &&
+       !play_eye_is_suicide (v));
+  }
+
+
+  bool Board::is_eyelike (Player player, Vertex v) { 
+    assertc (board_ac, color_at [v] == Color::empty ());
+    if (! nbr_cnt[v].player_cnt_is_max (player)) return false;
+
+    FastMap<Color, int> diag_color_cnt; // TODO
+    color_for_each (col) 
+      diag_color_cnt [col] = 0; // memset is slower
+
+    vertex_for_each_diag_nbr (v, diag_v, {
+      diag_color_cnt [color_at [diag_v]]++;
+    });
+
+    return 
+      diag_color_cnt [Color (player.other ())] + 
+      (diag_color_cnt [Color::off_board ()] > 0) < 2;
+  }
+
+flatten all_inline
+void Board::play_legal (Player player, Vertex v) { // TODO test with move
+  check ();
+
+  if (v == Vertex::pass ()) {
+    basic_play (player, Vertex::pass ());
+    return;
+  }
+    
+  v.check_is_on_board ();
+  assertc (board_ac, color_at[v] == Color::empty ());
+    
+  if (nbr_cnt[v].player_cnt_is_max (player.other ())) {
+    play_eye_legal (player, v);
+  } else {
+    play_not_eye (player, v);
+    assertc (board_ac, last_move_status == play_ok || 
+             last_move_status == play_suicide);
+    // TODO invent complete suicide testing
+  }
+}
+
 
 FastRandom zobrist_fr;
 const Zobrist Board::zobrist[1] = { Zobrist (zobrist_fr) }; // TODO move it to board
