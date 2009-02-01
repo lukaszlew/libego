@@ -21,95 +21,60 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <iomanip>
+class Move {
 
-#include <cassert>
-#include <cmath>
-#include <cstdarg>
-#include <cctype>
-#include <cstdlib>
-#include <cstring>
+  uint idx;
 
-#include <vector>
-#include <map>
-#include <list>
-#include <stack>
+public:
 
-#include <sys/time.h>
-#include <sys/resource.h>
-#include <unistd.h>
+  const static uint cnt = Player::white_idx << Vertex::bits_used | Vertex::cnt;
+ 
+  const static uint no_move_idx = 1;
 
-using namespace std;
-
-
-#include "config.cpp"
-#include "fast_timer.cpp"
-#include "fast_random.cpp"
-#include "fast_stack.cpp"
-#include "fast_map.cpp"
-#include "utils.cpp"
-
-#include "player.cpp"
-#include "color.cpp"
-#include "vertex.cpp"
-#include "move.cpp"
-
-#include "board.cpp"
-#include "sgf.cpp"
-
-#include "playout.cpp"
-#include "uct.cpp"
-
-#include "gtp.cpp"
-#include "gtp_board.cpp"
-#include "gtp_sgf.cpp"
-#include "gtp_genmove.cpp"
-
-#include "experiments.cpp"
-
-
-// goes through GTP files given in command line
-void process_command_line (Gtp& gtp, int argc, char** argv) {
-  if (argc == 1) {
-    if (gtp.run_file ("automagic.gtp") == false) 
-      cerr << "GTP file not found: automagic.gtp" << endl;
+  void check () {
+    Player (idx >> Vertex::bits_used);
+    Vertex (idx & ((1 << Vertex::bits_used) - 1)).check ();
   }
 
-  rep (arg_i, argc) {
-    if (arg_i > 0) {
-      if (gtp.run_file (argv [arg_i]) == false)
-        cerr << "GTP file not found: " << argv [arg_i] << endl;
-    }
+  explicit Move (Player player, Vertex v) { 
+    idx = (player.get_idx () << Vertex::bits_used) | v.get_idx ();
   }
+
+  explicit Move () {
+    Move (Player::black (), Vertex::any ());
+  }
+
+  explicit Move (int idx_) {
+    idx = idx_;
+  }
+
+  Player get_player () { 
+    return Player (idx >> Vertex::bits_used);
+  }
+
+  Vertex get_vertex () { 
+    return Vertex (idx & ((1 << ::Vertex::bits_used) - 1)) ; 
+  }
+
+  string to_string () {
+    return get_player ().to_string () + " " + get_vertex ().to_string ();
+  }
+
+  uint get_idx () { return idx; }
+
+  bool operator== (Move other) const { return idx == other.idx; }
+  bool operator!= (Move other) const { return idx != other.idx; }
+
+  bool in_range ()          const { return idx < cnt; }
+  void next ()                    { idx++; }
+};
+
+istream& operator>> (istream& in, Move& m) {
+  Player pl;
+  Vertex v;
+  if (!(in >> pl >> v)) return in;
+  m = Move (pl, v);
+  return in;
 }
 
-
-// main
-
-int main (int argc, char** argv) { 
-  // to work well with gogui
-  setvbuf (stdout, (char *)NULL, _IONBF, 0);
-  setvbuf (stderr, (char *)NULL, _IONBF, 0);
-
-  Gtp      gtp;
-  Board    board;
-  SgfTree  sgf_tree;
-
-  GtpBoard    gtp_board (gtp, board);
-  GtpSgf      gtp_sgf (gtp, sgf_tree, board);
-  AllAsFirst  aaf (gtp, board);
-
-  Uct uct (board);
-  GtpGenmove<Uct>  gtp_genmove (gtp, board, uct);
-  
-  // arguments
-  process_command_line (gtp, argc, argv);
-  
-  // command-answer GTP loop
-  gtp.run_loop ();
-
-  return 0;
-}
+#define move_for_each_all(m) for (Move m = Move (0); m.in_range (); m.next ())

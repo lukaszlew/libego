@@ -21,95 +21,70 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <iomanip>
+class Player { // TODO check is check always checked in constructors
 
-#include <cassert>
-#include <cmath>
-#include <cstdarg>
-#include <cctype>
-#include <cstdlib>
-#include <cstring>
+  uint idx;
 
-#include <vector>
-#include <map>
-#include <list>
-#include <stack>
+public:
 
-#include <sys/time.h>
-#include <sys/resource.h>
-#include <unistd.h>
+  const static uint black_idx = 0;
+  const static uint white_idx = 1;
 
-using namespace std;
+  const static uint cnt = 2;
 
 
-#include "config.cpp"
-#include "fast_timer.cpp"
-#include "fast_random.cpp"
-#include "fast_stack.cpp"
-#include "fast_map.cpp"
-#include "utils.cpp"
+  explicit Player () { idx = -1; }
+  explicit Player (uint _idx) { idx = _idx; check ();}
 
-#include "player.cpp"
-#include "color.cpp"
-#include "vertex.cpp"
-#include "move.cpp"
+  bool operator== (Player other) const { return idx == other.idx; }
 
-#include "board.cpp"
-#include "sgf.cpp"
-
-#include "playout.cpp"
-#include "uct.cpp"
-
-#include "gtp.cpp"
-#include "gtp_board.cpp"
-#include "gtp_sgf.cpp"
-#include "gtp_genmove.cpp"
-
-#include "experiments.cpp"
-
-
-// goes through GTP files given in command line
-void process_command_line (Gtp& gtp, int argc, char** argv) {
-  if (argc == 1) {
-    if (gtp.run_file ("automagic.gtp") == false) 
-      cerr << "GTP file not found: automagic.gtp" << endl;
+  void check () const { 
+    assertc (player_ac, (idx & (~1)) == 0);
   }
 
-  rep (arg_i, argc) {
-    if (arg_i > 0) {
-      if (gtp.run_file (argv [arg_i]) == false)
-        cerr << "GTP file not found: " << argv [arg_i] << endl;
-    }
+  Player other () const { 
+    return Player(idx ^ 1);
   }
+  
+  string to_string () const {
+    if (idx == black_idx)
+      return "B";
+    else
+      return "W";
+  }
+
+  bool in_range () const { return idx < cnt; } // TODO do it like check
+  void next () { idx++; }
+
+  uint get_idx () const { return idx; }
+  
+  static Player black () { return Player (black_idx); }
+  static Player white () { return Player (white_idx); }
+};
+
+istream& operator>> (istream& in, Player& pl) {
+  string s;
+  in >> s;
+  if (s == "b" || s == "B" ||
+      s == "Black" || s == "BLACK "|| s == "black" || s == "#") { 
+    pl = Player::black (); 
+    return in; 
+  }
+  if (s == "w" || s == "W" || 
+      s == "White" || s == "WHITE "|| s == "white" || s == "O") {
+    pl = Player::white ();
+    return in; 
+  }
+  in.setstate (ios_base::badbit);
+  return in;
 }
 
-
-// main
-
-int main (int argc, char** argv) { 
-  // to work well with gogui
-  setvbuf (stdout, (char *)NULL, _IONBF, 0);
-  setvbuf (stderr, (char *)NULL, _IONBF, 0);
-
-  Gtp      gtp;
-  Board    board;
-  SgfTree  sgf_tree;
-
-  GtpBoard    gtp_board (gtp, board);
-  GtpSgf      gtp_sgf (gtp, sgf_tree, board);
-  AllAsFirst  aaf (gtp, board);
-
-  Uct uct (board);
-  GtpGenmove<Uct>  gtp_genmove (gtp, board, uct);
-  
-  // arguments
-  process_command_line (gtp, argc, argv);
-  
-  // command-answer GTP loop
-  gtp.run_loop ();
-
-  return 0;
+ostream& operator<< (ostream& out, Player& pl) { 
+  out << pl.to_string ();
+  return out; 
 }
+
+// faster than non-loop
+#define player_for_each(pl) \
+  for (Player pl = Player::black (); pl.in_range (); pl.next ())
+
