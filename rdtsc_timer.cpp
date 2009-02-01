@@ -21,88 +21,49 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <iomanip>
+class RdtscTimer {
+  double  sample_cnt;
+  double  sample_sum;
+  uint64  start_time;
+  double  overhead;
+public:
 
-#include <cassert>
-#include <cmath>
-#include <cstdarg>
-#include <cctype>
-#include <cstdlib>
-#include <cstring>
-
-#include <vector>
-#include <map>
-#include <list>
-#include <stack>
-
-#include <sys/time.h>
-#include <sys/resource.h>
-#include <unistd.h>
-
-using namespace std;
-
-
-#include "config.cpp"
-#include "rdtsc_timer.cpp"
-#include "utils.cpp"
-
-#include "basic_go_types.cpp"
-#include "board.cpp"
-#include "sgf.cpp"
-
-#include "playout.cpp"
-#include "uct.cpp"
-
-#include "gtp.cpp"
-#include "gtp_board.cpp"
-#include "gtp_sgf.cpp"
-#include "gtp_genmove.cpp"
-
-#include "experiments.cpp"
-
-
-// goes through GTP files given in command line
-void process_command_line (Gtp& gtp, int argc, char** argv) {
-  if (argc == 1) {
-    if (gtp.run_file ("automagic.gtp") == false) 
-      cerr << "GTP file not found: automagic.gtp" << endl;
+  RdtscTimer () {
+    reset ();
+    uint64 t1, t2;
+    t1 = get_cc_time ();
+    t2 = get_cc_time ();
+    overhead = double (t2 - t1);
   }
 
-  rep (arg_i, argc) {
-    if (arg_i > 0) {
-      if (gtp.run_file (argv [arg_i]) == false)
-        cerr << "GTP file not found: " << argv [arg_i] << endl;
-    }
+  void reset () {
+    sample_cnt = 0;
+    sample_sum = 0;
   }
-}
 
+  uint64 get_cc_time () volatile {
+    uint64 ret;
+    __asm__ __volatile__("rdtsc" : "=A" (ret) : :);
+    return ret;
+  }
 
-// main
+  void start () {
+    start_time = get_cc_time ();
+  }
 
-int main (int argc, char** argv) { 
-  // to work well with gogui
-  setvbuf (stdout, (char *)NULL, _IONBF, 0);
-  setvbuf (stderr, (char *)NULL, _IONBF, 0);
+  void stop () {
+    uint64 stop_time;
+    stop_time = get_cc_time ();
+    sample_cnt += 1.0;
+    sample_sum += double (stop_time - start_time) - overhead;
+  }
 
-  Gtp      gtp;
-  Board    board;
-  SgfTree  sgf_tree;
+  double ticks () { return sample_sum / sample_cnt; }
 
-  GtpBoard    gtp_board (gtp, board);
-  GtpSgf      gtp_sgf (gtp, sgf_tree, board);
-  AllAsFirst  aaf (gtp, board);
-
-  Uct uct (board);
-  GtpGenmove<Uct>  gtp_genmove (gtp, board, uct);
-  
-  // arguments
-  process_command_line (gtp, argc, argv);
-  
-  // command-answer GTP loop
-  gtp.run_loop ();
-
-  return 0;
-}
+  string to_string (float unit = 1.0) {
+    ostringstream s;
+    s.precision(15);
+    s << "avg CC = " << ticks () / unit << " (cnt = " << sample_cnt << ")";
+    return s.str ();
+  }
+};

@@ -42,57 +42,6 @@
 
 const float large_float = 1000000000000.0;
 
-// PerformanceTimer
-
-class PerformanceTimer {
-  double  sample_cnt;
-  double  sample_sum;
-  uint64  start_time;
-  double  overhead;
-public:
-
-  PerformanceTimer () {
-    reset ();
-    uint64 t1, t2;
-    t1 = get_cc_time ();
-    t2 = get_cc_time ();
-    overhead = double (t2 - t1);
-  }
-
-  void reset () {
-    sample_cnt = 0;
-    sample_sum = 0;
-  }
-
-  uint64 get_cc_time () volatile {
-    uint64 ret;
-    __asm__ __volatile__("rdtsc" : "=A" (ret) : :);
-    return ret;
-  }
-
-  void start () {
-    start_time = get_cc_time ();
-  }
-
-  void stop () {
-    uint64 stop_time;
-    stop_time = get_cc_time ();
-    sample_cnt += 1.0;
-    sample_sum += double (stop_time - start_time) - overhead;
-  }
-
-  double ticks () { return sample_sum / sample_cnt; }
-
-  string to_string (float unit = 1.0) {
-    ostringstream s;
-    s.precision(15);
-    s << "avg CC = " << ticks () / unit << " (cnt = " << sample_cnt << ")";
-    return s.str ();
-  }
-};
-#define cc_measure(cc_clock, instr) { cc_clock.start (); instr; cc_clock.stop (); }
-
-
 // class PmRandom
 
 
