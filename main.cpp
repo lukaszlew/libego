@@ -44,7 +44,6 @@
 
 using namespace std;
 
-
 #include "config.cpp"
 #include "fast_timer.cpp"
 #include "fast_random.cpp"
@@ -61,6 +60,7 @@ using namespace std;
 #include "sgf.cpp"
 
 #include "playout.cpp"
+#include "benchmark.cpp"
 #include "uct.cpp"
 
 #include "gtp.cpp"

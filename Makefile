@@ -9,7 +9,7 @@ GPP    = g++-4.2 $(CFLAGS)
 FILES  = Makefile utils.cpp config.cpp utils.cpp \
          fast_timer.cpp fast_random.cpp fast_stack.cpp fast_map.cpp \
          player.cpp color.cpp vertex.cpp move.cpp \
-         board.cpp playout.cpp uct.cpp sgf.cpp \
+         board.cpp playout.cpp uct.cpp sgf.cpp benchmark.cpp \
          gtp.cpp gtp_board.cpp gtp_sgf.cpp gtp_genmove.cpp \
          experiments.cpp \
          main.cpp 

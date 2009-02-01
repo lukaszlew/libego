@@ -54,3 +54,5 @@ public:
   void pop () { size--; check (); }
 
 };
+
+// TODO add iterators

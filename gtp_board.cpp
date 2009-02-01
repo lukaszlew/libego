@@ -101,9 +101,9 @@ public:
       if (!(params >> playout_cnt)) return GtpResult::syntax_error ();
       ostringstream response;
       if (!(params >> p) || p != "+") {
-        simple_playout_benchmark::run<false> (&board, playout_cnt, response);
+        Benchmark::run<false> (&board, playout_cnt, response);
       } else {
-        simple_playout_benchmark::run<true>  (&board, playout_cnt, response);
+        Benchmark::run<true>  (&board, playout_cnt, response);
       }
       return GtpResult::success (response.str ());
     }
