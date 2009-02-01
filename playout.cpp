@@ -139,13 +139,13 @@ FastRandom SimplePolicy::fr(123);
 // ----------------------------------------------------------------------
 namespace simple_playout_benchmark {
 
-  Board               mc_board [1];
+  Board                  mc_board [1];
 
   FastMap<Vertex, int>   vertex_score;
   FastMap<Player, uint>  win_cnt;
-  uint                playout_ok_cnt;
-  int                 playout_ok_score;
-  RdtscTimer          rdtsc_timer;
+  uint                   playout_ok_cnt;
+  int                    playout_ok_score;
+  FastTimer              fast_timer;
 
   template <bool score_per_vertex> 
   void run (Board const * start_board, 
@@ -165,12 +165,12 @@ namespace simple_playout_benchmark {
     vertex_for_each_all (v) 
       vertex_score [v] = 0;
 
-    rdtsc_timer.reset ();
+    fast_timer.reset ();
 
     SimplePolicy policy;
     Playout<SimplePolicy> playout(&policy, mc_board);
 
-    rdtsc_timer.start ();
+    fast_timer.start ();
     float seconds_begin = get_seconds ();
 
     rep (ii, playout_cnt) {
@@ -202,7 +202,7 @@ namespace simple_playout_benchmark {
     }
     
     float seconds_end = get_seconds ();
-    rdtsc_timer.stop ();
+    fast_timer.stop ();
     
     out << "Initial board:" << endl;
     out << "komi " << start_board->get_komi () << " for white" << endl;
@@ -234,7 +234,7 @@ namespace simple_playout_benchmark {
         << " (without komi = " << avg_score - mc_board->komi << ")" << endl << endl;
 
     float seconds_total = seconds_end - seconds_begin;
-    float cc_per_playout = rdtsc_timer.ticks () / double (playout_cnt);
+    float cc_per_playout = fast_timer.ticks () / double (playout_cnt);
 
     out << "Performance: " << endl
         << "  " << playout_cnt << " playouts" << endl

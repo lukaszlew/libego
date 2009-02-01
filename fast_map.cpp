@@ -21,91 +21,29 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <iomanip>
+// very simple and useful FastMap
 
-#include <cassert>
-#include <cmath>
-#include <cstdarg>
-#include <cctype>
-#include <cstdlib>
-#include <cstring>
+template <typename idx_t, typename elt_t>
+class FastMap {
 
-#include <vector>
-#include <map>
-#include <list>
-#include <stack>
+  elt_t tab [idx_t::cnt];
 
-#include <sys/time.h>
-#include <sys/resource.h>
-#include <unistd.h>
+public:
 
-using namespace std;
-
-
-#include "config.cpp"
-#include "fast_timer.cpp"
-#include "fast_random.cpp"
-#include "fast_stack.cpp"
-#include "fast_map.cpp"
-#include "utils.cpp"
-
-#include "basic_go_types.cpp"
-#include "board.cpp"
-#include "sgf.cpp"
-
-#include "playout.cpp"
-#include "uct.cpp"
-
-#include "gtp.cpp"
-#include "gtp_board.cpp"
-#include "gtp_sgf.cpp"
-#include "gtp_genmove.cpp"
-
-#include "experiments.cpp"
-
-
-// goes through GTP files given in command line
-void process_command_line (Gtp& gtp, int argc, char** argv) {
-  if (argc == 1) {
-    if (gtp.run_file ("automagic.gtp") == false) 
-      cerr << "GTP file not found: automagic.gtp" << endl;
+  elt_t& operator[] (idx_t pl) { 
+    return tab [pl.get_idx ()];
   }
 
-  rep (arg_i, argc) {
-    if (arg_i > 0) {
-      if (gtp.run_file (argv [arg_i]) == false)
-        cerr << "GTP file not found: " << argv [arg_i] << endl;
-    }
+  const elt_t& operator[] (idx_t pl) const {
+    return tab [pl.get_idx ()];
   }
-}
 
+  void memset(uint val) { 
+    memset(tab, val, sizeof(elt_t)*idx_t::cnt); 
+  }
 
-// main
-
-int main (int argc, char** argv) { 
-  // to work well with gogui
-  setvbuf (stdout, (char *)NULL, _IONBF, 0);
-  setvbuf (stderr, (char *)NULL, _IONBF, 0);
-
-  Gtp      gtp;
-  Board    board;
-  SgfTree  sgf_tree;
-
-  GtpBoard    gtp_board (gtp, board);
-  GtpSgf      gtp_sgf (gtp, sgf_tree, board);
-  AllAsFirst  aaf (gtp, board);
-
-  Uct uct (board);
-  GtpGenmove<Uct>  gtp_genmove (gtp, board, uct);
-  
-  // arguments
-  process_command_line (gtp, argc, argv);
-  
-  // command-answer GTP loop
-  gtp.run_loop ();
-
-  return 0;
-}
+  void SetAll(const elt_t& val) {
+    rep (ii, idx_t::cnt)
+      tab[ii] = val;
+  }
+};

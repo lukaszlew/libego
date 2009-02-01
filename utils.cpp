@@ -21,62 +21,11 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-// TODO use Stack in Board
-template <typename elt_t, uint _max_size> class Stack {
-public:
-  elt_t tab [_max_size];
-  uint size;
-
-  Stack () { clear (); }
-
-  void clear () { size = 0; }
-
-  void check () const {
-    assertc (stack_ac, size <= _max_size);
-  }
-
-  bool is_empty () const { return size == 0; }
-
-  elt_t& top () { assertc (stack_ac, size > 0); return tab [size-1]; }
-
-  void push_back (elt_t& elt) { tab [size++] = elt; check (); }
-  elt_t& new_top() { size += 1; check();  return tab [size-1]; }
-
-
-  elt_t pop_random (FastRandom& fr) {
-    assertc (stack_ac, size > 0);
-    uint idx = fr.rand_int (size);
-    elt_t elt = tab [idx];
-    size--;
-    tab [idx] = tab [size];
-    return elt;
-  }
-
-  void pop () { size--; check (); }
-
-};
-
-
-// very simple and useful FastMap
-
-template <typename idx_t, typename elt_t>
-class FastMap {
-  elt_t tab [idx_t::cnt];
-public:
-  elt_t& operator[] (idx_t pl)             { return tab [pl.get_idx ()]; }
-  const elt_t& operator[] (idx_t pl) const { return tab [pl.get_idx ()]; }
-  void memset(uint val) { memset(tab, val, sizeof(elt_t)*idx_t::cnt); }
-  void SetAll(const elt_t& val) {
-    rep (ii, idx_t::cnt)
-      tab[ii] = val;
-  }
-};
-
 
 // some usefull functions
 
 
-float get_seconds () {
+float get_seconds () { // TODO rename to process_user_time
   rusage usage [1];
   getrusage (RUSAGE_SELF, usage);
   return float(usage->ru_utime.tv_sec) + float(usage->ru_utime.tv_usec) / 1000000.0;

@@ -168,6 +168,7 @@ public:
   uint                         chain_lib_cnt [Vertex::cnt]; // indexed by chain_id
   FastMap<Vertex, uint>        chain_id;
   
+  // TODO use FastStack
   Vertex                       empty_v [board_area];
   uint                         empty_v_cnt;
   uint                         last_empty_v_cnt;
@@ -184,6 +185,8 @@ public:
   uint                         move_no;
 
   play_ret_t                   last_move_status;
+
+  // TODO use FastStack in Board
   Move                         move_history [max_game_length];
 
 public:                         // macros

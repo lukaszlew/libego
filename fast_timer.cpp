@@ -21,14 +21,14 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-class RdtscTimer {
+class FastTimer {
   double  sample_cnt;
   double  sample_sum;
   uint64  start_time;
   double  overhead;
 public:
 
-  RdtscTimer () {
+  FastTimer () {
     reset ();
     uint64 t1, t2;
     t1 = get_cc_time ();
