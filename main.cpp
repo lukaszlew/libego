@@ -56,6 +56,7 @@ using namespace std;
 #include "vertex.cpp"
 #include "move.cpp"
 
+#include "hash.cpp"
 #include "board.cpp"
 #include "sgf.cpp"
 
