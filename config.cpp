@@ -25,6 +25,27 @@
 typedef unsigned int uint;
 typedef unsigned long long uint64;
 
+
+// standard macros
+
+#define qq(x) cerr << x << flush;
+#define qqv(x) cerr << #x << " = " << x << endl << flush;
+
+
+//TODO rename to ignore
+#define unused(p) (void)(p)
+#define nop unused(0)
+
+#define rep(i,n)     for (uint i = 0;   i < (uint)(n); i++)
+#define seq(i,a,b)   for (let (i, a); i <= (b); i++)
+#define dseq(i,b,a)  for (let (i, b); i >= (a); i--)
+
+#define let(a,b) typeof(b) a=(b)
+#define for_each(it, c) for(let(it,(c).begin()); it!=(c).end(); ++it)
+
+const float large_float = 1000000000000.0;
+#define assertc(aspect, expr) assert((aspect) ? (expr) : true)
+
 // constants
 
 // board parameters

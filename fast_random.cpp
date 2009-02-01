@@ -21,89 +21,68 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <iomanip>
+class FastRandom {             // Park - Miller "minimal standard"
 
-#include <cassert>
-#include <cmath>
-#include <cstdarg>
-#include <cctype>
-#include <cstdlib>
-#include <cstring>
+  static const int cnt = (uint(1)<<31) - 1;
 
-#include <vector>
-#include <map>
-#include <list>
-#include <stack>
+  uint seed;
+  //tr1::minstd_rand0 mt; // this is eqivalent when #include <tr1/random>
 
-#include <sys/time.h>
-#include <sys/resource.h>
-#include <unistd.h>
+public:
 
-using namespace std;
+  FastRandom (uint seed_ = 12345) //: mt (seed_)
+  { seed = seed_; }
 
+  void set_seed (uint _seed) { seed = _seed; }
+  uint get_seed () { return seed; }
 
-#include "config.cpp"
-#include "rdtsc_timer.cpp"
-#include "fast_random.cpp"
-#include "utils.cpp"
-
-#include "basic_go_types.cpp"
-#include "board.cpp"
-#include "sgf.cpp"
-
-#include "playout.cpp"
-#include "uct.cpp"
-
-#include "gtp.cpp"
-#include "gtp_board.cpp"
-#include "gtp_sgf.cpp"
-#include "gtp_genmove.cpp"
-
-#include "experiments.cpp"
-
-
-// goes through GTP files given in command line
-void process_command_line (Gtp& gtp, int argc, char** argv) {
-  if (argc == 1) {
-    if (gtp.run_file ("automagic.gtp") == false) 
-      cerr << "GTP file not found: automagic.gtp" << endl;
+  uint rand_int () {       // a number between  0 ... cnt - 1
+    uint hi, lo;
+    lo = 16807 * (seed & 0xffff);
+    hi = 16807 * (seed >> 16);
+    lo += (hi & 0x7fff) << 16;
+    lo += hi >> 15;
+    seed = (lo & 0x7FFFFFFF) + (lo >> 31);
+    return seed;
+    //return mt (); // equivalen
   }
 
-  rep (arg_i, argc) {
-    if (arg_i > 0) {
-      if (gtp.run_file (argv [arg_i]) == false)
-        cerr << "GTP file not found: " << argv [arg_i] << endl;
+  // n must be between 1 .. (1<<16) + 1
+  inline uint rand_int (uint n) { // 0 .. n-1
+    assertc (pm_ac, n > 0);
+    assertc (pm_ac, n <= (1<<16)+1);
+    return ((rand_int () & 0xffff) * n) >> 16;
+  }
+
+  void test () {
+    uint start = rand_int ();
+
+    uint n = 1;
+    uint max = 0;
+    uint sum = start;
+
+    while (true) {
+      uint r = rand_int ();
+      if (r == start) break;
+      n++;
+      sum += r;
+      if (max < r) max = r;
     }
+    printf ("n = %d\n", n);
+    printf ("max = %d\n", max);
+    printf ("sum = %d\n", sum);
   }
-}
 
+  void test2 (uint k, uint n) {
+    uint bucket [k];
 
-// main
+    rep (ii, k)  bucket [ii] = 0;
+    rep (ii, n) {
+      uint r = rand_int (k);
+      assert (r < k);
+      bucket [r] ++;
+    }
+    rep (ii, k)  printf ("%d\n", bucket [ii]);
+  }
 
-int main (int argc, char** argv) { 
-  // to work well with gogui
-  setvbuf (stdout, (char *)NULL, _IONBF, 0);
-  setvbuf (stderr, (char *)NULL, _IONBF, 0);
-
-  Gtp      gtp;
-  Board    board;
-  SgfTree  sgf_tree;
-
-  GtpBoard    gtp_board (gtp, board);
-  GtpSgf      gtp_sgf (gtp, sgf_tree, board);
-  AllAsFirst  aaf (gtp, board);
-
-  Uct uct (board);
-  GtpGenmove<Uct>  gtp_genmove (gtp, board, uct);
-  
-  // arguments
-  process_command_line (gtp, argc, argv);
-  
-  // command-answer GTP loop
-  gtp.run_loop ();
-
-  return 0;
-}
+};

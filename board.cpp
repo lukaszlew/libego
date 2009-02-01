@@ -35,12 +35,12 @@ public:
   uint index () const { return hash; }
   uint lock  () const { return hash >> 32; }
 
-  void randomize (PmRandom& pm) { 
+  void randomize (FastRandom& fr) { 
     hash =
-      (uint64 (pm.rand_int ()) << (0*16)) ^
-      (uint64 (pm.rand_int ()) << (1*16)) ^ 
-      (uint64 (pm.rand_int ()) << (2*16)) ^ 
-      (uint64 (pm.rand_int ()) << (3*16));
+      (uint64 (fr.rand_int ()) << (0*16)) ^
+      (uint64 (fr.rand_int ()) << (1*16)) ^ 
+      (uint64 (fr.rand_int ()) << (2*16)) ^ 
+      (uint64 (fr.rand_int ()) << (3*16));
   }
 
   void set_zero () { hash = 0; }
@@ -59,10 +59,10 @@ public:
 
   FastMap<Move, Hash> hashes;
 
-  Zobrist (PmRandom& pm) {
+  Zobrist (FastRandom& fr) {
     player_for_each (pl) vertex_for_each_all (v) {
       Move m = Move (pl, v);
-      hashes [m].randomize (pm);
+      hashes [m].randomize (fr);
     }
   }
 
@@ -898,5 +898,5 @@ public:                         // utils
   }
 };
 
-PmRandom zobrist_pm;
-const Zobrist Board::zobrist[1] = { Zobrist (zobrist_pm) }; // TODO move it to board
+FastRandom zobrist_fr;
+const Zobrist Board::zobrist[1] = { Zobrist (zobrist_fr) }; // TODO move it to board

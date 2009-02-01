@@ -89,7 +89,7 @@ public:
 class SimplePolicy {
 protected:
 
-  static PmRandom pm; // TODO make it non-static
+  static FastRandom fr; // TODO make it non-static
 
   uint to_check_cnt;
   uint act_evi;
@@ -108,7 +108,7 @@ public:
   void prepare_vertex () {
     act_player     = board->act_player ();
     to_check_cnt   = board->empty_v_cnt;
-    act_evi        = pm.rand_int (board->empty_v_cnt); 
+    act_evi        = fr.rand_int (board->empty_v_cnt); 
   }
 
   Vertex next_vertex () {
@@ -134,7 +134,7 @@ public:
 
 };
 
-PmRandom SimplePolicy::pm(123);
+FastRandom SimplePolicy::fr(123);
 
 // ----------------------------------------------------------------------
 namespace simple_playout_benchmark {

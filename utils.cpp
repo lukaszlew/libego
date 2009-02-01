@@ -21,97 +21,6 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-// standard macros
-
-#define qq(x) cerr << x << flush;
-#define qqv(x) cerr << #x << " = " << x << endl << flush;
-
-
-//TODO rename to ignore
-#define unused(p) (void)(p)
-#define nop unused(0)
-
-#define rep(i,n)     for (uint i = 0;   i < (uint)(n); i++)
-#define seq(i,a,b)   for (let (i, a); i <= (b); i++)
-#define dseq(i,b,a)  for (let (i, b); i >= (a); i--)
-
-#define let(a,b) typeof(b) a=(b)
-#define for_each(it, c) for(let(it,(c).begin()); it!=(c).end(); ++it)
-
-#define assertc(aspect, expr) assert((aspect) ? (expr) : true)
-
-const float large_float = 1000000000000.0;
-
-// class PmRandom
-
-
-class PmRandom {             // Park - Miller "minimal standard"
-
-  static const int cnt = (uint(1)<<31) - 1;
-
-  uint seed;
-  //tr1::minstd_rand0 mt; // this is eqivalent when #include <tr1/random>
-
-public:
-
-  PmRandom (uint seed_ = 12345) //: mt (seed_)
-  { seed = seed_; }
-
-  void set_seed (uint _seed) { seed = _seed; }
-  uint get_seed () { return seed; }
-
-  uint rand_int () {       // a number between  0 ... cnt - 1
-    uint hi, lo;
-    lo = 16807 * (seed & 0xffff);
-    hi = 16807 * (seed >> 16);
-    lo += (hi & 0x7fff) << 16;
-    lo += hi >> 15;
-    seed = (lo & 0x7FFFFFFF) + (lo >> 31);
-    return seed;
-    //return mt (); // equivalen
-  }
-
-  // n must be between 1 .. (1<<16) + 1
-  inline uint rand_int (uint n) { // 0 .. n-1
-    assertc (pm_ac, n > 0);
-    assertc (pm_ac, n <= (1<<16)+1);
-    return ((rand_int () & 0xffff) * n) >> 16;
-  }
-
-  void test () {
-    uint start = rand_int ();
-
-    uint n = 1;
-    uint max = 0;
-    uint sum = start;
-
-    while (true) {
-      uint r = rand_int ();
-      if (r == start) break;
-      n++;
-      sum += r;
-      if (max < r) max = r;
-    }
-    printf ("n = %d\n", n);
-    printf ("max = %d\n", max);
-    printf ("sum = %d\n", sum);
-  }
-
-  void test2 (uint k, uint n) {
-    uint bucket [k];
-
-    rep (ii, k)  bucket [ii] = 0;
-    rep (ii, n) {
-      uint r = rand_int (k);
-      assert (r < k);
-      bucket [r] ++;
-    }
-    rep (ii, k)  printf ("%d\n", bucket [ii]);
-  }
-
-};
-
-
 // TODO use Stack in Board
 template <typename elt_t, uint _max_size> class Stack {
 public:
@@ -134,16 +43,16 @@ public:
   elt_t& new_top() { size += 1; check();  return tab [size-1]; }
 
 
-  elt_t pop_random (PmRandom& pm) {
+  elt_t pop_random (FastRandom& fr) {
     assertc (stack_ac, size > 0);
-    uint idx = pm.rand_int (size);
+    uint idx = fr.rand_int (size);
     elt_t elt = tab [idx];
     size--;
     tab [idx] = tab [size];
     return elt;
   }
 
-  void   pop () { size--; check (); }
+  void pop () { size--; check (); }
 
 };
 
