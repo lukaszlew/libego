@@ -22,52 +22,75 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 class Move {
-
-  uint idx;
-
 public:
+  explicit Move (Player player, Vertex v);
+  explicit Move ();
+  explicit Move (int idx_);
+
+  inline Player get_player ();
+  inline Vertex get_vertex ();
+
+  string to_string ();
+
+  inline bool operator!= (Move other) const;
+  inline bool operator== (Move other) const;
+
+  inline void next ();
+  inline bool in_range () const;
 
   const static uint cnt = Player::white_idx << Vertex::bits_used | Vertex::cnt;
- 
   const static uint no_move_idx = 1;
 
-  void check () {
-    Player (idx >> Vertex::bits_used);
-    Vertex (idx & ((1 << Vertex::bits_used) - 1)).check ();
-  }
+  inline uint get_idx ();
 
-  explicit Move (Player player, Vertex v) { 
-    idx = (player.get_idx () << Vertex::bits_used) | v.get_idx ();
-  }
+private:
+  void check ();
 
-  explicit Move () {
-    Move (Player::black (), Vertex::any ());
-  }
-
-  explicit Move (int idx_) {
-    idx = idx_;
-  }
-
-  Player get_player () { 
-    return Player (idx >> Vertex::bits_used);
-  }
-
-  Vertex get_vertex () { 
-    return Vertex (idx & ((1 << ::Vertex::bits_used) - 1)) ; 
-  }
-
-  string to_string () {
-    return get_player ().to_string () + " " + get_vertex ().to_string ();
-  }
-
-  uint get_idx () { return idx; }
-
-  bool operator== (Move other) const { return idx == other.idx; }
-  bool operator!= (Move other) const { return idx != other.idx; }
-
-  bool in_range ()          const { return idx < cnt; }
-  void next ()                    { idx++; }
+  uint idx;
 };
+
+void Move::check () {
+  Player (idx >> Vertex::bits_used);
+  Vertex (idx & ((1 << Vertex::bits_used) - 1)).check();
+}
+
+Move::Move (Player player, Vertex v) { 
+  idx = (player.get_idx () << Vertex::bits_used) | v.get_idx ();
+}
+
+Move::Move () {
+  Move (Player::black (), Vertex::any ());
+}
+
+Move::Move (int idx_) {
+  idx = idx_;
+}
+
+Player Move::get_player () { 
+  return Player (idx >> Vertex::bits_used);
+}
+
+Vertex Move::get_vertex () { 
+  return Vertex (idx & ((1 << ::Vertex::bits_used) - 1)) ; 
+}
+
+string Move::to_string () {
+  return get_player ().to_string () + " " + get_vertex ().to_string ();
+}
+
+uint Move::get_idx () { return idx; }
+
+bool Move::operator== (Move other) const { return idx == other.idx; }
+bool Move::operator!= (Move other) const { return idx != other.idx; }
+
+bool Move::in_range () const {
+  return idx < cnt;
+}
+
+void Move::next () {
+  idx++; 
+}
+
 
 istream& operator>> (istream& in, Move& m) {
   Player pl;

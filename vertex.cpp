@@ -67,12 +67,47 @@ namespace coord { // TODO class
 
 class Vertex {
 
-  //static_assert (cnt <= (1 << bits_used));
-  //static_assert (cnt > (1 << (bits_used-1)));
-
-  uint idx;
-
 public:
+  static Vertex pass   ();
+  inline static Vertex any    ();
+  static Vertex resign ();
+  inline static Vertex of_sgf_coords (string s);
+
+  explicit Vertex (); // TODO is it needed
+  explicit Vertex (uint _idx);
+
+  // TODO make this constructor a static function
+  Vertex (coord::t r, coord::t c);
+
+  coord::t row () const;
+  coord::t col () const;
+
+  // this usualy can be achieved quicker by color_at lookup
+  bool is_on_board () const;
+
+  Vertex N () const;
+  Vertex W () const;
+  Vertex E () const;
+  Vertex S () const;
+
+  Vertex NW () const;
+  Vertex NE () const;
+  Vertex SW () const;
+  Vertex SE () const;
+
+  string to_string () const;
+
+  bool operator== (Vertex other) const;
+  bool operator!= (Vertex other) const;
+
+  bool in_range () const;
+  void next ();
+
+  void check () const;
+
+  void check_is_on_board () const;
+
+  uint get_idx () const;
 
   const static uint dNS = (board_size + 2);
   const static uint dWE = 1;
@@ -84,86 +119,121 @@ public:
 
   const static uint cnt = (board_size + 2) * (board_size + 2);
 
-  explicit Vertex () { } // TODO is it needed
-  explicit Vertex (uint _idx) { idx = _idx; }
+private:
 
-  // TODO make this constructor a static function
-  Vertex (coord::t r, coord::t c) {
-    coord::check2 (r, c);
-    idx = (r+1) * dNS + (c+1) * dWE;
-  }
+  uint idx;
 
-  uint get_idx () const { return idx; }
-
-  bool operator== (Vertex other) const { return idx == other.idx; }
-  bool operator!= (Vertex other) const { return idx != other.idx; }
-
-  bool in_range ()          const { return idx < cnt; }
-  void next ()                    { idx++; }
-
-  void check ()             const { assertc (vertex_ac, in_range ()); }
-
-  coord::t row () const { return idx / dNS - 1; }
-
-  coord::t col () const { return idx % dNS - 1; }
-
-  // this usualy can be achieved quicker by color_at lookup
-  bool is_on_board () const {
-    return coord::is_on_board (row ()) & coord::is_on_board (col ());
-  }
-
-  void check_is_on_board () const { 
-    assertc (vertex_ac, is_on_board ()); 
-  }
-
-  Vertex N () const { return Vertex (idx - dNS); }
-  Vertex W () const { return Vertex (idx - dWE); }
-  Vertex E () const { return Vertex (idx + dWE); }
-  Vertex S () const { return Vertex (idx + dNS); }
-
-  Vertex NW () const { return N ().W (); } // TODO can it be faster?
-  Vertex NE () const { return N ().E (); } // only Go
-  Vertex SW () const { return S ().W (); } // only Go
-  Vertex SE () const { return S ().E (); }
-
-  string to_string () const {
-    coord::t r;
-    coord::t c;
-    
-    if (idx == pass_idx) {
-      return "pass";
-    } else if (idx == any_idx) {
-      return "any";
-    } else if (idx == resign_idx) {
-      return "resign";
-    } else {
-      r = row ();
-      c = col ();
-      ostringstream ss;
-      ss << coord::col_to_string (c) << coord::row_to_string (r);
-      return ss.str ();
-    }
-  }
-
-  static Vertex pass   () { return Vertex (Vertex::pass_idx); }
-  static Vertex any    () { return Vertex (Vertex::any_idx); }
-  static Vertex resign () { return Vertex (Vertex::resign_idx); }
-
-  static Vertex of_sgf_coords (string s) {
-    if (s == "") return pass ();
-    if (s == "tt" && board_size <= 19) return pass ();
-    if (s.size () != 2 ) return any ();
-    coord::t col = s[0] - 'a';
-    coord::t row = s[1] - 'a';
-    
-    if (coord::is_on_board (row) &&
-        coord::is_on_board (col)) {
-      return Vertex (row, col);
-    } else {
-      return any ();
-    }
-  }
 };
+
+
+
+// TODO
+// static_assert (cnt <= (1 << bits_used));
+// static_assert (cnt > (1 << (bits_used-1)));
+
+
+Vertex::Vertex () { 
+} // TODO is it needed
+
+Vertex::Vertex (uint _idx) {
+  idx = _idx; 
+}
+
+// TODO make this constructor a static function
+Vertex::Vertex (coord::t r, coord::t c) {
+  coord::check2 (r, c);
+  idx = (r+1) * dNS + (c+1) * dWE;
+}
+
+uint Vertex::get_idx () const {
+  return idx;
+}
+
+bool Vertex::operator== (Vertex other) const {
+  return idx == other.idx; 
+}
+
+bool Vertex::operator!= (Vertex other) const {
+  return idx != other.idx; 
+}
+
+bool Vertex::in_range () const {
+  return idx < cnt; 
+}
+
+void Vertex::next () {
+  idx++; 
+}
+
+void Vertex::check () const {
+  assertc (vertex_ac, in_range ()); 
+}
+
+coord::t Vertex::row () const {
+  return idx / dNS - 1; 
+}
+
+coord::t Vertex::col () const {
+  return idx % dNS - 1; 
+}
+
+// this usualy can be achieved quicker by color_at lookup
+bool Vertex::is_on_board () const {
+  return coord::is_on_board (row ()) & coord::is_on_board (col ());
+}
+
+void Vertex::check_is_on_board () const {
+  assertc (vertex_ac, is_on_board ()); 
+}
+
+Vertex Vertex::N () const { return Vertex (idx - dNS); }
+Vertex Vertex::W () const { return Vertex (idx - dWE); }
+Vertex Vertex::E () const { return Vertex (idx + dWE); }
+Vertex Vertex::S () const { return Vertex (idx + dNS); }
+
+Vertex Vertex::NW () const { return N ().W (); } // TODO can it be faster?
+Vertex Vertex::NE () const { return N ().E (); } // only Go
+Vertex Vertex::SW () const { return S ().W (); } // only Go
+Vertex Vertex::SE () const { return S ().E (); }
+
+string Vertex::to_string () const {
+  coord::t r;
+  coord::t c;
+  
+  if (idx == pass_idx) {
+    return "pass";
+  } else if (idx == any_idx) {
+    return "any";
+  } else if (idx == resign_idx) {
+    return "resign";
+  } else {
+    r = row ();
+    c = col ();
+    ostringstream ss;
+    ss << coord::col_to_string (c) << coord::row_to_string (r);
+    return ss.str ();
+  }
+}
+
+Vertex Vertex::pass   () { return Vertex (Vertex::pass_idx); }
+Vertex Vertex::any    () { return Vertex (Vertex::any_idx); }
+Vertex Vertex::resign () { return Vertex (Vertex::resign_idx); }
+
+Vertex Vertex::of_sgf_coords (string s) {
+  if (s == "") return pass ();
+  if (s == "tt" && board_size <= 19) return pass ();
+  if (s.size () != 2 ) return any ();
+  coord::t col = s[0] - 'a';
+  coord::t row = s[1] - 'a';
+  
+  if (coord::is_on_board (row) &&
+      coord::is_on_board (col)) {
+    return Vertex (row, col);
+  } else {
+    return any ();
+  }
+}
+
 
 // TODO of_gtp_string
 istream& operator>> (istream& in, Vertex& v) {

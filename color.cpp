@@ -22,68 +22,126 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 class Color {
-
-  uint idx;
-
 public:
+
+  static Color black ();
+  static Color white ();
+  static Color empty ();
+  static Color off_board  ();
+  static Color wrong_char ();
+
+  inline explicit Color (Player pl);
+
+  bool is_player     () const;
+  bool is_not_player () const;
+
+  Player to_player () const;
+
+  char to_char () const;
+
+  bool operator== (Color other) const;
+  bool operator!= (Color other) const;
+
+  bool in_range () const;
+  void next ();
+
+  explicit Color (); // TODO test - remove it
+  explicit Color (uint idx_); // TODO test - remove it
+  explicit Color (char c);
 
   const static uint black_idx = 0;
   const static uint white_idx = 1;
   const static uint empty_idx = 2;
   const static uint off_board_idx  = 3;
   const static uint wrong_char_idx = 40;
-
   const static uint cnt = 4;
+  uint get_idx () const;
 
-  explicit Color () { idx = -1; } // TODO test - remove it
+private:
 
-  explicit Color (uint idx_) { idx = idx_; } // TODO test - remove it
+  void check () const;
 
-  explicit Color (Player pl) { idx = pl.get_idx (); }
+  uint idx;
 
-  explicit Color (char c) {  // may return color_wrong_char
-     switch (c) {
-     case '#': idx = black_idx; break;
-     case 'O': idx = white_idx; break;
-     case '.': idx = empty_idx; break;
-     case '*': idx = off_board_idx; break;
-     default : idx = wrong_char_idx; break;
-     }
-  }
-
-  void check () const { 
-    assertc (color_ac, (idx & (~3)) == 0); 
-  }
-
-  bool is_player     () const { return idx <= white_idx; } // & (~1)) == 0; }
-  bool is_not_player () const { return idx  > white_idx; } // & (~1)) == 0; }
-
-  Player to_player () const { return Player (idx); }
-
-  char to_char () const { 
-    switch (idx) {
-    case black_idx:      return '#';
-    case white_idx:      return 'O';
-    case empty_idx:      return '.';
-    case off_board_idx:  return ' ';
-    default : assertc (color_ac, false);
-    }
-    return '?';                 // should not happen
-  }
-
-  bool in_range () const { return idx < Color::cnt; }
-  void next () { idx++; }
-
-  uint get_idx () const { return idx; }
-  bool operator== (Color other) const { return idx == other.idx; }
-  bool operator!= (Color other) const { return idx != other.idx; }
-
-  static Color black ()      { return Color (black_idx); }
-  static Color white ()      { return Color (white_idx); }
-  static Color empty ()      { return Color (empty_idx); }
-  static Color off_board  () { return Color (off_board_idx); }
-  static Color wrong_char () { return Color (wrong_char_idx); }
 };
+
+
+Color::Color () {
+  idx = -1;
+} // TODO test - remove it
+
+Color::Color (uint idx_) {
+  idx = idx_; 
+} // TODO test - remove it
+
+Color::Color (Player pl) {
+  idx = pl.get_idx ();
+}
+
+Color::Color (char c) {  // may return color_wrong_char
+  switch (c) {
+  case '#': idx = black_idx; break;
+  case 'O': idx = white_idx; break;
+  case '.': idx = empty_idx; break;
+  case '*': idx = off_board_idx; break;
+  default : idx = wrong_char_idx; break;
+  }
+}
+
+void Color::check () const { 
+  assertc (color_ac, (idx & (~3)) == 0); 
+}
+
+bool Color::is_player () const {
+  return idx <= white_idx;      // & (~1)) == 0; }
+} 
+
+bool Color::is_not_player () const {
+  return idx  > white_idx;      // & (~1)) == 0; }
+}
+
+Player Color::to_player () const {
+  return Player (idx);
+}
+
+char Color::to_char () const { 
+  switch (idx) {
+  case black_idx:      return '#';
+  case white_idx:      return 'O';
+  case empty_idx:      return '.';
+  case off_board_idx:  return ' ';
+  default : assertc (color_ac, false);
+  }
+  return '?';                 // should not happen
+}
+
+bool Color::in_range () const {
+  return idx < Color::cnt;
+}
+
+// TODO iterators?
+void Color::next () {
+  idx++;
+}
+
+uint Color::get_idx () const {
+  return idx;
+}
+
+bool Color::operator== (Color other) const {
+  return idx == other.idx;
+}
+
+bool Color::operator!= (Color other) const {
+  return idx != other.idx;
+}
+
+Color Color::black ()      { return Color (black_idx); }
+Color Color::white ()      { return Color (white_idx); }
+Color Color::empty ()      { return Color (empty_idx); }
+Color Color::off_board  () { return Color (off_board_idx); }
+Color Color::wrong_char () { return Color (wrong_char_idx); }
+
 
 // TODO test it for performance
 #define color_for_each(col) \

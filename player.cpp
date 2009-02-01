@@ -22,46 +22,87 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 class Player { // TODO check is check always checked in constructors
-
-  uint idx;
-
 public:
+
+  static Player black ();
+  static Player white ();
 
   const static uint black_idx = 0;
   const static uint white_idx = 1;
-
   const static uint cnt = 2;
+  uint get_idx () const;
 
+  Player other () const;
 
-  explicit Player () { idx = -1; }
-  explicit Player (uint _idx) { idx = _idx; check ();}
+  string to_string () const;
 
-  bool operator== (Player other) const { return idx == other.idx; }
+  explicit Player ();
+  explicit Player (uint _idx);
 
-  void check () const { 
-    assertc (player_ac, (idx & (~1)) == 0);
-  }
-
-  Player other () const { 
-    return Player(idx ^ 1);
-  }
+  bool operator== (Player other) const;
   
-  string to_string () const {
-    if (idx == black_idx)
-      return "B";
-    else
-      return "W";
-  }
+  // TODO iterators?
+  bool in_range () const; // TODO do it like check
+  void next ();
 
-  bool in_range () const { return idx < cnt; } // TODO do it like check
-  void next () { idx++; }
+private:
 
-  uint get_idx () const { return idx; }
-  
-  static Player black () { return Player (black_idx); }
-  static Player white () { return Player (white_idx); }
+  void check () const;
+
+  uint idx;
 };
 
+
+Player::Player () { 
+  idx = -1; 
+}
+
+Player::Player (uint _idx) { 
+  idx = _idx;
+  check ();
+}
+
+bool Player::operator== (Player other) const { 
+  return idx == other.idx; 
+}
+
+void Player::check () const { 
+  assertc (player_ac, (idx & (~1)) == 0);
+}
+
+Player Player::other () const { 
+  return Player(idx ^ 1);
+}
+  
+string Player::to_string () const {
+  if (idx == black_idx)
+    return "B";
+  else
+    return "W";
+}
+
+bool Player::in_range () const {
+  return idx < cnt; 
+}
+
+void Player::next () {
+  idx++; 
+}
+
+uint Player::get_idx () const {
+  return idx; 
+}
+  
+Player Player::black () { 
+  return Player (black_idx); 
+}
+
+Player Player::white () { 
+  return Player (white_idx); 
+}
+
+
+// TODO factorize of_string out
 istream& operator>> (istream& in, Player& pl) {
   string s;
   in >> s;

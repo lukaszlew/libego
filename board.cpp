@@ -196,7 +196,6 @@ public:                         // consistency checks
     if (!board_color_at_ac) return;
 
     vertex_for_each_all (v) {
-      color_at [v].check ();
       assert ((color_at[v] != Color::off_board()) == (v.is_on_board ()));
     }
   }
