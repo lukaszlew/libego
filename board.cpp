@@ -300,12 +300,12 @@ string Board::to_string (Vertex mark_v) const {
 
   out << " ";
   if (board_size < 10) out << " "; else out << "  ";
-  coord_for_each (col) os (coord::col_to_string (col));
+  coord_for_each (col) os (col.col_to_string ());
   out << endl;
 
   coord_for_each (row) {
-    if (board_size >= 10 && board_size - row < 10) out << " ";
-    os (coord::row_to_string (row));
+    if (board_size >= 10 && board_size - row.idx < 10) out << " ";
+    os (row.row_to_string ());
     coord_for_each (col) {
       Vertex v = Vertex (row, col);
       char ch = color_at [v].to_char ();
@@ -313,13 +313,13 @@ string Board::to_string (Vertex mark_v) const {
       else if (v == mark_v.E ())   o_right (ch);
       else                         os (ch);
     }
-    if (board_size >= 10 && board_size - row < 10) out << " ";
-    os (coord::row_to_string (row));
+    if (board_size >= 10 && board_size - row.idx < 10) out << " ";
+    os (row.row_to_string ());
     out << endl;
   }
 
   if (board_size < 10) out << "  "; else out << "   ";
-  coord_for_each (col) os (coord::col_to_string (col));
+  coord_for_each (col) os (col.col_to_string ());
   out << endl;
 
 #undef os
@@ -791,18 +791,16 @@ void Board::check_nbr_cnt () const {
   if (!board_nbr_cnt_ac) return;
 
   vertex_for_each_all (v) {
-    coord::t r;
-    coord::t c;
     FastMap<Color, uint> nbr_color_cnt;
     uint expected_nbr_cnt;
 
     if (color_at[v] == Color::off_board()) continue; // TODO is that right?
 
-    r = v.row ();
-    c = v.col ();
+    Coord row = v.get_row ();
+    Coord col = v.get_col ();
 
-    assert (coord::is_on_board (r)); // checking the macro
-    assert (coord::is_on_board (c));
+    assert (row.is_on_board ()); // checking the macro
+    assert (col.is_on_board ());
 
     color_for_each (col) nbr_color_cnt [col] = 0;
 

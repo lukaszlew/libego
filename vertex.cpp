@@ -21,46 +21,51 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-namespace coord { // TODO class
-
-  typedef int t;
-
-  bool is_ok (t coord) { return (coord < int (board_size)) & (coord >= -1); }
-  bool is_on_board (t coord) { return uint (coord) < board_size; }
-
-  void check (t coo) { 
-    unused (coo);
-    assertc (coord_ac, is_ok (coo)); 
+class Coord {
+public:
+  explicit Coord() {
   }
 
-  void check2 (t row, t col) { 
-    if (!coord_ac) return;
-    if (row == -1 && col == -1) return;
-    assertc (coord_ac, is_on_board (row)); 
-    assertc (coord_ac, is_on_board (col)); 
+  explicit Coord(int idx_) {
+    idx = idx_;
   }
 
-  string col_tab = "ABCDEFGHJKLMNOPQRSTUVWXYZ";
+  bool is_ok () const {
+    return (idx < int (board_size)) & (idx >= -1); 
+  }
+
+  void check () const { 
+    assertc (coord_ac, is_ok()); 
+  }
+
+  bool is_on_board () const {
+    return uint (idx) < board_size; 
+  }
 
   // TODO to gtp string
-  string row_to_string (t row) {
-    check (row);
+  string row_to_string () const {
+    check ();
     ostringstream ss;
-    ss << board_size - row;
+    ss << board_size - idx;
     return ss.str ();
   }
 
-  string col_to_string (t col) {
-    check (col);
+  string col_to_string () const {
+    check ();
     ostringstream ss;
-    ss << col_tab [col];
+    ss << col_tab [idx];
     return ss.str ();
   }
 
-}
+  static const string col_tab;
+
+  int idx;
+};
+
+const string Coord::col_tab = "ABCDEFGHJKLMNOPQRSTUVWXYZ";
 
 #define coord_for_each(rc) \
-  for (coord::t rc = 0; rc < int(board_size); rc = coord::t (rc+1))
+  for (Coord rc(0); rc.idx < int(board_size); rc = Coord (rc.idx+1))
 
 
 //--------------------------------------------------------------------------------
@@ -77,10 +82,10 @@ public:
   explicit Vertex (uint _idx);
 
   // TODO make this constructor a static function
-  Vertex (coord::t r, coord::t c);
+  Vertex (Coord r, Coord c);
 
-  coord::t row () const;
-  coord::t col () const;
+  Coord get_row () const;
+  Coord get_col () const;
 
   // this usualy can be achieved quicker by color_at lookup
   bool is_on_board () const;
@@ -140,9 +145,14 @@ Vertex::Vertex (uint _idx) {
 }
 
 // TODO make this constructor a static function
-Vertex::Vertex (coord::t r, coord::t c) {
-  coord::check2 (r, c);
-  idx = (r+1) * dNS + (c+1) * dWE;
+Vertex::Vertex (Coord row, Coord col) {
+  if (vertex_ac) {
+    if (row.idx != -1 || col.idx != -1) { // pass
+      assertc (coord_ac, row.is_on_board ()); 
+      assertc (coord_ac, col.is_on_board ()); 
+    }
+  }
+  idx = (row.idx+1) * dNS + (col.idx+1) * dWE;
 }
 
 uint Vertex::get_idx () const {
@@ -169,17 +179,17 @@ void Vertex::check () const {
   assertc (vertex_ac, in_range ()); 
 }
 
-coord::t Vertex::row () const {
-  return idx / dNS - 1; 
+Coord Vertex::get_row () const {
+  return Coord (idx / dNS - 1); 
 }
 
-coord::t Vertex::col () const {
-  return idx % dNS - 1; 
+Coord Vertex::get_col () const {
+  return Coord (idx % dNS - 1); 
 }
 
 // this usualy can be achieved quicker by color_at lookup
 bool Vertex::is_on_board () const {
-  return coord::is_on_board (row ()) & coord::is_on_board (col ());
+  return get_row().is_on_board () & get_col().is_on_board ();
 }
 
 void Vertex::check_is_on_board () const {
@@ -197,8 +207,8 @@ Vertex Vertex::SW () const { return S ().W (); } // only Go
 Vertex Vertex::SE () const { return S ().E (); }
 
 string Vertex::to_string () const {
-  coord::t r;
-  coord::t c;
+  Coord r;
+  Coord c;
   
   if (idx == pass_idx) {
     return "pass";
@@ -207,10 +217,10 @@ string Vertex::to_string () const {
   } else if (idx == resign_idx) {
     return "resign";
   } else {
-    r = row ();
-    c = col ();
+    r = get_row ();
+    c = get_col ();
     ostringstream ss;
-    ss << coord::col_to_string (c) << coord::row_to_string (r);
+    ss << c.col_to_string () << r.row_to_string ();
     return ss.str ();
   }
 }
@@ -223,11 +233,10 @@ Vertex Vertex::of_sgf_coords (string s) {
   if (s == "") return pass ();
   if (s == "tt" && board_size <= 19) return pass ();
   if (s.size () != 2 ) return any ();
-  coord::t col = s[0] - 'a';
-  coord::t row = s[1] - 'a';
+  Coord col (s[0] - 'a');
+  Coord row (s[1] - 'a');
   
-  if (coord::is_on_board (row) &&
-      coord::is_on_board (col)) {
+  if (row.is_on_board () && col.is_on_board ()) {
     return Vertex (row, col);
   } else {
     return any ();
@@ -239,7 +248,6 @@ Vertex Vertex::of_sgf_coords (string s) {
 istream& operator>> (istream& in, Vertex& v) {
   char c;
   int n;
-  coord::t row, col;
 
   string str;
   if (!(in >> str)) return in;
@@ -255,15 +263,17 @@ istream& operator>> (istream& in, Vertex& v) {
   istringstream in2 (str);
   if (!(in2 >> c >> n)) return in;
 
-  row = board_size - n;
+  Coord row (board_size - n);
   
-  col = 0;
-  while (col < int (coord::col_tab.size ())) {
-    if (coord::col_tab[col] == c || coord::col_tab[col] -'A' + 'a' == c ) break;
-    col++;
+  Coord col (0);
+  while (col.idx < int (Coord::col_tab.size ())) {
+    if (Coord::col_tab[col.idx] == c || 
+        Coord::col_tab[col.idx] -'A' + 'a' == c ) 
+      break;
+    col.idx++;
   }
   
-  if (col == int (coord::col_tab.size ())) {
+  if (col.idx == int (Coord::col_tab.size ())) {
     in.setstate (ios_base::badbit);
     return in;
   }
