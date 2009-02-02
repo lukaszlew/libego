@@ -21,46 +21,42 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-class Coord {
-public:
-  explicit Coord() {
-  }
+#include "vertex.h"
 
-  explicit Coord(int idx_) {
-    idx = idx_;
-  }
+Coord::Coord() {
+}
 
-  bool is_ok () const {
-    return (idx < int (board_size)) & (idx >= -1); 
-  }
+Coord::Coord(int idx_) {
+  idx = idx_;
+}
 
-  void check () const { 
-    assertc (coord_ac, is_ok()); 
-  }
+bool Coord::is_ok () const {
+  return (idx < int (board_size)) & (idx >= -1); 
+}
 
-  bool is_on_board () const {
-    return uint (idx) < board_size; 
-  }
+// TODO enforce invariant
+void Coord::check () const { 
+  assertc (coord_ac, is_ok()); 
+}
 
-  // TODO to gtp string
-  string row_to_string () const {
-    check ();
-    ostringstream ss;
-    ss << board_size - idx;
-    return ss.str ();
-  }
+bool Coord::is_on_board () const {
+  return uint (idx) < board_size; 
+}
 
-  string col_to_string () const {
-    check ();
-    ostringstream ss;
-    ss << col_tab [idx];
-    return ss.str ();
-  }
+// TODO to gtp string
+string Coord::row_to_string () const {
+  check ();
+  ostringstream ss;
+  ss << board_size - idx;
+  return ss.str ();
+}
 
-  static const string col_tab;
-
-  int idx;
-};
+string Coord::col_to_string () const {
+  check ();
+  ostringstream ss;
+  ss << col_tab [idx];
+  return ss.str ();
+}
 
 const string Coord::col_tab = "ABCDEFGHJKLMNOPQRSTUVWXYZ";
 
@@ -69,67 +65,6 @@ const string Coord::col_tab = "ABCDEFGHJKLMNOPQRSTUVWXYZ";
 
 
 //--------------------------------------------------------------------------------
-
-class Vertex {
-
-public:
-  static Vertex pass   ();
-  inline static Vertex any    ();
-  static Vertex resign ();
-  inline static Vertex of_sgf_coords (string s);
-
-  explicit Vertex (); // TODO is it needed
-  explicit Vertex (uint _idx);
-
-  // TODO make this constructor a static function
-  Vertex (Coord r, Coord c);
-
-  Coord get_row () const;
-  Coord get_col () const;
-
-  // this usualy can be achieved quicker by color_at lookup
-  bool is_on_board () const;
-
-  Vertex N () const;
-  Vertex W () const;
-  Vertex E () const;
-  Vertex S () const;
-
-  Vertex NW () const;
-  Vertex NE () const;
-  Vertex SW () const;
-  Vertex SE () const;
-
-  string to_string () const;
-
-  bool operator== (Vertex other) const;
-  bool operator!= (Vertex other) const;
-
-  bool in_range () const;
-  void next ();
-
-  void check () const;
-
-  void check_is_on_board () const;
-
-  uint get_idx () const;
-
-  const static uint dNS = (board_size + 2);
-  const static uint dWE = 1;
-
-  const static uint bits_used = 9;     // on 19x19 cnt == 441 < 512 == 1 << 9;
-  const static uint pass_idx = 0;
-  const static uint any_idx  = 1; // TODO any
-  const static uint resign_idx = 2;
-
-  const static uint cnt = (board_size + 2) * (board_size + 2);
-
-private:
-
-  uint idx;
-
-};
-
 
 
 // TODO
