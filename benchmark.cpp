@@ -21,6 +21,8 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#include "benchmark.h"
+
 namespace Benchmark {
 
   Board                  mc_board [1];
@@ -128,4 +130,16 @@ namespace Benchmark {
         << "  " << 1000000.0 / cc_per_playout  << " kpps/GHz (clock independent)" << endl
       ;
   }
+
+  void run (Board const * start_board, 
+            uint playout_cnt, 
+            ostream& out, 
+            bool score_per_vertex) {
+    if (score_per_vertex) {
+      run<true> (start_board, playout_cnt, out);
+    } else {
+      run<false> (start_board, playout_cnt, out);
+    }
+  }
+
 }

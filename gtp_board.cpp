@@ -100,11 +100,8 @@ public:
       string p;
       if (!(params >> playout_cnt)) return GtpResult::syntax_error ();
       ostringstream response;
-      if (!(params >> p) || p != "+") {
-        Benchmark::run<false> (&board, playout_cnt, response);
-      } else {
-        Benchmark::run<true>  (&board, playout_cnt, response);
-      }
+      bool score_per_vertex = (params >> p) && (p != "+");
+      Benchmark::run (&board, playout_cnt, response, score_per_vertex);
       return GtpResult::success (response.str ());
     }
 
