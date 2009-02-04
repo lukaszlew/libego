@@ -21,68 +21,70 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-class FastRandom {             // Park - Miller "minimal standard"
+#include "fast_random.h"
 
-  static const int cnt = (uint(1)<<31) - 1;
+const int FastRandom::cnt = (uint(1)<<31) - 1;
 
-  uint seed;
-  //tr1::minstd_rand0 mt; // this is eqivalent when #include <tr1/random>
+//tr1::minstd_rand0 mt; // this is eqivalent when #include <tr1/random>
 
-public:
 
-  FastRandom (uint seed_ = 12345) //: mt (seed_)
-  { seed = seed_; }
+FastRandom::FastRandom (uint seed_) {
+  seed = seed_; 
+}
 
-  void set_seed (uint _seed) { seed = _seed; }
-  uint get_seed () { return seed; }
+void FastRandom::set_seed (uint seed_) { 
+  seed = seed_; 
+}
 
-  uint rand_int () {       // a number between  0 ... cnt - 1
-    uint hi, lo;
-    lo = 16807 * (seed & 0xffff);
-    hi = 16807 * (seed >> 16);
-    lo += (hi & 0x7fff) << 16;
-    lo += hi >> 15;
-    seed = (lo & 0x7FFFFFFF) + (lo >> 31);
-    return seed;
-    //return mt (); // equivalen
+uint FastRandom::get_seed () { 
+  return seed; 
+}
+
+uint FastRandom::rand_int () {       // a number between  0 ... cnt - 1
+  uint hi, lo;
+  lo = 16807 * (seed & 0xffff);
+  hi = 16807 * (seed >> 16);
+  lo += (hi & 0x7fff) << 16;
+  lo += hi >> 15;
+  seed = (lo & 0x7FFFFFFF) + (lo >> 31);
+  return seed;
+  //return mt (); // equivalen
+}
+
+// n must be between 1 .. (1<<16) + 1
+uint FastRandom::rand_int (uint n) { // 0 .. n-1
+  assertc (pm_ac, n > 0);
+  assertc (pm_ac, n <= (1<<16)+1);
+  return ((rand_int () & 0xffff) * n) >> 16;
+}
+
+void FastRandom::test () {
+  uint start = rand_int ();
+
+  uint n = 1;
+  uint max = 0;
+  uint sum = start;
+
+  while (true) {
+    uint r = rand_int ();
+    if (r == start) break;
+    n++;
+    sum += r;
+    if (max < r) max = r;
   }
+  printf ("n = %d\n", n);
+  printf ("max = %d\n", max);
+  printf ("sum = %d\n", sum);
+}
 
-  // n must be between 1 .. (1<<16) + 1
-  inline uint rand_int (uint n) { // 0 .. n-1
-    assertc (pm_ac, n > 0);
-    assertc (pm_ac, n <= (1<<16)+1);
-    return ((rand_int () & 0xffff) * n) >> 16;
+void FastRandom::test2 (uint k, uint n) {
+  uint bucket [k];
+
+  rep (ii, k)  bucket [ii] = 0;
+  rep (ii, n) {
+    uint r = rand_int (k);
+    assert (r < k);
+    bucket [r] ++;
   }
-
-  void test () {
-    uint start = rand_int ();
-
-    uint n = 1;
-    uint max = 0;
-    uint sum = start;
-
-    while (true) {
-      uint r = rand_int ();
-      if (r == start) break;
-      n++;
-      sum += r;
-      if (max < r) max = r;
-    }
-    printf ("n = %d\n", n);
-    printf ("max = %d\n", max);
-    printf ("sum = %d\n", sum);
-  }
-
-  void test2 (uint k, uint n) {
-    uint bucket [k];
-
-    rep (ii, k)  bucket [ii] = 0;
-    rep (ii, n) {
-      uint r = rand_int (k);
-      assert (r < k);
-      bucket [r] ++;
-    }
-    rep (ii, k)  printf ("%d\n", bucket [ii]);
-  }
-
-};
+  rep (ii, k)  printf ("%d\n", bucket [ii]);
+}

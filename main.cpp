@@ -44,11 +44,11 @@
 
 using namespace std;
 
-#include "config.cpp"
+#include "config.h"
 #include "fast_timer.cpp"
 #include "fast_random.cpp"
-#include "fast_stack.cpp"
-#include "fast_map.cpp"
+#include "fast_stack.h"
+#include "fast_map.h"
 #include "utils.cpp"
 
 #include "player.cpp"
