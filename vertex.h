@@ -24,9 +24,9 @@ class Vertex {
 
 public:
   static Vertex pass   ();
-  inline static Vertex any    ();
+  static Vertex any    ();
   static Vertex resign ();
-  inline static Vertex of_sgf_coords (string s);
+  static Vertex of_sgf_coords (string s);
 
   explicit Vertex (); // TODO is it needed
   explicit Vertex (uint _idx);

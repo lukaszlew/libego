@@ -7,21 +7,21 @@ public:
   explicit Move ();
   explicit Move (int idx_);
 
-  inline Player get_player ();
-  inline Vertex get_vertex ();
+  Player get_player ();
+  Vertex get_vertex ();
 
   string to_string ();
 
-  inline bool operator!= (Move other) const;
-  inline bool operator== (Move other) const;
+  bool operator!= (Move other) const;
+  bool operator== (Move other) const;
 
-  inline void next ();
-  inline bool in_range () const;
+  void next ();
+  bool in_range () const;
 
   const static uint cnt = Player::white_idx << Vertex::bits_used | Vertex::cnt;
   const static uint no_move_idx = 1;
 
-  inline uint get_idx ();
+  uint get_idx ();
 
 private:
   void check ();
