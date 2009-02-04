@@ -60,10 +60,6 @@ string Coord::col_to_string () const {
 
 const string Coord::col_tab = "ABCDEFGHJKLMNOPQRSTUVWXYZ";
 
-#define coord_for_each(rc) \
-  for (Coord rc(0); rc.idx < int(board_size); rc = Coord (rc.idx+1))
-
-
 //--------------------------------------------------------------------------------
 
 
@@ -218,61 +214,3 @@ istream& operator>> (istream& in, Vertex& v) {
 }
 
 ostream& operator<< (ostream& out, Vertex& v) { out << v.to_string (); return out; }
-
-template <typename T>
-string to_string_2d (FastMap<Vertex, T>& map, int precision = 3) {
-  ostringstream out;
-  out << setiosflags (ios_base::fixed) ;
-  
-  coord_for_each (row) {
-    coord_for_each (col) {
-      Vertex v = Vertex (row, col);
-      out.precision(precision);
-      out.width(precision + 3);
-      out << map [v] << " ";
-    }
-    out << endl;
-  }
-  return out.str ();
-}
-    
-
-#define vertex_for_each_all(vv)                                         \
-  for (Vertex vv = Vertex(0); vv.in_range (); vv.next ()) 
-// TODO 0 works??? // TODO player the same way!
-
-// misses some offboard vertices (for speed) 
-#define vertex_for_each_faster(vv)                                  \
-  for (Vertex vv = Vertex(Vertex::dNS+Vertex::dWE);                 \
-       vv.get_idx () <= board_size * (Vertex::dNS + Vertex::dWE);   \
-       vv.next ())
-
-
-#define vertex_for_each_nbr(center_v, nbr_v, block) {   \
-    center_v.check_is_on_board ();                      \
-    Vertex nbr_v;                                       \
-    nbr_v = center_v.N (); block;                       \
-    nbr_v = center_v.W (); block;                       \
-    nbr_v = center_v.E (); block;                       \
-    nbr_v = center_v.S (); block;                       \
-  }
-
-#define vertex_for_each_diag_nbr(center_v, nbr_v, block) {      \
-    center_v.check_is_on_board ();                              \
-    Vertex nbr_v;                                               \
-    nbr_v = center_v.NW (); block;                              \
-    nbr_v = center_v.NE (); block;                              \
-    nbr_v = center_v.SW (); block;                              \
-    nbr_v = center_v.SE (); block;                              \
-  }
-
-#define player_vertex_for_each_9_nbr(center_v, pl, nbr_v, i) {  \
-    v::check_is_on_board (center_v);                            \
-    Move    nbr_v;                                              \
-    player_for_each (pl) {                                      \
-      nbr_v = center_v;                                         \
-      i;                                                        \
-      vertex_for_each_nbr      (center_v, nbr_v, i);            \
-      vertex_for_each_diag_nbr (center_v, nbr_v, i);            \
-    }                                                           \
-  }

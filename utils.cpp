@@ -21,6 +21,7 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#include "utils.h"
 
 // some usefull functions
 
@@ -39,14 +40,6 @@ void fatal_error (const char* s) {
 
 
 // string/stream opereations
-
-template <typename T>
-string to_string (T f, int precision = -1) {
-  ostringstream s;
-  if (precision > 0) s.precision(precision);
-  s << f;
-  return s.str ();
-}
 
 char getc_non_space (istream& is) {
   char c;
@@ -77,34 +70,3 @@ void remove_trailing_whitespace (string* str) {
   while (isspace ( *(str->end ()-1) ))
     str->resize (str->size () - 1);
 }
-
-// g++ extensions
-
-
-#if 0
-
-#define likely(x)   __builtin_expect(!!(x), 1)
-#define unlikely(x) __builtin_expect(!!(x), 0)
-
-#else
-
-#define likely(x)   (x)
-#define unlikely(x) (x)
-
-#endif
-
-
-
-#if 1
-
-#define no_inline   __attribute__((noinline))
-#define flatten     __attribute__((flatten))
-#define all_inline  __attribute__((always_inline))
-
-#else
-
-#define no_inline
-#define flatten
-#define all_inline
-
-#endif

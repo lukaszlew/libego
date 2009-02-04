@@ -94,8 +94,3 @@ ostream& operator<< (ostream& out, Player& pl) {
   out << pl.to_string ();
   return out; 
 }
-
-// faster than non-loop
-#define player_for_each(pl) \
-  for (Player pl = Player::black (); pl.in_range (); pl.next ())
-

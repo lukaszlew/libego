@@ -32,4 +32,13 @@ private:
   uint idx;
 };
 
+
+istream& operator>> (istream& in, Player& pl);
+ostream& operator<< (ostream& out, Player& pl);
+
+// faster than non-loop
+
+#define player_for_each(pl) \
+  for (Player pl = Player::black (); pl.in_range (); pl.next ())
+
 #endif
