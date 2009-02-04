@@ -21,115 +21,39 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-enum playout_status_t { pass_pass, mercy, too_long };
+#include "playout.h"
 
-template <typename Policy> class Playout {
-public:
-  Policy*  policy;
-  Board*   board;
-  Move*    move_history;
-  uint     move_history_length;
+SimplePolicy::SimplePolicy () : board (NULL) { }
 
-  Playout (Policy* policy_, Board*  board_) : policy (policy_), board (board_) {}
+void SimplePolicy::begin_playout (Board* board_) { 
+  board = board_;
+}
 
-  all_inline
-  void play_move () {
-    policy->prepare_vertex ();
-    
-    while (true) {
-      Player   act_player = board->act_player ();
-      Vertex   v          = policy->next_vertex ();
+void SimplePolicy::prepare_vertex () {
+  act_player     = board->act_player ();
+  to_check_cnt   = board->empty_v_cnt;
+  act_evi        = fr.rand_int (board->empty_v_cnt); 
+}
 
-      if (board->is_pseudo_legal (act_player, v) == false) {
-        policy->bad_vertex (v);
-        continue;
-      } else {
-        board->play_legal (act_player, v);
-        policy->played_vertex (v);
-        break;
-      }
-    }
+Vertex SimplePolicy::next_vertex () {
+  Vertex v;
+  while (true) {
+    if (to_check_cnt == 0) return Vertex::pass ();
+    to_check_cnt--;
+    v = board->empty_v [act_evi];
+    act_evi++;
+    if (act_evi == board->empty_v_cnt) act_evi = 0;
+    if (!board->is_eyelike (act_player, v)) return v;
   }
+}
 
-  all_inline
-  playout_status_t run () {
-    uint begin_move_no = board->move_no;
-    move_history = board->move_history + board->move_no;
-    
-    policy->begin_playout (board);
-    while (true) {
-      play_move ();
-      
-      if (board->both_player_pass ()) {
-        move_history_length = board->move_no - begin_move_no;
-        policy->end_playout (pass_pass);
-        return pass_pass;
-      }
-      
-      if (board->move_no >= max_playout_length) {
-        move_history_length = board->move_no - begin_move_no;
-        policy->end_playout (too_long);
-        return too_long;
-      }
-      
-      if (use_mercy_rule && uint (abs (board->approx_score ())) > mercy_threshold) {
-        move_history_length = board->move_no - begin_move_no;
-        policy->end_playout (mercy);
-        return mercy;
-      }
-    }
-  }
-  
-};
+void SimplePolicy::bad_vertex (Vertex) {
+}
 
-// ----------------------------------------------------------------------
+void SimplePolicy::played_vertex (Vertex) { 
+}
 
-class SimplePolicy {
-protected:
-
-  static FastRandom fr; // TODO make it non-static
-
-  uint to_check_cnt;
-  uint act_evi;
-
-  Board* board;
-  Player act_player;
-
-public:
-
-  SimplePolicy () : board (NULL) { }
-
-  void begin_playout (Board* board_) { 
-    board = board_;
-  }
-
-  void prepare_vertex () {
-    act_player     = board->act_player ();
-    to_check_cnt   = board->empty_v_cnt;
-    act_evi        = fr.rand_int (board->empty_v_cnt); 
-  }
-
-  Vertex next_vertex () {
-    Vertex v;
-    while (true) {
-      if (to_check_cnt == 0) return Vertex::pass ();
-      to_check_cnt--;
-      v = board->empty_v [act_evi];
-      act_evi++;
-      if (act_evi == board->empty_v_cnt) act_evi = 0;
-      if (!board->is_eyelike (act_player, v)) return v;
-    }
-  }
-
-  void bad_vertex (Vertex) {
-  }
-
-  void played_vertex (Vertex) { 
-  }
-
-  void end_playout (playout_status_t) { 
-  }
-
-};
+void SimplePolicy::end_playout (playout_status_t) { 
+}
 
 FastRandom SimplePolicy::fr(123);
