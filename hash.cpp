@@ -21,49 +21,39 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-class Hash {
-public:
-  
-  uint64 hash;
+#include "hash.h"
 
-  Hash () { }
+Hash::Hash () { }
 
-  uint index () const { return hash; }
-  uint lock  () const { return hash >> 32; }
+uint Hash::index () const { return hash; }
+uint Hash::lock  () const { return hash >> 32; }
 
-  void randomize (FastRandom& fr) { 
-    hash =
-      (uint64 (fr.rand_int ()) << (0*16)) ^
-      (uint64 (fr.rand_int ()) << (1*16)) ^ 
-      (uint64 (fr.rand_int ()) << (2*16)) ^ 
-      (uint64 (fr.rand_int ()) << (3*16));
-  }
+void Hash::randomize (FastRandom& fr) { 
+  hash =
+    (uint64 (fr.rand_int ()) << (0*16)) ^
+    (uint64 (fr.rand_int ()) << (1*16)) ^ 
+    (uint64 (fr.rand_int ()) << (2*16)) ^ 
+    (uint64 (fr.rand_int ()) << (3*16));
+}
 
-  void set_zero () { hash = 0; }
+void Hash::set_zero () { hash = 0; }
 
-  bool operator== (const Hash& other) const { return hash == other.hash; }
-  void operator^= (const Hash& other) { hash ^= other.hash; }
-};
+bool Hash::operator== (const Hash& other) const { return hash == other.hash; }
+void Hash::operator^= (const Hash& other) { hash ^= other.hash; }
 
 // -----------------------------------------------------------------------------
 
-class Zobrist {
-public:
-
-  FastMap<Move, Hash> hashes;
-
-  Zobrist (FastRandom& fr) {
-    player_for_each (pl) vertex_for_each_all (v) {
-      Move m = Move (pl, v);
-      hashes [m].randomize (fr);
-    }
+Zobrist::Zobrist (FastRandom& fr) {
+  player_for_each (pl) vertex_for_each_all (v) {
+    Move m = Move (pl, v);
+    hashes [m].randomize (fr);
   }
+}
 
-  Hash of_move (Move m) const {
-    return hashes [m];
-  }
+Hash Zobrist::of_move (Move m) const {
+  return hashes [m];
+}
 
-  Hash of_pl_v (Player pl,  Vertex v) const {
-    return hashes [Move (pl, v)];
-  }
-};
+Hash Zobrist::of_pl_v (Player pl,  Vertex v) const {
+  return hashes [Move (pl, v)];
+}
