@@ -1,6 +1,12 @@
 #ifndef _EGO_H_
 #define _EGO_H_
 
+#include <string>
+#include <sstream>
+#include <iomanip>
+#include <map>
+#include <list>
+
 #include "config.h"
 #include "fast_timer.h"
 #include "fast_random.h"

@@ -21,6 +21,7 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#include <string>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -41,8 +42,6 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <unistd.h>
-
-using namespace std;
 
 #include "ego.h"
 
