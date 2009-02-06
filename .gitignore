@@ -1,4 +1,2 @@
 .sconsign.dblite
-ego_dbg
-ego_opt
-*.o
+build

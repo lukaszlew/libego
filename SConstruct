@@ -1,6 +1,8 @@
 # Environments
 
-env = Environment(
+env = {}
+
+env["base"] = Environment(
   CXX = "g++-4.2",
   CXXFLAGS = [
     "-DDEBUG",
@@ -9,21 +11,39 @@ env = Environment(
     "-Wextra",
     "-Wswitch-enum",
   ],
+  CPPPATH='#/ego'
 )
 
-opt = env.Clone()
-opt.Append(CXXFLAGS = [
-  "-O3",
-  "-march=native",
-  "-fomit-frame-pointer",
-  "-ffast-math",
-  "-frename-registers",
-])
+env["opt"] = env["base"].Clone()
+env["opt"].Append(
+  CXXFLAGS = [
+    "-O3",
+    "-march=native",
+    "-fomit-frame-pointer",
+    "-ffast-math",
+    "-frename-registers",
+  ],
+  LIBPATH = ['#/build/ego/opt']
+)
 
-dbg = env.Clone()
-dbg.Append(CXXFLAGS = [
-  "-fno-inline",
-])
+env["dbg"] = env["base"].Clone()
+env["dbg"].Append(
+  CXXFLAGS = [
+    "-fno-inline",
+  ],
+  LIBPATH = ['#/build/ego/dbg']
+)
 
-SConscript('SConscript', build_dir='opt', exports={'env':opt})
-SConscript('SConscript', build_dir='dbg', exports={'env':dbg})
+def build(subdir, variant):
+  SConscript(
+    subdir + '/SConscript',
+    build_dir = 'build/' + subdir + '/' + variant,
+    exports = {'env': env[variant]},
+    duplicate = 0
+  )
+
+build('ego', 'dbg')
+build('example', 'dbg')
+
+build('ego', 'opt')
+build('example', 'opt')
