@@ -105,7 +105,9 @@ public:
     assert (false);
   }
 
-  
+  // It goes through a whole sgf and executes GTP commends embedded in SGF comments.
+  // if you put "@gtp" in comment, everything below is an embedded gtp command.
+
   void exec_embedded_gtp_rec (SgfNode* current_node, ostream& response) {
     // update position
     list <Vertex> vertex_list;
