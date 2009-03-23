@@ -71,9 +71,9 @@ void process_command_line (Gtp& gtp, int argc, char** argv) {
 // main
 
 int main (int argc, char** argv) { 
-  // to work well with gogui
-  setvbuf (stdout, (char *)NULL, _IONBF, 0);
-  setvbuf (stderr, (char *)NULL, _IONBF, 0);
+  // no buffering to work well with gogui
+  setbuf (stdout, NULL);
+  setbuf (stderr, NULL);
 
   Gtp      gtp;
   Board    board;
