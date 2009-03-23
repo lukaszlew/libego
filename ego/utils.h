@@ -6,13 +6,14 @@ void fatal_error (const char* s);
 
 // string/stream opereations
 
-template <typename T>
-string to_string (T f, int precision = -1) {
-  ostringstream s;
-  if (precision > 0) s.precision(precision);
-  s << f;
-  return s.str ();
-}
+class SS {
+public:
+  template <typename T> SS& operator<< (const T& elt);
+  operator std::string () const;
+private:
+  std::ostringstream buffer_;
+};
+
 
 char getc_non_space (istream& is);
 bool is_all_whitespace (string s);

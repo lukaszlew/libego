@@ -25,7 +25,7 @@ public:
         fatal_error ("genmove: generated illegal move");
       }
 
-      return GtpResult::success (to_string (v));
+      return GtpResult::success (SS() << v);
     }
 
     fatal_error ("wrong command in GtpGenmove::exec_command");

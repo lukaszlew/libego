@@ -121,9 +121,9 @@ string GoguiParam::type_to_string () {
 string GoguiParam::value_to_string () {
   switch (type) {
   case type_string:  return *string_param;
-  case type_float:   return to_string(*float_param);
-  case type_uint:    return to_string(*uint_param);
-  case type_bool:    return to_string(*bool_param);
+  case type_float:   return SS() << *float_param;
+  case type_uint:    return SS() << *uint_param;
+  case type_bool:    return SS() << *bool_param;
   }
   assert (false);
 }

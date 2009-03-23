@@ -5,14 +5,15 @@
 #include <sstream>
 #include <iomanip>
 #include <map>
-#include <list>
+//#include <list>
 
 #include "config.h"
+#include "utils.h"
+
 #include "fast_timer.h"
 #include "fast_random.h"
 #include "fast_stack.h"
 #include "fast_map.h"
-#include "utils.h"
 
 #include "player.h"
 #include "color.h"

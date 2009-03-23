@@ -1,3 +1,6 @@
+#ifndef _CONFIG_H_
+#define _CONFIG_H_
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  *                                                                           *
  *  This file is part of Library of Effective GO routines - EGO library      *
@@ -38,7 +41,7 @@ using namespace std;
 #define unused(p) (void)(p)
 #define nop unused(0)
 
-#define rep(i,n)     for (uint i = 0;   i < (uint)(n); i++)
+#define rep(i,n)     for (uint i = 0; i != (uint)(n); i++)
 #define seq(i,a,b)   for (let (i, a); i <= (b); i++)
 #define dseq(i,b,a)  for (let (i, b); i >= (a); i--)
 
@@ -118,3 +121,5 @@ const bool uct_ac             = false;
 const bool tree_ac            = false;
 const bool pool_ac            = false;
 const bool gtp_ac             = true;
+
+#endif

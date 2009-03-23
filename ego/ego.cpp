@@ -44,12 +44,12 @@
 
 using namespace std;
 
-#include "config.h"
+#include "ego.h"
+
+#include "utils.cpp"
+
 #include "fast_timer.cpp"
 #include "fast_random.cpp"
-#include "fast_stack.h"
-#include "fast_map.h"
-#include "utils.cpp"
 
 #include "player.cpp"
 #include "color.cpp"
