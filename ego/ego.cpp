@@ -63,3 +63,5 @@ using namespace std;
 #include "playout.cpp"
 #include "benchmark.cpp"
 
+#include "gtp.cpp"
+

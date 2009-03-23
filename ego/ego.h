@@ -26,4 +26,6 @@
 #include "playout.h"
 #include "benchmark.h"
 
+#include "gtp.h"
+
 #endif

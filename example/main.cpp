@@ -47,7 +47,6 @@
 
 #include "uct.cpp"
 
-#include "gtp.cpp"
 #include "gtp_board.cpp"
 #include "gtp_sgf.cpp"
 #include "gtp_genmove.cpp"
