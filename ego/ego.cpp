@@ -65,3 +65,4 @@ using namespace std;
 
 #include "gtp.cpp"
 #include "basic_gtp.cpp"
+#include "sgf_gtp.cpp"

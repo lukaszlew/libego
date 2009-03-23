@@ -28,5 +28,6 @@
 
 #include "gtp.h"
 #include "basic_gtp.h"
+#include "sgf_gtp.h"
 
 #endif
