@@ -44,12 +44,11 @@ public:
   // constructor
   bool parse_sgf (istream& in);
   string to_sgf_string ();
+  bool save_to_file   (const string& file_name);
+  bool load_from_file (const string& file_name);
   bool is_loaded ();
   SgfNode* game_node ();
   SgfNodeProperties& properties ();
 };
-
-
-
 
 #endif

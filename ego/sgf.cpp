@@ -267,3 +267,18 @@ SgfNode* SgfTree::game_node () {
 SgfNodeProperties& SgfTree::properties () {
   return game_node ()->properties;
 }
+
+bool SgfTree::save_to_file (const string& file_name) {
+  ofstream sgf_stream (file_name.data ());
+  if (!sgf_stream) return false;
+  sgf_stream << to_sgf_string () << endl;
+  sgf_stream.close ();
+  return true;
+}
+
+bool SgfTree::load_from_file (const string& file_name) {
+  ifstream sgf_stream (file_name.data ());
+  if (!sgf_stream)
+    return false;
+  return parse_sgf (sgf_stream);
+}

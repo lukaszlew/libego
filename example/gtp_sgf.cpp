@@ -46,16 +46,9 @@ public:
       string file_name;
 
       if (!(params >> file_name)) return GtpResult::syntax_error ();
-
-      ifstream sgf_stream (file_name.data ());
-      if (!sgf_stream) {
-        return GtpResult::failure ("file not found: " + file_name);
+      if (!sgf_tree.load_from_file(file_name)) {
+        return GtpResult::failure ("file not found or invalid SGF: " + file_name);
       }
-
-      if (sgf_tree.parse_sgf (sgf_stream) == false) {
-        return GtpResult::failure ("invalid SGF file");
-      }
-
       return GtpResult::success ();
     }
 
@@ -64,15 +57,9 @@ public:
       string file_name;
 
       if (!(params >> file_name)) return GtpResult::syntax_error ();
-
-      ofstream sgf_stream (file_name.data ());
-      if (!sgf_stream) {
+      if (!sgf_tree.save_to_file(file_name)) {
         return GtpResult::failure ("file cound not be created: " + file_name);
       }
-      
-      sgf_stream << sgf_tree.to_sgf_string () << endl;
-      sgf_stream.close ();
-
       return GtpResult::success ();
     }
 
@@ -127,20 +114,22 @@ public:
       }
     }
 
+  
+    // process gtp
+    istringstream embedded_gtp (current_node->properties.get_embedded_gtp ());
+    ostringstream embedded_response;
+    gtp.run_loop (embedded_gtp, embedded_response, true);
+    // TODO make gtp filter out double newlines
+    current_node->properties.set_comment (embedded_response.str ());
+
     // save board
     Board node_board;
     node_board.load (&base_board);
 
-    // process gtp
-    istringstream embedded_gtp (current_node->properties.get_embedded_gtp ());
-    ostringstream embedded_response;
-    gtp.run_loop (embedded_gtp, embedded_response, true); // TODO make gtp filter out double newlines
-    current_node->properties.set_comment (embedded_response.str ());
-
     // recursove call
     for_each (child, current_node->children) {
       base_board.load (&node_board);
-      exec_embedded_gtp_rec (&(*child), response); // LOL itearator is imitationg a pointer but we need a true pointer
+      exec_embedded_gtp_rec (&(*child), response);
     }
     
   }
