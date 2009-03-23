@@ -47,7 +47,7 @@
 
 #include "uct.cpp"
 
-#include "gtp_board.cpp"
+#include "basic_gtp.cpp"
 #include "gtp_sgf.cpp"
 #include "gtp_genmove.cpp"
 
@@ -81,7 +81,7 @@ int main (int argc, char** argv) {
   Board    board;
   SgfTree  sgf_tree;
 
-  GtpBoard    gtp_board (gtp, board);
+  BasicGtp    basic_gtp (gtp, board);
   GtpSgf      gtp_sgf (gtp, sgf_tree, board);
   AllAsFirst  aaf (gtp, board);
 
