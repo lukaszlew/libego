@@ -64,4 +64,4 @@ using namespace std;
 #include "benchmark.cpp"
 
 #include "gtp.cpp"
-
+#include "basic_gtp.cpp"

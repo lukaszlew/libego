@@ -27,5 +27,6 @@
 #include "benchmark.h"
 
 #include "gtp.h"
+#include "basic_gtp.h"
 
 #endif
