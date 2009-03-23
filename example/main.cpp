@@ -47,8 +47,6 @@
 
 #include "uct.cpp"
 
-#include "gtp_genmove.cpp"
-
 #include "experiments.cpp"
 
 
@@ -84,7 +82,7 @@ int main (int argc, char** argv) {
   AllAsFirst  aaf (gtp, board);
 
   Uct uct (board);
-  GtpGenmove<Uct>  gtp_genmove (gtp, board, uct);
+  GenmoveGtp<Uct>  genmove_gtp (gtp, board, uct);
   
   // arguments
   process_command_line (gtp, argc, argv);

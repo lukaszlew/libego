@@ -27,7 +27,9 @@
 #include "benchmark.h"
 
 #include "gtp.h"
+
 #include "basic_gtp.h"
 #include "sgf_gtp.h"
+#include "genmove_gtp.h"
 
 #endif
