@@ -4,7 +4,7 @@
 class SgfGtp : public GtpCommand {
 public:
   SgfGtp (Gtp& _gtp, SgfTree& _sgf_tree, Board& _base_board);
-  virtual GtpResult exec_command (string command, istream& params);
+  virtual GtpResult exec_command (const string& command, istream& params);
   void exec_embedded_gtp_rec (SgfNode* current_node, ostream& response);
   
   SgfTree&  sgf_tree;

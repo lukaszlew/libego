@@ -9,27 +9,27 @@ public:
     gtp.add_gtp_command (this, "genmove");
   } 
 
-  virtual GtpResult exec_command (string command, istream& params) {
+  virtual GtpResult exec_command (const string& command, istream& params) {
 
     if (command == "genmove") {
       Player  player;
       Vertex   v;
       if (!(params >> player)) return GtpResult::syntax_error ();
   
-      engine_t* engine = new engine_t (board); // TODO Why we need to allocate?
+      engine_t* engine = new engine_t (board); 
+      // TODO we don't need to allocate each time
       v = engine->genmove (player);
       delete engine;
 
       if (v != Vertex::resign () &&
           board.try_play (player, v) == false) {
-        fatal_error ("genmove: generated illegal move");
+        assert(false);
       }
 
-      return GtpResult::success (SS() << v);
+      return GtpResult::success (v.to_string());
     }
 
-    fatal_error ("wrong command in GtpGenmove::exec_command");
-    assert (false);
+    assert(false);
   } 
 
 private:

@@ -87,7 +87,7 @@ public:
     aaf_stats.update (playout.move_history, aaf_move_count, score);
   }
 
-  virtual GtpResult exec_command (string command, istream& params) {
+  virtual GtpResult exec_command (const string& command, istream& params) {
     if (command == "AAF.move_value") {
       Player player;
       if (!(params >> player)) return GtpResult::syntax_error ();

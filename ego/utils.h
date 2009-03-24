@@ -1,8 +1,31 @@
 #ifndef _UTILS_H_
 #define _UTILS_H_
 
+using namespace std;
+
+// standard macros
+
+#define qq(x) cerr << x << flush;
+#define qqv(x) cerr << #x << " = " << x << endl << flush;
+
+
+//TODO rename to ignore
+#define unused(p) (void)(p)
+#define nop unused(0)
+
+#define rep(i,n)     for (uint i = 0; i != (uint)(n); i++)
+#define seq(i,a,b)   for (let (i, a); i <= (b); i++)
+#define dseq(i,b,a)  for (let (i, b); i >= (a); i--)
+
+#define let(a,b) typeof(b) a=(b)
+#define for_each(it, c) for(let(it,(c).begin()); it!=(c).end(); ++it)
+
+const float large_float = 1000000000000.0;
+
+ #define assertc(aspect, expr) assert((aspect) ? (expr) : true)
+
+
 float get_seconds ();
-void fatal_error (const char* s);
 
 // string/stream opereations
 
@@ -19,6 +42,8 @@ char getc_non_space (istream& is);
 bool is_all_whitespace (string s);
 void remove_empty_lines (string* s);
 void remove_trailing_whitespace (string* str);
+
+// performance macros
 
 #if 0
 

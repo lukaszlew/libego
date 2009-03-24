@@ -32,7 +32,7 @@ private:
 
 class GtpCommand {
 public:
-  virtual GtpResult exec_command (string command_name, istream& params) = 0;
+  virtual GtpResult exec_command (const string& command_name, istream& params) = 0;
 };
 
 
@@ -90,7 +90,7 @@ public:
   bool run_file (string file_name, ostream& out = cout);
   void run_loop (istream& in = cin, ostream& out = cout, bool echo_commands = false);
 
-  virtual GtpResult exec_command (string command, istream& params);
+  virtual GtpResult exec_command (const string& command, istream& params);
 
 private:
 

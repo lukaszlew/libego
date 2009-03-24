@@ -5,7 +5,7 @@ class BasicGtp : public GtpCommand {
 
 public:
   BasicGtp (Gtp& gtp, Board& board_);
-  virtual GtpResult exec_command (string command, istream& params); 
+  virtual GtpResult exec_command (const string& command, istream& params); 
 
 private:
   Board& board;

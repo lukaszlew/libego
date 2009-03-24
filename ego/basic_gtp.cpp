@@ -34,8 +34,7 @@ BasicGtp::BasicGtp (Gtp& gtp, Board& board_) : board (board_) {
   gtp.add_gtp_command (this, "benchmark");
 }
 
-GtpResult BasicGtp::exec_command (string command, istream& params) {
-
+GtpResult BasicGtp::exec_command (const string& command, istream& params) {
   if (command == "boardsize") {
     int new_board_size;;
     if (!(params >> new_board_size)) return GtpResult::syntax_error ();

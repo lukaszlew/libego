@@ -244,7 +244,7 @@ void Gtp::run_loop (istream& in, ostream& out, bool echo_commands) {
   }
 }
 
-GtpResult Gtp::exec_command (string command, istream& params) {
+GtpResult Gtp::exec_command (const string& command, istream& params) {
 
   if (is_static_command (command)) {
     return GtpResult::success (command_to_response.find (command)->second);

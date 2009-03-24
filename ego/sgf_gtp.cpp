@@ -34,7 +34,7 @@ SgfGtp::SgfGtp (Gtp& _gtp, SgfTree& _sgf_tree, Board& _base_board) :
   gtp.add_gtp_command (this, "sgf.gtp.exec");
 }
 
-GtpResult SgfGtp::exec_command (string command, istream& params) {
+GtpResult SgfGtp::exec_command (const string& command, istream& params) {
   // ---------------------------------------------------------------------
   if (command == "sgf.load") {
     string file_name;
