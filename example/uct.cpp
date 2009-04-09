@@ -431,7 +431,7 @@ public:
       
       play_board->play_legal (act_player, v);
 
-      if (play_board->last_move_status != play_ok) {
+      if (play_board->last_move_status != Board::play_ok) {
         assertc (uct_ac, tree->act_node ()->no_children (act_player.other ()));
         tree->delete_act_node (act_player);
         return;

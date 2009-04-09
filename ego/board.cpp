@@ -23,77 +23,95 @@
 
 #include "board.h"
 
-NbrCounter::NbrCounter () { 
-}
-
-NbrCounter::NbrCounter (uint black_cnt, uint white_cnt, uint empty_cnt) {
+Board::NbrCounter Board::NbrCounter::OfCounts (uint black_cnt,
+                                               uint white_cnt,
+                                               uint empty_cnt) {
   assertc (nbr_cnt_ac, black_cnt <= max);
   assertc (nbr_cnt_ac, white_cnt <= max);
   assertc (nbr_cnt_ac, empty_cnt <= max);
-  bitfield =
+  Board::NbrCounter nc;
+  nc.bitfield =
     (black_cnt << f_shift_black) +
     (white_cnt << f_shift_white) +
     (empty_cnt << f_shift_empty);
+  return nc;
 }
 
-void NbrCounter::player_inc (Player player) {
+Board::NbrCounter Board::NbrCounter::Empty () {
+  return OfCounts(0, 0, max); 
+}
+
+void Board::NbrCounter::player_inc (Player player) {
   bitfield += player_inc_tab [player.get_idx ()]; 
 }
 
-void NbrCounter::player_dec (Player player) {
+void Board::NbrCounter::player_dec (Player player) {
   bitfield -= player_inc_tab [player.get_idx ()]; 
 }
 
-void NbrCounter::off_board_inc () { 
+void Board::NbrCounter::off_board_inc () { 
   bitfield += off_board_inc_val; 
 }
 
-uint NbrCounter::empty_cnt () const {
+uint Board::NbrCounter::empty_cnt () const {
   return bitfield >> f_shift_empty; 
 }
 
-uint NbrCounter::player_cnt (Player pl) const { 
+uint Board::NbrCounter::player_cnt (Player pl) const { 
   return (bitfield >> f_shift [pl.get_idx ()]) & f_mask; 
 }
 
-uint NbrCounter::player_cnt_is_max (Player pl) const {
+uint Board::NbrCounter::player_cnt_is_max (Player pl) const {
   return
     (player_cnt_is_max_mask [pl.get_idx ()] & bitfield) ==
     player_cnt_is_max_mask [pl.get_idx ()];
 }
 
-void NbrCounter::check () {
+void Board::NbrCounter::check () {
   if (!nbr_cnt_ac) return;
   assert (empty_cnt () <= max);
   assert (player_cnt (Player::black ()) <= max);
   assert (player_cnt (Player::white ()) <= max);
 }
 
-const uint NbrCounter::max = 4;    // maximal number of neighbours
-const uint NbrCounter::f_size = 4; // size in bits of each of 3 counters
-const uint NbrCounter::f_mask = (1 << f_size) - 1;
-const uint NbrCounter::f_shift_black = 0 * f_size;
-const uint NbrCounter::f_shift_white = 1 * f_size;
-const uint NbrCounter::f_shift_empty = 2 * f_size;
-const uint NbrCounter::black_inc_val = (1 << f_shift_black) - (1 << f_shift_empty);
-const uint NbrCounter::white_inc_val = (1 << f_shift_white) - (1 << f_shift_empty);
-const uint NbrCounter::off_board_inc_val = 
+void Board::NbrCounter::check(const FastMap<Color, uint>& nbr_color_cnt) const {
+  if (!nbr_cnt_ac) return;
+
+  uint expected_nbr_cnt =        // definition of nbr_cnt[v]
+    + ((nbr_color_cnt [Color::black ()] + nbr_color_cnt [Color::off_board ()])
+       << f_shift_black)
+    + ((nbr_color_cnt [Color::white ()] + nbr_color_cnt [Color::off_board ()])
+       << f_shift_white)
+    + ((nbr_color_cnt [Color::empty ()])
+       << f_shift_empty);
+  assert (bitfield == expected_nbr_cnt);
+}
+
+const uint Board::NbrCounter::max = 4;    // maximal number of neighbours
+const uint Board::NbrCounter::f_size = 4; // size in bits of each of 3 counters
+const uint Board::NbrCounter::f_mask = (1 << f_size) - 1;
+const uint Board::NbrCounter::f_shift_black = 0 * f_size;
+const uint Board::NbrCounter::f_shift_white = 1 * f_size;
+const uint Board::NbrCounter::f_shift_empty = 2 * f_size;
+const uint Board::NbrCounter::black_inc_val = (1 << f_shift_black) - (1 << f_shift_empty);
+const uint Board::NbrCounter::white_inc_val = (1 << f_shift_white) - (1 << f_shift_empty);
+const uint Board::NbrCounter::off_board_inc_val = 
     (1 << f_shift_black) + (1 << f_shift_white) - (1 << f_shift_empty);
 
-const uint NbrCounter::f_shift [3] = {
-  NbrCounter::f_shift_black,
-  NbrCounter::f_shift_white,
-  NbrCounter::f_shift_empty,
+const uint Board::NbrCounter::f_shift [3] = {
+  Board::NbrCounter::f_shift_black,
+  Board::NbrCounter::f_shift_white,
+  Board::NbrCounter::f_shift_empty,
 };
 
-const uint NbrCounter::player_cnt_is_max_mask [Player::cnt] = {  // TODO player_Map
+const uint Board::NbrCounter::player_cnt_is_max_mask [Player::cnt] = {  // TODO player_Map
   (max << f_shift_black),
   (max << f_shift_white)
 };
 
-const uint NbrCounter::player_inc_tab [Player::cnt] = {
-  NbrCounter::black_inc_val,
-  NbrCounter::white_inc_val
+const uint Board::NbrCounter::player_inc_tab [Player::cnt] = {
+  Board::NbrCounter::black_inc_val,
+  Board::NbrCounter::white_inc_val
 };
 
 
@@ -283,7 +301,7 @@ void Board::clear () {
   ko_v         = Vertex::any ();
   vertex_for_each_all (v) {
     color_at      [v] = Color::off_board ();
-    nbr_cnt       [v] = NbrCounter (0, 0, NbrCounter::max);
+    nbr_cnt       [v] = NbrCounter::Empty();
     chain_next_v  [v] = v;
     chain_id      [v] = v.get_idx ();    // TODO is it needed, is it usedt?
     chain_lib_cnt [v.get_idx ()] = NbrCounter::max; // TODO off_boards?
@@ -346,8 +364,8 @@ void Board::load (const Board* save_board) {
     return
       v == Vertex::pass () ||
       !nbr_cnt[v].player_cnt_is_max (player.other ()) ||
-      (!play_eye_is_ko (player, v) &&
-       !play_eye_is_suicide (v));
+      (!eye_is_ko (player, v) &&
+       !eye_is_suicide (v));
   }
 
 
@@ -391,12 +409,12 @@ void Board::play_legal (Player player, Vertex v) { // TODO test with move
 }
 
 
-bool Board::play_eye_is_ko (Player player, Vertex v) {
+bool Board::eye_is_ko (Player player, Vertex v) {
   return (v == ko_v) & (player == last_player.other ());
 }
 
 
-bool Board::play_eye_is_suicide (Vertex v) {
+bool Board::eye_is_suicide (Vertex v) {
   uint all_nbr_live = true;
   vertex_for_each_nbr (v, nbr_v, all_nbr_live &= (--chain_lib_cnt [chain_id [nbr_v]] != 0));
   vertex_for_each_nbr (v, nbr_v, chain_lib_cnt [chain_id [nbr_v]]++);
@@ -456,13 +474,13 @@ void Board::play_eye_legal (Player player, Vertex v) {
   place_stone (player, v);
 
   vertex_for_each_nbr (v, nbr_v, {
-      nbr_cnt [nbr_v].player_inc (player);
-    });
+    nbr_cnt [nbr_v].player_inc (player);
+  });
 
   vertex_for_each_nbr (v, nbr_v, {
-      if ((chain_lib_cnt [chain_id [nbr_v]] == 0))
-        remove_chain (nbr_v);
-    });
+    if ((chain_lib_cnt [chain_id [nbr_v]] == 0))
+      remove_chain (nbr_v);
+  });
 
   assertc (board_ac, chain_lib_cnt [chain_id [v]] != 0);
 
@@ -579,7 +597,7 @@ int Board::approx_score () const {
 }
 
 
-Player Board::approx_winner () { return Player (approx_score () <= 0); }
+Player Board::approx_winner () const { return Player (approx_score () <= 0); }
 
 
 int Board::score () const {
@@ -671,29 +689,16 @@ void Board::check_nbr_cnt () const {
 
   vertex_for_each_all (v) {
     FastMap<Color, uint> nbr_color_cnt;
-    uint expected_nbr_cnt;
-
     if (color_at[v] == Color::off_board()) continue; // TODO is that right?
 
-    Coord row = v.get_row ();
-    Coord col = v.get_col ();
+    color_for_each (col) {
+      nbr_color_cnt [col] = 0;
+    }
+    vertex_for_each_nbr (v, nbr_v, {
+      nbr_color_cnt [color_at [nbr_v]]++;
+    });
 
-    assert (row.is_on_board ()); // checking the macro
-    assert (col.is_on_board ());
-
-    color_for_each (col) nbr_color_cnt [col] = 0;
-
-    vertex_for_each_nbr (v, nbr_v, nbr_color_cnt [color_at [nbr_v]]++);
-
-    expected_nbr_cnt =        // definition of nbr_cnt[v]
-      + ((nbr_color_cnt [Color::black ()] + nbr_color_cnt [Color::off_board ()])
-         << NbrCounter::f_shift_black)
-      + ((nbr_color_cnt [Color::white ()] + nbr_color_cnt [Color::off_board ()])
-         << NbrCounter::f_shift_white)
-      + ((nbr_color_cnt [Color::empty ()])
-         << NbrCounter::f_shift_empty);
-
-    assert (nbr_cnt[v].bitfield == expected_nbr_cnt);
+    nbr_cnt[v].check(nbr_color_cnt);
   }
 }
 
