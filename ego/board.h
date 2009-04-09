@@ -63,12 +63,13 @@ public:                         // board interface
 
 public:
   // TODO make iterators / accessors
-  int                          komi;
-  Vertex                       empty_v [board_area];   // TODO use FastStack
-  uint                         empty_v_cnt;
-  uint                         move_no;
-  Move                         move_history [max_game_length]; // TODO FastStack
-  FastMap<Vertex, Color>       color_at;
+  FastMap<Vertex, Color>   color_at;
+
+  Vertex                   empty_v [board_area]; // TODO use FastSet (empty_pos)
+  uint                     empty_v_cnt;
+
+  Move                     move_history [max_game_length]; // TODO FastStack
+  uint                     move_no;
 
   enum {
     play_ok,
@@ -76,6 +77,8 @@ public:
     play_ss_suicide,
     play_ko
   } last_move_status;
+
+  int                      komi;
 
 private: 
   Hash recalc_hash () const;
@@ -141,11 +144,11 @@ private:
   static const Zobrist zobrist[1];
 
   FastMap<Vertex, NbrCounter>  nbr_cnt; // incremental, for fast eye checking
-  FastMap<Vertex, uint>        empty_pos;
+  FastMap<Vertex, uint>        empty_pos; // liberty position in empty_v
   FastMap<Vertex, Vertex>      chain_next_v;
+  FastMap<Vertex, Vertex>      chain_id;
+  FastMap<Vertex, uint>        chain_lib_cnt; // indexed by chain_id
 
-  uint                         chain_lib_cnt [Vertex::cnt]; // indexed by chain_id
-  FastMap<Vertex, uint>        chain_id;
   uint                         last_empty_v_cnt;
   FastMap<Player, uint>        player_v_cnt;
   FastMap<Player, Vertex>      player_last_v;

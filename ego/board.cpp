@@ -290,7 +290,7 @@ void Board::clear () {
   uint off_board_cnt;
 
   set_komi (default_komi);      // standard for chinese rules
-  empty_v_cnt  = 0;
+  empty_v_cnt = 0;
   player_for_each (pl) {
     player_v_cnt  [pl] = 0;
     player_last_v [pl] = Vertex::any ();
@@ -303,8 +303,8 @@ void Board::clear () {
     color_at      [v] = Color::off_board ();
     nbr_cnt       [v] = NbrCounter::Empty();
     chain_next_v  [v] = v;
-    chain_id      [v] = v.get_idx ();    // TODO is it needed, is it usedt?
-    chain_lib_cnt [v.get_idx ()] = NbrCounter::max; // TODO off_boards?
+    chain_id      [v] = v;    // TODO is it needed, is it usedt?
+    chain_lib_cnt [v] = NbrCounter::max; // TODO off_boards?
 
     if (v.is_on_board ()) {
       color_at   [v]              = Color::empty ();
@@ -561,8 +561,8 @@ void Board::place_stone (Player pl, Vertex v) {
 
   assertc (chain_next_v_ac, chain_next_v[v] == v);
 
-  chain_id [v] = v.get_idx ();
-  chain_lib_cnt [v.get_idx ()] = nbr_cnt[v].empty_cnt ();
+  chain_id [v] = v;
+  chain_lib_cnt [v] = nbr_cnt[v].empty_cnt ();
 }
 
 
@@ -573,7 +573,7 @@ void Board::remove_stone (Vertex v) {
 
   empty_pos [v] = empty_v_cnt;
   empty_v [empty_v_cnt++] = v;
-  chain_id [v] = v.get_idx ();
+  chain_id [v] = v;
 
   assertc (board_ac, empty_v_cnt < Vertex::cnt);
 }
