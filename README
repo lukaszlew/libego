@@ -1,31 +1,26 @@
                Library of Effective GO routines
 
-This is a Library of Effective GO routines (EGO library / libEGO), a high performance 
+This is a Library of Effective GO routines (libEGO), a high performance 
 implementation of Go rules and most popular algorithms used in computer Go. 
-This is also fully functional GTP Go engine.
 
-Newest version can be found using git repository:
-git clone git://github.com/lukaszlew/libego.git  
-
-                         Copyright
-
-All files Copyright 2006 and onwards Łukasz Lew 
-
-All files in this package are under General Public License, 
-which may be found in the file COPYING.
 
                        Installation
 
-Just untar (tar zxfv libego*.tgz), and make.
-./ego_opt runs GTP engine, which will first run commands from automagic.gtp.
+You will need:
+ - git (version control system) 
+ - scons (software construction tool)
+
+Checkout the source:
+ git clone git://github.com/lukaszlew/libego.git  
+
+Construct library and examples:
+ scons
+
+Run exemplary GTP engine:
+ build/example/opt/ego
+
+It will first run commands from automagic.gtp in current directory.
 For other commands just type "help".
-
-If something goes wrong, try make ego_debug; ./ego_debug.
-
-                         Library  
-
-If You want to develop a Go program, then first take a look at playout.cpp
-where you can find an effective procedure for Monte-Carlo playouts. 
 
                           Thanks              
 
@@ -37,6 +32,13 @@ Markus Enzenberger for his computer go bibliography and GoGui.
 Don Dailey for setting up CGOS server.
 And last but not least, a whole computer Go community for a 
 stimulating mixture of cooperation and competition.
+
+                         Copyright
+
+All files Copyright 2006 and onwards Łukasz Lew 
+
+All files in this package are under General Public License, 
+which may be found in the file COPYING.
 
                           Contact
 
