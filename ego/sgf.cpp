@@ -34,10 +34,14 @@ void SgfNodeProperties::add (string name, string value) {
 
 string SgfNodeProperties::to_sgf_string () {
   ostringstream out;
-  for_each (prop, property_map) {
+  for (map <string, list<string> >::iterator prop = property_map.begin(); 
+       prop != property_map.end(); 
+       prop++) {
     if (prop->second.size () > 0) {
       out << prop->first; // prop_name
-      for_each (prop_value, prop->second) {
+      for (list<string>::iterator prop_value = prop->second.begin();
+           prop_value != prop->second.end();
+           prop_value++) {
         out << "[" << *prop_value << "]";
       }
     }
@@ -49,7 +53,9 @@ string SgfNodeProperties::to_sgf_string () {
 string SgfNodeProperties::get_comment () { 
   ostringstream out;
   list <string> comments = property_map ["C"];
-  for_each (comment, comments) {
+  for (list<string>::iterator comment = comments.begin();
+       comment != comments.end();
+       comment++) {
     out << *comment << endl;
   }
   return out.str ();
@@ -72,17 +78,19 @@ string SgfNodeProperties::get_embedded_gtp () {
 list <Vertex> SgfNodeProperties::get_vertices_to_play (Color color) { 
   list <Vertex> ret;
 
-#define add_moves(prop_name)                                    \
-  {                                                             \
-    list <string> prop_values = property_map [prop_name];       \
-    for_each (sgf_coord, prop_values) {                         \
-      ret.push_back (Vertex::of_sgf_coords (*sgf_coord));       \
-    }                                                           \
+#define add_moves(prop_name)                                          \
+  {                                                                   \
+    list <string> prop_values = property_map [prop_name];             \
+    for (list<string>::iterator sgf_coord = prop_values.begin();      \
+         sgf_coord != prop_values.end();                              \
+         sgf_coord++) {                                               \
+      ret.push_back (Vertex::of_sgf_coords (*sgf_coord));             \
+    }                                                                 \
   }
       
   if (color == Color::empty ()) {
-    add_moves ("AE")
-      } else if (color == Color::black ()) {
+    add_moves ("AE");
+  } else if (color == Color::black ()) {
     add_moves ("B");
     add_moves ("AB");
   } else if (color == Color::white ()) {
@@ -139,7 +147,9 @@ string SgfNode::to_sgf_string (bool print_braces) {
   out << endl << ";" << properties.to_sgf_string ();
 
   bool print_child_braces = children.size () > 1;
-  for_each (child, children) 
+  for (list<SgfNode>::iterator child = children.begin();
+       child != children.end();
+       child++)
     out << child->to_sgf_string (print_child_braces);
 
   if (print_braces) out << ")";
@@ -250,8 +260,10 @@ bool SgfTree::parse_sgf (istream& in) {
 
 string SgfTree::to_sgf_string () {
   ostringstream out;
-  for_each (it, root->children) 
-    out << it->to_sgf_string () << endl; 
+  for (list<SgfNode>::iterator child = root->children.begin();
+       child != root->children.end();
+       child++)
+    out << child->to_sgf_string () << endl; 
   return out.str ();
 }
   

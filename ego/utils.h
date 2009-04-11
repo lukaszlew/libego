@@ -17,12 +17,9 @@ using namespace std;
 #define seq(i,a,b)   for (let (i, a); i <= (b); i++)
 #define dseq(i,b,a)  for (let (i, b); i >= (a); i--)
 
-#define let(a,b) typeof(b) a=(b)
-#define for_each(it, c) for(let(it,(c).begin()); it!=(c).end(); ++it)
-
 const float large_float = 1000000000000.0;
 
- #define assertc(aspect, expr) assert((aspect) ? (expr) : true)
+#define assertc(aspect, expr) assert((aspect) ? (expr) : true)
 
 
 float get_seconds ();
@@ -39,7 +36,7 @@ private:
 
 
 char getc_non_space (istream& is);
-bool is_all_whitespace (string s);
+bool is_all_whitespace (const string& s);
 void remove_empty_lines (string* s);
 void remove_trailing_whitespace (string* str);
 

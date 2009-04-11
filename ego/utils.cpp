@@ -48,8 +48,8 @@ char getc_non_space (istream& is) {
   return c;
 }
 
-bool is_all_whitespace (string s) {
-  for_each (cp, s)
+bool is_all_whitespace (const string& s) {
+  for(string::const_iterator cp = s.begin(); cp != s.end(); cp++)
     if (!isspace (*cp))
       return false;
   return true;

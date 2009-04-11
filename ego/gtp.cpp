@@ -251,18 +251,22 @@ GtpResult Gtp::exec_command (const string& command, istream& params) {
   }
     
   if (is_gogui_param_command (command)) {
-    let (gogui_params, command_to_gogui_params [command]);
+    vector<GoguiParam>& gogui_params = command_to_gogui_params [command];
     string param_name;
     if (!(params >> param_name)) {
       // print values of all params
       string ret;
-      for_each (param_it, gogui_params) {
+      for(vector<GoguiParam>::iterator param_it = gogui_params.begin();
+          param_it != gogui_params.end();
+          param_it++) {
         ret += param_it->gogui_string () + "\n";
       }
       return GtpResult::success (ret);
     } else {
       // print value of a param
-      for_each (param_it, gogui_params) {
+      for(vector<GoguiParam>::iterator param_it = gogui_params.begin();
+          param_it != gogui_params.end();
+          param_it++) {
         if (param_it->name == param_name) {
           // param found
           return
@@ -277,8 +281,10 @@ GtpResult Gtp::exec_command (const string& command, istream& params) {
 
   if (command == "help" || command == "list_commands") {
     string response;
-    for_each (cmd_it, command_of_name) { // TODO iterate over map instead of separate vector
-      response += (*cmd_it).first + "\n";
+    for (map <string, GtpCommand*>::iterator cmd_it = command_of_name.begin();
+         cmd_it != command_of_name.end();
+         cmd_it++) {
+      response += cmd_it->first + "\n";
     }
     return GtpResult::success (response);
   }
@@ -318,7 +324,7 @@ GtpResult Gtp::exec_command (const string& command, istream& params) {
 
 void Gtp::preprocess (string* s) {
   ostringstream ret;
-  for_each (cp, *s) {
+  for(string::iterator cp = s->begin(); cp != s->end(); cp++) {
     if (*cp == 9) ret << '\32'; 
     else if (*cp > 0 && *cp <= 9) continue; 
     else if (*cp >= 11 && *cp <= 31) continue; 

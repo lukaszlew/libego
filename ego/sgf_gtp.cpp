@@ -100,7 +100,9 @@ void SgfGtp::exec_embedded_gtp_rec (SgfNode* current_node, ostream& response) {
 
   player_for_each (pl) {
     vertex_list = current_node->properties.get_vertices_to_play (pl);
-    for_each (vi, vertex_list) {
+    for (list<Vertex>::iterator vi = vertex_list.begin();
+         vi != vertex_list.end();
+         vi++) {
       if (base_board.try_play (pl, *vi) == false) {
         response << "sgf.gtp.exec: bad move in SGF: " << pl << " " << *vi << endl;
         return;
@@ -121,7 +123,9 @@ void SgfGtp::exec_embedded_gtp_rec (SgfNode* current_node, ostream& response) {
   node_board.load (&base_board);
 
   // recursove call
-  for_each (child, current_node->children) {
+  for (list<SgfNode>::iterator child = current_node->children.begin();
+       child != current_node->children.end();
+       child++) {
     base_board.load (&node_board);
     exec_embedded_gtp_rec (&(*child), response);
   }
