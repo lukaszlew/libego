@@ -1,4 +1,4 @@
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                           *
  *  This file is part of Library of Effective GO routines - EGO library      *
  *                                                                           *
@@ -19,7 +19,7 @@
  *  Foundation, Inc., 51 Franklin St, Fifth Floor,                           *
  *  Boston, MA  02110-1301  USA                                              *
  *                                                                           *
-\* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "board.h"
 
@@ -31,9 +31,9 @@ Board::NbrCounter Board::NbrCounter::OfCounts (uint black_cnt,
   assertc (nbr_cnt_ac, empty_cnt <= max);
   Board::NbrCounter nc;
   nc.bitfield =
-    (black_cnt << f_shift_black) +
-    (white_cnt << f_shift_white) +
-    (empty_cnt << f_shift_empty);
+    (black_cnt << f_shift[0]) +
+    (white_cnt << f_shift[1]) +
+    (empty_cnt << f_shift[2]);
   return nc;
 }
 
@@ -50,14 +50,17 @@ void Board::NbrCounter::player_dec (Player player) {
 }
 
 void Board::NbrCounter::off_board_inc () { 
+  static const uint off_board_inc_val = 
+    (1 << f_shift[0]) + (1 << f_shift[1]) - (1 << f_shift[2]);
   bitfield += off_board_inc_val; 
 }
 
 uint Board::NbrCounter::empty_cnt () const {
-  return bitfield >> f_shift_empty; 
+  return bitfield >> f_shift[2]; 
 }
 
 uint Board::NbrCounter::player_cnt (Player pl) const { 
+  static const uint f_mask = (1 << f_size) - 1;
   return (bitfield >> f_shift [pl.get_idx ()]) & f_mask; 
 }
 
@@ -79,39 +82,30 @@ void Board::NbrCounter::check(const FastMap<Color, uint>& nbr_color_cnt) const {
 
   uint expected_nbr_cnt =        // definition of nbr_cnt[v]
     + ((nbr_color_cnt [Color::black ()] + nbr_color_cnt [Color::off_board ()])
-       << f_shift_black)
+       << f_shift[0])
     + ((nbr_color_cnt [Color::white ()] + nbr_color_cnt [Color::off_board ()])
-       << f_shift_white)
+       << f_shift[1])
     + ((nbr_color_cnt [Color::empty ()])
-       << f_shift_empty);
+       << f_shift[2]);
   assert (bitfield == expected_nbr_cnt);
 }
 
 const uint Board::NbrCounter::max = 4;    // maximal number of neighbours
 const uint Board::NbrCounter::f_size = 4; // size in bits of each of 3 counters
-const uint Board::NbrCounter::f_mask = (1 << f_size) - 1;
-const uint Board::NbrCounter::f_shift_black = 0 * f_size;
-const uint Board::NbrCounter::f_shift_white = 1 * f_size;
-const uint Board::NbrCounter::f_shift_empty = 2 * f_size;
-const uint Board::NbrCounter::black_inc_val = (1 << f_shift_black) - (1 << f_shift_empty);
-const uint Board::NbrCounter::white_inc_val = (1 << f_shift_white) - (1 << f_shift_empty);
-const uint Board::NbrCounter::off_board_inc_val = 
-    (1 << f_shift_black) + (1 << f_shift_white) - (1 << f_shift_empty);
-
 const uint Board::NbrCounter::f_shift [3] = {
-  Board::NbrCounter::f_shift_black,
-  Board::NbrCounter::f_shift_white,
-  Board::NbrCounter::f_shift_empty,
+  0 * f_size,
+  1 * f_size,
+  2 * f_size,
 };
 
 const uint Board::NbrCounter::player_cnt_is_max_mask [Player::cnt] = {  // TODO player_Map
-  (max << f_shift_black),
-  (max << f_shift_white)
+  (max << f_shift[0]),
+  (max << f_shift[1])
 };
 
 const uint Board::NbrCounter::player_inc_tab [Player::cnt] = {
-  Board::NbrCounter::black_inc_val,
-  Board::NbrCounter::white_inc_val
+  (1 << f_shift[0]) - (1 << f_shift[2]),
+  (1 << f_shift[1]) - (1 << f_shift[2]),
 };
 
 
@@ -346,53 +340,53 @@ Board::Board () {
 }
 
 void Board::load (const Board* save_board) {
-    memcpy(this, save_board, sizeof(Board));
-    check ();
-  }
+  memcpy(this, save_board, sizeof(Board));
+  check ();
+}
 
-  void Board::set_komi (float fkomi) {
-    komi_ = int (ceil (fkomi));
-  }
+void Board::set_komi (float fkomi) {
+  komi_ = int (ceil (fkomi));
+}
 
 
-  float Board::komi () const {
-    return float(komi_) - 0.5;
-  }
+float Board::komi () const {
+  return float(komi_) - 0.5;
+}
 
 Vertex Board::ko_v () const {
   return ko_v_;
 }
 
-  Hash Board::hash () const {
-    return hash_;
-  }
+Hash Board::hash () const {
+  return hash_;
+}
 
-  bool Board::is_pseudo_legal (Player player, Vertex v) {
-    check ();
-    return
-      v == Vertex::pass () ||
-      !nbr_cnt[v].player_cnt_is_max (player.other ()) ||
-      (!eye_is_ko (player, v) &&
-       !eye_is_suicide (v));
-  }
+bool Board::is_pseudo_legal (Player player, Vertex v) {
+  check ();
+  return
+    v == Vertex::pass () ||
+    !nbr_cnt[v].player_cnt_is_max (player.other ()) ||
+    (!eye_is_ko (player, v) &&
+     !eye_is_suicide (v));
+}
 
 
-  bool Board::is_eyelike (Player player, Vertex v) {
-    assertc (board_ac, color_at [v] == Color::empty ());
-    if (! nbr_cnt[v].player_cnt_is_max (player)) return false;
+bool Board::is_eyelike (Player player, Vertex v) {
+  assertc (board_ac, color_at [v] == Color::empty ());
+  if (! nbr_cnt[v].player_cnt_is_max (player)) return false;
 
-    FastMap<Color, int> diag_color_cnt; // TODO
-    color_for_each (col)
-      diag_color_cnt [col] = 0; // memset is slower
+  FastMap<Color, int> diag_color_cnt; // TODO
+  color_for_each (col)
+    diag_color_cnt [col] = 0; // memset is slower
 
-    vertex_for_each_diag_nbr (v, diag_v, {
+  vertex_for_each_diag_nbr (v, diag_v, {
       diag_color_cnt [color_at [diag_v]]++;
     });
 
-    return
-      diag_color_cnt [Color (player.other ())] +
-      (diag_color_cnt [Color::off_board ()] > 0) < 2;
-  }
+  return
+    diag_color_cnt [Color (player.other ())] +
+    (diag_color_cnt [Color::off_board ()] > 0) < 2;
+}
 
 flatten all_inline
 void Board::play_legal (Player player, Vertex v) { // TODO test with move
@@ -482,13 +476,13 @@ void Board::play_eye_legal (Player player, Vertex v) {
   place_stone (player, v);
 
   vertex_for_each_nbr (v, nbr_v, {
-    nbr_cnt [nbr_v].player_inc (player);
-  });
+      nbr_cnt [nbr_v].player_inc (player);
+    });
 
   vertex_for_each_nbr (v, nbr_v, {
-    if ((chain_lib_cnt [chain_id [nbr_v]] == 0))
-      remove_chain (nbr_v);
-  });
+      if ((chain_lib_cnt [chain_id [nbr_v]] == 0))
+        remove_chain (nbr_v);
+    });
 
   assertc (board_ac, chain_lib_cnt [chain_id [v]] != 0);
 
@@ -709,8 +703,8 @@ void Board::check_nbr_cnt () const {
       nbr_color_cnt [col] = 0;
     }
     vertex_for_each_nbr (v, nbr_v, {
-      nbr_color_cnt [color_at [nbr_v]]++;
-    });
+        nbr_color_cnt [color_at [nbr_v]]++;
+      });
 
     nbr_cnt[v].check(nbr_color_cnt);
   }
