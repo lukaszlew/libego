@@ -1,6 +1,12 @@
 #ifndef _PLAYOUT_H_
 #define _PLAYOUT_H_
 
+// mercy rule
+
+const bool use_mercy_rule      = false;
+const uint mercy_threshold     = 25;
+const uint max_playout_length  = board_area * 2;
+
 enum playout_status_t { pass_pass, mercy, too_long };
 
 template <typename Policy> class Playout {

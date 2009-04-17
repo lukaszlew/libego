@@ -1,6 +1,12 @@
 #ifndef _BOARD_H_
 #define _BOARD_H_
 
+// TODO move these to Board
+const float default_komi       = 7.5;
+const uint  board_area         = board_size * board_size;
+const uint  max_empty_v_cnt    = board_area;
+const uint  max_game_length    = board_area * 4;
+
 class Board {
 public:                         // board interface
 
