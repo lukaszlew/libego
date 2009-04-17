@@ -151,7 +151,7 @@ bool Board::is_hash_repeated () {
   rep (mn, move_no-1) {
     tmp_board.play_legal (move_history [mn].get_player (),
                           move_history [mn].get_vertex ());
-    if (hash == tmp_board.hash)
+    if (hash_ == tmp_board.hash_)
       return true;
   }
   return false;
@@ -296,9 +296,9 @@ void Board::clear () {
     player_last_v [pl] = Vertex::any ();
   }
   move_no      = 0;
-  last_player  = Player::white (); // act player is other
+  last_player_ = Player::white (); // act player is other
   last_move_status = play_ok;
-  ko_v         = Vertex::any ();
+  ko_v_        = Vertex::any ();
   vertex_for_each_all (v) {
     color_at      [v] = Color::off_board ();
     nbr_cnt       [v] = NbrCounter::Empty();
@@ -321,7 +321,7 @@ void Board::clear () {
     }
   }
 
-  hash = recalc_hash ();
+  hash_ = recalc_hash ();
 
   check ();
 }
@@ -357,6 +357,14 @@ void Board::load (const Board* save_board) {
 
   float Board::komi () const {
     return float(komi_) - 0.5;
+  }
+
+Vertex Board::ko_v () const {
+  return ko_v_;
+}
+
+  Hash Board::hash () const {
+    return hash_;
   }
 
   bool Board::is_pseudo_legal (Player player, Vertex v) {
@@ -410,7 +418,7 @@ void Board::play_legal (Player player, Vertex v) { // TODO test with move
 
 
 bool Board::eye_is_ko (Player player, Vertex v) {
-  return (v == ko_v) & (player == last_player.other ());
+  return (v == ko_v_) & (player == last_player_.other ());
 }
 
 
@@ -486,18 +494,18 @@ void Board::play_eye_legal (Player player, Vertex v) {
 
   if (last_empty_v_cnt == empty_v_cnt) {
     // captured exactly one stone, end this was eye
-    ko_v = empty_v [empty_v_cnt - 1]; // then ko formed
+    ko_v_ = empty_v [empty_v_cnt - 1]; // then ko formed
   } else {
-    ko_v = Vertex::any ();
+    ko_v_ = Vertex::any ();
   }
 }
 
 // Warning: has to be called before place_stone, because of hash storing
 void Board::basic_play (Player player, Vertex v) {
   assertc (board_ac, move_no <= max_game_length);
-  ko_v                    = Vertex::any ();
+  ko_v_                   = Vertex::any ();
   last_empty_v_cnt        = empty_v_cnt;
-  last_player             = player;
+  last_player_            = player;
   player_last_v [player]  = v;
   move_history [move_no]  = Move (player, v);
   move_no                += 1;
@@ -551,7 +559,7 @@ void Board::remove_chain (Vertex v) {
 
 
 void Board::place_stone (Player pl, Vertex v) {
-  hash ^= zobrist->of_pl_v (pl, v);
+  hash_ ^= zobrist->of_pl_v (pl, v);
   player_v_cnt[pl]++;
   color_at[v] = Color (pl);
 
@@ -567,7 +575,7 @@ void Board::place_stone (Player pl, Vertex v) {
 
 
 void Board::remove_stone (Vertex v) {
-  hash ^= zobrist->of_pl_v (color_at [v].to_player (), v);
+  hash_ ^= zobrist->of_pl_v (color_at [v].to_player (), v);
   player_v_cnt [color_at[v].to_player ()]--;
   color_at [v] = Color::empty ();
 
@@ -581,7 +589,11 @@ void Board::remove_stone (Vertex v) {
 
 // TODO/FIXME last_player should be preserverd in undo function
 Player Board::act_player () const {
-  return last_player.other ();
+  return last_player_.other ();
+}
+
+Player Board::last_player () const {
+  return last_player_;
 }
 
 
@@ -673,7 +685,7 @@ void Board::check_empty_v () const {
 
 
 void Board::check_hash () const {
-  assertc (board_hash_ac, hash == recalc_hash ());
+  assertc (board_hash_ac, hash_ == recalc_hash ());
 }
 
 

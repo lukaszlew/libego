@@ -15,9 +15,13 @@ public:                         // board interface
 
   void clear ();
 
-  void set_komi (float fkomi);
 
   float komi () const;
+  void set_komi (float fkomi);
+
+  Hash hash () const;
+
+  Vertex ko_v () const;
 
   bool is_strict_legal (Player pl, Vertex v);
 
@@ -44,6 +48,7 @@ public:                         // board interface
   void play_legal (Player player, Vertex v);
 
   Player act_player () const;
+  Player last_player () const;
 
   bool both_player_pass ();
 
@@ -160,9 +165,9 @@ private:
   uint                         last_empty_v_cnt;
   FastMap<Player, uint>        player_v_cnt;
   FastMap<Player, Vertex>      player_last_v;
-  Hash                         hash;
-  Vertex                       ko_v;             // vertex forbidden by ko
-  Player                       last_player;      // player who made the last play
+  Hash                         hash_;
+  Vertex                       ko_v_;             // vertex forbidden by ko
+  Player                       last_player_;      // player who made the last play
 };
 
 #define empty_v_for_each(board, vv, i) {                                \
