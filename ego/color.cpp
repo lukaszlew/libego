@@ -22,7 +22,7 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "color.h"
-#include "config.h"
+#include "testing.h"
 
 Color::Color () {
   idx = -1;

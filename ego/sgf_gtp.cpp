@@ -24,7 +24,7 @@
 
 #include "sgf_gtp.h"
 
-#include "config.h"
+#include "testing.h"
 
 // class gtp_sgf
 

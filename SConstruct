@@ -5,7 +5,6 @@ env = {}
 env["base"] = Environment(
   CXX = "g++-4.2",
   CXXFLAGS = [
-    "-DDEBUG",
     "-ggdb3",
     "-Wall",
     "-Wextra",

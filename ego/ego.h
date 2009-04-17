@@ -1,7 +1,7 @@
 #ifndef _EGO_H_
 #define _EGO_H_
 
-#include "config.h"
+#include "testing.h"
 #include "utils.h"
 
 #include "fast_timer.h"

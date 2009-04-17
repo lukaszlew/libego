@@ -22,7 +22,7 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "utils.h"
-#include "config.h"
+#include "testing.h"
 #include "fast_random.h"
 
 template <typename elt_t, uint _max_size> class FastStack {

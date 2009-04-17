@@ -22,7 +22,7 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "fast_random.h"
-#include "config.h"
+#include "testing.h"
 
 const int FastRandom::cnt = (uint(1)<<31) - 1;
 
