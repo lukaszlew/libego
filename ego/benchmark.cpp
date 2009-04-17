@@ -91,7 +91,7 @@ namespace Benchmark {
     fast_timer.stop ();
     
     out << "Initial board:" << endl;
-    out << "komi " << start_board->get_komi () << " for white" << endl;
+    out << "komi " << start_board->komi () << " for white" << endl;
     
     out << start_board->to_string ();
     out << endl;
@@ -113,11 +113,11 @@ namespace Benchmark {
            float (win_cnt [Player::black ()] + win_cnt [Player::white ()]) 
         << endl;
 
-    float avg_score = float (playout_ok_score) / float (playout_ok_cnt);
+    float avg_score = float (playout_ok_score) / float (playout_ok_cnt) - 0.5;
 
-    out << "E(score)      = " 
-        << avg_score - 0.5 
-        << " (without komi = " << avg_score - mc_board->komi << ")" << endl << endl;
+    out << "E(score)      = "  << avg_score
+        << " (without komi = " << avg_score - mc_board->komi() << ")"
+        << endl << endl;
 
     float seconds_total = seconds_end - seconds_begin;
     float cc_per_playout = fast_timer.ticks () / double (playout_cnt);
@@ -129,6 +129,10 @@ namespace Benchmark {
         << "  " << cc_per_playout << " ccpp (clock cycles per playout)" << endl
         << "  " << 1000000.0 / cc_per_playout  << " kpps/GHz (clock independent)" << endl
       ;
+
+    // ignore this line
+    score += mc_board->empty_v_cnt; // for a stupid g++ to force
+                                    // alignment(?) of mc_board
   }
 
   void run (Board const * start_board, 

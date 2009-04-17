@@ -2,7 +2,6 @@
 #define _BOARD_H_
 
 // TODO move these to Board
-const float default_komi       = 7.5;
 const uint  board_area         = board_size * board_size;
 const uint  max_empty_v_cnt    = board_area;
 const uint  max_game_length    = board_area * 4;
@@ -18,7 +17,7 @@ public:                         // board interface
 
   void set_komi (float fkomi);
 
-  float get_komi () const;
+  float komi () const;
 
   bool is_strict_legal (Player pl, Vertex v);
 
@@ -53,11 +52,13 @@ public:                         // board interface
   // single vertex ownership
   int vertex_score (Vertex v);
 
-  int approx_score () const;
+  // score()-0.5 is a true result
   int score () const;
-
-  Player approx_winner () const;
+  int approx_score () const;
+  
+  // white wins when score() == 0
   Player winner () const;
+  Player approx_winner () const;
 
   /* auxiliary functions */
 
@@ -84,7 +85,6 @@ public:
     play_ko
   } last_move_status;
 
-  int                      komi;
 
 private: 
   Hash recalc_hash () const;
@@ -146,6 +146,8 @@ private:
   };
 
 private:
+
+  int komi_;
 
   static const Zobrist zobrist[1];
 

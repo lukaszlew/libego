@@ -122,7 +122,7 @@ bool Board::undo () {
   Move replay [max_game_length];
 
   uint   game_length  = move_no;
-  float  old_komi     = get_komi ();
+  float  old_komi     = komi ();
 
   if (game_length == 0)
     return false;
@@ -289,7 +289,7 @@ bool Board::load_from_ascii (istream& ifs) {
 void Board::clear () {
   uint off_board_cnt;
 
-  set_komi (default_komi);      // standard for chinese rules
+  set_komi (-0.5); // white wins the draws on default komi
   empty_v_cnt = 0;
   player_for_each (pl) {
     player_v_cnt  [pl] = 0;
@@ -351,12 +351,12 @@ void Board::load (const Board* save_board) {
   }
 
   void Board::set_komi (float fkomi) {
-    komi = int (ceil (-fkomi));
+    komi_ = int (ceil (fkomi));
   }
 
 
-  float Board::get_komi () const {
-    return float(-komi) + 0.5;
+  float Board::komi () const {
+    return float(komi_) - 0.5;
   }
 
   bool Board::is_pseudo_legal (Player player, Vertex v) {
@@ -593,11 +593,8 @@ bool Board::both_player_pass () {
 
 
 int Board::approx_score () const {
-  return komi + player_v_cnt[Player::black ()] -  player_v_cnt[Player::white ()];
+  return komi_ + player_v_cnt[Player::black ()] -  player_v_cnt[Player::white ()];
 }
-
-
-Player Board::approx_winner () const { return Player (approx_score () <= 0); }
 
 
 int Board::score () const {
@@ -609,6 +606,11 @@ int Board::score () const {
     });
 
   return approx_score () + eye_score;
+}
+
+
+Player Board::approx_winner () const { 
+  return Player (approx_score () <= 0); 
 }
 
 

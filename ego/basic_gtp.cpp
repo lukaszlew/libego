@@ -52,7 +52,7 @@ GtpResult BasicGtp::exec_command (const string& command, istream& params) {
   if (command == "komi") {
     float new_komi;
     if (!(params >> new_komi)) return GtpResult::syntax_error ();
-    board.set_komi (new_komi);
+    board.set_komi (-new_komi);
     return GtpResult::success ();
   }
 
