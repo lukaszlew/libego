@@ -3,7 +3,7 @@
 
 #include "gtp.h"
 #include "board.h"
-#include "config.h"
+#include "testing.h"
 
 template <typename engine_t>
 class GenmoveGtp : public GtpCommand {

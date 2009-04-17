@@ -29,7 +29,7 @@
 
 using namespace std;
 
-#include "config.h"
+#include "testing.h"
 
 
 const string embedded_gtp_tag = "@gtp";

@@ -25,7 +25,7 @@
 #include <cstring>
 
 #include "board.h"
-#include "config.h"
+#include "testing.h"
 
 Board::NbrCounter Board::NbrCounter::OfCounts (uint black_cnt,
                                                uint white_cnt,

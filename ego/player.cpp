@@ -22,7 +22,7 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "player.h"
-#include "config.h"
+#include "testing.h"
 
 Player::Player () { 
   idx = -1; 

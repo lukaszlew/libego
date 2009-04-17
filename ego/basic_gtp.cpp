@@ -26,7 +26,7 @@
 #include "basic_gtp.h"
 
 #include "benchmark.h"
-#include "config.h"
+#include "testing.h"
 
 BasicGtp::BasicGtp (Gtp& gtp, Board& board_) : board (board_) { 
   gtp.add_gtp_command (this, "boardsize");
