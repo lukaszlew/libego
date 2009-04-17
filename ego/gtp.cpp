@@ -23,6 +23,10 @@
 
 #include "gtp.h"
 
+#include <fstream>
+
+#include "config.h"
+
 // ----------------------------------------------------------------------
 
 GtpResult::GtpResult () : status_ (status_success) { 
@@ -57,7 +61,7 @@ string GtpResult::status_marker () {
   case status_success: return "=";
   case status_failure: return "?";
   case status_quit:    return "=";
-  default: assert (false); exit(1);
+  default: assert (false);
   }
 }
 
@@ -318,7 +322,7 @@ GtpResult Gtp::exec_command (const string& command, istream& params) {
     return GtpResult::success (response.str ());
   }
 
-  fatal_error ("wrong command in Gtp::exec_command");
+  //fatal_error ("wrong command in Gtp::exec_command");
   assert (false);
 }
 

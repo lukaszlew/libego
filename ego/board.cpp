@@ -21,7 +21,11 @@
  *                                                                           *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#include <cmath>
+#include <cstring>
+
 #include "board.h"
+#include "config.h"
 
 Board::NbrCounter Board::NbrCounter::OfCounts (uint black_cnt,
                                                uint white_cnt,
@@ -220,9 +224,9 @@ string Board::to_string (Vertex mark_v) const {
   return out.str ();
 }
 
-void Board::print_cerr (Vertex v) const {
-  cerr << to_string (v);
-}
+// void Board::print_cerr (Vertex v) const {
+//   cerr << to_string (v);
+// }
 
 bool Board::load_from_ascii (istream& ifs) {
   uint     bs;
@@ -275,7 +279,7 @@ bool Board::load_from_ascii (istream& ifs) {
 
   // if (false)
   // TODO LOL hack - need tu use it somwhere
-  if (color_at[Vertex (0)] == Color::white ()) print_cerr ();
+  //if (color_at[Vertex (0)] == Color::white ()) print_cerr ();
   return true;
 }
 

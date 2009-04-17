@@ -1,6 +1,10 @@
 #ifndef _BOARD_H_
 #define _BOARD_H_
 
+#include "utils.h"
+#include "hash.h"
+#include "color.h"
+
 // TODO move these to Board
 const uint  board_area         = board_size * board_size;
 const uint  max_empty_v_cnt    = board_area;

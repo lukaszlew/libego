@@ -1,6 +1,12 @@
 #ifndef _MOVE_H_
 #define _MOVE_H_
 
+#include <string>
+using namespace std;
+
+#include "player.h"
+#include "vertex.h"
+
 class Move {
 public:
   explicit Move (Player player, Vertex v);

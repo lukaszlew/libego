@@ -1,9 +1,6 @@
 #ifndef _EGO_H_
 #define _EGO_H_
 
-typedef unsigned int uint;
-typedef unsigned long long uint64;
-
 #include "config.h"
 #include "utils.h"
 

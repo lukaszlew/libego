@@ -1,6 +1,8 @@
 #ifndef _FAST_TIMER_H_
 #define _FAST_TIMER_H_
 
+#include "utils.h"
+
 class FastTimer {
   double  sample_cnt;
   double  sample_sum;

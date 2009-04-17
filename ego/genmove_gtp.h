@@ -1,6 +1,10 @@
 #ifndef _GENMOVE_GTP_H_
 #define _GENMOVE_GTP_H_
 
+#include "gtp.h"
+#include "board.h"
+#include "config.h"
+
 template <typename engine_t>
 class GenmoveGtp : public GtpCommand {
 public:

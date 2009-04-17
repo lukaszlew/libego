@@ -53,13 +53,13 @@
 // goes through GTP files given in command line
 void process_command_line (Gtp& gtp, int argc, char** argv) {
   if (argc == 1) {
-    if (gtp.run_file ("automagic.gtp") == false) 
+    if (gtp.run_file ("automagic.gtp", cout) == false) 
       cerr << "GTP file not found: automagic.gtp" << endl;
   }
 
   rep (arg_i, argc) {
     if (arg_i > 0) {
-      if (gtp.run_file (argv [arg_i]) == false)
+      if (gtp.run_file (argv [arg_i], cout) == false)
         cerr << "GTP file not found: " << argv [arg_i] << endl;
     }
   }
@@ -88,7 +88,7 @@ int main (int argc, char** argv) {
   process_command_line (gtp, argc, argv);
   
   // command-answer GTP loop
-  gtp.run_loop ();
+  gtp.run_loop (cin, cout);
 
   return 0;
 }

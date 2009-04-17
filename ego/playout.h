@@ -1,6 +1,11 @@
 #ifndef _PLAYOUT_H_
 #define _PLAYOUT_H_
 
+#include "utils.h"
+#include "board.h"
+
+#include <cmath>
+
 // mercy rule
 
 const bool use_mercy_rule      = false;
@@ -58,7 +63,7 @@ public:
         return too_long;
       }
       
-      if (use_mercy_rule && uint (abs (board->approx_score ())) > mercy_threshold) {
+      if (use_mercy_rule && uint (abs (float(board->approx_score ()))) > mercy_threshold) {
         move_history_length = board->move_no - begin_move_no;
         policy->end_playout (mercy);
         return mercy;

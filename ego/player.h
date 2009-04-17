@@ -1,6 +1,8 @@
 #ifndef _PLAYER_H_
 #define _PLAYER_H_
 
+#include "utils.h"
+
 class Player { // TODO check is check always checked in constructors
 public:
 

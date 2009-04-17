@@ -1,6 +1,10 @@
 #ifndef _HASH_H_
 #define _HASH_H_
 
+#include "utils.h"
+#include "fast_random.h"
+#include "move.h"
+
 class Hash {
 public:
   

@@ -21,10 +21,14 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#include <sys/resource.h>
+#include <iostream>
+#include <cassert>
+#include <cstdlib>
+
 #include "utils.h"
 
 // some usefull functions
-
 
 float get_seconds () { // TODO rename to process_user_time
   rusage usage [1];

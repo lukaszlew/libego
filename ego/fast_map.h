@@ -1,3 +1,6 @@
+#ifndef _FAST_MAP_H_
+#define _FAST_MAP_H_
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  *                                                                           *
  *  This file is part of Library of Effective GO routines - EGO library      *
@@ -20,6 +23,8 @@
  *  Boston, MA  02110-1301  USA                                              *
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+#include "utils.h"
 
 // very simple and useful FastMap
 
@@ -49,3 +54,5 @@ public:
 };
 
 // TODO add iterators
+
+#endif

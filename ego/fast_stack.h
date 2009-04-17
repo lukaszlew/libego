@@ -21,6 +21,10 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#include "utils.h"
+#include "config.h"
+#include "fast_random.h"
+
 template <typename elt_t, uint _max_size> class FastStack {
 public:
   elt_t tab [_max_size];

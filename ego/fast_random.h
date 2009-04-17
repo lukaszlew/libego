@@ -1,6 +1,8 @@
 #ifndef _FAST_RANDOM_
 #define _FAST_RANDOM_
 
+#include "utils.h"
+
 class FastRandom {             // Park - Miller "minimal standard"
 
   static const int cnt;
@@ -15,8 +17,8 @@ public:
   uint rand_int ();
 
   // n must be between 1 .. (1<<16) + 1
-  inline uint rand_int (uint n);
-
+  uint rand_int (uint n);
+  
   void test ();
   void test2 (uint k, uint n);
 };

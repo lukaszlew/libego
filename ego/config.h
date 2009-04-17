@@ -24,22 +24,22 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-// board parameters
-
-const uint board_size          = 9;
-
 // consistency checking / debugging control
 
+#ifndef DEBUG
+#define DEBUG
+#endif
 
 #ifdef NDEBUG
 #error "NDEBUG not allowed."
 #endif
 
-#ifndef DEBUG
-#error "DEBUG should be defined."
-#endif
+#include <cassert>
 
-const bool pm_ac              = false;
+#define assertc(aspect, expr) assert((aspect) ? (expr) : true)
+
+const bool fast_random_ac = false;
+
 const bool stack_ac           = false;
 
 const bool paranoic           = false;

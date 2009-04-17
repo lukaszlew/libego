@@ -22,6 +22,7 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "vertex.h"
+#include "config.h"
 
 Coord::Coord() {
 }

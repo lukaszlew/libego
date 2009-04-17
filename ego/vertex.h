@@ -1,6 +1,18 @@
 #ifndef _VERTEX_H_
 #define _VERTEX_H_
 
+#include <string>
+#include <iomanip>
+
+#include "utils.h"
+#include "fast_map.h"
+
+using namespace std;
+
+// TODO this have to be renamed to max_board_size
+const uint board_size = 9;
+
+
 class Coord {
 public:
   explicit Coord();

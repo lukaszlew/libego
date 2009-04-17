@@ -1,6 +1,8 @@
 #ifndef _COLOR_H_
 #define _COLOR_H_
 
+#include "player.h"
+
 class Color {
 public:
 
@@ -10,7 +12,7 @@ public:
   static Color off_board  ();
   static Color wrong_char ();
 
-  inline explicit Color (Player pl);
+  explicit Color (Player pl);
 
   bool is_player     () const;
   bool is_not_player () const;

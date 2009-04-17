@@ -1,6 +1,10 @@
 #ifndef _SGF_GTP_H_
 #define _SGF_GTP_H_
 
+#include "board.h"
+#include "gtp.h"
+#include "sgf.h"
+
 class SgfGtp : public GtpCommand {
 public:
   SgfGtp (Gtp& _gtp, SgfTree& _sgf_tree, Board& _base_board);

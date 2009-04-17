@@ -1,6 +1,14 @@
 #ifndef _GTP_H_
 #define _GTP_H_
 
+#include <vector>
+#include <map>
+#include <string>
+
+#include "utils.h"
+
+using namespace std;
+
 // ----------------------------------------------------------------------
 
 class GtpResult {
@@ -87,8 +95,8 @@ public:
   void add_gogui_param_uint (string cmd_name, string param_name, uint* ptr);
   void add_gogui_param_bool (string cmd_name, string param_name, bool* ptr);
 
-  bool run_file (string file_name, ostream& out = cout);
-  void run_loop (istream& in = cin, ostream& out = cout, bool echo_commands = false);
+  bool run_file (string file_name, ostream& out);
+  void run_loop (istream& in, ostream& out, bool echo_commands = false);
 
   virtual GtpResult exec_command (const string& command, istream& params);
 

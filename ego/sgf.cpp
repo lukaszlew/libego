@@ -23,6 +23,15 @@
 
 #include "sgf.h"
 
+#include <stack>
+#include <fstream>
+#include <cstdlib>
+
+using namespace std;
+
+#include "config.h"
+
+
 const string embedded_gtp_tag = "@gtp";
 
 
@@ -97,7 +106,7 @@ list <Vertex> SgfNodeProperties::get_vertices_to_play (Color color) {
     add_moves ("W");
     add_moves ("AW");
   } else {
-    fatal_error ("get_moves: illegal color");
+    assert(false);
   }
 
   return ret;
@@ -117,7 +126,9 @@ string SgfNodeProperties::get_single_property (string prop_name,
                                                string default_value) {
   if (property_map [prop_name].size () == 0) return default_value;
   if (property_map [prop_name].size () > 1) {
-    cerr << "warning: multiple property value for: " << prop_name << endl;
+    //cerr << "warning: multiple property value for: " << prop_name <<
+    //endl;
+    assert(false);
   } 
   return property_map [prop_name].front ();
 }

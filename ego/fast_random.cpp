@@ -22,6 +22,7 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "fast_random.h"
+#include "config.h"
 
 const int FastRandom::cnt = (uint(1)<<31) - 1;
 
@@ -53,8 +54,8 @@ uint FastRandom::rand_int () {       // a number between  0 ... cnt - 1
 
 // n must be between 1 .. (1<<16) + 1
 uint FastRandom::rand_int (uint n) { // 0 .. n-1
-  assertc (pm_ac, n > 0);
-  assertc (pm_ac, n <= (1<<16)+1);
+  assertc (fast_random_ac, n > 0);
+  assertc (fast_random_ac, n <= (1<<16)+1);
   return ((rand_int () & 0xffff) * n) >> 16;
 }
 

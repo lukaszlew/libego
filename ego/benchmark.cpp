@@ -23,6 +23,9 @@
 
 #include "benchmark.h"
 
+#include "fast_timer.h"
+#include "playout.h"
+
 namespace Benchmark {
 
   Board                  mc_board [1];

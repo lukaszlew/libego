@@ -1,6 +1,15 @@
 #ifndef _SGF_H_
 #define _SGF_H_
 
+#include <map>
+#include <list>
+#include <string>
+
+#include "vertex.h"
+#include "color.h"
+
+using namespace std;
+
 extern const string embedded_gtp_tag;;
 
 class SgfNodeProperties {

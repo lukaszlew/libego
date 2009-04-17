@@ -24,6 +24,8 @@
 
 #include "sgf_gtp.h"
 
+#include "config.h"
+
 // class gtp_sgf
 
 SgfGtp::SgfGtp (Gtp& _gtp, SgfTree& _sgf_tree, Board& _base_board) : 
@@ -82,7 +84,7 @@ GtpResult SgfGtp::exec_command (const string& command, istream& params) {
   }
 
   // ---------------------------------------------------------------------
-  fatal_error ("this should not happen!: error number = 0x994827");
+  //fatal_error ("this should not happen!: error number = 0x994827");
   assert (false);
 }
 
