@@ -25,58 +25,34 @@
 
 #include "fast_timer.h"
 #include "playout.h"
+#include "utils.h"
 
 namespace Benchmark {
 
   Board                  empty_board [1];
   Board                  mc_board [1];
 
-  FastMap<Vertex, int>   vertex_score;
   FastMap<Player, uint>  win_cnt;
-  uint                   playout_ok_cnt;
-  int                    playout_ok_score;
   FastTimer              fast_timer;
 
   void do_playouts (uint playout_cnt) {
-    playout_status_t status;
-    Player winner;
-    int score;
-
     SimplePolicy policy;
     Playout<SimplePolicy> playout(&policy, mc_board);
 
     rep (ii, playout_cnt) {
       mc_board->load (empty_board);
-      status = playout.run ();
-      switch (status) {
-      case pass_pass:
-        playout_ok_cnt += 1;
-
-        score = mc_board -> score ();
-        playout_ok_score += score;
-
-        winner = Player (score <= 0);  // mc_board->winner ()
-        win_cnt [winner] ++;
-
-        break;
-      case mercy:
-        assert(false); // Mercy rule should be off for benchmarking
-        return;
-        //win_cnt [mc_board->approx_winner ()] ++;
-        //break;
-      case too_long:
-        break;
+      if (playout.run () == pass_pass) {
+        win_cnt [mc_board->winner ()] ++;
       }
     }
-    // ignore this line
-    score += mc_board->empty_v_cnt; // for a stupid g++ to force
+
+    // ignore this line, this is for a stupid g++ to force aligning(?)
+    int xxx = mc_board->empty_v_cnt;
+    unused(xxx);
   }
 
-  void run (uint playout_cnt, ostream& out) {
-    playout_ok_cnt   = 0;
-    playout_ok_score = 0;
+  string run (uint playout_cnt) {
     player_for_each (pl) win_cnt [pl] = 0;
-    vertex_for_each_all (v) vertex_score [v] = 0;
 
     fast_timer.reset ();
     fast_timer.start ();
@@ -90,12 +66,15 @@ namespace Benchmark {
 
     float seconds_total = seconds_end - seconds_begin;
     float cc_per_playout = fast_timer.ticks () / double (playout_cnt);
-
-    out << endl 
+    
+    ostringstream ret;
+    ret << endl 
         << playout_cnt << " playouts in " << seconds_total << " seconds" << endl
         << float (playout_cnt) / seconds_total / 1000.0 << " kpps" << endl
         << 1000000.0 / cc_per_playout  << " kpps/GHz (clock independent)" << endl
         << win_cnt [Player::black ()] << "/" << win_cnt [Player::white ()]
         << " (black wins / white wins)" << endl;
+
+    return ret.str();
   }
 }

@@ -6,9 +6,7 @@
 #include "board.h"
 
 namespace Benchmark {
-  void run (Board const * start_board, 
-            uint playout_cnt, 
-            ostream& out);
+  string run (uint playout_cnt);
 }
 
 #endif
