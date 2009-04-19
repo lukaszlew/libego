@@ -75,12 +75,8 @@ namespace Benchmark {
   void run (uint playout_cnt, ostream& out) {
     playout_ok_cnt   = 0;
     playout_ok_score = 0;
-
-    player_for_each (pl) 
-      win_cnt [pl] = 0;
-
-    vertex_for_each_all (v) 
-      vertex_score [v] = 0;
+    player_for_each (pl) win_cnt [pl] = 0;
+    vertex_for_each_all (v) vertex_score [v] = 0;
 
     fast_timer.reset ();
     fast_timer.start ();
@@ -90,30 +86,16 @@ namespace Benchmark {
 
     float seconds_end = get_seconds ();
     fast_timer.stop ();
-    
-    out << "Black wins    = " << win_cnt [Player::black ()] << endl
-        << "White wins    = " << win_cnt [Player::white ()] << endl
-        << "P(black win)  = " 
-        << float (win_cnt [Player::black ()]) / 
-           float (win_cnt [Player::black ()] + win_cnt [Player::white ()]) 
-        << endl;
 
-    float avg_score = float (playout_ok_score) / float (playout_ok_cnt) - 0.5;
-
-    out << "E(score)      = "  << avg_score
-        << " (without komi = " << avg_score - mc_board->komi() << ")"
-        << endl << endl;
 
     float seconds_total = seconds_end - seconds_begin;
     float cc_per_playout = fast_timer.ticks () / double (playout_cnt);
 
-    out << "Performance: " << endl
-        << "  " << playout_cnt << " playouts" << endl
-        << "  " << seconds_total << " seconds" << endl
-        << "  " << float (playout_cnt) / seconds_total / 1000.0 << " kpps" << endl
-        << "  " << cc_per_playout << " ccpp (clock cycles per playout)" << endl
-        << "  " << 1000000.0 / cc_per_playout  << " kpps/GHz (clock independent)" << endl
-      ;
-
+    out << endl 
+        << playout_cnt << " playouts in " << seconds_total << " seconds" << endl
+        << float (playout_cnt) / seconds_total / 1000.0 << " kpps" << endl
+        << 1000000.0 / cc_per_playout  << " kpps/GHz (clock independent)" << endl
+        << win_cnt [Player::black ()] << "/" << win_cnt [Player::white ()]
+        << " (black wins / white wins)" << endl;
   }
 }
