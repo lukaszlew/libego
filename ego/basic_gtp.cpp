@@ -103,7 +103,7 @@ GtpResult BasicGtp::exec_command (const string& command, istream& params) {
     string p;
     if (!(params >> playout_cnt)) return GtpResult::syntax_error ();
     ostringstream response;
-    Benchmark::run (&board, playout_cnt, response);
+    Benchmark::run (playout_cnt, response);
     return GtpResult::success (response.str ());
   }
 
