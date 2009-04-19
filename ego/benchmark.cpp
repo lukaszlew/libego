@@ -36,7 +36,6 @@ namespace Benchmark {
   int                    playout_ok_score;
   FastTimer              fast_timer;
 
-  template <bool score_per_vertex> 
   void run (Board const * start_board, 
             uint playout_cnt, 
             ostream& out) 
@@ -75,10 +74,6 @@ namespace Benchmark {
         winner = Player (score <= 0);  // mc_board->winner ()
         win_cnt [winner] ++;
 
-        if (score_per_vertex) {
-          vertex_for_each_faster (v)
-            vertex_score [v] += mc_board->vertex_score (v);
-        }
         break;
       case mercy:
         out << "Mercy rule should be off for benchmarking" << endl;
@@ -99,16 +94,6 @@ namespace Benchmark {
     out << start_board->to_string ();
     out << endl;
     
-    if (score_per_vertex) {
-      FastMap<Vertex, float> black_own;
-      vertex_for_each_all (v) 
-        black_own [v] = float(vertex_score [v]) / float (playout_ok_cnt);
-
-      out << "P(black owns vertex) rescaled to [-1, 1] (p*2 - 1): " << endl 
-          << to_string_2d (black_own) 
-          << endl;
-    }
-
     out << "Black wins    = " << win_cnt [Player::black ()] << endl
         << "White wins    = " << win_cnt [Player::white ()] << endl
         << "P(black win)  = " 
@@ -137,16 +122,4 @@ namespace Benchmark {
     score += mc_board->empty_v_cnt; // for a stupid g++ to force
                                     // alignment(?) of mc_board
   }
-
-  void run (Board const * start_board, 
-            uint playout_cnt, 
-            ostream& out, 
-            bool score_per_vertex) {
-    if (score_per_vertex) {
-      run<true> (start_board, playout_cnt, out);
-    } else {
-      run<false> (start_board, playout_cnt, out);
-    }
-  }
-
 }
