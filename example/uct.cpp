@@ -87,37 +87,6 @@ public:
 };
 
 
-// class Pool
-
-
-template <class elt_t, uint pool_size> class Pool {
-public:
-  elt_t* memory;
-
-  elt_t* free_elt [pool_size];
-  uint   free_elt_count;
-
-  Pool () {
-    memory = new elt_t [pool_size];
-    rep (i, pool_size) 
-      free_elt [i] = memory + i;
-    free_elt_count = pool_size;
-  }
-
-  ~Pool () {
-    delete [] memory;
-  }
-
-  elt_t* malloc () { 
-    assertc (pool_ac, free_elt_count > 0);
-    return free_elt [--free_elt_count]; 
-  }
-
-  void free (elt_t* elt) { 
-    free_elt [free_elt_count++] = elt;  
-  }
-};
-
 
 // class Node
 
@@ -139,7 +108,7 @@ public:
   
   #define node_for_each_child(node, pl, act_node, i) do {   \
     assertc (tree_ac, node!= NULL);                         \
-    Node* act_node;                                       \
+    Node* act_node;                                         \
     act_node = node->first_child [pl];                      \
     while (act_node != NULL) {                              \
       i;                                                    \
@@ -273,7 +242,11 @@ public:
     
     child_tab_size  = 0;
     best_child_idx  = 0;
-    min_visit_cnt   = print_visit_threshold_base + (bias - initial_bias) * print_visit_threshold_parent; // we want to be visited at least initial_bias times + some percentage of parent's visit_cnt
+    min_visit_cnt   =
+      print_visit_threshold_base + 
+      (bias - initial_bias) * print_visit_threshold_parent; 
+    // we want to be visited at least initial_bias times + 
+    // some percentage of parent's visit_cnt
 
     // prepare for selection sort
     node_for_each_child (this, player, child, child_tab [child_tab_size++] = child);
@@ -299,8 +272,6 @@ public:
     #undef best_child
     
   }
-
-
 };
 
 
@@ -312,14 +283,14 @@ class Tree {
 
 public:
 
-  Pool <Node, uct_max_nodes> node_pool [1];
-  Node*               history [uct_max_depth];
-  uint                  history_top;
+  FastPool <Node> node_pool;
+  Node*           history [uct_max_depth];
+  uint            history_top;
 
 public:
 
-  Tree () {
-    history [0] = node_pool->malloc ();
+  Tree () : node_pool(uct_max_nodes) {
+    history [0] = node_pool.malloc ();
     history [0]->init (Vertex::any ());
   }
 
@@ -339,7 +310,7 @@ public:
   
   void alloc_child (Player pl, Vertex v) {
     Node* new_node;
-    new_node = node_pool->malloc ();
+    new_node = node_pool.malloc ();
     new_node->init (v);
     act_node ()->add_child (new_node, pl);
   }
@@ -347,14 +318,14 @@ public:
   void delete_act_node (Player pl) {
     assertc (tree_ac, history_top > 0);
     history [history_top-1]->remove_child (pl, act_node ());
-    node_pool->free (act_node ());
+    node_pool.free (act_node ());
   }
   
   void free_subtree (Node* parent) {
     player_for_each (pl) {
       node_for_each_child (parent, pl, child, {
         free_subtree (child);
-        node_pool->free (child);
+        node_pool.free (child);
       });
     }
   }
@@ -471,8 +442,10 @@ public:
     assertc (uct_ac, best != NULL);
 
     cerr << tree->to_string () << endl;
-    if (player == Player::black () && best->value < -resign_value) return Vertex::resign ();
-    if (player == Player::white () && best->value >  resign_value) return Vertex::resign ();
+    if (player == Player::black () && best->value < -resign_value ||
+        player == Player::white () && best->value >  resign_value) {
+      return Vertex::resign ();
+    }
     return best->v;
   }
   

@@ -1,3 +1,6 @@
+#ifndef _FAST_STACK_H_
+#define _FAST_STACK_H_
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  *                                                                           *
  *  This file is part of Library of Effective GO routines - EGO library      *
@@ -60,3 +63,5 @@ public:
 };
 
 // TODO add iterators
+
+#endif
