@@ -29,36 +29,36 @@
 
 namespace Benchmark {
 
-  Board                  empty_board [1];
-  Board                  mc_board [1];
+  static const Board empty_board;
 
-  FastMap<Player, uint>  win_cnt;
-  FastTimer              fast_timer;
-
-  void do_playouts (uint playout_cnt) {
+  void do_playouts (uint playout_cnt, FastMap<Player, uint>* win_cnt) {
+    static Board playout_board;
     SimplePolicy policy;
-    Playout<SimplePolicy> playout(&policy, mc_board);
+    Playout<SimplePolicy> playout(&policy, &playout_board);
 
     rep (ii, playout_cnt) {
-      mc_board->load (empty_board);
+      playout_board.load (&empty_board);
       if (playout.run () == pass_pass) {
-        win_cnt [mc_board->winner ()] ++;
+        (*win_cnt) [playout_board.winner ()] ++;
       }
     }
 
     // ignore this line, this is for a stupid g++ to force aligning(?)
-    int xxx = mc_board->empty_v_cnt;
+    int xxx = playout_board.empty_v_cnt;
     unused(xxx);
   }
 
   string run (uint playout_cnt) {
+    FastMap<Player, uint>  win_cnt;
+    FastTimer              fast_timer;
+
     player_for_each (pl) win_cnt [pl] = 0;
 
     fast_timer.reset ();
     fast_timer.start ();
     float seconds_begin = get_seconds ();
     
-    do_playouts(playout_cnt);
+    do_playouts(playout_cnt, &win_cnt);
 
     float seconds_end = get_seconds ();
     fast_timer.stop ();
