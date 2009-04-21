@@ -23,29 +23,63 @@
 
 // uct parameters
 
-const float initial_value                 = 0.0;
-const float initial_bias                  = 1.0;
-const float mature_bias_threshold         = initial_bias + 100.0;
+const float initial_mean                 = 0.0;
+const float initial_visit_count           = 1.0;
+const float mature_visit_count_threshold  = initial_visit_count + 100.0;
 const float explore_rate                  = 1.0;
 const uint  uct_max_depth                 = 1000;
 const uint  uct_max_nodes                 = 1000000;
-const float resign_value                  = 0.95;
+const float resign_mean                  = 0.95;
 const uint  uct_genmove_playout_cnt       = 50000;
 const float print_visit_threshold_base    = 500.0;
 const float print_visit_threshold_parent  = 0.02;
+
+class Stat2 {
+public:
+  void init() {
+    mean_ = initial_mean;
+    visit_count_ = initial_visit_count;
+  }
+
+  float ucb (Player pl, float explore_coeff) {  // TODO pl_idx is awfull
+    return 
+      (pl == Player::black () ? mean_ : -mean_) +
+      sqrt (explore_coeff / visit_count_);
+  }
+
+  void update (float result) {
+    visit_count_ += 1.0;
+    mean_ += (result - mean_) / visit_count_; // TODO inefficiency ?
+  }
+
+  bool is_mature () { 
+    return visit_count_ > mature_visit_count_threshold; 
+  }
+  
+  float mean() {
+    return mean_;
+  }
+  
+  float visit_count() {
+    return visit_count_;
+  }
+
+private:
+
+  float mean_;
+  float visit_count_;
+};
 
 // class Node
 
 class Node {
 
 public:
+  Stat2 stat;
 
   Vertex v;
   
   // TODO this should be replaced by Stat
-  float value;
-  float bias;
-
   FastMap<Vertex, Node*> children;
   bool have_child;
 
@@ -59,17 +93,10 @@ public:
       i;                                                    \
     }                                                       \
   } while (false)
-
-  void check () const {
-    if (!tree_ac) return;
-    assert (bias >= 0.0);
-    v.check ();
-  }
   
   void init (Vertex v) {
-    this->v       = v;
-    value         = initial_value;
-    bias          = initial_bias;
+    this->v = v;
+    stat.init();
 
     vertex_for_each_all (v) children[v] = NULL;
     have_child = false;
@@ -87,21 +114,6 @@ public:
     children[del_child->v] = NULL;
   }
 
-  float ucb (Player pl, float explore_coeff) {  // TODO pl_idx is awfull
-    return 
-      (pl == Player::black () ? value : -value) +
-      sqrt (explore_coeff / bias);
-  }
-
-  void update (float result) {
-    bias  += 1.0;
-    value += (result - value) / bias; // TODO inefficiency ?
-  }
-
-  bool is_mature () { 
-    return bias > mature_bias_threshold; 
-  }
-
   bool no_children () {
     return !have_child;
   }
@@ -113,10 +125,10 @@ public:
 
     best_child     = NULL;
     best_urgency   = - large_float;
-    explore_coeff  = log (bias) * explore_rate;
+    explore_coeff  = log (stat.visit_count()) * explore_rate;
 
     node_for_each_child (this, child, {
-      float child_urgency = child->ucb (pl, explore_coeff);
+      float child_urgency = child->stat.ucb (pl, explore_coeff);
       if (child_urgency > best_urgency) {
         best_urgency  = child_urgency;
         best_child    = child;
@@ -129,15 +141,15 @@ public:
 
   Node* find_most_explored_child () {
     Node* best_child;
-    float   best_bias;
+    float   best_visit_count;
 
     best_child     = NULL;
-    best_bias      = -large_float;
+    best_visit_count      = -large_float;
     
     node_for_each_child (this, child, {
-      if (child->bias > best_bias) {
-        best_bias     = child->bias;
-        best_child    = child;
+      if (child->stat.visit_count() > best_visit_count) {
+        best_visit_count = child->stat.visit_count();
+        best_child       = child;
       }
     });
 
@@ -150,8 +162,8 @@ public:
     out 
       << pl.to_string () << " " 
       << v.to_string () << " " 
-      << value << " "
-      << "(" << bias - initial_bias << ")" 
+      << stat.mean() << " "
+      << "(" << stat.visit_count() - initial_visit_count << ")" 
       << endl;
 
     player_for_each (pl)
@@ -168,8 +180,8 @@ public:
     best_child_idx  = 0;
     min_visit_cnt   =
       print_visit_threshold_base + 
-      (bias - initial_bias) * print_visit_threshold_parent; 
-    // we want to be visited at least initial_bias times + 
+      (stat.visit_count() - initial_visit_count) * print_visit_threshold_parent; 
+    // we want to be visited at least initial_visit_count times + 
     // some percentage of parent's visit_cnt
 
     // prepare for selection sort
@@ -181,11 +193,11 @@ public:
       // find best child
       rep(ii, child_tab_size) {
         if ((player == Player::black ()) == 
-            (best_child->value < child_tab [ii]->value))
+            (best_child->stat.mean() < child_tab [ii]->stat.mean()))
           best_child_idx = ii;
       }
       // rec call
-      if (best_child->bias - initial_bias >= min_visit_cnt)
+      if (best_child->stat.visit_count() - initial_visit_count >= min_visit_cnt)
         child_tab [best_child_idx]->rec_print (out, depth + 1, player);      
       else break;
 
@@ -256,7 +268,7 @@ public:
   
   void update_history (float sample) {
     rep (hi, history_top+1) 
-      history [hi]->update (sample);
+       history [hi]->stat.update (sample);
   }
 
   string to_string () { 
@@ -310,7 +322,7 @@ public:
       if (tree->act_node ()->no_children ()) { // we're finishing it
         
         // If the leaf is ready expand the tree -- add children - all potential legal v (i.e.empty)
-        if (tree->act_node ()->is_mature ()) {
+        if (tree->act_node ()->stat.is_mature ()) {
           empty_v_for_each_and_pass (play_board, v, {
             tree->alloc_child (v); // TODO simple ko should be handled here
             // (suicides and ko recaptures, needs to be dealt with later)
@@ -350,7 +362,7 @@ public:
     } while (true);
     
     int winner_idx = play_board->winner ().get_idx ();
-    tree->update_history (1 - winner_idx - winner_idx); // result values are 1 for black, -1 for white
+    tree->update_history (1 - winner_idx - winner_idx); // result means are 1 for black, -1 for white
   }
   
 
@@ -364,8 +376,8 @@ public:
     assertc (uct_ac, best != NULL);
 
     cerr << tree->to_string () << endl;
-    if (player == Player::black () && best->value < -resign_value ||
-        player == Player::white () && best->value >  resign_value) {
+    if (player == Player::black () && best->stat.mean() < -resign_mean ||
+        player == Player::white () && best->stat.mean() >  resign_mean) {
       return Vertex::resign ();
     }
     return best->v;
