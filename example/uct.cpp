@@ -25,9 +25,7 @@
 
 // uct parameters
 
-const float initial_mean                   = 0.0;
-const float initial_update_count           = 1.0;
-const float mature_update_count_threshold  = initial_update_count + 100.0;
+const float mature_update_count_threshold  = 100.0;
 const float explore_rate                   = 1.0;
 const uint  uct_max_depth                  = 1000;
 const uint  uct_max_nodes                  = 1000000;
@@ -123,7 +121,7 @@ public:
       << pl.to_string () << " " 
       << v.to_string () << " " 
       << stat.mean() << " "
-      << "(" << stat.update_count() - initial_update_count << ")" 
+      << "(" << stat.update_count() << ")" 
       << endl;
 
     player_for_each (pl)
@@ -140,9 +138,8 @@ public:
     best_child_idx  = 0;
     min_visit_cnt   =
       print_visit_threshold_base + 
-      (stat.update_count() - initial_update_count) * print_visit_threshold_parent; 
-    // we want to be visited at least initial_update_count times + 
-    // some percentage of parent's visit_cnt
+      stat.update_count() * print_visit_threshold_parent; 
+    // we want to be visited at least some percentage of parent's visit_cnt
 
     // prepare for selection sort
     node_for_each_child (this, child, child_tab [child_tab_size++] = child);
@@ -157,7 +154,7 @@ public:
           best_child_idx = ii;
       }
       // rec call
-      if (best_child->stat.update_count() - initial_update_count >= min_visit_cnt)
+      if (best_child->stat.update_count() >= min_visit_cnt)
         child_tab [best_child_idx]->rec_print (out, depth + 1, player);      
       else break;
 
