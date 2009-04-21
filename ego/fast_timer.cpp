@@ -31,15 +31,21 @@ FastTimer::FastTimer () {
   overhead = double (t2 - t1);
 }
 
+volatile uint64 FastTimer::get_cc_time () {
+  if (sizeof(long) == 8) {
+    uint64 a, d;
+    asm volatile ("rdtsc\n\t" : "=a"(a), "=d"(d));
+    return (d << 32) | (a & 0xffffffff);
+  } else {
+    uint64 l;
+    asm volatile ("rdtsc\n\t" : "=A"(l));
+    return l;
+  }
+}
+
 void FastTimer::reset () {
   sample_cnt = 0;
   sample_sum = 0;
-}
-
-uint64 FastTimer::get_cc_time () volatile {
-  uint64 ret;
-  __asm__ __volatile__("rdtsc" : "=A" (ret) : :);
-  return ret;
 }
 
 void FastTimer::start () {

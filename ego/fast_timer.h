@@ -4,19 +4,21 @@
 #include "utils.h"
 
 class FastTimer {
-  double  sample_cnt;
-  double  sample_sum;
-  uint64  start_time;
-  double  overhead;
 public:
+  static volatile uint64 get_cc_time ();
 
   FastTimer ();
   void   reset ();
-  uint64 get_cc_time () volatile;
   void   start ();
   void   stop ();
   double ticks ();
   string to_string (float unit = 1.0);
+
+private:
+  double  sample_cnt;
+  double  sample_sum;
+  uint64  start_time;
+  double  overhead;
 };
 
 #endif
