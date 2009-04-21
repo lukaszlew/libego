@@ -40,21 +40,21 @@ class Node {
 
 public:
 
-  Vertex     v;
+  Vertex v;
   
   // TODO this should be replaced by Stat
-  float    value;
-  float    bias;
+  float value;
+  float bias;
 
-  FastMap<Player, Node*> first_child;         // head of list of moves of particular player 
-  Node*  sibling;                           // NULL if last child
+  Node* sibling;        // NULL if last child
+  Node* first_child;    // head of list of moves of particular player 
 
 public:
   
-  #define node_for_each_child(node, pl, act_node, i) do {   \
+  #define node_for_each_child(node, act_node, i) do {   \
     assertc (tree_ac, node!= NULL);                         \
     Node* act_node;                                         \
-    act_node = node->first_child [pl];                      \
+    act_node = node->first_child;                           \
     while (act_node != NULL) {                              \
       i;                                                    \
       act_node = act_node->sibling;                         \
@@ -72,31 +72,28 @@ public:
     value         = initial_value;
     bias          = initial_bias;
 
-    player_for_each (pl) 
-      first_child [pl]  = NULL;
-
+    first_child   = NULL;
     sibling       = NULL;
   }
 
-  void add_child (Node* new_child, Player pl) { // TODO sorting?
+  void add_child (Node* new_child) { // TODO sorting?
     assertc (tree_ac, new_child->sibling     == NULL); 
-    player_for_each (pl2)
-      assertc (tree_ac, new_child->first_child [pl2] == NULL); 
+    assertc (tree_ac, new_child->first_child == NULL); 
 
-    new_child->sibling     = this->first_child [pl];
-    this->first_child [pl] = new_child;
+    new_child->sibling  = this->first_child;
+    this->first_child   = new_child;
   }
 
-  void remove_child (Player pl, Node* del_child) { // TODO inefficient
+  void remove_child (Node* del_child) { // TODO inefficient
     Node* act_child;
     assertc (tree_ac, del_child != NULL);
 
-    if (first_child [pl] == del_child) {
-      first_child [pl] = first_child [pl]->sibling;
+    if (first_child == del_child) {
+      first_child = first_child->sibling;
       return;
     }
     
-    act_child = first_child [pl];
+    act_child = first_child;
 
     while (true) {
       assertc (tree_ac, act_child != NULL);
@@ -123,8 +120,8 @@ public:
     return bias > mature_bias_threshold; 
   }
 
-  bool no_children (Player pl) {
-    return first_child [pl] == NULL;
+  bool no_children () {
+    return first_child == NULL;
   }
 
   Node* find_uct_child (Player pl) {
@@ -136,7 +133,7 @@ public:
     best_urgency   = - large_float;
     explore_coeff  = log (bias) * explore_rate;
 
-    node_for_each_child (this, pl, child, {
+    node_for_each_child (this, child, {
       float child_urgency = child->ucb (pl, explore_coeff);
       if (child_urgency > best_urgency) {
         best_urgency  = child_urgency;
@@ -148,14 +145,14 @@ public:
     return best_child;
   }
 
-  Node* find_most_explored_child (Player pl) {
+  Node* find_most_explored_child () {
     Node* best_child;
     float   best_bias;
 
     best_child     = NULL;
     best_bias      = -large_float;
     
-    node_for_each_child (this, pl, child, {
+    node_for_each_child (this, child, {
       if (child->bias > best_bias) {
         best_bias     = child->bias;
         best_child    = child;
@@ -194,7 +191,7 @@ public:
     // some percentage of parent's visit_cnt
 
     // prepare for selection sort
-    node_for_each_child (this, player, child, child_tab [child_tab_size++] = child);
+    node_for_each_child (this, child, child_tab [child_tab_size++] = child);
 
     #define best_child child_tab [best_child_idx]
 
@@ -253,26 +250,24 @@ public:
     assertc (tree_ac, act_node () != NULL);
   }
   
-  void alloc_child (Player pl, Vertex v) {
+  void alloc_child (Vertex v) {
     Node* new_node;
     new_node = node_pool.malloc ();
     new_node->init (v);
-    act_node ()->add_child (new_node, pl);
+    act_node ()->add_child (new_node);
   }
   
-  void delete_act_node (Player pl) {
+  void delete_act_node () {
     assertc (tree_ac, history_top > 0);
-    history [history_top-1]->remove_child (pl, act_node ());
+    history [history_top-1]->remove_child (act_node ());
     node_pool.free (act_node ());
   }
   
   void free_subtree (Node* parent) {
-    player_for_each (pl) {
-      node_for_each_child (parent, pl, child, {
-        free_subtree (child);
-        node_pool.free (child);
-      });
-    }
+    node_for_each_child (parent, child, {
+      free_subtree (child);
+      node_pool.free (child);
+    });
   }
 
   // TODO free history (for sync with base board)
@@ -307,11 +302,11 @@ public:
     tree->history_reset ();
 
     assertc (uct_ac, tree->history_top == 0);
-    assertc (uct_ac, tree->act_node ()->first_child [pl] == NULL);
+    assertc (uct_ac, tree->act_node ()->no_children());
 
     empty_v_for_each_and_pass (&base_board, v, {
       if (base_board.is_strict_legal (pl, v))
-        tree->alloc_child (pl, v);
+        tree->alloc_child (v);
     });
   }
 
@@ -330,12 +325,12 @@ public:
       was_pass [pl] = false; // TODO maybe there was one pass ?
     
     do {
-      if (tree->act_node ()->no_children (act_player)) { // we're finishing it
+      if (tree->act_node ()->no_children ()) { // we're finishing it
         
         // If the leaf is ready expand the tree -- add children - all potential legal v (i.e.empty)
         if (tree->act_node ()->is_mature ()) {
           empty_v_for_each_and_pass (play_board, v, {
-            tree->alloc_child (act_player, v); // TODO simple ko should be handled here
+            tree->alloc_child (v); // TODO simple ko should be handled here
             // (suicides and ko recaptures, needs to be dealt with later)
           });
           continue;            // try again
@@ -352,16 +347,16 @@ public:
       v = tree->act_node ()->v;
       
       if (play_board->is_pseudo_legal (act_player, v) == false) {
-        assertc (uct_ac, tree->act_node ()->no_children (act_player.other ()));
-        tree->delete_act_node (act_player);
+        assertc (uct_ac, tree->act_node ()->no_children ());
+        tree->delete_act_node ();
         return;
       }
       
       play_board->play_legal (act_player, v);
 
       if (play_board->last_move_status != Board::play_ok) {
-        assertc (uct_ac, tree->act_node ()->no_children (act_player.other ()));
-        tree->delete_act_node (act_player);
+        assertc (uct_ac, tree->act_node ()->no_children ());
+        tree->delete_act_node ();
         return;
       }
 
@@ -383,7 +378,7 @@ public:
     root_ensure_children_legality (player);
 
     rep (ii, uct_genmove_playout_cnt) do_playout (player);
-    best = tree->history [0]->find_most_explored_child (player);
+    best = tree->history [0]->find_most_explored_child ();
     assertc (uct_ac, best != NULL);
 
     cerr << tree->to_string () << endl;
