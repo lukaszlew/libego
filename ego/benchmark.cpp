@@ -56,11 +56,11 @@ namespace Benchmark {
 
     fast_timer.reset ();
     fast_timer.start ();
-    float seconds_begin = get_seconds ();
+    float seconds_begin = process_user_time ();
     
     do_playouts(playout_cnt, &win_cnt);
 
-    float seconds_end = get_seconds ();
+    float seconds_end = process_user_time ();
     fast_timer.stop ();
 
 

@@ -30,7 +30,12 @@
 
 // some usefull functions
 
-float get_seconds () { // TODO rename to process_user_time
+// TODO use this to port rusage to windows/mingw
+// http://octave.sourceforge.net/doxygen/html/getrusage_8cc-source.html
+// http://stackoverflow.com/questions/771944/how-to-measure-user-time-used-by-process-on-windows
+// http://www.ginac.de/pipermail/ginac-list/2006-July/000861.html
+
+float process_user_time () {
   rusage usage [1];
   getrusage (RUSAGE_SELF, usage);
   return float(usage->ru_utime.tv_sec) + float(usage->ru_utime.tv_usec) / 1000000.0;

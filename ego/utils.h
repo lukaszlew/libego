@@ -23,7 +23,7 @@ typedef unsigned long long uint64;
 
 const float large_float = 1000000000000.0;
 
-float get_seconds ();
+float process_user_time ();
 
 // string/stream opereations
 

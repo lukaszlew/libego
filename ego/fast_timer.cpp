@@ -31,6 +31,8 @@ FastTimer::FastTimer () {
   overhead = double (t2 - t1);
 }
 
+// http://stackoverflow.com/questions/771867/how-to-make-a-cross-platform-c-inline-assembly-language/
+
 volatile uint64 FastTimer::get_cc_time () {
   if (sizeof(long) == 8) {
     uint64 a, d;
