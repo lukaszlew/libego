@@ -46,18 +46,17 @@ public:
   float value;
   float bias;
 
-  Node* sibling;        // NULL if last child
-  Node* first_child;    // head of list of moves of particular player 
+  FastMap<Vertex, Node*> children;
+  bool have_child;
 
 public:
-  
-  #define node_for_each_child(node, act_node, i) do {   \
+  #define node_for_each_child(node, act_node, i) do {       \
     assertc (tree_ac, node!= NULL);                         \
     Node* act_node;                                         \
-    act_node = node->first_child;                           \
-    while (act_node != NULL) {                              \
+    vertex_for_each_all (v) {                               \
+      act_node = node->children[v];                         \
+      if (act_node == NULL) continue;                       \
       i;                                                    \
-      act_node = act_node->sibling;                         \
     }                                                       \
   } while (false)
 
@@ -72,37 +71,20 @@ public:
     value         = initial_value;
     bias          = initial_bias;
 
-    first_child   = NULL;
-    sibling       = NULL;
+    vertex_for_each_all (v) children[v] = NULL;
+    have_child = false;
   }
 
   void add_child (Node* new_child) { // TODO sorting?
-    assertc (tree_ac, new_child->sibling     == NULL); 
-    assertc (tree_ac, new_child->first_child == NULL); 
-
-    new_child->sibling  = this->first_child;
-    this->first_child   = new_child;
+    have_child = true;
+    // TODO assert
+    children[new_child->v] = new_child;
+    children[new_child->v] = new_child;
   }
 
   void remove_child (Node* del_child) { // TODO inefficient
-    Node* act_child;
     assertc (tree_ac, del_child != NULL);
-
-    if (first_child == del_child) {
-      first_child = first_child->sibling;
-      return;
-    }
-    
-    act_child = first_child;
-
-    while (true) {
-      assertc (tree_ac, act_child != NULL);
-      if (act_child->sibling == del_child) {
-        act_child->sibling = act_child->sibling->sibling;
-        return;
-      }
-      act_child = act_child->sibling;
-    }
+    children[del_child->v] = NULL;
   }
 
   float ucb (Player pl, float explore_coeff) {  // TODO pl_idx is awfull
@@ -121,13 +103,13 @@ public:
   }
 
   bool no_children () {
-    return first_child == NULL;
+    return !have_child;
   }
 
   Node* find_uct_child (Player pl) {
     Node* best_child;
-    float   best_urgency;
-    float   explore_coeff;
+    float best_urgency;
+    float explore_coeff;
 
     best_child     = NULL;
     best_urgency   = - large_float;
