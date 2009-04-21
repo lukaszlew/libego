@@ -21,61 +21,26 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#include "stat.h"
+
 // uct parameters
 
-const float initial_mean                 = 0.0;
-const float initial_visit_count           = 1.0;
-const float mature_visit_count_threshold  = initial_visit_count + 100.0;
-const float explore_rate                  = 1.0;
-const uint  uct_max_depth                 = 1000;
-const uint  uct_max_nodes                 = 1000000;
-const float resign_mean                  = 0.95;
-const uint  uct_genmove_playout_cnt       = 50000;
-const float print_visit_threshold_base    = 500.0;
-const float print_visit_threshold_parent  = 0.02;
+const float initial_mean                   = 0.0;
+const float initial_update_count           = 1.0;
+const float mature_update_count_threshold  = initial_update_count + 100.0;
+const float explore_rate                   = 1.0;
+const uint  uct_max_depth                  = 1000;
+const uint  uct_max_nodes                  = 1000000;
+const float resign_mean                    = 0.95;
+const uint  uct_genmove_playout_cnt        = 50000;
+const float print_visit_threshold_base     = 500.0;
+const float print_visit_threshold_parent   = 0.02;
 
-class Stat2 {
-public:
-  void init() {
-    mean_ = initial_mean;
-    visit_count_ = initial_visit_count;
-  }
-
-  float ucb (Player pl, float explore_coeff) {  // TODO pl_idx is awfull
-    return 
-      (pl == Player::black () ? mean_ : -mean_) +
-      sqrt (explore_coeff / visit_count_);
-  }
-
-  void update (float result) {
-    visit_count_ += 1.0;
-    mean_ += (result - mean_) / visit_count_; // TODO inefficiency ?
-  }
-
-  bool is_mature () { 
-    return visit_count_ > mature_visit_count_threshold; 
-  }
-  
-  float mean() {
-    return mean_;
-  }
-  
-  float visit_count() {
-    return visit_count_;
-  }
-
-private:
-
-  float mean_;
-  float visit_count_;
-};
-
-// class Node
-
+// ----------------------------------------------------------------------
 class Node {
 
 public:
-  Stat2 stat;
+  Stat stat;
 
   Vertex v;
   
@@ -96,8 +61,6 @@ public:
   
   void init (Vertex v) {
     this->v = v;
-    stat.init();
-
     vertex_for_each_all (v) children[v] = NULL;
     have_child = false;
   }
@@ -119,39 +82,36 @@ public:
   }
 
   Node* find_uct_child (Player pl) {
-    Node* best_child;
-    float best_urgency;
-    float explore_coeff;
-
-    best_child     = NULL;
-    best_urgency   = - large_float;
-    explore_coeff  = log (stat.visit_count()) * explore_rate;
-
-    node_for_each_child (this, child, {
+    Node* best_child = NULL;
+    float best_urgency = -large_float;
+    float explore_coeff = log (stat.update_count()) * explore_rate;
+    
+    vertex_for_each_all(v) {
+      Node* child = children[v];
+      if (child == NULL) continue;
       float child_urgency = child->stat.ucb (pl, explore_coeff);
       if (child_urgency > best_urgency) {
         best_urgency  = child_urgency;
         best_child    = child;
       }
-    });
+    }
 
     assertc (tree_ac, best_child != NULL); // at least pass
     return best_child;
   }
 
   Node* find_most_explored_child () {
-    Node* best_child;
-    float   best_visit_count;
+    Node* best_child = NULL;
+    float best_update_count = -1;
 
-    best_child     = NULL;
-    best_visit_count      = -large_float;
-    
-    node_for_each_child (this, child, {
-      if (child->stat.visit_count() > best_visit_count) {
-        best_visit_count = child->stat.visit_count();
+    vertex_for_each_all(v) {
+      Node* child = children[v];
+      if (child == NULL) continue;
+      if (child->stat.update_count() > best_update_count) {
+        best_update_count = child->stat.update_count();
         best_child       = child;
       }
-    });
+    }
 
     assertc (tree_ac, best_child != NULL);
     return best_child;
@@ -163,7 +123,7 @@ public:
       << pl.to_string () << " " 
       << v.to_string () << " " 
       << stat.mean() << " "
-      << "(" << stat.visit_count() - initial_visit_count << ")" 
+      << "(" << stat.update_count() - initial_update_count << ")" 
       << endl;
 
     player_for_each (pl)
@@ -180,8 +140,8 @@ public:
     best_child_idx  = 0;
     min_visit_cnt   =
       print_visit_threshold_base + 
-      (stat.visit_count() - initial_visit_count) * print_visit_threshold_parent; 
-    // we want to be visited at least initial_visit_count times + 
+      (stat.update_count() - initial_update_count) * print_visit_threshold_parent; 
+    // we want to be visited at least initial_update_count times + 
     // some percentage of parent's visit_cnt
 
     // prepare for selection sort
@@ -197,7 +157,7 @@ public:
           best_child_idx = ii;
       }
       // rec call
-      if (best_child->stat.visit_count() - initial_visit_count >= min_visit_cnt)
+      if (best_child->stat.update_count() - initial_update_count >= min_visit_cnt)
         child_tab [best_child_idx]->rec_print (out, depth + 1, player);      
       else break;
 
@@ -321,8 +281,11 @@ public:
     do {
       if (tree->act_node ()->no_children ()) { // we're finishing it
         
-        // If the leaf is ready expand the tree -- add children - all potential legal v (i.e.empty)
-        if (tree->act_node ()->stat.is_mature ()) {
+        // If the leaf is ready expand the tree -- add children - 
+        // all potential legal v (i.e.empty)
+        if (tree->act_node()->stat.update_count() >
+            mature_update_count_threshold) 
+        {
           empty_v_for_each_and_pass (play_board, v, {
             tree->alloc_child (v); // TODO simple ko should be handled here
             // (suicides and ko recaptures, needs to be dealt with later)
