@@ -120,8 +120,7 @@ public:
     out 
       << pl.to_string () << " " 
       << v.to_string () << " " 
-      << stat.mean() << " "
-      << "(" << stat.update_count() << ")" 
+      << stat.to_string() << " "
       << endl;
 
     player_for_each (pl)

@@ -48,12 +48,12 @@ public:
       sqrt (explore_coeff / update_count());
   }
 
-  string to_string (bool dont_show_unupdated = true) {
-    if (dont_show_unupdated && sample_count < 2.0) return "           ";
+  string to_string (float minimal_update_count = 0.0) {
+    if (sample_count < minimal_update_count) return "           ";
 
     ostringstream out;
     char buf [100];
-    sprintf (buf, "%+3.1f(%5.0f)", mean (), sample_count);
+    sprintf (buf, "%+3.1f(%5.0f)", mean(), update_count());
     out << buf;
     return out.str ();
   }
