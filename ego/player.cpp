@@ -25,7 +25,7 @@
 #include "testing.h"
 
 Player::Player () { 
-  idx = -1; 
+  idx = uint(-1);  
 }
 
 Player::Player (uint _idx) { 
