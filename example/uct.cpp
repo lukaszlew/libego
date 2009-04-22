@@ -21,201 +21,95 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#include "stat.h"
+
 // uct parameters
 
-const float initial_value                 = 0.0;
-const float initial_bias                  = 1.0;
-const float mature_bias_threshold         = initial_bias + 100.0;
-const float explore_rate                  = 1.0;
-const uint  uct_max_depth                 = 1000;
-const uint  uct_max_nodes                 = 1000000;
-const float resign_value                  = 0.95;
-const uint  uct_genmove_playout_cnt       = 50000;
-const float print_visit_threshold_base    = 500.0;
-const float print_visit_threshold_parent  = 0.02;
+const float mature_update_count_threshold  = 100.0;
+const float explore_rate                   = 1.0;
+const uint  uct_max_depth                  = 1000;
+const uint  uct_max_nodes                  = 1000000;
+const float resign_mean                    = 0.95;
+const uint  uct_genmove_playout_cnt        = 50000;
+const float print_visit_threshold_base     = 500.0;
+const float print_visit_threshold_parent   = 0.02;
 
-//class Stat
-
-class Stat {
-public:
-  float sample_count;
-  float sample_sum;
-  float square_sample_sum;
-
-  Stat () {
-    reset ();
-  }
-  
-  void reset (float prior_sample_count = 1.0) {
-    sample_count       = prior_sample_count; // TODO 
-    sample_sum         = 0.0; // TODO
-    square_sample_sum  = 0.0; // TODO
-  }
-
-  void update (float sample) {
-    sample_count       += 1.0;
-    sample_sum         += sample;
-    square_sample_sum  += sample * sample;
-  }
-
-  float mean () { 
-    return sample_sum / sample_count; 
-  }
-
-  float variance () {
-    // VX = E(X^2) - EX ^ 2
-    float m = mean ();
-    return square_sample_sum / sample_count - m * m;
-  }
-
-  float std_dev () { return sqrt (variance ()); }
-  float std_err () { return sqrt (variance () / sample_count); } // TODO assert sample_count
-                                                                 
-
-  float get_sample_count () { return sample_count; }
-
-  string to_string (bool dont_show_unupdated = true) {
-    if (dont_show_unupdated && sample_count < 2.0) return "           ";
-
-    ostringstream out;
-    char buf [100];
-    sprintf (buf, "%+3.1f(%5.0f)", mean (), sample_count);
-    out << buf;
-    return out.str ();
-  }
-
-};
-
-
-
-// class Node
-
-
+// ----------------------------------------------------------------------
 class Node {
 
 public:
+  Stat stat;
 
-  Vertex     v;
+  Vertex v;
   
   // TODO this should be replaced by Stat
-  float    value;
-  float    bias;
-
-  FastMap<Player, Node*> first_child;         // head of list of moves of particular player 
-  Node*  sibling;                           // NULL if last child
+  FastMap<Vertex, Node*> children;
+  bool have_child;
 
 public:
-  
-  #define node_for_each_child(node, pl, act_node, i) do {   \
+  #define node_for_each_child(node, act_node, i) do {       \
     assertc (tree_ac, node!= NULL);                         \
     Node* act_node;                                         \
-    act_node = node->first_child [pl];                      \
-    while (act_node != NULL) {                              \
+    vertex_for_each_all (v) {                               \
+      act_node = node->children[v];                         \
+      if (act_node == NULL) continue;                       \
       i;                                                    \
-      act_node = act_node->sibling;                         \
     }                                                       \
   } while (false)
-
-  void check () const {
-    if (!tree_ac) return;
-    assert (bias >= 0.0);
-    v.check ();
-  }
   
   void init (Vertex v) {
-    this->v       = v;
-    value         = initial_value;
-    bias          = initial_bias;
-
-    player_for_each (pl) 
-      first_child [pl]  = NULL;
-
-    sibling       = NULL;
+    this->v = v;
+    vertex_for_each_all (v) children[v] = NULL;
+    have_child = false;
   }
 
-  void add_child (Node* new_child, Player pl) { // TODO sorting?
-    assertc (tree_ac, new_child->sibling     == NULL); 
-    player_for_each (pl2)
-      assertc (tree_ac, new_child->first_child [pl2] == NULL); 
-
-    new_child->sibling     = this->first_child [pl];
-    this->first_child [pl] = new_child;
+  void add_child (Node* new_child) { // TODO sorting?
+    have_child = true;
+    // TODO assert
+    children[new_child->v] = new_child;
+    children[new_child->v] = new_child;
   }
 
-  void remove_child (Player pl, Node* del_child) { // TODO inefficient
-    Node* act_child;
+  void remove_child (Node* del_child) { // TODO inefficient
     assertc (tree_ac, del_child != NULL);
-
-    if (first_child [pl] == del_child) {
-      first_child [pl] = first_child [pl]->sibling;
-      return;
-    }
-    
-    act_child = first_child [pl];
-
-    while (true) {
-      assertc (tree_ac, act_child != NULL);
-      if (act_child->sibling == del_child) {
-        act_child->sibling = act_child->sibling->sibling;
-        return;
-      }
-      act_child = act_child->sibling;
-    }
+    children[del_child->v] = NULL;
   }
 
-  float ucb (Player pl, float explore_coeff) {  // TODO pl_idx is awfull
-    return 
-      (pl == Player::black () ? value : -value) +
-      sqrt (explore_coeff / bias);
-  }
-
-  void update (float result) {
-    bias  += 1.0;
-    value += (result - value) / bias; // TODO inefficiency ?
-  }
-
-  bool is_mature () { 
-    return bias > mature_bias_threshold; 
-  }
-
-  bool no_children (Player pl) {
-    return first_child [pl] == NULL;
+  bool no_children () {
+    return !have_child;
   }
 
   Node* find_uct_child (Player pl) {
-    Node* best_child;
-    float   best_urgency;
-    float   explore_coeff;
-
-    best_child     = NULL;
-    best_urgency   = - large_float;
-    explore_coeff  = log (bias) * explore_rate;
-
-    node_for_each_child (this, pl, child, {
-      float child_urgency = child->ucb (pl, explore_coeff);
+    Node* best_child = NULL;
+    float best_urgency = -large_float;
+    float explore_coeff = log (stat.update_count()) * explore_rate;
+    
+    vertex_for_each_all(v) {
+      Node* child = children[v];
+      if (child == NULL) continue;
+      float child_urgency = child->stat.ucb (pl, explore_coeff);
       if (child_urgency > best_urgency) {
         best_urgency  = child_urgency;
         best_child    = child;
       }
-    });
+    }
 
     assertc (tree_ac, best_child != NULL); // at least pass
     return best_child;
   }
 
-  Node* find_most_explored_child (Player pl) {
-    Node* best_child;
-    float   best_bias;
+  Node* find_most_explored_child () {
+    Node* best_child = NULL;
+    float best_update_count = -1;
 
-    best_child     = NULL;
-    best_bias      = -large_float;
-    
-    node_for_each_child (this, pl, child, {
-      if (child->bias > best_bias) {
-        best_bias     = child->bias;
-        best_child    = child;
+    vertex_for_each_all(v) {
+      Node* child = children[v];
+      if (child == NULL) continue;
+      if (child->stat.update_count() > best_update_count) {
+        best_update_count = child->stat.update_count();
+        best_child       = child;
       }
-    });
+    }
 
     assertc (tree_ac, best_child != NULL);
     return best_child;
@@ -226,8 +120,7 @@ public:
     out 
       << pl.to_string () << " " 
       << v.to_string () << " " 
-      << value << " "
-      << "(" << bias - initial_bias << ")" 
+      << stat.to_string() << " "
       << endl;
 
     player_for_each (pl)
@@ -244,12 +137,11 @@ public:
     best_child_idx  = 0;
     min_visit_cnt   =
       print_visit_threshold_base + 
-      (bias - initial_bias) * print_visit_threshold_parent; 
-    // we want to be visited at least initial_bias times + 
-    // some percentage of parent's visit_cnt
+      stat.update_count() * print_visit_threshold_parent; 
+    // we want to be visited at least some percentage of parent's visit_cnt
 
     // prepare for selection sort
-    node_for_each_child (this, player, child, child_tab [child_tab_size++] = child);
+    node_for_each_child (this, child, child_tab [child_tab_size++] = child);
 
     #define best_child child_tab [best_child_idx]
 
@@ -257,11 +149,11 @@ public:
       // find best child
       rep(ii, child_tab_size) {
         if ((player == Player::black ()) == 
-            (best_child->value < child_tab [ii]->value))
+            (best_child->stat.mean() < child_tab [ii]->stat.mean()))
           best_child_idx = ii;
       }
       // rec call
-      if (best_child->bias - initial_bias >= min_visit_cnt)
+      if (best_child->stat.update_count() >= min_visit_cnt)
         child_tab [best_child_idx]->rec_print (out, depth + 1, player);      
       else break;
 
@@ -308,33 +200,31 @@ public:
     assertc (tree_ac, act_node () != NULL);
   }
   
-  void alloc_child (Player pl, Vertex v) {
+  void alloc_child (Vertex v) {
     Node* new_node;
     new_node = node_pool.malloc ();
     new_node->init (v);
-    act_node ()->add_child (new_node, pl);
+    act_node ()->add_child (new_node);
   }
   
-  void delete_act_node (Player pl) {
+  void delete_act_node () {
     assertc (tree_ac, history_top > 0);
-    history [history_top-1]->remove_child (pl, act_node ());
+    history [history_top-1]->remove_child (act_node ());
     node_pool.free (act_node ());
   }
   
   void free_subtree (Node* parent) {
-    player_for_each (pl) {
-      node_for_each_child (parent, pl, child, {
-        free_subtree (child);
-        node_pool.free (child);
-      });
-    }
+    node_for_each_child (parent, child, {
+      free_subtree (child);
+      node_pool.free (child);
+    });
   }
 
   // TODO free history (for sync with base board)
   
   void update_history (float sample) {
     rep (hi, history_top+1) 
-      history [hi]->update (sample);
+       history [hi]->stat.update (sample);
   }
 
   string to_string () { 
@@ -362,11 +252,11 @@ public:
     tree->history_reset ();
 
     assertc (uct_ac, tree->history_top == 0);
-    assertc (uct_ac, tree->act_node ()->first_child [pl] == NULL);
+    assertc (uct_ac, tree->act_node ()->no_children());
 
     empty_v_for_each_and_pass (&base_board, v, {
       if (base_board.is_strict_legal (pl, v))
-        tree->alloc_child (pl, v);
+        tree->alloc_child (v);
     });
   }
 
@@ -385,12 +275,15 @@ public:
       was_pass [pl] = false; // TODO maybe there was one pass ?
     
     do {
-      if (tree->act_node ()->no_children (act_player)) { // we're finishing it
+      if (tree->act_node ()->no_children ()) { // we're finishing it
         
-        // If the leaf is ready expand the tree -- add children - all potential legal v (i.e.empty)
-        if (tree->act_node ()->is_mature ()) {
+        // If the leaf is ready expand the tree -- add children - 
+        // all potential legal v (i.e.empty)
+        if (tree->act_node()->stat.update_count() >
+            mature_update_count_threshold) 
+        {
           empty_v_for_each_and_pass (play_board, v, {
-            tree->alloc_child (act_player, v); // TODO simple ko should be handled here
+            tree->alloc_child (v); // TODO simple ko should be handled here
             // (suicides and ko recaptures, needs to be dealt with later)
           });
           continue;            // try again
@@ -407,16 +300,16 @@ public:
       v = tree->act_node ()->v;
       
       if (play_board->is_pseudo_legal (act_player, v) == false) {
-        assertc (uct_ac, tree->act_node ()->no_children (act_player.other ()));
-        tree->delete_act_node (act_player);
+        assertc (uct_ac, tree->act_node ()->no_children ());
+        tree->delete_act_node ();
         return;
       }
       
       play_board->play_legal (act_player, v);
 
       if (play_board->last_move_status != Board::play_ok) {
-        assertc (uct_ac, tree->act_node ()->no_children (act_player.other ()));
-        tree->delete_act_node (act_player);
+        assertc (uct_ac, tree->act_node ()->no_children ());
+        tree->delete_act_node ();
         return;
       }
 
@@ -428,7 +321,7 @@ public:
     } while (true);
     
     int winner_idx = play_board->winner ().get_idx ();
-    tree->update_history (1 - winner_idx - winner_idx); // result values are 1 for black, -1 for white
+    tree->update_history (1 - winner_idx - winner_idx); // result means are 1 for black, -1 for white
   }
   
 
@@ -438,12 +331,12 @@ public:
     root_ensure_children_legality (player);
 
     rep (ii, uct_genmove_playout_cnt) do_playout (player);
-    best = tree->history [0]->find_most_explored_child (player);
+    best = tree->history [0]->find_most_explored_child ();
     assertc (uct_ac, best != NULL);
 
     cerr << tree->to_string () << endl;
-    if (player == Player::black () && best->value < -resign_value ||
-        player == Player::white () && best->value >  resign_value) {
+    if (player == Player::black () && best->stat.mean() < -resign_mean ||
+        player == Player::white () && best->stat.mean() >  resign_mean) {
       return Vertex::resign ();
     }
     return best->v;
