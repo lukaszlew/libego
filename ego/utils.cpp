@@ -21,7 +21,11 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+// TODO move such stuff to porting.h (or somwhere)
+#ifndef WIN32
 #include <sys/resource.h>
+#endif
+
 #include <iostream>
 #include <cassert>
 #include <cstdlib>
@@ -36,9 +40,15 @@
 // http://www.ginac.de/pipermail/ginac-list/2006-July/000861.html
 
 float process_user_time () {
+#ifndef WIN32
   rusage usage [1];
   getrusage (RUSAGE_SELF, usage);
-  return float(usage->ru_utime.tv_sec) + float(usage->ru_utime.tv_usec) / 1000000.0;
+  return 
+    float(usage->ru_utime.tv_sec) +
+    float(usage->ru_utime.tv_usec) / 1000000.0;
+#else  
+  return 0;
+#endif
 }
 
 void fatal_error (const char* s) {
