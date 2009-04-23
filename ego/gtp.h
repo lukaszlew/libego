@@ -41,6 +41,7 @@ private:
 class GtpCommand {
 public:
   virtual GtpResult exec_command (const string& command_name, istream& params) = 0;
+  virtual ~GtpCommand () {};
 };
 
 
@@ -81,7 +82,7 @@ public:
 class Gtp : public GtpCommand {
 public:
   Gtp ();
-
+  virtual ~Gtp () {};
   bool is_command (string name);
   bool is_static_command (string name);
   bool is_gogui_param_command (string name);
