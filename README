@@ -8,16 +8,16 @@ implementation of Go rules and most popular algorithms used in computer Go.
 
 You will need:
  - git (version control system) 
- - scons (software construction tool)
+ - cmake (cross-platform, open-source build system)
 
 Checkout the source:
  git clone git://github.com/lukaszlew/libego.git  
 
 Construct library and examples:
- scons
+ ./build_release.sh
 
 Run exemplary GTP engine:
- build/example/opt/ego
+ release_build/example/engine
 
 It will first run commands from automagic.gtp in current directory.
 For other commands just type "help".
