@@ -5,7 +5,7 @@
 
 class FastTimer {
 public:
-  static volatile uint64 get_cc_time ();
+  static uint64 get_cc_time ();
 
   FastTimer ();
   void   reset ();

@@ -25,7 +25,7 @@
 #include "testing.h"
 
 Color::Color () {
-  idx = -1;
+  idx = uint(-1);
 } // TODO test - remove it
 
 Color::Color (uint idx_) {

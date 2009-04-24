@@ -8,6 +8,7 @@ class BasicGtp : public GtpCommand {
 
 public:
   BasicGtp (Gtp& gtp, Board& board_);
+  virtual ~BasicGtp () {};
   virtual GtpResult exec_command (const string& command, istream& params); 
 
 private:

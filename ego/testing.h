@@ -38,35 +38,33 @@
 
 #define assertc(aspect, expr) assert((aspect) ? (expr) : true)
 
-const bool fast_random_ac = false;
+#ifdef TESTING
+const bool all_tests = true;
+#else 
+const bool all_tests = false;
+#endif
 
-const bool stack_ac           = false;
-
-const bool paranoic           = false;
-const bool board_ac           = false;
-
-const bool player_ac          = paranoic;
-const bool color_ac           = paranoic;
-const bool coord_ac           = paranoic;
-const bool vertex_ac          = paranoic;
-
-
-
-const bool nbr_cnt_ac         = paranoic;
-const bool chain_ac           = paranoic;
-const bool board_empty_v_ac   = paranoic;
-const bool board_hash_ac      = paranoic;
-const bool board_color_at_ac  = paranoic;
-const bool board_nbr_cnt_ac   = paranoic;
-const bool chain_at_ac        = paranoic;
-const bool chain_next_v_ac    = paranoic;
-const bool chains_ac          = paranoic;
-
-const bool playout_ac         = false;
-const bool aaf_ac             = false;
-const bool uct_ac             = false;
-const bool tree_ac            = false;
-const bool pool_ac            = false;
-const bool gtp_ac             = true;
+const bool fast_random_ac     = all_tests;
+const bool stack_ac           = all_tests;
+const bool board_ac           = all_tests;
+const bool player_ac          = all_tests;
+const bool color_ac           = all_tests;
+const bool coord_ac           = all_tests;
+const bool vertex_ac          = all_tests;
+const bool nbr_cnt_ac         = all_tests;
+const bool chain_ac           = all_tests;
+const bool board_empty_v_ac   = all_tests;
+const bool board_hash_ac      = all_tests;
+const bool board_color_at_ac  = all_tests;
+const bool board_nbr_cnt_ac   = all_tests;
+const bool chain_at_ac        = all_tests;
+const bool chain_next_v_ac    = all_tests;
+const bool chains_ac          = all_tests;
+const bool playout_ac         = all_tests;
+const bool aaf_ac             = all_tests;
+const bool uct_ac             = all_tests;
+const bool tree_ac            = all_tests;
+const bool pool_ac            = all_tests;
+const bool gtp_ac             = all_tests;
 
 #endif

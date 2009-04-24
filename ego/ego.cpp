@@ -21,26 +21,6 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-// #include <iostream>
-// #include <fstream>
-// #include <sstream>
-
-// #include <cassert>
-// #include <cmath>
-// #include <cstdarg>
-// #include <cctype>
-// #include <cstdlib>
-// #include <cstring>
-
-// #include <vector>
-// #include <map>
-// #include <list>
-// #include <stack>
-
-// #include <unistd.h>
-
-using namespace std;
-
 #include "ego.h"
 
 #include "utils.cpp"

@@ -23,6 +23,7 @@
 
 #include "fast_random.h"
 #include "testing.h"
+#include "cstdio"
 
 const int FastRandom::cnt = (uint(1)<<31) - 1;
 
@@ -79,7 +80,7 @@ void FastRandom::test () {
 }
 
 void FastRandom::test2 (uint k, uint n) {
-  uint bucket [k];
+  uint* bucket = new uint[k];
 
   rep (ii, k)  bucket [ii] = 0;
   rep (ii, n) {
@@ -88,4 +89,5 @@ void FastRandom::test2 (uint k, uint n) {
     bucket [r] ++;
   }
   rep (ii, k)  printf ("%d\n", bucket [ii]);
+  delete[] bucket;
 }

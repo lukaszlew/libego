@@ -23,37 +23,27 @@
 
 #include "playout.h"
 
-SimplePolicy::SimplePolicy () : board (NULL) { }
+all_inline
+void SimplePolicy::play_move (Board* board) {
+  uint ii_start = random.rand_int (board->empty_v_cnt); 
+  uint ii = ii_start;
+  Player act_player = board->act_player ();
 
-void SimplePolicy::begin_playout (Board* board_) { 
-  board = board_;
-}
-
-void SimplePolicy::prepare_vertex () {
-  act_player     = board->act_player ();
-  to_check_cnt   = board->empty_v_cnt;
-  act_evi        = fr.rand_int (board->empty_v_cnt); 
-}
-
-Vertex SimplePolicy::next_vertex () {
   Vertex v;
   while (true) {
-    if (to_check_cnt == 0) return Vertex::pass ();
-    to_check_cnt--;
-    v = board->empty_v [act_evi];
-    act_evi++;
-    if (act_evi == board->empty_v_cnt) act_evi = 0;
-    if (!board->is_eyelike (act_player, v)) return v;
+    v = board->empty_v [ii];
+    if (!board->is_eyelike (act_player, v) &&
+        board->is_pseudo_legal (act_player, v)) { 
+      board->play_legal(act_player, v);
+      return;
+    }
+    ii += 1;
+    ii = ii & ~(-(ii == board->empty_v_cnt)); // if (ii==board->empty_v_cnt) ii=0;
+    if (ii == ii_start) {
+      board->play_legal(act_player, Vertex::pass());
+      return;
+    }
   }
 }
 
-void SimplePolicy::bad_vertex (Vertex) {
-}
-
-void SimplePolicy::played_vertex (Vertex) { 
-}
-
-void SimplePolicy::end_playout (playout_status_t) { 
-}
-
-FastRandom SimplePolicy::fr(123);
+FastRandom SimplePolicy::random(123);
