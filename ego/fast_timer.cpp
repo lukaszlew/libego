@@ -33,7 +33,7 @@ FastTimer::FastTimer () {
 
 // http://stackoverflow.com/questions/771867/how-to-make-a-cross-platform-c-inline-assembly-language/
 
-volatile uint64 FastTimer::get_cc_time () {
+uint64 FastTimer::get_cc_time () {
   if (sizeof(long) == 8) {
     uint64 a, d;
     asm volatile ("rdtsc\n\t" : "=a"(a), "=d"(d));

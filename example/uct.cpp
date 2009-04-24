@@ -335,8 +335,8 @@ public:
     assertc (uct_ac, best != NULL);
 
     cerr << tree->to_string () << endl;
-    if (player == Player::black () && best->stat.mean() < -resign_mean ||
-        player == Player::white () && best->stat.mean() >  resign_mean) {
+    if ((player == Player::black () && best->stat.mean() < -resign_mean) ||
+        (player == Player::white () && best->stat.mean() >  resign_mean)) {
       return Vertex::resign ();
     }
     return best->v;

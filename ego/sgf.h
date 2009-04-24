@@ -10,7 +10,7 @@
 
 using namespace std;
 
-extern const string embedded_gtp_tag;;
+extern const string embedded_gtp_tag;
 
 class SgfNodeProperties {
 public:

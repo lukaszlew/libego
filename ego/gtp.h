@@ -66,7 +66,7 @@ public:
     type_string,
     type_float,
     type_uint,
-    type_bool,
+    type_bool
   } type;
   
   union {

@@ -9,6 +9,7 @@ env["base"] = Environment(
     "-Wall",
     "-Wextra",
     "-Wswitch-enum",
+    "-Wunused",
   ],
   CPPPATH='#/ego'
 )
