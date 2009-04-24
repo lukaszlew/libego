@@ -1,1 +1,1 @@
-add_library(ego ego)
+add_library(ego ego.cpp)
