@@ -1,2 +1,2 @@
-.sconsign.dblite
-build
+release_build
+debug_build
