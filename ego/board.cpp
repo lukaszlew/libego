@@ -285,8 +285,6 @@ bool Board::load_from_ascii (istream& ifs) {
 
 
 void Board::clear () {
-  uint off_board_cnt;
-
   set_komi (-0.5); // white wins the draws on default komi
   empty_v_cnt = 0;
   player_for_each (pl) {
@@ -302,20 +300,18 @@ void Board::clear () {
     nbr_cnt       [v] = NbrCounter::Empty();
     chain_next_v  [v] = v;
     chain_id      [v] = v;    // TODO is it needed, is it usedt?
-    chain_lib_cnt [v] = NbrCounter::max; // TODO off_boards?
+    chain_[v].lib_cnt = NbrCounter::max; // TODO off_boards?
 
     if (v.is_on_board ()) {
       color_at   [v]              = Color::empty ();
       empty_pos  [v]              = empty_v_cnt;
       empty_v    [empty_v_cnt++]  = v;
 
-      off_board_cnt = 0;
       vertex_for_each_nbr (v, nbr_v, {
-          if (!nbr_v.is_on_board ())
-            off_board_cnt++;
-        });
-      rep (ii, off_board_cnt)
-        nbr_cnt [v].off_board_inc ();
+        if (!nbr_v.is_on_board ()) {
+          nbr_cnt [v].off_board_inc ();
+        }
+      });
     }
   }
 
@@ -422,8 +418,8 @@ bool Board::eye_is_ko (Player player, Vertex v) {
 
 bool Board::eye_is_suicide (Vertex v) {
   uint all_nbr_live = true;
-  vertex_for_each_nbr (v, nbr_v, all_nbr_live &= (--chain_lib_cnt [chain_id [nbr_v]] != 0));
-  vertex_for_each_nbr (v, nbr_v, chain_lib_cnt [chain_id [nbr_v]]++);
+  vertex_for_each_nbr (v, nbr_v, all_nbr_live &= (--chain_[chain_id [nbr_v]].lib_cnt != 0));
+  vertex_for_each_nbr (v, nbr_v, chain_[chain_id [nbr_v]].lib_cnt += 1);
   return all_nbr_live;
 }
 
@@ -444,14 +440,14 @@ void Board::play_not_eye (Player player, Vertex v) {
 
       if (color_at [nbr_v].is_player ()) {
         // This should be before 'if' to have good lib_cnt for empty vertices
-        chain_lib_cnt [chain_id [nbr_v]] --;
+        chain_[chain_id [nbr_v]].lib_cnt -= 1;
 
         if (color_at [nbr_v] != Color (player)) { // same color of groups
-          if (chain_lib_cnt [chain_id [nbr_v]] == 0)
+          if (chain_[chain_id [nbr_v]].lib_cnt == 0)
             remove_chain (nbr_v);
         } else {
           if (chain_id [nbr_v] != chain_id [v]) {
-            if (chain_lib_cnt [chain_id [v]] > chain_lib_cnt [chain_id [nbr_v]]) {
+            if (chain_[chain_id [v]].lib_cnt > chain_[chain_id [nbr_v]].lib_cnt) {
               merge_chains (v, nbr_v);
             } else {
               merge_chains (nbr_v, v);
@@ -461,7 +457,7 @@ void Board::play_not_eye (Player player, Vertex v) {
       }
     });
 
-  if (chain_lib_cnt [chain_id [v]] == 0) {
+  if (chain_[chain_id [v]].lib_cnt == 0) {
     assertc (board_ac, last_empty_v_cnt - empty_v_cnt == 1);
     remove_chain(v);
     assertc (board_ac, last_empty_v_cnt - empty_v_cnt > 0);
@@ -474,7 +470,7 @@ void Board::play_not_eye (Player player, Vertex v) {
 
 no_inline
 void Board::play_eye_legal (Player player, Vertex v) {
-  vertex_for_each_nbr (v, nbr_v, chain_lib_cnt [chain_id [nbr_v]]--);
+  vertex_for_each_nbr (v, nbr_v, chain_[chain_id [nbr_v]].lib_cnt -= 1);
 
   basic_play (player, v);
   place_stone (player, v);
@@ -484,11 +480,11 @@ void Board::play_eye_legal (Player player, Vertex v) {
     });
 
   vertex_for_each_nbr (v, nbr_v, {
-      if ((chain_lib_cnt [chain_id [nbr_v]] == 0))
+      if ((chain_[chain_id [nbr_v]].lib_cnt == 0))
         remove_chain (nbr_v);
     });
 
-  assertc (board_ac, chain_lib_cnt [chain_id [v]] != 0);
+  assertc (board_ac, chain_[chain_id [v]].lib_cnt != 0);
 
   if (last_empty_v_cnt == empty_v_cnt) {
     // captured exactly one stone, end this was eye
@@ -513,7 +509,7 @@ void Board::basic_play (Player player, Vertex v) {
 void Board::merge_chains (Vertex v_base, Vertex v_new) {
   Vertex act_v;
 
-  chain_lib_cnt [chain_id [v_base]] += chain_lib_cnt [chain_id [v_new]];
+  chain_[chain_id [v_base]].lib_cnt += chain_[chain_id [v_new]].lib_cnt;
 
   act_v = v_new;
   do {
@@ -545,7 +541,7 @@ void Board::remove_chain (Vertex v) {
   do {
     vertex_for_each_nbr (act_v, nbr_v, {
         nbr_cnt [nbr_v].player_dec (old_color.to_player());
-        chain_lib_cnt [chain_id [nbr_v]]++;
+        chain_[chain_id [nbr_v]].lib_cnt += 1;
       });
 
     tmp_v = act_v;
@@ -568,7 +564,7 @@ void Board::place_stone (Player pl, Vertex v) {
   assertc (chain_next_v_ac, chain_next_v[v] == v);
 
   chain_id [v] = v;
-  chain_lib_cnt [v] = nbr_cnt[v].empty_cnt ();
+  chain_[v].lib_cnt = nbr_cnt[v].empty_cnt ();
 }
 
 
@@ -723,7 +719,7 @@ void Board::check_chain_at () const {
     // TODO what about off_board and empty?
     if (color_at [v].is_player ()) {
 
-      assert (chain_lib_cnt[ chain_id [v]] != 0);
+      assert (chain_[ chain_id [v]].lib_cnt != 0);
 
       vertex_for_each_nbr (v, nbr_v, {
           if (color_at[v] == color_at[nbr_v])

@@ -147,6 +147,10 @@ private:
     static const uint player_cnt_is_max_mask [Player::cnt];
   };
 
+  struct Chain {
+    uint lib_cnt;
+  };
+
 private:
 
   int komi_;
@@ -157,7 +161,7 @@ private:
   FastMap<Vertex, uint>        empty_pos; // liberty position in empty_v
   FastMap<Vertex, Vertex>      chain_next_v;
   FastMap<Vertex, Vertex>      chain_id;
-  FastMap<Vertex, uint>        chain_lib_cnt; // indexed by chain_id
+  FastMap<Vertex, Chain>       chain_; // indexed by chain_id
 
   uint                         last_empty_v_cnt;
   FastMap<Player, uint>        player_v_cnt;
