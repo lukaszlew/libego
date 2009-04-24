@@ -14,8 +14,8 @@ env["base"] = Environment(
   CPPPATH='#/ego'
 )
 
-env["opt"] = env["base"].Clone()
-env["opt"].Append(
+env["release"] = env["base"].Clone()
+env["release"].Append(
   CXXFLAGS = [
     "-O3",
     "-march=native",
@@ -23,15 +23,23 @@ env["opt"].Append(
     "-ffast-math",
     "-frename-registers",
   ],
-  LIBPATH = ['#/build/ego/opt']
+  LIBPATH = ['#/build/ego/release']
 )
 
-env["dbg"] = env["base"].Clone()
-env["dbg"].Append(
+env["debug"] = env["base"].Clone()
+env["debug"].Append(
   CXXFLAGS = [
     "-fno-inline",
   ],
-  LIBPATH = ['#/build/ego/dbg']
+  LIBPATH = ['#/build/ego/debug']
+)
+
+env["testing"] = env["debug"].Clone()
+env["testing"].Append(
+  CXXFLAGS = [
+    "-DTESTING"
+  ],
+  LIBPATH = ['#/build/ego/testing']
 )
 
 def build(subdir, variant):
@@ -42,8 +50,10 @@ def build(subdir, variant):
     duplicate = 0
   )
 
-build('ego', 'dbg')
-build('example', 'dbg')
+build('ego', 'debug')
+build('ego', 'release')
+build('ego', 'testing')
 
-build('ego', 'opt')
-build('example', 'opt')
+build('example', 'debug')
+build('example', 'release')
+build('example', 'testing')
