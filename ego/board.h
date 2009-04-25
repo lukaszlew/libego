@@ -77,24 +77,6 @@ public:                         // board interface
   // debugging helper
   void print_cerr (Vertex v = Vertex::pass ()) const;
 
-public:
-  // TODO make iterators / accessors
-  FastMap<Vertex, Color>   color_at;
-
-  Vertex                   empty_v [board_area]; // TODO use FastSet (empty_pos)
-  uint                     empty_v_cnt;
-
-  Move                     move_history [max_game_length]; // TODO FastStack
-  uint                     move_no;
-
-  enum {
-    play_ok,
-    play_suicide,
-    play_ss_suicide,
-    play_ko
-  } last_move_status;
-
-
 private: 
   Hash recalc_hash () const;
 
@@ -151,8 +133,24 @@ private:
     uint lib_cnt;
   };
 
-private:
+public:
+  // TODO make iterators / accessors
+  FastMap<Vertex, Color>   color_at;
 
+  Vertex                   empty_v [board_area]; // TODO use FastSet (empty_pos)
+  uint                     empty_v_cnt;
+
+  Move                     move_history [max_game_length]; // TODO FastStack
+  uint                     move_no;
+
+  enum {
+    play_ok,
+    play_suicide,
+    play_ss_suicide,
+    play_ko
+  } last_move_status;
+
+private:
   int komi_;
 
   static const Zobrist zobrist[1];
