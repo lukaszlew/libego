@@ -133,6 +133,8 @@ private:
     uint lib_cnt;
   };
 
+  Chain& chain_at (Vertex v);
+
 public:
   // TODO make iterators / accessors
   FastMap<Vertex, Color>   color_at;
@@ -158,8 +160,9 @@ private:
   FastMap<Vertex, NbrCounter>  nbr_cnt; // incremental, for fast eye checking
   FastMap<Vertex, uint>        empty_pos; // liberty position in empty_v
   FastMap<Vertex, Vertex>      chain_next_v;
-  FastMap<Vertex, Vertex>      chain_id;
-  FastMap<Vertex, Chain>       chain_; // indexed by chain_id
+
+  FastMap<Vertex, Vertex>      chain_id_;
+  FastMap<Vertex, Chain>       chain_; // indexed by chain_id[v]
 
   uint                         last_empty_v_cnt;
   FastMap<Player, uint>        player_v_cnt;
