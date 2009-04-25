@@ -13,7 +13,8 @@ You will need:
 Checkout the source:
  git clone git://github.com/lukaszlew/libego.git  
 
-Construct library and examples:
+Construct library and examples with your favorite compiler:
+ export CXX=g++-4.2  # you may put it in your .bashrc
  ./build_release.sh
 
 Run exemplary GTP engine:
