@@ -8,8 +8,7 @@
 template <typename engine_t>
 class GenmoveGtp : public GtpCommand {
 public:
-  GenmoveGtp (Gtp& gtp, Board& board_, engine_t& engine_) : board (board_) { //, engine (engine_)
-    unused (engine_);
+  GenmoveGtp (Gtp& gtp, Board& board_) : board (board_) { //, engine (engine_)
     gtp.add_gtp_command (this, "genmove");
   } 
 

@@ -24,48 +24,59 @@
 #include <iostream>
 
 #include "ego.h"
+#include "benchmark.h"
 #include "uct.cpp"
 #include "experiments.cpp"
 
+Gtp      gtp;
+Board    board;
+SgfTree  sgf_tree;
 
-// goes through GTP files given in command line
-void process_command_line (Gtp& gtp, int argc, char** argv) {
-  if (argc == 1) {
-    if (gtp.run_file ("automagic.gtp", cout) == false) 
-      cerr << "GTP file not found: automagic.gtp" << endl;
-  }
+BasicGtp    basic_gtp (gtp, board);
+SgfGtp      sgf_gtp   (gtp, sgf_tree, board);
+AllAsFirst  aaf (gtp, board);
 
-  rep (arg_i, argc) {
-    if (arg_i > 0) {
-      if (gtp.run_file (argv [arg_i], cout) == false)
-        cerr << "GTP file not found: " << argv [arg_i] << endl;
-    }
-  }
-}
+GenmoveGtp<Uct>  genmove_gtp (gtp, board);
 
-
-// main
-
-int main (int argc, char** argv) { 
+int main(uint argc, char** argv) { 
   // no buffering to work well with gogui
   setbuf (stdout, NULL);
   setbuf (stderr, NULL);
 
-  Gtp      gtp;
-  Board    board;
-  SgfTree  sgf_tree;
+  reps (ii, 1, argc) {
+    string arg = argv[ii];
 
-  BasicGtp    basic_gtp (gtp, board);
-  SgfGtp      sgf_gtp   (gtp, sgf_tree, board);
-  AllAsFirst  aaf (gtp, board);
+    if (arg == "--benchmark" || arg == "-b") {
+      int playout_cnt = 200;
+      if (ii+1 < argc) {
+        if (string_to<int>(argv[ii+1], &playout_cnt)) {
+          ii += 1;
+        }
+      }
+      playout_cnt *= 1000;
+      cout << "Benchmarking, please wait ..." << flush;
+      cout << Benchmark::run (playout_cnt) << endl;
+      return 0;
+    }
+    
+    if (arg == "--run-gtp-file" || arg == "-r") {
+      if (ii+1 == argc) {
+        cerr << "Fatal: no config file given" << endl;
+        return 1;
+      }
+      ii += 1;
+      string config = argv[ii];
+      if (gtp.run_file (config, cout) == false) {
+        cerr << "Fatal: GTP file not found: " << config << endl;
+        return 1;
+      }
+      continue;
+    }
 
-  Uct uct (board);
-  GenmoveGtp<Uct>  genmove_gtp (gtp, board, uct);
-  
-  // arguments
-  process_command_line (gtp, argc, argv);
-  
-  // command-answer GTP loop
+    cerr << "Fatal: unknown option: " << arg << endl;
+    return 1;
+  }
+
   gtp.run_loop (cin, cout);
 
   return 0;

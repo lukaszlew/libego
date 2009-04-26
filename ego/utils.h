@@ -18,6 +18,7 @@ typedef unsigned long long uint64;
 #define unused(p) (void)(p)
 
 #define rep(i,n)     for (uint i = 0; i != (uint)(n); i++)
+#define reps(i,s,n)  for (uint i = (s); i != (uint)(n); i++)
 #define seq(i,a,b)   for (let (i, a); i <= (b); i++)
 #define dseq(i,b,a)  for (let (i, b); i >= (a); i--)
 
@@ -40,6 +41,14 @@ char getc_non_space (istream& is);
 bool is_all_whitespace (const string& s);
 void remove_empty_lines (string* s);
 void remove_trailing_whitespace (string* str);
+
+template <typename T>
+bool string_to(const string &s, T* i) {
+  istringstream myStream(s);
+  return (myStream >> *i);
+}
+
+
 
 // performance macros
 

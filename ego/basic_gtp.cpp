@@ -25,7 +25,6 @@
 
 #include "basic_gtp.h"
 
-#include "benchmark.h"
 #include "testing.h"
 
 BasicGtp::BasicGtp (Gtp& gtp, Board& board_) : board (board_) { 
@@ -36,7 +35,6 @@ BasicGtp::BasicGtp (Gtp& gtp, Board& board_) : board (board_) {
   gtp.add_gtp_command (this, "play");
   gtp.add_gtp_command (this, "undo");
   gtp.add_gtp_command (this, "showboard");
-  gtp.add_gtp_command (this, "benchmark");
 }
 
 GtpResult BasicGtp::exec_command (const string& command, istream& params) {
@@ -96,14 +94,6 @@ GtpResult BasicGtp::exec_command (const string& command, istream& params) {
     
   if (command == "showboard") {
     return GtpResult::success ("\n" + board.to_string());
-  }
-
-  if (command == "benchmark") {
-    uint playout_cnt;
-    string p;
-    if (!(params >> playout_cnt)) return GtpResult::syntax_error ();
-    string response = Benchmark::run (playout_cnt);
-    return GtpResult::success (response);
   }
 
   assert(false);

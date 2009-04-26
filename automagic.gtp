@@ -1,8 +1,0 @@
-echo Benchmarking, please wait ...
-benchmark 200000
-benchmark 200000
-benchmark 200000
-benchmark 200000
-benchmark 200000
-echo Try 'help'
-echo Send questions to lukasz.lew@gmail.com.
