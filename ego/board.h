@@ -77,6 +77,8 @@ public:                         // board interface
   // debugging helper
   void print_cerr (Vertex v = Vertex::pass ()) const;
 
+  uint last_capture_size ();
+
 private: 
   Hash recalc_hash () const;
 

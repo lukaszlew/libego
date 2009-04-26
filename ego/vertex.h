@@ -135,6 +135,16 @@ string to_string_2d (FastMap<Vertex, T>& map, int precision = 3) {
     nbr_v = center_v.S (); block;                       \
   }
 
+#define vertex_for_each_5_nbr(center_v, nbr_v, block) { \
+    center_v.check_is_on_board ();                      \
+    Vertex nbr_v;                                       \
+    nbr_v = center_v.N (); block;                       \
+    nbr_v = center_v.W (); block;                       \
+    nbr_v = center_v;      block;                       \
+    nbr_v = center_v.E (); block;                       \
+    nbr_v = center_v.S (); block;                       \
+  }
+
 #define vertex_for_each_diag_nbr(center_v, nbr_v, block) {      \
     center_v.check_is_on_board ();                              \
     Vertex nbr_v;                                               \
@@ -144,15 +154,32 @@ string to_string_2d (FastMap<Vertex, T>& map, int precision = 3) {
     nbr_v = center_v.SE (); block;                              \
   }
 
-#define player_vertex_for_each_9_nbr(center_v, pl, nbr_v, i) {  \
-    v::check_is_on_board (center_v);                            \
-    Move    nbr_v;                                              \
-    player_for_each (pl) {                                      \
-      nbr_v = center_v;                                         \
-      i;                                                        \
-      vertex_for_each_nbr      (center_v, nbr_v, i);            \
-      vertex_for_each_diag_nbr (center_v, nbr_v, i);            \
-    }                                                           \
+#define vertex_for_each_8_nbr(center_v, nbr_v, block) {         \
+    center_v.check_is_on_board ();                              \
+    Vertex nbr_v;                                               \
+    nbr_v = center_v.NW (); block;                              \
+    nbr_v = center_v.N ();  block;                              \
+    nbr_v = center_v.NE (); block;                              \
+    nbr_v = center_v.W ();  block;                              \
+    nbr_v = center_v.E ();  block;                              \
+    nbr_v = center_v.SW (); block;                              \
+    nbr_v = center_v.S ();  block;                              \
+    nbr_v = center_v.SE (); block;                              \
+  }
+
+
+#define vertex_for_each_9_nbr(center_v, nbr_v, block) {         \
+    center_v.check_is_on_board ();                              \
+    Vertex nbr_v;                                               \
+    nbr_v = center_v.NW (); block;                              \
+    nbr_v = center_v.N ();  block;                              \
+    nbr_v = center_v.NE (); block;                              \
+    nbr_v = center_v.W ();  block;                              \
+    nbr_v = center_v;       block;                              \
+    nbr_v = center_v.E ();  block;                              \
+    nbr_v = center_v.SW (); block;                              \
+    nbr_v = center_v.S ();  block;                              \
+    nbr_v = center_v.SE (); block;                              \
   }
 
 #endif

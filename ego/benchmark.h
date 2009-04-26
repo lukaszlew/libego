@@ -1,7 +1,7 @@
 #ifndef _BENCHMARK_H_
 #define _BENCHMARK_H_
 
-#include <ostream>
+#include <string>
 
 #include "board.h"
 

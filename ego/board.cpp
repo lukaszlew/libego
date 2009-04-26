@@ -23,6 +23,7 @@
 
 #include <cmath>
 #include <cstring>
+#include <iostream>
 
 #include "board.h"
 #include "testing.h"
@@ -224,9 +225,9 @@ string Board::to_string (Vertex mark_v) const {
   return out.str ();
 }
 
-// void Board::print_cerr (Vertex v) const {
-//   cerr << to_string (v);
-// }
+void Board::print_cerr (Vertex v) const {
+  cerr << to_string (v);
+}
 
 bool Board::load_from_ascii (istream& ifs) {
   uint     bs;
@@ -277,9 +278,6 @@ bool Board::load_from_ascii (istream& ifs) {
 
   this->load (tmp_board);
 
-  // if (false)
-  // TODO LOL hack - need tu use it somwhere
-  //if (color_at[Vertex (0)] == Color::white ()) print_cerr ();
   return true;
 }
 
@@ -299,7 +297,7 @@ void Board::clear () {
     color_at      [v] = Color::off_board ();
     nbr_cnt       [v] = NbrCounter::Empty();
     chain_next_v  [v] = v;
-    chain_id_     [v] = v;    // TODO is it needed, is it usedt?
+    chain_id_     [v] = v;      // TODO is it needed, is it used?
     chain_[v].lib_cnt = NbrCounter::max; // TODO off_boards?
 
     if (v.is_on_board ()) {
@@ -377,7 +375,7 @@ bool Board::is_eyelike (Player player, Vertex v) {
 
   FastMap<Color, int> diag_color_cnt; // TODO
   color_for_each (col)
-    diag_color_cnt [col] = 0; // memset is slower
+    diag_color_cnt [col] = 0;
 
   vertex_for_each_diag_nbr (v, diag_v, {
       diag_color_cnt [color_at [diag_v]]++;
@@ -439,7 +437,6 @@ void Board::play_not_eye (Player player, Vertex v) {
       nbr_cnt [nbr_v].player_inc (player);
 
       if (color_at [nbr_v].is_player ()) {
-        // This should be before 'if' to have good lib_cnt for empty vertices
         chain_at(nbr_v).lib_cnt -= 1;
 
         if (color_at [nbr_v] != Color (player)) { // same color of groups
@@ -564,7 +561,7 @@ void Board::place_stone (Player pl, Vertex v) {
   assertc (chain_next_v_ac, chain_next_v[v] == v);
 
   chain_id_ [v] = v;
-  chain_[v].lib_cnt = nbr_cnt[v].empty_cnt (); // TODO
+  chain_at(v).lib_cnt = nbr_cnt[v].empty_cnt ();
 }
 
 
@@ -681,6 +678,10 @@ Board::Chain& Board::chain_at (Vertex v) {
   return chain_[chain_id_[v]];
 }
 
+uint Board::last_capture_size () {
+  return empty_v_cnt + 1 - last_empty_v_cnt;
+}
+
 // -----------------------------------------------------------------------------
 
 void Board::check_hash () const {
@@ -768,4 +769,4 @@ void Board::check_no_more_legal (Player player) { // at the end of the playout
 }
 
 FastRandom zobrist_fr;
-const Zobrist Board::zobrist[1] = { Zobrist (zobrist_fr) }; // TODO move it to board
+const Zobrist Board::zobrist[1] = { Zobrist (zobrist_fr) };
