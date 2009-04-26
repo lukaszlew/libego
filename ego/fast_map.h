@@ -24,6 +24,8 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#include <cstring>
+
 #include "utils.h"
 
 // very simple and useful FastMap
@@ -44,7 +46,7 @@ public:
   }
 
   void memset(uint val) { 
-    memset(tab, val, sizeof(elt_t)*idx_t::cnt); 
+    ::memset(tab, val, sizeof(elt_t)*idx_t::cnt); 
   }
 
   void SetAll(const elt_t& val) {

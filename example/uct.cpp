@@ -67,7 +67,6 @@ public:
     have_child = true;
     // TODO assert
     children[new_child->v] = new_child;
-    children[new_child->v] = new_child;
   }
 
   void remove_child (Node* del_child) { // TODO inefficient
