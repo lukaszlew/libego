@@ -55,7 +55,7 @@ public:
 
     ostringstream out;
     char buf [100];
-    sprintf (buf, "%+3.1f(%5.0f)", mean(), update_count());
+    sprintf (buf, "%+3.3f(%5.0f)", mean(), update_count());
     out << buf;
     return out.str ();
   }
