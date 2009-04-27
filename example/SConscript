@@ -1,7 +1,0 @@
-Import('env')
-
-env.Program(
-  "engine", 
-  ['main.cpp'],
-  LIBS = ['ego']
-)
