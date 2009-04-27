@@ -23,6 +23,8 @@
 
 #include "playout.h"
 
+SimplePolicy::SimplePolicy(uint seed) : random(seed) { }
+
 all_inline
 void SimplePolicy::play_move (Board* board) {
   uint ii_start = random.rand_int (board->empty_v_cnt); 
@@ -45,5 +47,3 @@ void SimplePolicy::play_move (Board* board) {
     }
   }
 }
-
-FastRandom SimplePolicy::random(123);

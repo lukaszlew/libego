@@ -242,11 +242,13 @@ class Uct {
 public:
   
   Board&        base_board;
-  Tree          tree[1];      // TODO tree->root should be in sync with top of base_board
+  Tree          tree[1];      // TODO sync tree->root with base_board
+  SimplePolicy  policy;
+
   
 public:
   
-  Uct (Board& base_board_) : base_board (base_board_) { }
+  Uct (Board& base_board_) : base_board (base_board_), policy(123) { }
 
   void root_ensure_children_legality (Player pl) { // cares about superko in root (only)
     tree->history_reset ();
@@ -284,7 +286,6 @@ public:
           continue;            // try again
         }
         
-        SimplePolicy policy;
         Playout<SimplePolicy> (&policy, play_board).run ();
         break;
         

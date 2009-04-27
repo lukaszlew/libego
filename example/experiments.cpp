@@ -58,9 +58,10 @@ public:
   float       influence_scale;
   float       prior;
   bool        progress_dots;
+  SimplePolicy policy;
 
 public:
-  AllAsFirst (Gtp& gtp, Board& board_) : board (&board_) { 
+  AllAsFirst (Gtp& gtp, Board& board_) : board (&board_), policy(123) { 
     playout_no       = 50000;
     aaf_fraction     = 0.5;
     influence_scale  = 6.0;
@@ -81,7 +82,6 @@ public:
     Board mc_board [1];
     mc_board->load (base_board);
 
-    SimplePolicy policy;
     Playout<SimplePolicy> playout(&policy, mc_board);
     playout.run ();
 
