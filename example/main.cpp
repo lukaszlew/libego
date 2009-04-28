@@ -38,7 +38,7 @@ AllAsFirst  aaf (gtp, board);
 
 GenmoveGtp<Uct>  genmove_gtp (gtp, board);
 
-int main(uint argc, char** argv) { 
+int main(int argc, char** argv) {
   // no buffering to work well with gogui
   setbuf (stdout, NULL);
   setbuf (stderr, NULL);
@@ -48,7 +48,7 @@ int main(uint argc, char** argv) {
 
     if (arg == "--benchmark" || arg == "-b") {
       int playout_cnt = 200;
-      if (ii+1 < argc) {
+      if (ii+1 < (uint)argc) {
         if (string_to<int>(argv[ii+1], &playout_cnt)) {
           ii += 1;
         }
@@ -60,7 +60,7 @@ int main(uint argc, char** argv) {
     }
     
     if (arg == "--run-gtp-file" || arg == "-r") {
-      if (ii+1 == argc) {
+      if (ii+1 == (uint)argc) {
         cerr << "Fatal: no config file given" << endl;
         return 1;
       }
