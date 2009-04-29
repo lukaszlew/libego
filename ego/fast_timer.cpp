@@ -21,6 +21,12 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#ifdef _MSC_VER
+#include <intrin.h>
+#pragma intrinsic(__rdtsc)
+#endif
+
+
 #include "fast_timer.h"
 
 FastTimer::FastTimer () {
@@ -31,9 +37,12 @@ FastTimer::FastTimer () {
   overhead = double (t2 - t1);
 }
 
-// http://stackoverflow.com/questions/771867/how-to-make-a-cross-platform-c-inline-assembly-language/
+// TODO: http://stackoverflow.com/questions/771867/how-to-make-a-cross-platform-c-inline-assembly-language/
 
 uint64 FastTimer::get_cc_time () {
+#ifdef _MSC_VER
+  return __rdtsc();
+#else
   if (sizeof(long) == 8) {
     uint64 a, d;
     asm volatile ("rdtsc\n\t" : "=a"(a), "=d"(d));
@@ -43,6 +52,7 @@ uint64 FastTimer::get_cc_time () {
     asm volatile ("rdtsc\n\t" : "=A"(l));
     return l;
   }
+#endif //_MSC_VER
 }
 
 void FastTimer::reset () {
