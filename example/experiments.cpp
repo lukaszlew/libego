@@ -61,7 +61,7 @@ public:
   SimplePolicy policy;
 
 public:
-  AllAsFirst (Gtp& gtp, Board& board_) : board (&board_), policy(123) { 
+  AllAsFirst (Gtp& gtp, Board& board_) : board (&board_), policy(global_random) { 
     playout_no       = 50000;
     aaf_fraction     = 0.5;
     influence_scale  = 6.0;

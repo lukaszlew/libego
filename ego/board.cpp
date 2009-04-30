@@ -768,5 +768,4 @@ void Board::check_no_more_legal (Player player) { // at the end of the playout
       assert (is_eyelike (player, v) || is_pseudo_legal (player, v) == false);
 }
 
-FastRandom zobrist_fr;
-const Zobrist Board::zobrist[1] = { Zobrist (zobrist_fr) };
+const Zobrist Board::zobrist[1] = { Zobrist (global_random) };

@@ -10,7 +10,7 @@ class FastRandom {             // Park - Miller "minimal standard"
 
 public:
 
-  FastRandom (uint seed_ = 12345);
+  FastRandom (uint seed_);
   void set_seed (uint seed_);
   uint get_seed ();
 
@@ -22,5 +22,7 @@ public:
   void test ();
   void test2 (uint k, uint n);
 };
+
+extern FastRandom global_random;
 
 #endif

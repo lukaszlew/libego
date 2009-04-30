@@ -55,10 +55,10 @@ public:
 
 class SimplePolicy {
 public:
-  SimplePolicy(uint seed);
+  SimplePolicy(FastRandom& random_);
   void play_move (Board* board);
 private:
-  FastRandom random;
+  FastRandom& random;
 };
 
 typedef Playout<SimplePolicy> SimplePlayout;

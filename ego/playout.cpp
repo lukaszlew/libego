@@ -23,7 +23,7 @@
 
 #include "playout.h"
 
-SimplePolicy::SimplePolicy(uint seed) : random(seed) { }
+SimplePolicy::SimplePolicy(FastRandom& random_) : random(random_) { }
 
 all_inline
 void SimplePolicy::play_move (Board* board) {

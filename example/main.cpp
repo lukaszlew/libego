@@ -53,6 +53,7 @@ int main(int argc, char** argv) {
           ii += 1;
         }
       }
+      global_random.set_seed(123);
       playout_cnt *= 1000;
       cout << "Benchmarking, please wait ..." << flush;
       cout << Benchmark::run (playout_cnt) << endl;

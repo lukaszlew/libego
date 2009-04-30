@@ -244,11 +244,10 @@ public:
   Board&        base_board;
   Tree          tree[1];      // TODO sync tree->root with base_board
   SimplePolicy  policy;
-
   
 public:
   
-  Uct (Board& base_board_) : base_board (base_board_), policy(123) { }
+  Uct (Board& base_board_) : base_board (base_board_), policy(global_random) { }
 
   void root_ensure_children_legality (Player pl) { // cares about superko in root (only)
     tree->history_reset ();
