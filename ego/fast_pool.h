@@ -7,9 +7,13 @@
 template <class elt_t> class FastPool {
 public:
   FastPool (uint pool_size) {
-    free_elt_count = pool_size;
+    this->pool_size = pool_size;
     memory   = new elt_t  [pool_size];
     free_elt = new elt_t* [pool_size];
+  }
+
+  void reset() {
+    free_elt_count = pool_size;
     rep (i, pool_size) free_elt [i] = memory + i;
   }
 
@@ -28,6 +32,8 @@ public:
   }
 
 private:
+  uint pool_size;
+
   elt_t* memory;
 
   elt_t** free_elt;
