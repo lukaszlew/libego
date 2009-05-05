@@ -65,6 +65,10 @@ public:                         // board interface
   // returns 0 otherwise
   int vertex_score (Vertex v);
 
+  // Tromp-Taylor score.
+  int tt_score() const;
+  int tt_winner_score() const;
+
   // Difference in (number of stones + number of eyes) of each player + komi.
   int score () const;
   Player winner () const;

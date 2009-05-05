@@ -307,7 +307,11 @@ public:
 
       act_player = act_player.other();
 
-      if (play_board->both_player_pass()) break;
+      if (play_board->both_player_pass()) {
+        int score = play_board->tt_winner_score();
+        tree->update_history (score);
+        return;
+      }
 
     } while (true);
     

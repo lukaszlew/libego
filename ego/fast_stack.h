@@ -41,7 +41,7 @@ public:
     assertc (stack_ac, size <= _max_size);
   }
 
-  bool is_empty () const { return size == 0; }
+  bool empty () const { return size == 0; }
 
   elt_t& top () { assertc (stack_ac, size > 0); return tab [size-1]; }
 
@@ -60,6 +60,7 @@ public:
 
   void pop () { size--; check (); }
 
+  elt_t& pop_top () { size--; check(); return tab [size]; }
 };
 
 // TODO add iterators

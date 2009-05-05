@@ -594,6 +594,38 @@ bool Board::both_player_pass () {
     (player_last_v [Player::white ()] == Vertex::pass ());
 }
 
+int Board::tt_score() const {
+  FastMap<Player, int> score;
+  player_for_each(pl) score[pl] = 0;
+
+  player_for_each(pl) {
+    FastStack<Vertex, board_area> queue;
+    FastMap<Vertex, bool> visited;
+
+    vertex_for_each_all(v) {
+      if (color_at[v] == Color(pl)) queue.push_back(v);
+      visited[v] = false;
+    }
+
+    while (!queue.empty()) {
+      score[pl] += 1;
+      Vertex v = queue.pop_top();
+      visited[v] = true;
+      vertex_for_each_4_nbr(v, nbr, {
+        if (!visited[nbr] && color_at[nbr] == Color::empty()) {
+          queue.push_back(nbr);
+        }
+      });
+    }
+  }
+
+  return komi_ + score[Player::black ()] - score[Player::white ()];
+}
+
+int Board::tt_winner_score() const {
+  int tmp = tt_score () > 0;
+  return  tmp + tmp - 1;
+}
 
 int Board::approx_score () const {
   return komi_ + player_v_cnt[Player::black ()] -  player_v_cnt[Player::white ()];
