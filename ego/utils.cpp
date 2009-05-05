@@ -22,7 +22,9 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 // TODO move such stuff to porting.h (or somwhere)
-#ifndef WIN32
+#ifdef _MSC_VER
+#include <windows.h>
+#else 
 #include <sys/resource.h>
 #endif
 
@@ -40,15 +42,32 @@
 // http://www.ginac.de/pipermail/ginac-list/2006-July/000861.html
 
 float process_user_time () {
+
+// TODO ifdef POSIX ?
 #ifndef WIN32
+
   rusage usage [1];
   getrusage (RUSAGE_SELF, usage);
   return 
     float(usage->ru_utime.tv_sec) +
     float(usage->ru_utime.tv_usec) / 1000000.0;
-#else  
-  return 0;
+
+#elif _MSC_VER
+
+  FILETIME start, exit, kernel, user;
+  if (GetProcessTimes(GetCurrentProcess(), &start, &exit, &kernel, &user)) {
+    __int64 userMicro = (*((__int64*) &user)) / 10U;
+    return (float)((double)userMicro / 1000000.0f);
+  } else {
+    return 0;
+  }
+
+#else
+
+ return 0;
+
 #endif
+
 }
 
 void fatal_error (const char* s) {

@@ -22,28 +22,3 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "playout.h"
-
-SimplePolicy::SimplePolicy(FastRandom& random_) : random(random_) { }
-
-all_inline
-void SimplePolicy::play_move (Board* board) {
-  uint ii_start = random.rand_int (board->empty_v_cnt); 
-  uint ii = ii_start;
-  Player act_player = board->act_player ();
-
-  Vertex v;
-  while (true) {
-    v = board->empty_v [ii];
-    if (!board->is_eyelike (act_player, v) &&
-        board->is_pseudo_legal (act_player, v)) { 
-      board->play_legal(act_player, v);
-      return;
-    }
-    ii += 1;
-    ii = ii & ~(-(ii == board->empty_v_cnt)); // if (ii==board->empty_v_cnt) ii=0;
-    if (ii == ii_start) {
-      board->play_legal(act_player, Vertex::pass());
-      return;
-    }
-  }
-}

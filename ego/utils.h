@@ -52,11 +52,12 @@ bool string_to(const string &s, T* i) {
 
 #ifdef _MSC_VER
 
-// TODO there are Visual C++ attributes for forcing inline etc; 
-// test them for performance
-#define no_inline
+// put more of them in various places of source to force almost flat
+// source in Visual C++ (no function calls except remove_chain)
+
+#define no_inline   __declspec(noinline)
 #define flatten
-#define all_inline
+#define all_inline  __forceinline
 
 #else
 
