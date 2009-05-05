@@ -58,15 +58,19 @@ public:                         // board interface
 
   /* scoring functions */
 
-  // single vertex ownership
+  // scoring uses integers, so to get a true result you need to
+  // substract 0.5 (white wins when score == 0)
+
+  // returns 1 (-1) if v is occupied by or is an eye of Black(White)
+  // returns 0 otherwise
   int vertex_score (Vertex v);
 
-  // score()-0.5 is a true result
+  // Difference in (number of stones + number of eyes) of each player + komi.
   int score () const;
-  int approx_score () const;
-  
-  // white wins when score() == 0
   Player winner () const;
+
+  // Difference in (number of stones) of each player + komi.
+  int approx_score () const;
   Player approx_winner () const;
 
   /* auxiliary functions */

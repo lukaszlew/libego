@@ -305,7 +305,7 @@ void Board::clear () {
       empty_pos  [v]              = empty_v_cnt;
       empty_v    [empty_v_cnt++]  = v;
 
-      vertex_for_each_nbr (v, nbr_v, {
+      vertex_for_each_4_nbr (v, nbr_v, {
         if (!nbr_v.is_on_board ()) {
           nbr_cnt [v].off_board_inc ();
         }
@@ -416,8 +416,8 @@ bool Board::eye_is_ko (Player player, Vertex v) {
 
 bool Board::eye_is_suicide (Vertex v) {
   uint all_nbr_live = true;
-  vertex_for_each_nbr (v, nbr_v, all_nbr_live &= (--chain_at(nbr_v).lib_cnt != 0));
-  vertex_for_each_nbr (v, nbr_v, chain_at(nbr_v).lib_cnt += 1);
+  vertex_for_each_4_nbr (v, nbr_v, all_nbr_live &= (--chain_at(nbr_v).lib_cnt != 0));
+  vertex_for_each_4_nbr (v, nbr_v, chain_at(nbr_v).lib_cnt += 1);
   return all_nbr_live;
 }
 
@@ -432,7 +432,7 @@ void Board::play_not_eye (Player player, Vertex v) {
 
   place_stone (player, v);
 
-  vertex_for_each_nbr (v, nbr_v, {
+  vertex_for_each_4_nbr (v, nbr_v, {
 
       nbr_cnt [nbr_v].player_inc (player);
 
@@ -467,16 +467,16 @@ void Board::play_not_eye (Player player, Vertex v) {
 
 no_inline
 void Board::play_eye_legal (Player player, Vertex v) {
-  vertex_for_each_nbr (v, nbr_v, chain_at(nbr_v).lib_cnt -= 1);
+  vertex_for_each_4_nbr (v, nbr_v, chain_at(nbr_v).lib_cnt -= 1);
 
   basic_play (player, v);
   place_stone (player, v);
 
-  vertex_for_each_nbr (v, nbr_v, {
+  vertex_for_each_4_nbr (v, nbr_v, {
       nbr_cnt [nbr_v].player_inc (player);
     });
 
-  vertex_for_each_nbr (v, nbr_v, {
+  vertex_for_each_4_nbr (v, nbr_v, {
       if ((chain_at(nbr_v).lib_cnt == 0))
         remove_chain (nbr_v);
     });
@@ -536,7 +536,7 @@ void Board::remove_chain (Vertex v) {
   assertc (board_ac, act_v == v);
 
   do {
-    vertex_for_each_nbr (act_v, nbr_v, {
+    vertex_for_each_4_nbr (act_v, nbr_v, {
         nbr_cnt [nbr_v].player_dec (old_color.to_player());
         chain_at(nbr_v).lib_cnt += 1;
       });
@@ -708,7 +708,7 @@ void Board::check_nbr_cnt () const {
     color_for_each (col) {
       nbr_color_cnt [col] = 0;
     }
-    vertex_for_each_nbr (v, nbr_v, {
+    vertex_for_each_4_nbr (v, nbr_v, {
         nbr_color_cnt [color_at [nbr_v]]++;
       });
 
@@ -727,7 +727,7 @@ void Board::check_chain_at () const {
 
       assert (chain_[chain_id_[v]].lib_cnt != 0);
 
-      vertex_for_each_nbr (v, nbr_v, {
+      vertex_for_each_4_nbr (v, nbr_v, {
           if (color_at[v] == color_at[nbr_v])
             assert (chain_id_ [v] == chain_id_ [nbr_v]);
         });

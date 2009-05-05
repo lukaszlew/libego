@@ -126,7 +126,7 @@ string to_string_2d (FastMap<Vertex, T>& map, int precision = 3) {
        vv.next ())
 
 
-#define vertex_for_each_nbr(center_v, nbr_v, block) {   \
+#define vertex_for_each_4_nbr(center_v, nbr_v, block) { \
     center_v.check_is_on_board ();                      \
     Vertex nbr_v;                                       \
     nbr_v = center_v.N (); block;                       \
