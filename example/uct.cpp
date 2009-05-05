@@ -243,6 +243,8 @@ public:
   Board&        base_board;
   Tree          tree[1];      // TODO sync tree->root with base_board
   SimplePolicy  policy;
+
+  Board play_board;
   
 public:
   
@@ -262,11 +264,10 @@ public:
 
   flatten 
   void do_playout (Player first_player){
-    Board play_board[1]; // TODO test for perfomance + memcpy
     Player act_player = first_player;
     Vertex v;
     
-    play_board->load (&base_board);
+    play_board.load (&base_board);
     tree->history_reset ();
     
     do {
@@ -277,16 +278,16 @@ public:
         if (tree->act_node()->stat.update_count() >
             mature_update_count_threshold) 
         {
-          empty_v_for_each_and_pass (play_board, v, {
+          empty_v_for_each_and_pass (&play_board, v, {
             tree->alloc_child (v); // TODO simple ko should be handled here
             // (suicides and ko recaptures, needs to be dealt with later)
           });
           continue;            // try again
         }
         
-        Playout<SimplePolicy> (&policy, play_board).run ();
+        Playout<SimplePolicy> (&policy, &play_board).run ();
 
-        int score = play_board->winner().get_idx (); // black -> 0, white -> 1
+        int score = play_board.winner().get_idx (); // black -> 0, white -> 1
         tree->update_history (1 - score - score); // black -> 1, white -> -1
         return;
       }
@@ -294,22 +295,22 @@ public:
       tree->uct_descend (act_player);
       v = tree->act_node ()->v;
       
-      if (play_board->is_pseudo_legal (act_player, v) == false) {
+      if (play_board.is_pseudo_legal (act_player, v) == false) {
         tree->delete_act_node ();
         return;
       }
       
-      play_board->play_legal (act_player, v);
+      play_board.play_legal (act_player, v);
 
-      if (play_board->last_move_status != Board::play_ok) {
+      if (play_board.last_move_status != Board::play_ok) {
         tree->delete_act_node ();
         return;
       }
 
       act_player = act_player.other();
 
-      if (play_board->both_player_pass()) {
-        tree->update_history (play_board->tt_winner_score());
+      if (play_board.both_player_pass()) {
+        tree->update_history (play_board.tt_winner_score());
         return;
       }
 
