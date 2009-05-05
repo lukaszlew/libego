@@ -122,8 +122,7 @@ public:
       << stat.to_string() << " "
       << endl;
 
-    player_for_each (pl)
-      rec_print_children (out, depth, pl);
+    rec_print_children (out, depth, pl.other());
   }
 
   void rec_print_children (ostream& out, uint depth, Player player) {
@@ -227,9 +226,9 @@ public:
        history [hi]->stat.update (sample);
   }
 
-  string to_string () { 
+  string to_string (Player pl) { 
     ostringstream out_str;
-    history [0]->rec_print (out_str, 0, Player::black ()); 
+    history [0]->rec_print (out_str, 0, pl); 
     return out_str.str ();
   }
 };
@@ -286,8 +285,10 @@ public:
         }
         
         Playout<SimplePolicy> (&policy, play_board).run ();
-        break;
-        
+
+        int score = play_board->winner().get_idx (); // black -> 0, white -> 1
+        tree->update_history (1 - score - score); // black -> 1, white -> -1
+        return;
       }
       
       tree->uct_descend (act_player);
@@ -308,15 +309,12 @@ public:
       act_player = act_player.other();
 
       if (play_board->both_player_pass()) {
-        int score = play_board->tt_winner_score();
-        tree->update_history (score);
+        tree->update_history (play_board->tt_winner_score());
         return;
       }
 
     } while (true);
     
-    int score = play_board->winner().get_idx (); // black -> 0, white -> 1
-    tree->update_history (1 - score - score); // black -> 1, white -> -1
   }
   
 
@@ -328,7 +326,7 @@ public:
     Node* best = tree->history [0]->find_most_explored_child ();
     assertc (uct_ac, best != NULL);
 
-    cerr << tree->to_string () << endl;
+    cerr << tree->to_string (player.other()) << endl;
     if ((player == Player::black () && best->stat.mean() < -resign_mean) ||
         (player == Player::white () && best->stat.mean() >  resign_mean)) {
       return Vertex::resign ();
