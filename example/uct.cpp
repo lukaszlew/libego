@@ -25,15 +25,6 @@
 
 // uct parameters
 
-const float mature_update_count_threshold  = 100.0;
-const float explore_rate                   = 1.0;
-const uint  uct_max_depth                  = 1000;
-const uint  uct_max_nodes                  = 1000000;
-const float resign_mean                    = 0.95;
-const uint  uct_genmove_playout_cnt        = 100000;
-const float print_visit_threshold_base     = 500.0;
-const float print_visit_threshold_parent   = 0.02;
-
 // ----------------------------------------------------------------------
 class Node {
 
@@ -81,7 +72,7 @@ public:
     return !have_child;
   }
 
-  Node* find_uct_child () {
+  Node* find_uct_child (float explore_rate) {
     Node* best_child = NULL;
     float best_urgency = -large_float;
     float explore_coeff = log (stat.update_count()) * explore_rate;
@@ -117,7 +108,8 @@ public:
     return best_child;
   }
 
-  void rec_print (ostream& out, uint depth) {
+  void rec_print (ostream& out, uint depth,
+                  float min_visit, float min_visit_parent) {
     rep (d, depth) out << "  ";
     out 
       << player.to_string () << " " 
@@ -125,10 +117,11 @@ public:
       << stat.to_string() << " "
       << endl;
 
-    rec_print_children (out, depth);
+    rec_print_children (out, depth, min_visit, min_visit_parent);
   }
 
-  void rec_print_children (ostream& out, uint depth) {
+  void rec_print_children (ostream& out, uint depth, 
+                           float min_visit, float min_visit_parent) {
     Node*  child_tab [Vertex::cnt]; // rough upper bound for the number of legal move
     uint     child_tab_size;
     uint     best_child_idx;
@@ -137,8 +130,8 @@ public:
     child_tab_size  = 0;
     best_child_idx  = 0;
     min_visit_cnt   =
-      print_visit_threshold_base + 
-      stat.update_count() * print_visit_threshold_parent; 
+      min_visit + 
+      stat.update_count() * min_visit_parent; 
     // we want to be visited at least some percentage of parent's visit_cnt
 
     // prepare for selection sort
@@ -155,7 +148,8 @@ public:
       }
       // rec call
       if (best_child->stat.update_count() >= min_visit_cnt)
-        child_tab [best_child_idx]->rec_print (out, depth + 1);
+        child_tab [best_child_idx]->rec_print (out, depth + 1,
+                                               min_visit, min_visit_parent);
       else break;
 
       // remove best
@@ -171,8 +165,10 @@ public:
 
 // class Tree
 
-
 class Tree {
+
+  static const uint uct_max_depth = 1000;
+  static const uint uct_max_nodes = 1000000;
 
 public:
 
@@ -200,8 +196,8 @@ public:
     return history [history_top];
   }
   
-  void uct_descend () {
-    history [history_top + 1] = act_node ()->find_uct_child ();
+  void uct_descend (float explore_rate) {
+    history [history_top + 1] = act_node ()->find_uct_child (explore_rate);
     history_top++;
     assertc (tree_ac, act_node () != NULL);
   }
@@ -234,9 +230,9 @@ public:
        history [hi]->stat.update (sample);
   }
 
-  string to_string () { 
+  string to_string (float min_visit, float min_visit_parent) { 
     ostringstream out_str;
-    history [0]->rec_print (out_str, 0); 
+    history [0]->rec_print (out_str, 0, min_visit, min_visit_parent); 
     return out_str.str ();
   }
 };
@@ -247,7 +243,16 @@ public:
 
 class Uct {
 public:
-  
+
+  float explore_rate;
+  uint  uct_genmove_playout_cnt;
+  float mature_update_count_threshold;
+
+  float min_visit;
+  float min_visit_parent;
+
+  float resign_mean;
+
   Board&        base_board;
   Tree          tree;      // TODO sync tree->root with base_board
   SimplePolicy  policy;
@@ -256,7 +261,16 @@ public:
   
 public:
   
-  Uct (Board& base_board_) : base_board (base_board_), policy(global_random) { }
+  Uct (Board& base_board_) : base_board (base_board_), policy(global_random) { 
+    explore_rate                   = 1.0;
+    uct_genmove_playout_cnt        = 100000;
+    mature_update_count_threshold  = 100.0;
+
+    min_visit         = 500.0;
+    min_visit_parent  = 0.02;
+
+    resign_mean = 0.95;
+  }
 
   void root_ensure_children_legality (Player pl) {
     // cares about superko in root (only)
@@ -301,7 +315,7 @@ public:
         return;
       }
       
-      tree.uct_descend ();
+      tree.uct_descend (explore_rate);
       v = tree.act_node ()->v;
       
       if (play_board.is_pseudo_legal (act_player, v) == false) {
@@ -336,7 +350,7 @@ public:
     Node* best = tree.history [0]->find_most_explored_child ();
     assertc (uct_ac, best != NULL);
 
-    cerr << tree.to_string () << endl;
+    cerr << tree.to_string (min_visit, min_visit_parent) << endl;
     if ((player == Player::black () && best->stat.mean() < -resign_mean) ||
         (player == Player::white () && best->stat.mean() >  resign_mean)) {
       return Vertex::resign ();
