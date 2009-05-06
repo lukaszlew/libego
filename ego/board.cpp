@@ -608,17 +608,17 @@ int Board::tt_score() const {
     }
 
     while (!queue.empty()) {
-      score[pl] += 1;
       Vertex v = queue.pop_top();
+      if (visited[v]) continue;
       visited[v] = true;
+      score[pl] += 1;
       vertex_for_each_4_nbr(v, nbr, {
-        if (!visited[nbr] && color_at[nbr] == Color::empty()) {
+        if (color_at[nbr] == Color::empty()) {
           queue.push_back(nbr);
         }
       });
     }
   }
-
   return komi_ + score[Player::black ()] - score[Player::white ()];
 }
 
