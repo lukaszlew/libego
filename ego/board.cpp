@@ -603,18 +603,21 @@ int Board::tt_score() const {
     FastMap<Vertex, bool> visited;
 
     vertex_for_each_all(v) {
-      if (color_at[v] == Color(pl)) queue.push_back(v);
       visited[v] = false;
+      if (color_at[v] == Color(pl)) {
+        queue.push_back(v);
+        visited[v] = true;
+      }
     }
 
     while (!queue.empty()) {
       Vertex v = queue.pop_top();
-      if (visited[v]) continue;
-      visited[v] = true;
+      assertc (board_ac, visited[v]);
       score[pl] += 1;
       vertex_for_each_4_nbr(v, nbr, {
-        if (color_at[nbr] == Color::empty()) {
+        if (!visited[nbr] && color_at[nbr] == Color::empty()) {
           queue.push_back(nbr);
+          visited[nbr] = true;
         }
       });
     }
