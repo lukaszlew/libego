@@ -81,10 +81,65 @@ public:
     }
   }
 
-private:
+protected:
   FastRandom& random;
 };
 
 typedef Playout<SimplePolicy> SimplePlayout;
+
+// -----------------------------------------------------------------------------
+
+// TODO simplify and test performance
+class LocalPolicy : protected SimplePolicy {
+public:
+
+  LocalPolicy(FastRandom& random_) : SimplePolicy(random_) { 
+  }
+
+  all_inline
+  void play_move (Board* board) {
+    if (play_local(board)) return;
+    SimplePolicy::play_move(board);
+  }
+
+private:
+  all_inline
+  bool play_local(Board *board) {
+    // No local move when game begins.
+    if (board->move_no == 0) return false;
+    // P(local) = 1/3
+    if (random.rand_int(3)) return false;
+
+    Vertex center = board->move_history[board->move_no-1].get_vertex();
+
+    Vertex legal[8];
+    legal[0] = center.NW();
+    legal[1] = center.N();
+    legal[2] = center.NE();
+    legal[3] = center.W();
+    legal[4] = center.E();
+    legal[5] = center.SW();
+    legal[6] = center.S();
+    legal[7] = center.SE();
+
+    Player act_player = board->act_player ();
+
+    uint i_start = random.rand_int(8), i = i_start;
+    do {
+      if (legal[i].is_on_board() &&
+          board->color_at[legal[i]] == Color::empty() &&
+          !board->is_eyelike(act_player, legal[i]) &&
+          board->is_pseudo_legal(act_player, legal[i])) {
+        board->play_legal(act_player, legal[i]);
+        return true;
+      }
+      i = (i + 1) & 7;
+    } while (i != i_start);
+
+    // No possibility of a local move
+    return false;
+  }
+
+};
 
 #endif
