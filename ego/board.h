@@ -53,6 +53,7 @@ public:                         // board interface
 
   Player act_player () const;
   Player last_player () const;
+  Vertex last_play () const;
 
   bool both_player_pass ();
 
@@ -176,7 +177,7 @@ private:
 
   uint                         last_empty_v_cnt;
   FastMap<Player, uint>        player_v_cnt;
-  FastMap<Player, Vertex>      player_last_v;
+  FastMap<Player, Vertex>      last_play_;
   Hash                         hash_;
   Vertex                       ko_v_;             // vertex forbidden by ko
   Player                       last_player_;      // player who made the last play

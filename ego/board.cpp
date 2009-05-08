@@ -286,8 +286,8 @@ void Board::clear () {
   set_komi (-0.5); // white wins the draws on default komi
   empty_v_cnt = 0;
   player_for_each (pl) {
-    player_v_cnt  [pl] = 0;
-    player_last_v [pl] = Vertex::any ();
+    player_v_cnt [pl] = 0;
+    last_play_ [pl]   = Vertex::any ();
   }
   move_no      = 0;
   last_player_ = Player::white (); // act player is other
@@ -497,7 +497,7 @@ void Board::basic_play (Player player, Vertex v) {
   ko_v_                   = Vertex::any ();
   last_empty_v_cnt        = empty_v_cnt;
   last_player_            = player;
-  player_last_v [player]  = v;
+  last_play_ [player]     = v;
   move_history [move_no]  = Move (player, v);
   move_no                += 1;
 }
@@ -587,11 +587,15 @@ Player Board::last_player () const {
   return last_player_;
 }
 
+Vertex Board::last_play() const {
+  return last_play_[last_player()];
+}
+
 
 bool Board::both_player_pass () {
   return
-    (player_last_v [Player::black ()] == Vertex::pass ()) &
-    (player_last_v [Player::white ()] == Vertex::pass ());
+    (last_play_ [Player::black ()] == Vertex::pass ()) &
+    (last_play_ [Player::white ()] == Vertex::pass ());
 }
 
 int Board::tt_score() const {
