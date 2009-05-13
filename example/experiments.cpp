@@ -86,7 +86,7 @@ public:
     playout.run ();
 
     uint aaf_move_count = uint (float(playout.move_history_length)*aaf_fraction);
-    float score = mc_board->score ();
+    float score = mc_board->playout_score ();
 
     aaf_stats.update (playout.move_history, aaf_move_count, score);
   }

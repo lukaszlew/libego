@@ -138,7 +138,7 @@ bool Board::undo () {
   return true;
 }
 
-bool Board::is_strict_legal (Player pl, Vertex v) {
+bool Board::is_legal (Player pl, Vertex v) {
   if (try_play (pl, v) == false) return false;
   bool ok = undo ();
   assert(ok);
@@ -270,7 +270,7 @@ bool Board::load_from_ascii (istream& ifs) {
 
   Board  tmp_board [1];
   rep (pi, play_cnt) {
-    if (tmp_board->is_strict_legal (play_player[pi], play_v[pi]) == false)
+    if (tmp_board->is_legal (play_player[pi], play_v[pi]) == false)
       return false;
     bool ret = tmp_board->try_play (play_player[pi], play_v[pi]);
     assertc (board_ac, ret == true);
@@ -483,11 +483,9 @@ void Board::play_eye_legal (Player player, Vertex v) {
 
   assertc (board_ac, chain_at(v).lib_cnt != 0);
 
+  // if captured exactly one stone (and this was eye)
   if (last_empty_v_cnt == empty_v_cnt) {
-    // captured exactly one stone, end this was eye
-    ko_v_ = empty_v [empty_v_cnt - 1]; // then ko formed
-  } else {
-    ko_v_ = Vertex::any ();
+    ko_v_ = empty_v [empty_v_cnt - 1]; // then ko is formed
   }
 }
 
@@ -629,9 +627,8 @@ int Board::tt_score() const {
   return komi_ + score[Player::black ()] - score[Player::white ()];
 }
 
-int Board::tt_winner_score() const {
-  int tmp = tt_score () > 0;
-  return  tmp + tmp - 1;
+Player Board::tt_winner() const {
+  return Player(tt_score () <= 0);
 }
 
 int Board::approx_score () const {
@@ -639,7 +636,7 @@ int Board::approx_score () const {
 }
 
 
-int Board::score () const {
+int Board::playout_score () const {
   int eye_score = 0;
 
   empty_v_for_each (this, v, {
@@ -656,8 +653,8 @@ Player Board::approx_winner () const {
 }
 
 
-Player Board::winner () const {
-  return Player (score () <= 0);
+Player Board::playout_winner () const {
+  return Player (playout_score () <= 0);
 }
 
 

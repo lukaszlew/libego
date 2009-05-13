@@ -15,70 +15,83 @@ public:                         // board interface
 
   Board ();
 
-  /* slow game functions */
-
-  void clear ();
-
-
+  // Gets, sets the komi value. Positive means adventage for black.
   float komi () const;
   void set_komi (float fkomi);
 
+  // Clears the board. It is faster to load(empty_board)
+  void clear ();
+
+  // Positional hash (just color of stones)
   Hash hash () const;
 
+  // Returns vertex forbidden by simple ko rule or Vertex::any()
   Vertex ko_v () const;
 
-  bool is_strict_legal (Player pl, Vertex v);
+  // Implemented by calling try_play. Slow.
+  bool is_legal (Player pl, Vertex v);
 
+  // Returns false if move is illegal - forbids suicide and superko. Slow.
   bool try_play (Player player, Vertex v);
 
+  // Undo move.
   bool undo ();
 
-  bool is_hash_repeated ();
+  /* Fast playout functions */ 
 
-  /* playout functions */ 
-
-  // can be use to initialize playout board
+  // Loads save_board into this board.
   void load (const Board* save_board);
 
-  // v has to point to empty vertex
-  // can't recognize play_suicide, will recognize ko
+  // Returns false for simple ko and single stone suicide.
   bool is_pseudo_legal (Player player, Vertex v);
 
+  // Returns true iff v is uncut eye of the player.
   bool is_eyelike (Player player, Vertex v);
 
-  // accept pass
-  // will ignore simple-ko ban
-  // will play single stone suicide
+  // Plays a move. Accepts passes, suicides and ko moves.
   void play_legal (Player player, Vertex v);
 
+  // Returns player on move.
   Player act_player () const;
+  
+  // Returns player that played last move.
   Player last_player () const;
+
+  // Returns a last played vertex or Vertex::any()
   Vertex last_play () const;
 
+  // Returns true if both players pass.
   bool both_player_pass ();
 
-  /* scoring functions */
+  /* Scoring functions */
 
-  // scoring uses integers, so to get a true result you need to
-  // substract 0.5 (white wins when score == 0)
+  // Scoring uses integers, so to get a true result you need to
+  // substract 0.5 (convention is that white wins when score == 0).
 
-  // returns 1 (-1) if v is occupied by or is an eye of Black(White)
-  // returns 0 otherwise
+  // Returns 1 (-1) if v is occupied by or is an eye of Black(White).
+  // Returns 0 for other empty vertices.
   int vertex_score (Vertex v);
 
   // Tromp-Taylor score.
   int tt_score() const;
-  int tt_winner_score() const;
+
+  // Winner according to tt_score.
+  Player tt_winner() const;
 
   // Difference in (number of stones + number of eyes) of each player + komi.
-  int score () const;
-  Player winner () const;
+  int playout_score () const;
 
-  // Difference in (number of stones) of each player + komi.
+  // Winner according to playout_score.
+  Player playout_winner () const;
+
+  // Difference in (number of stones) of each player + komi. Used with
+  // mercy heuristic.
   int approx_score () const;
+
+  // Winner according to approx_score.
   Player approx_winner () const;
 
-  /* auxiliary functions */
+  /* Auxiliary functions. May/will change. */
 
   bool load_from_ascii (istream& ifs);
   string to_string (Vertex mark_v = Vertex::any ()) const;
@@ -90,6 +103,7 @@ public:                         // board interface
 
 private: 
   Hash recalc_hash () const;
+  bool is_hash_repeated ();
 
   bool eye_is_ko (Player player, Vertex v);
   bool eye_is_suicide (Vertex v);

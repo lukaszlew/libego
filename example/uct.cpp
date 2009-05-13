@@ -280,7 +280,7 @@ public:
     assertc (uct_ac, tree.act_node ()->no_children());
 
     empty_v_for_each_and_pass (&base_board, v, {
-      if (base_board.is_strict_legal (pl, v))
+      if (base_board.is_legal (pl, v))
         tree.alloc_child (v);
     });
   }
@@ -310,8 +310,8 @@ public:
         
         Playout<SimplePolicy> (&policy, &play_board).run ();
 
-        int score = play_board.winner().get_idx (); // black -> 0, white -> 1
-        tree.update_history (1 - score - score); // black -> 1, white -> -1
+        int score = play_board.playout_winner().to_score();
+        tree.update_history (score); // black -> 1, white -> -1
         return;
       }
       
@@ -333,7 +333,7 @@ public:
       act_player = act_player.other();
 
       if (play_board.both_player_pass()) {
-        tree.update_history (play_board.tt_winner_score());
+        tree.update_history (play_board.tt_winner().to_score());
         return;
       }
 
