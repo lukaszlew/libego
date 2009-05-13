@@ -15,18 +15,12 @@ public:                         // board interface
 
   Board ();
 
-  // Gets, sets the komi value. Positive means adventage for black.
-  float komi () const;
-  void set_komi (float fkomi);
+  
+  /* Slow full rules implementation */
 
-  // Clears the board. It is faster to load(empty_board)
-  void clear ();
 
-  // Positional hash (just color of stones)
-  Hash hash () const;
-
-  // Returns vertex forbidden by simple ko rule or Vertex::any()
-  Vertex ko_v () const;
+  // Clears the board. (It is faster to load(empty_board))
+  void clear (float komi = -0.5);
 
   // Implemented by calling try_play. Slow.
   bool is_legal (Player pl, Vertex v);
@@ -34,10 +28,20 @@ public:                         // board interface
   // Returns false if move is illegal - forbids suicide and superko. Slow.
   bool try_play (Player player, Vertex v);
 
-  // Undo move.
+  // Undo move. Slow.
   bool undo ();
 
+  // Tromp-Taylor score.
+  // Scoring uses integers, so to get a true result you need to
+  // substract 0.5 (convention is that white wins when score == 0).
+  int tt_score() const;
+
+  // Winner according to tt_score.
+  Player tt_winner() const;
+
+
   /* Fast playout functions */ 
+
 
   // Loads save_board into this board.
   void load (const Board* save_board);
@@ -63,26 +67,20 @@ public:                         // board interface
   // Returns true if both players pass.
   bool both_player_pass ();
 
-  /* Scoring functions */
-
-  // Scoring uses integers, so to get a true result you need to
-  // substract 0.5 (convention is that white wins when score == 0).
-
-  // Returns 1 (-1) if v is occupied by or is an eye of Black(White).
-  // Returns 0 for other empty vertices.
-  int vertex_score (Vertex v);
-
-  // Tromp-Taylor score.
-  int tt_score() const;
-
-  // Winner according to tt_score.
-  Player tt_winner() const;
-
   // Difference in (number of stones + number of eyes) of each player + komi.
+  // See tt_score.
   int playout_score () const;
 
   // Winner according to playout_score.
   Player playout_winner () const;
+
+
+  /* Auxiliary functions. May/will change. */
+
+
+  // Returns 1 (-1) if v is occupied by or is an eye of Black(White).
+  // Returns 0 for other empty vertices.
+  int vertex_score (Vertex v);
 
   // Difference in (number of stones) of each player + komi. Used with
   // mercy heuristic.
@@ -91,7 +89,15 @@ public:                         // board interface
   // Winner according to approx_score.
   Player approx_winner () const;
 
-  /* Auxiliary functions. May/will change. */
+  // Gets, sets the komi value. Positive means adventage for black.
+  float komi () const;
+  void set_komi (float fkomi);
+
+  // Positional hash (just color of stones)
+  Hash hash () const;
+
+  // Returns vertex forbidden by simple ko rule or Vertex::any()
+  Vertex ko_v () const;
 
   bool load_from_ascii (istream& ifs);
   string to_string (Vertex mark_v = Vertex::any ()) const;

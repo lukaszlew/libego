@@ -129,8 +129,7 @@ bool Board::undo () {
   rep (mn, game_length-1)
     replay [mn] = move_history [mn];
 
-  clear ();
-  set_komi (old_komi); // TODO maybe last_player should be preserverd as well
+  clear (old_komi);  // TODO maybe last_player should be preserverd as well
 
   rep (mn, game_length-1)
     play_legal (replay [mn].get_player (), replay [mn].get_vertex ());
@@ -234,7 +233,7 @@ bool Board::load_from_ascii (istream& ifs) {
   char     c;
 
   Player    play_player[board_area];
-  Vertex  play_v[board_area];
+  Vertex    play_v[board_area];
   uint      play_cnt;
 
   clear ();
@@ -282,8 +281,8 @@ bool Board::load_from_ascii (istream& ifs) {
 }
 
 
-void Board::clear () {
-  set_komi (-0.5); // white wins the draws on default komi
+void Board::clear (float komi) {
+  set_komi (komi); // white wins the draws on default komi
   empty_v_cnt = 0;
   player_for_each (pl) {
     player_v_cnt [pl] = 0;
