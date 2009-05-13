@@ -15,6 +15,9 @@ public:
   uint get_idx () const;
 
   Player other () const;
+  
+  // Black -> 1, White -> -1
+  int to_score () const;
 
   string to_string () const;
 

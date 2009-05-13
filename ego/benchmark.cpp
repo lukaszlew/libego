@@ -39,7 +39,7 @@ namespace Benchmark {
     rep (ii, playout_cnt) {
       playout_board.load (&empty_board);
       if (playout.run () == pass_pass) {
-        (*win_cnt) [playout_board.winner ()] ++;
+        (*win_cnt) [playout_board.playout_winner ()] ++;
       }
     }
 

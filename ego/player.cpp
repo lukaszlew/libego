@@ -45,6 +45,10 @@ Player Player::other () const {
   return Player(idx ^ 1);
 }
   
+int Player::to_score () const {
+  return 1 - int(idx + idx) ;
+}
+
 string Player::to_string () const {
   if (idx == black_idx)
     return "B";
