@@ -255,7 +255,7 @@ public:
 
   Board&        base_board;
   Tree          tree;      // TODO sync tree->root with base_board
-  SimplePolicy  policy;
+  LocalPolicy   policy;
 
   Board play_board;
   
@@ -308,7 +308,7 @@ public:
           continue;            // try again
         }
         
-        Playout<SimplePolicy> (&policy, &play_board).run ();
+        Playout<LocalPolicy> (&policy, &play_board).run ();
 
         int score = play_board.winner().get_idx (); // black -> 0, white -> 1
         tree.update_history (1 - score - score); // black -> 1, white -> -1
