@@ -40,16 +40,37 @@ public:
   bool have_child;
 
 public:
-  #define node_for_each_child(node, act_node, i) do {       \
-    assertc (tree_ac, node!= NULL);                         \
-    Node* act_node;                                         \
-    vertex_for_each_all (v) {                               \
-      act_node = node->children[v];                         \
-      if (act_node == NULL) continue;                       \
-      i;                                                    \
-    }                                                       \
-  } while (false)
-  
+
+  // ------------------------------------------------------------------
+
+  class Iterator {
+  public:
+    Iterator(Node& parent) : parent_(parent), act_v_(0) { Sync (); }
+    Node& operator* () { return *parent_.children[act_v_]; }
+    void operator++ () { act_v_.next(); Sync (); }
+    operator bool () { return act_v_.in_range(); } 
+  private:
+    void Sync () {
+      while (act_v_.in_range () && parent_.children[act_v_] == NULL) {
+        act_v_.next();
+      }
+    }
+    Node& parent_;
+    Vertex act_v_;
+  };
+
+  // ------------------------------------------------------------------
+
+  Iterator all_children() {
+    return Iterator(*this);
+  }
+
+#define node_for_each_child(node, child, i)                      \
+  for(Node::Iterator ni(*node); ni; ++ni) {                      \
+    Node* child = &*ni;                                          \
+    i;                                                           \
+  }                                                              \
+
   void init (Player pl, Vertex v) {
     this->player = pl;
     this->v = v;
