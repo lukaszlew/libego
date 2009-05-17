@@ -21,11 +21,12 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#include <vector>
+#include <sstream>
 #include "stat.h"
 
-// uct parameters
-
 // ----------------------------------------------------------------------
+
 class Node {
 
 public:
@@ -108,59 +109,39 @@ public:
     return best_child;
   }
 
-  void rec_print (ostream& out, uint depth,
-                  float min_visit, float min_visit_parent) {
-    rep (d, depth) out << "  ";
-    out 
-      << player.to_string () << " " 
-      << v.to_string () << " " 
-      << stat.to_string() << " "
-      << endl;
-
-    rec_print_children (out, depth, min_visit, min_visit_parent);
-  }
-
-  void rec_print_children (ostream& out, uint depth, 
-                           float min_visit, float min_visit_parent) {
-    Node*  child_tab [Vertex::cnt]; // rough upper bound for the number of legal move
-    uint     child_tab_size;
-    uint     best_child_idx;
-    float    min_visit_cnt;
-    
-    child_tab_size  = 0;
-    best_child_idx  = 0;
-    min_visit_cnt   =
-      min_visit + 
-      stat.update_count() * min_visit_parent; 
-    // we want to be visited at least some percentage of parent's visit_cnt
-
-    // prepare for selection sort
-    node_for_each_child (this, child, child_tab [child_tab_size++] = child);
-
-    #define best_child child_tab [best_child_idx]
-
-    while (child_tab_size > 0) {
-      // find best child
-      rep(ii, child_tab_size) {
-        if ((player == Player::black ()) == 
-            (best_child->stat.mean() > child_tab [ii]->stat.mean()))
-          best_child_idx = ii;
-      }
-      // rec call
-      if (best_child->stat.update_count() >= min_visit_cnt)
-        child_tab [best_child_idx]->rec_print (out, depth + 1,
-                                               min_visit, min_visit_parent);
-      else break;
-
-      // remove best
-      best_child = child_tab [--child_tab_size];
+  struct CmpNodeMean { 
+    CmpNodeMean(Player player) : player_(player) {}
+    bool operator()(Node* a, Node* b) {
+      return (player_ == Player::black ()) == (a->stat.mean() < b->stat.mean());
     }
+    Player player_;
+  };
 
-    #undef best_child
-    
+  void rec_print (ostream& out, uint depth, float min_visit) {
+    rep (d, depth) out << "  ";
+    out << to_string () << endl;
+
+    vector <Node*> child_tab;
+    node_for_each_child (this, child, child_tab.push_back(child));
+    sort (child_tab.begin(), child_tab.end(), CmpNodeMean(player));
+
+    while (child_tab.size() > 0) {
+      Node* act_child = child_tab.front();
+      child_tab.erase(child_tab.begin());
+      if (act_child->stat.update_count() < min_visit) continue;
+      act_child->rec_print (out, depth + 1, min_visit);
+    }
   }
-};
 
+  string to_string() {
+    stringstream s;
+    s << player.to_string () << " " 
+      << v.to_string () << " " 
+      << stat.to_string();
+    return s.str();
+  }
+
+};
 
 
 // class Tree
@@ -230,9 +211,9 @@ public:
        history [hi]->stat.update (sample);
   }
 
-  string to_string (float min_visit, float min_visit_parent) { 
+  string to_string (float min_visit) { 
     ostringstream out_str;
-    history [0]->rec_print (out_str, 0, min_visit, min_visit_parent); 
+    history [0]->rec_print (out_str, 0, min_visit); 
     return out_str.str ();
   }
 };
@@ -266,7 +247,7 @@ public:
     uct_genmove_playout_cnt        = 100000;
     mature_update_count_threshold  = 100.0;
 
-    min_visit         = 500.0;
+    min_visit         = 2500.0;
     min_visit_parent  = 0.02;
 
     resign_mean = 0.95;
@@ -350,7 +331,7 @@ public:
     Node* best = tree.history [0]->find_most_explored_child ();
     assertc (uct_ac, best != NULL);
 
-    cerr << tree.to_string (min_visit, min_visit_parent) << endl;
+    cerr << tree.to_string (min_visit) << endl;
     if ((player == Player::black () && best->stat.mean() < -resign_mean) ||
         (player == Player::white () && best->stat.mean() >  resign_mean)) {
       return Vertex::resign ();
