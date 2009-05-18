@@ -137,11 +137,10 @@ bool Board::undo () {
   return true;
 }
 
-bool Board::is_legal (Player pl, Vertex v) {
-  if (try_play (pl, v) == false) return false;
-  bool ok = undo ();
-  assert(ok);
-  return true;
+bool Board::is_legal (Player pl, Vertex v) const {
+  Board tmp;
+  tmp.load(this);
+  return tmp.try_play (pl, v);
 }
 
 bool Board::is_hash_repeated () {
@@ -578,6 +577,10 @@ void Board::remove_stone (Vertex v) {
 // TODO/FIXME last_player should be preserverd in undo function
 Player Board::act_player () const {
   return last_player_.other ();
+}
+
+void Board::set_act_player (Player pl) {
+  last_player_ = pl.other ();
 }
 
 Player Board::last_player () const {

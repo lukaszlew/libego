@@ -79,8 +79,8 @@ public:
     children[v] = NULL;
   }
 
-  bool no_children () {
-    return !have_child;
+  bool have_children () {
+    return have_child;
   }
 
   Vertex uct_child (float explore_rate) {
@@ -218,7 +218,7 @@ public:
   }
   
   void delete_act_node (Vertex v) {
-    assertc (tree_ac, act_node ()->no_children ());
+    assertc (tree_ac, !act_node ()->have_children ());
     assertc (tree_ac, history_top > 0);
     history [history_top-1]->remove_child (v);
     node_pool.free (act_node ());
@@ -263,89 +263,95 @@ public:
     resign_mean = 0.95;
   }
 
-  void root_ensure_children_legality (Player pl) {
-    // cares about superko in root (only)
-    tree.init(pl);
+  Vertex genmove () {
+    tree.init(base_board.act_player());
+    root_ensure_children_legality ();
 
+    rep (ii, uct_genmove_playout_cnt)
+      do_playout ();
+
+    tree.history_reset();
+
+    Vertex best_v   = tree.act_node()->most_explored_child ();
+    float best_mean = tree.act_node()->child(best_v)->stat.mean();
+    
+    if ((base_board.act_player() == Player::black () && best_mean < -resign_mean) ||
+        (base_board.act_player() == Player::white () && best_mean >  resign_mean)) {
+      best_v = Vertex::resign ();
+    }
+
+    cerr << tree.to_string (min_visit) << endl;
+
+    return best_v;
+  }
+
+private:
+  // take care about strict legality (superko) in root
+  void root_ensure_children_legality () {
     assertc (uct_ac, tree.history_top == 0);
-    assertc (uct_ac, tree.act_node ()->no_children());
+    assertc (uct_ac, !tree.act_node ()->have_children());
 
     empty_v_for_each_and_pass (&base_board, v, {
-      if (base_board.is_legal (pl, v))
+      if (base_board.is_legal (base_board.act_player(), v))
         tree.alloc_child (v);
     });
   }
 
-  flatten 
-  void do_playout (Player first_player){
-    Player act_player = first_player;
-    
+  bool do_tree_move () {
+    Vertex v = tree.uct_descend (explore_rate);
+      
+    if (play_board.is_pseudo_legal (play_board.act_player(), v) == false) {
+      tree.delete_act_node (v);
+      return false;
+    }
+      
+    play_board.play_legal (play_board.act_player(), v);
+
+    if (play_board.last_move_status != Board::play_ok) {
+      tree.delete_act_node (v);
+      return false;
+    }
+
+    return true;
+  }
+
+  bool try_add_children () {
+    // If the leaf is ready expand the tree -- add children - 
+    // all potential legal v (i.e.empty)
+    if (tree.act_node()->stat.update_count() >
+        mature_update_count_threshold) {
+      empty_v_for_each_and_pass (&play_board, v, {
+        tree.alloc_child (v); // TODO simple ko should be handled here
+        // (suicides and ko recaptures, needs to be dealt with later)
+      });
+      return true;
+    }
+    return false;
+  }
+
+  void do_playout (){
     play_board.load (&base_board);
     tree.history_reset ();
     
-    do {
-      if (tree.act_node ()->no_children ()) { // we're finishing it
-        
-        // If the leaf is ready expand the tree -- add children - 
-        // all potential legal v (i.e.empty)
-        if (tree.act_node()->stat.update_count() >
-            mature_update_count_threshold) 
-        {
-          empty_v_for_each_and_pass (&play_board, v, {
-            tree.alloc_child (v); // TODO simple ko should be handled here
-            // (suicides and ko recaptures, needs to be dealt with later)
-          });
-          continue;            // try again
-        }
-        
-        Playout<SimplePolicy> (&policy, &play_board).run ();
-
-        int score = play_board.playout_winner().to_score();
-        tree.update_history (score); // black -> 1, white -> -1
-        return;
-      }
-      
-      Vertex v = tree.uct_descend (explore_rate);
-      
-      if (play_board.is_pseudo_legal (act_player, v) == false) {
-        tree.delete_act_node (v);
-        return;
-      }
-      
-      play_board.play_legal (act_player, v);
-
-      if (play_board.last_move_status != Board::play_ok) {
-        tree.delete_act_node (v);
-        return;
-      }
-
-      act_player = act_player.other();
+    while(tree.act_node ()->have_children()) {
+      if (!do_tree_move()) return;
 
       if (play_board.both_player_pass()) {
         tree.update_history (play_board.tt_winner().to_score());
         return;
       }
-
-    } while (true);
-    
-  }
-  
-
-  Vertex genmove (Player player) {
-
-    root_ensure_children_legality (player);
-
-    rep (ii, uct_genmove_playout_cnt) do_playout (player);
-    Vertex best_v = tree.history [0]->most_explored_child ();
-    Node* best = tree.history [0]->child(best_v);
-    assertc (uct_ac, best != NULL);
-
-    cerr << tree.to_string (min_visit) << endl;
-    if ((player == Player::black () && best->stat.mean() < -resign_mean) ||
-        (player == Player::white () && best->stat.mean() >  resign_mean)) {
-      return Vertex::resign ();
     }
-    return best_v;
+    
+    if (try_add_children()) {
+      bool ok = do_tree_move();
+      assertc(uct_ac, ok);
+    }
+
+    Playout<SimplePolicy> (&policy, &play_board).run ();
+
+    int score = play_board.playout_winner().to_score();
+    tree.update_history (score); // black -> 1, white -> -1
+    return;
   }
   
 private:

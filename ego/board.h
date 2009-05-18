@@ -23,7 +23,7 @@ public:                         // board interface
   void clear (float komi = -0.5);
 
   // Implemented by calling try_play. Slow.
-  bool is_legal (Player pl, Vertex v);
+  bool is_legal (Player pl, Vertex v) const;
 
   // Returns false if move is illegal - forbids suicide and superko. Slow.
   bool try_play (Player player, Vertex v);
@@ -57,6 +57,9 @@ public:                         // board interface
 
   // Returns player on move.
   Player act_player () const;
+  
+  // Sets player on move. Play-undo will forget this set.(use pass)
+  void set_act_player (Player);
   
   // Returns player that played last move.
   Player last_player () const;
