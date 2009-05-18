@@ -122,7 +122,11 @@ public:
   struct CmpNodeMean { 
     CmpNodeMean(Player player) : player_(player) {}
     bool operator()(Node* a, Node* b) {
-      return (player_ == Player::black ()) == (a->stat.mean() < b->stat.mean());
+      if (player_ == Player::black ()) {
+        return a->stat.mean() < b->stat.mean();
+      } else {
+        return a->stat.mean() > b->stat.mean();
+      }
     }
     Player player_;
   };
