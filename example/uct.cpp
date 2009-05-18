@@ -28,17 +28,6 @@
 // ----------------------------------------------------------------------
 
 class Node {
-
-public:
-  Stat stat;
-
-  Player player;
-  Vertex v;
-  
-  // TODO this should be replaced by Stat
-  FastMap<Vertex, Node*> children;
-  bool have_child;
-
 public:
 
   // ------------------------------------------------------------------
@@ -79,23 +68,23 @@ public:
     have_child = false;
   }
 
-  void add_child (Node* new_child) { // TODO sorting?
+  void add_child (Vertex v, Node* new_child) { // TODO sorting?
     have_child = true;
     // TODO assert
-    children[new_child->v] = new_child;
+    children[v] = new_child;
   }
 
-  void remove_child (Node* del_child) { // TODO inefficient
-    assertc (tree_ac, del_child != NULL);
-    children[del_child->v] = NULL;
+  void remove_child (Vertex v) { // TODO inefficient
+    assertc (tree_ac, children[v] != NULL);
+    children[v] = NULL;
   }
 
   bool no_children () {
     return !have_child;
   }
 
-  Node* find_uct_child (float explore_rate) {
-    Node* best_child = NULL;
+  Vertex uct_child (float explore_rate) {
+    Vertex best_v = Vertex::any();
     float best_urgency = -large_float;
     float explore_coeff = log (stat.update_count()) * explore_rate;
     
@@ -105,16 +94,16 @@ public:
       float child_urgency = child->stat.ucb (child->player, explore_coeff);
       if (child_urgency > best_urgency) {
         best_urgency  = child_urgency;
-        best_child    = child;
+        best_v    = v;
       }
     }
 
-    assertc (tree_ac, best_child != NULL); // at least pass
-    return best_child;
+    assertc (tree_ac, best_v != Vertex::any()); // at least pass
+    return best_v;
   }
 
-  Node* find_most_explored_child () {
-    Node* best_child = NULL;
+  Vertex most_explored_child () {
+    Vertex best = Vertex::any();
     float best_update_count = -1;
 
     vertex_for_each_all(v) {
@@ -122,12 +111,12 @@ public:
       if (child == NULL) continue;
       if (child->stat.update_count() > best_update_count) {
         best_update_count = child->stat.update_count();
-        best_child       = child;
+        best = v;
       }
     }
 
-    assertc (tree_ac, best_child != NULL);
-    return best_child;
+    assertc (tree_ac, best != Vertex::any());
+    return best;
   }
 
   struct CmpNodeMean { 
@@ -162,6 +151,17 @@ public:
     return s.str();
   }
 
+  Node* child(Vertex v) {
+    return children[v];
+  }
+
+public:
+  Stat   stat;
+  Player player;
+  Vertex v;
+private:
+  FastMap<Vertex, Node*> children;
+  bool have_child;
 };
 
 
@@ -186,7 +186,7 @@ public:
   void init (Player pl) {
     node_pool.reset();
     history [0] = node_pool.malloc ();
-    history [0]->init (pl.other(), Vertex::any ());
+    history [0]->init (pl.other(), Vertex::any());
     history_top = 0;
   }
 
@@ -198,23 +198,25 @@ public:
     return history [history_top];
   }
   
-  void uct_descend (float explore_rate) {
-    history [history_top + 1] = act_node ()->find_uct_child (explore_rate);
+  Vertex uct_descend (float explore_rate) {
+    Vertex v = act_node ()->uct_child (explore_rate);
+    history [history_top + 1] = act_node ()->child(v);
     history_top++;
     assertc (tree_ac, act_node () != NULL);
+    return v;
   }
   
   void alloc_child (Vertex v) {
     Node* new_node;
     new_node = node_pool.malloc ();
     new_node->init (act_node()->player.other(), v);
-    act_node ()->add_child (new_node);
+    act_node ()->add_child (v, new_node);
   }
   
-  void delete_act_node () {
+  void delete_act_node (Vertex v) {
     assertc (tree_ac, act_node ()->no_children ());
     assertc (tree_ac, history_top > 0);
-    history [history_top-1]->remove_child (act_node ());
+    history [history_top-1]->remove_child (v);
     node_pool.free (act_node ());
   }
   
@@ -290,7 +292,6 @@ public:
   flatten 
   void do_playout (Player first_player){
     Player act_player = first_player;
-    Vertex v;
     
     play_board.load (&base_board);
     tree.history_reset ();
@@ -317,18 +318,17 @@ public:
         return;
       }
       
-      tree.uct_descend (explore_rate);
-      v = tree.act_node ()->v;
+      Vertex v = tree.uct_descend (explore_rate);
       
       if (play_board.is_pseudo_legal (act_player, v) == false) {
-        tree.delete_act_node ();
+        tree.delete_act_node (v);
         return;
       }
       
       play_board.play_legal (act_player, v);
 
       if (play_board.last_move_status != Board::play_ok) {
-        tree.delete_act_node ();
+        tree.delete_act_node (v);
         return;
       }
 
@@ -349,7 +349,8 @@ public:
     root_ensure_children_legality (player);
 
     rep (ii, uct_genmove_playout_cnt) do_playout (player);
-    Node* best = tree.history [0]->find_most_explored_child ();
+    Vertex best_v = tree.history [0]->most_explored_child ();
+    Node* best = tree.history [0]->child(best_v);
     assertc (uct_ac, best != NULL);
 
     cerr << tree.to_string (min_visit) << endl;
@@ -357,7 +358,7 @@ public:
         (player == Player::white () && best->stat.mean() >  resign_mean)) {
       return Vertex::resign ();
     }
-    return best->v;
+    return best_v;
   }
   
 };
