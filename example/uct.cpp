@@ -251,23 +251,6 @@ public:
 
 class Uct {
 public:
-
-  float explore_rate;
-  uint  uct_genmove_playout_cnt;
-  float mature_update_count_threshold;
-
-  float min_visit;
-  float min_visit_parent;
-
-  float resign_mean;
-
-  Board&        base_board;
-  Tree          tree;      // TODO sync tree->root with base_board
-  SimplePolicy  policy;
-
-  Board play_board;
-  
-public:
   
   Uct (Board& base_board_) : base_board (base_board_), policy(global_random) { 
     explore_rate                   = 1.0;
@@ -365,4 +348,22 @@ public:
     return best_v;
   }
   
+private:
+
+  float explore_rate;
+  uint  uct_genmove_playout_cnt;
+  float mature_update_count_threshold;
+
+  float min_visit;
+  float min_visit_parent;
+
+  float resign_mean;
+
+  Board&        base_board;
+  Tree          tree;      // TODO sync tree->root with base_board
+  SimplePolicy  policy;
+
+  Board play_board;
+
+
 };
