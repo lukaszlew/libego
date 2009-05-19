@@ -35,7 +35,11 @@ public:
   class Iterator {
   public:
     Iterator(Node& parent) : parent_(parent), act_v_(0) { Sync (); }
-    Node& operator* () { return *parent_.children[act_v_]; }
+
+    Node& operator* ()  { return *parent_.children[act_v_]; }
+    Node* operator-> () { return parent_.children[act_v_]; }
+    operator Node* ()   { return parent_.children[act_v_]; }
+
     void operator++ () { act_v_.next(); Sync (); }
     operator bool () { return act_v_.in_range(); } 
   private:
@@ -53,12 +57,6 @@ public:
   Iterator all_children() {
     return Iterator(*this);
   }
-
-#define node_for_each_child(node, child, i)                      \
-  for(Node::Iterator ni(*node); ni; ++ni) {                      \
-    Node* child = &*ni;                                          \
-    i;                                                           \
-  }                                                              \
 
   void init (Player pl, Vertex v) {
     this->player = pl;
@@ -100,7 +98,9 @@ public:
     out << to_string () << endl;
 
     vector <Node*> child_tab;
-    node_for_each_child (this, child, child_tab.push_back(child));
+    for(Node::Iterator child(*this); child; ++child)
+      child_tab.push_back(child);
+
     sort (child_tab.begin(), child_tab.end(), CmpNodeMean(player));
 
     while (child_tab.size() > 0) {
@@ -185,10 +185,10 @@ public:
   }
   
   void free_subtree (Node* parent) {
-    node_for_each_child (parent, child, {
-      free_subtree (child);
-      node_pool.free (child);
-    });
+    for(Node::Iterator child(*parent); child; ++child) {
+      free_subtree(child);
+      node_pool.free(child);
+    };
   }
 
   // TODO free history (for sync with base board)
@@ -263,13 +263,13 @@ private:
     float best_urgency = -large_float;
     float explore_coeff = log (parent->stat.update_count()) * explore_rate;
 
-    node_for_each_child(parent, child, {
-      float child_urgency = child->stat.ucb (child->player, explore_coeff);
+    for(Node::Iterator ni(*parent); ni; ++ni) {
+      float child_urgency = ni->stat.ucb (ni->player, explore_coeff);
       if (child_urgency > best_urgency) {
         best_urgency  = child_urgency;
-        best_v = child->v;
+        best_v = ni->v;
       }
-    });
+    }
 
     assertc (tree_ac, best_v != Vertex::any()); // at least pass
     return best_v;
@@ -280,12 +280,12 @@ private:
     Vertex best = Vertex::any();
     float best_update_count = -1;
 
-    node_for_each_child(tree.act_node(), child, {
+    for(Node::Iterator child(*tree.act_node()); child; ++child) {
       if (child->stat.update_count() > best_update_count) {
         best_update_count = child->stat.update_count();
         best = child->v;
       }
-    });
+    }
 
     assertc (tree_ac, best != Vertex::any());
     return best;
