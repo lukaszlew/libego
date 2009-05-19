@@ -72,7 +72,7 @@ public:
 
   // ------------------------------------------------------------------
 
-  Iterator all_children() {
+  Iterator children() {
     return Iterator(*this);
   }
 
@@ -97,36 +97,6 @@ public:
 
   bool have_children () {
     return have_child;
-  }
-
-  struct CmpNodeMean { 
-    CmpNodeMean(Player player) : player_(player) {}
-    bool operator()(Node* a, Node* b) {
-      if (player_ == Player::black ()) {
-        return a->stat.mean() < b->stat.mean();
-      } else {
-        return a->stat.mean() > b->stat.mean();
-      }
-    }
-    Player player_;
-  };
-
-  void rec_print (ostream& out, uint depth, float min_visit) {
-    rep (d, depth) out << "  ";
-    out << to_string () << endl;
-
-    vector <Node*> child_tab;
-    for(Node::Iterator child(*this); child; ++child)
-      child_tab.push_back(child);
-
-    sort (child_tab.begin(), child_tab.end(), CmpNodeMean(player));
-
-    while (child_tab.size() > 0) {
-      Node* act_child = child_tab.front();
-      child_tab.erase(child_tab.begin());
-      if (act_child->stat.update_count() < min_visit) continue;
-      act_child->rec_print (out, depth + 1, min_visit);
-    }
   }
 
   Node* child(Vertex v) {
@@ -194,12 +164,6 @@ public:
        path [hi]->stat.update (sample);
   }
 
-  string to_string (float min_visit) { 
-    ostringstream out_str;
-    path.front()->rec_print (out_str, 0, min_visit); 
-    return out_str.str ();
-  }
-
 private:
 
   static const uint uct_max_nodes = 1000000;
@@ -208,6 +172,45 @@ private:
   vector<Node*> path;
 
 };
+
+
+struct CmpNodeMean { 
+  CmpNodeMean(Player player) : player_(player) {}
+  bool operator()(Node* a, Node* b) {
+    if (player_ == Player::black ()) {
+      return a->stat.mean() < b->stat.mean();
+    } else {
+      return a->stat.mean() > b->stat.mean();
+    }
+  }
+  Player player_;
+};
+
+
+void Node_rec_print (Node* node, ostream& out, uint depth, float min_visit) {
+  rep (d, depth) out << "  ";
+  out << node->to_string () << endl;
+
+  vector <Node*> child_tab;
+  for(Node::Iterator child(*node); child; ++child)
+    child_tab.push_back(child);
+
+  sort (child_tab.begin(), child_tab.end(), CmpNodeMean(node->player));
+
+  while (child_tab.size() > 0) {
+    Node* act_child = child_tab.front();
+    child_tab.erase(child_tab.begin());
+    if (act_child->stat.update_count() < min_visit) continue;
+    Node_rec_print (act_child, out, depth + 1, min_visit);
+  }
+}
+
+
+string Node_to_string (Node* node, float min_visit) { 
+  ostringstream out_str;
+  Node_rec_print (node, out_str, 0, min_visit); 
+  return out_str.str ();
+}
 
 // -----------------------------------------------------------------------------
 
@@ -242,7 +245,7 @@ public:
       best_v = Vertex::resign ();
     }
 
-    cerr << tree.to_string (min_visit) << endl;
+    cerr << Node_to_string (tree.act_node(), min_visit) << endl;
 
     return best_v;
   }
