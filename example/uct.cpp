@@ -25,7 +25,7 @@
 #include <sstream>
 #include "stat.h"
 
-// ----------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 class NodeData {
 public:
@@ -43,6 +43,8 @@ public:
   Vertex v;
 };
 
+// -----------------------------------------------------------------------------
+
 class Node : public NodeData {
 public:
 
@@ -52,15 +54,15 @@ public:
   public:
     Iterator(Node& parent) : parent_(parent), act_v_(0) { Sync (); }
 
-    Node& operator* ()  { return *parent_.children[act_v_]; }
-    Node* operator-> () { return parent_.children[act_v_]; }
-    operator Node* ()   { return parent_.children[act_v_]; }
+    Node& operator* ()  { return *parent_.children_[act_v_]; }
+    Node* operator-> () { return parent_.children_[act_v_]; }
+    operator Node* ()   { return parent_.children_[act_v_]; }
 
     void operator++ () { act_v_.next(); Sync (); }
     operator bool () { return act_v_.in_range(); } 
   private:
     void Sync () {
-      while (act_v_.in_range () && parent_.children[act_v_] == NULL) {
+      while (act_v_.in_range () && parent_.children_[act_v_] == NULL) {
         act_v_.next();
       }
     }
@@ -78,19 +80,19 @@ public:
     this->player = pl;
     this->v = v;
     vertex_for_each_all (v)
-      children[v] = NULL;
+      children_[v] = NULL;
     have_child = false;
   }
 
   void add_child (Vertex v, Node* new_child) { // TODO sorting?
     have_child = true;
     // TODO assert
-    children[v] = new_child;
+    children_[v] = new_child;
   }
 
   void remove_child (Vertex v) { // TODO inefficient
-    assertc (tree_ac, children[v] != NULL);
-    children[v] = NULL;
+    assertc (tree_ac, children_[v] != NULL);
+    children_[v] = NULL;
   }
 
   bool have_children () {
@@ -128,27 +130,17 @@ public:
   }
 
   Node* child(Vertex v) {
-    return children[v];
+    return children_[v];
   }
 
 private:
-  FastMap<Vertex, Node*> children;
+  FastMap<Vertex, Node*> children_;
   bool have_child;
 };
 
-
-// class Tree
+// -----------------------------------------------------------------------------
 
 class Tree {
-
-  static const uint uct_max_depth = 1000;
-  static const uint uct_max_nodes = 1000000;
-
-public:
-
-  FastPool <Node> node_pool;
-  vector<Node*> path;
-
 public:
 
   Tree () : node_pool(uct_max_nodes) {
@@ -207,11 +199,17 @@ public:
     path.front()->rec_print (out_str, 0, min_visit); 
     return out_str.str ();
   }
+
+private:
+
+  static const uint uct_max_nodes = 1000000;
+
+  FastPool <Node> node_pool;
+  vector<Node*> path;
+
 };
 
-
-// class Uct
-
+// -----------------------------------------------------------------------------
 
 class Uct {
 public:
