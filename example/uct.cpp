@@ -27,7 +27,23 @@
 
 // ----------------------------------------------------------------------
 
-class Node {
+class NodeData {
+public:
+  string to_string() {
+    stringstream s;
+    s << player.to_string () << " " 
+      << v.to_string () << " " 
+      << stat.to_string();
+    return s.str();
+  }
+
+public:
+  Stat   stat;
+  Player player;
+  Vertex v;
+};
+
+class Node : public NodeData {
 public:
 
   // ------------------------------------------------------------------
@@ -111,22 +127,10 @@ public:
     }
   }
 
-  string to_string() {
-    stringstream s;
-    s << player.to_string () << " " 
-      << v.to_string () << " " 
-      << stat.to_string();
-    return s.str();
-  }
-
   Node* child(Vertex v) {
     return children[v];
   }
 
-public:
-  Stat   stat;
-  Player player;
-  Vertex v;
 private:
   FastMap<Vertex, Node*> children;
   bool have_child;
