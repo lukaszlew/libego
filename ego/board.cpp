@@ -591,6 +591,9 @@ Vertex Board::last_play() const {
   return last_play_[last_player()];
 }
 
+Move Board::last_move() const {
+  return Move(last_player(), last_play());
+}
 
 bool Board::both_player_pass () {
   return

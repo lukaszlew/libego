@@ -110,6 +110,8 @@ public:                         // board interface
 
   uint last_capture_size ();
 
+  Move last_move () const;
+
 private: 
   Hash recalc_hash () const;
   bool is_hash_repeated ();
