@@ -83,42 +83,6 @@ public:
     return have_child;
   }
 
-  Vertex uct_child (float explore_rate) {
-    Vertex best_v = Vertex::any();
-    float best_urgency = -large_float;
-    float explore_coeff = log (stat.update_count()) * explore_rate;
-    
-    vertex_for_each_all(v) {
-      Node* child = children[v];
-      if (child == NULL) continue;
-      float child_urgency = child->stat.ucb (child->player, explore_coeff);
-      if (child_urgency > best_urgency) {
-        best_urgency  = child_urgency;
-        best_v    = v;
-      }
-    }
-
-    assertc (tree_ac, best_v != Vertex::any()); // at least pass
-    return best_v;
-  }
-
-  Vertex most_explored_child () {
-    Vertex best = Vertex::any();
-    float best_update_count = -1;
-
-    vertex_for_each_all(v) {
-      Node* child = children[v];
-      if (child == NULL) continue;
-      if (child->stat.update_count() > best_update_count) {
-        best_update_count = child->stat.update_count();
-        best = v;
-      }
-    }
-
-    assertc (tree_ac, best != Vertex::any());
-    return best;
-  }
-
   struct CmpNodeMean { 
     CmpNodeMean(Player player) : player_(player) {}
     bool operator()(Node* a, Node* b) {
@@ -268,7 +232,7 @@ public:
 
     tree.history_reset();
 
-    Vertex best_v   = tree.act_node()->most_explored_child ();
+    Vertex best_v   = most_explored_root_move ();
     float best_mean = tree.act_node()->child(best_v)->stat.mean();
     
     if ((base_board.act_player() == Player::black () && best_mean < -resign_mean) ||
@@ -293,8 +257,43 @@ private:
     });
   }
 
+  Vertex uct_child_move() {
+    Node* parent = tree.act_node ();
+    Vertex best_v = Vertex::any();
+    float best_urgency = -large_float;
+    float explore_coeff = log (parent->stat.update_count()) * explore_rate;
+
+    node_for_each_child(parent, child, {
+      float child_urgency = child->stat.ucb (child->player, explore_coeff);
+      if (child_urgency > best_urgency) {
+        best_urgency  = child_urgency;
+        best_v = child->v;
+      }
+    });
+
+    assertc (tree_ac, best_v != Vertex::any()); // at least pass
+    return best_v;
+  }
+
+  Vertex most_explored_root_move () {
+    tree.history_reset();
+    Vertex best = Vertex::any();
+    float best_update_count = -1;
+
+    node_for_each_child(tree.act_node(), child, {
+      if (child->stat.update_count() > best_update_count) {
+        best_update_count = child->stat.update_count();
+        best = child->v;
+      }
+    });
+
+    assertc (tree_ac, best != Vertex::any());
+    return best;
+  }
+
+
   bool do_tree_move () {
-    Vertex v = tree.act_node ()->uct_child (explore_rate);
+    Vertex v = uct_child_move();
     tree.descend (v);
       
     if (play_board.is_pseudo_legal (play_board.act_player(), v) == false) {
