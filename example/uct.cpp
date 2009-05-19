@@ -179,8 +179,7 @@ class Tree {
 public:
 
   FastPool <Node> node_pool;
-  Node*           history [uct_max_depth];
-  uint            history_top;
+  vector<Node*> path;
 
 public:
 
@@ -189,25 +188,22 @@ public:
 
   void init (Player pl) {
     node_pool.reset();
-    history [0] = node_pool.malloc ();
-    history [0]->init (pl.other(), Vertex::any());
-    history_top = 0;
+    path.clear();
+    path.push_back(node_pool.malloc());
+    path.back()->init (pl.other(), Vertex::any());
   }
 
   void history_reset () {
-    history_top = 0;
+    path.resize(1);
   }
   
   Node* act_node () {
-    return history [history_top];
+    return path.back();
   }
   
-  Vertex uct_descend (float explore_rate) {
-    Vertex v = act_node ()->uct_child (explore_rate);
-    history [history_top + 1] = act_node ()->child(v);
-    history_top++;
+  void descend (Vertex v) {
+    path.push_back(path.back()->child(v));
     assertc (tree_ac, act_node () != NULL);
-    return v;
   }
   
   void alloc_child (Vertex v) {
@@ -219,9 +215,9 @@ public:
   
   void delete_act_node (Vertex v) {
     assertc (tree_ac, !act_node ()->have_children ());
-    assertc (tree_ac, history_top > 0);
-    history [history_top-1]->remove_child (v);
-    node_pool.free (act_node ());
+    assertc (tree_ac, path.size() >= 2);
+    path.pop_back();
+    path.back()->remove_child (v);
   }
   
   void free_subtree (Node* parent) {
@@ -234,19 +230,19 @@ public:
   // TODO free history (for sync with base board)
   
   void update_history (float sample) {
-    rep (hi, history_top+1) 
-       history [hi]->stat.update (sample);
+    rep (hi, path.size())
+       path [hi]->stat.update (sample);
   }
 
   string to_string (float min_visit) { 
     ostringstream out_str;
-    history [0]->rec_print (out_str, 0, min_visit); 
+    path.front()->rec_print (out_str, 0, min_visit); 
     return out_str.str ();
   }
 };
 
 
- // class Uct
+// class Uct
 
 
 class Uct {
@@ -288,7 +284,7 @@ public:
 private:
   // take care about strict legality (superko) in root
   void root_ensure_children_legality () {
-    assertc (uct_ac, tree.history_top == 0);
+    //assertc (uct_ac, tree.history_top == 1);
     assertc (uct_ac, !tree.act_node ()->have_children());
 
     empty_v_for_each_and_pass (&base_board, v, {
@@ -298,7 +294,8 @@ private:
   }
 
   bool do_tree_move () {
-    Vertex v = tree.uct_descend (explore_rate);
+    Vertex v = tree.act_node ()->uct_child (explore_rate);
+    tree.descend (v);
       
     if (play_board.is_pseudo_legal (play_board.act_player(), v) == false) {
       tree.delete_act_node (v);
