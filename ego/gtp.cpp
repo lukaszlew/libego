@@ -22,13 +22,15 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <fstream>
+#include <string>
 
 #include "gtp.h"
 #include "testing.h"
 
 // ----------------------------------------------------------------------
 
-GtpResult::GtpResult () : status_ (status_success) { 
+GtpResult GtpResult::gfx () {
+  return GtpResult (status_gfx, "");
 }
 
 GtpResult GtpResult::success (string response) {
@@ -52,11 +54,89 @@ bool GtpResult::quit_loop () {
 }
 
 string GtpResult::to_string () {
-  return status_marker () + " " + response_ + "\n\n";
+  // sanitize return string
+  string res = response();
+  remove_empty_lines         (&res);
+  remove_trailing_whitespace (&res);
+  return status_marker () + " " + res + "\n\n";
+}
+
+string GtpResult::response () {
+  if (status_ != status_gfx) return response_;
+
+  stringstream influence, label, var, circle, triangle, square, status;
+  bool influence_b = false;
+  bool label_b = false;
+  bool var_b = false;
+  bool circle_b = false;
+  bool triangle_b = false;
+  bool square_b = false;
+  bool status_b = false;
+
+  influence << "INFLUENCE";
+  label     << "LABEL";
+  var       << "VAR";
+  circle    << "CIRCLE";
+  triangle  << "TRIANGLE";
+  square    << "SQUARE";
+  status    << "TEXT";
+
+  vertex_for_each_all(v) {
+    if (!v.is_on_board()) continue;
+    if (influence_[v] != 0.0) {
+      influence << " " << v << " " << influence_[v];
+      influence_b = true;
+    }
+    if (label_[v] != "") {
+      label << " " << v << " \"" << label_[v] << "\"";
+      label_b = true;
+    }
+  }
+  for(vector<Move>::iterator ii = var_.begin();
+      ii != var_.end(); ii++) {
+    var << " " << ii->to_string();
+    var_b = true;
+  }
+  for(vector<Vertex>::iterator ii = circle_.begin();
+      ii != circle_.end(); ii++) {
+    circle << " " << *ii;
+    circle_b = true;
+  }
+  for(vector<Vertex>::iterator ii = triangle_.begin();
+      ii != triangle_.end(); ii++) {
+    triangle << " " << *ii;
+    triangle_b = true;
+  }
+  for(vector<Vertex>::iterator ii = square_.begin();
+      ii != square_.end(); ii++) {
+    square << " " << *ii;
+    square_b = true;
+  }
+
+  status << " \"" << status_text_<< "\"";
+  status_b = status_text_ != "";
+
+  influence << endl;
+  label     << endl;
+  var       << endl;
+  circle    << endl;
+  triangle  << endl;
+  square    << endl;
+  status    << endl;
+
+  return
+    (influence_b ? influence.str() : "") +
+    (label_b     ? label.str()     : "") +
+    (var_b       ? var.str()       : "") +
+    (circle_b    ? circle.str()    : "") +
+    (triangle_b  ? triangle.str()  : "") +
+    (square_b    ? square.str()    : "") +
+    (status_b    ? status.str()    : "");
 }
 
 string GtpResult::status_marker () {
   switch (status_) {
+  case status_gfx:     return "=";
   case status_success: return "=";
   case status_failure: return "?";
   case status_quit:    return "=";
@@ -64,11 +144,36 @@ string GtpResult::status_marker () {
   }
 }
 
-GtpResult::GtpResult (Status status, string response) 
-  : status_ (status), response_ (response) 
+void GtpResult::set_influence(Vertex v, float val) {
+  influence_[v] = val;
+}
+
+void GtpResult::set_label(Vertex v, const string& label) {
+  label_[v] = label;
+}
+
+void GtpResult::add_symbol(Vertex v, GfxSymbol s) {
+  switch(s) {
+  case circle:   circle_.push_back(v); return;
+  case triangle: triangle_.push_back(v); return;
+  case square:   square_.push_back(v); return;
+  default: assert(false);
+  }
+}
+
+void GtpResult::add_var_move(Move m) {
+  var_.push_back(m);
+}
+
+void GtpResult::set_status_text(const string& status) {
+  status_text_ = status;
+}
+
+GtpResult::GtpResult (Status status, string response)
+  : status_ (status), response_ (response)
 {
-  remove_empty_lines         (&response_);
-  remove_trailing_whitespace (&response_);
+  influence_.SetAll(0.0);
+  label_.SetAll("");
 }
 
 
@@ -107,7 +212,7 @@ GoguiParam GoguiParam::Bool (string name, bool* ptr) {
 }
 
 string GoguiParam::gogui_string () {
-  string ret = type_to_string () + " " + name + " " + value_to_string (); 
+  string ret = type_to_string () + " " + name + " " + value_to_string ();
   return ret;
 }
 
@@ -144,7 +249,7 @@ bool GoguiParam::set_value(istream& in) {
 
 // ----------------------------------------------------------------------
 
-Gtp::Gtp () { 
+Gtp::Gtp () {
   add_gtp_command (this, "help");
   add_gtp_command (this, "list_commands");
   add_gtp_command (this, "known_command");
@@ -183,7 +288,7 @@ void Gtp::extend_static_command (string name, string response_ext) {
   command_to_response [name] = command_to_response [name] + response_ext;
   //cout << "P " << name << " -> " << endl <<      command_to_response [name] << endl;
 }
-  
+
 void Gtp::add_gogui_command (GtpCommand* command, string type, string name,
                              string params, bool extend_only_if_new) {
   if (extend_only_if_new && is_command (name)) return;
@@ -252,7 +357,7 @@ GtpResult Gtp::exec_command (const string& command, istream& params) {
   if (is_static_command (command)) {
     return GtpResult::success (command_to_response.find (command)->second);
   }
-    
+
   if (is_gogui_param_command (command)) {
     vector<GoguiParam>& gogui_params = command_to_gogui_params [command];
     string param_name;
@@ -273,7 +378,7 @@ GtpResult Gtp::exec_command (const string& command, istream& params) {
         if (param_it->name == param_name) {
           // param found
           return
-            param_it->set_value (params) 
+            param_it->set_value (params)
             ? GtpResult::success ()
             : GtpResult::failure ();
         }
@@ -328,10 +433,10 @@ GtpResult Gtp::exec_command (const string& command, istream& params) {
 void Gtp::preprocess (string* s) {
   ostringstream ret;
   for(string::iterator cp = s->begin(); cp != s->end(); cp++) {
-    if (*cp == 9) ret << '\32'; 
-    else if (*cp > 0 && *cp <= 9) continue; 
-    else if (*cp >= 11 && *cp <= 31) continue; 
-    else if (*cp == 127) continue; 
+    if (*cp == 9) ret << '\32';
+    else if (*cp > 0 && *cp <= 9) continue;
+    else if (*cp >= 11 && *cp <= 31) continue;
+    else if (*cp == 127) continue;
     else if (*cp == '#') break;  // remove comments
     else ret << *cp;
   }

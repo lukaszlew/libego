@@ -98,7 +98,7 @@ istream& operator>> (istream& in, Vertex& v);
 ostream& operator<< (ostream& out, Vertex& v);
 
 template <typename T>
-string to_string_2d (FastMap<Vertex, T>& map, int precision = 3) {
+string to_string_2d (const FastMap<Vertex, T>& map, int precision = 3) {
   ostringstream out;
   out << setiosflags (ios_base::fixed) ;
   
@@ -113,7 +113,6 @@ string to_string_2d (FastMap<Vertex, T>& map, int precision = 3) {
   }
   return out.str ();
 }
-
 
 #define vertex_for_each_all(vv)                                         \
   for (Vertex vv = Vertex(0); vv.in_range (); vv.next ()) 

@@ -109,11 +109,6 @@ void remove_trailing_whitespace (string* str) {
     str->resize (str->size () - 1);
 }
 
-template <typename T> SS& SS::operator<< (const T& elt ) {
-  buffer_ << elt;
-  return *this;
-}
-
 SS::operator std::string () const {
   return buffer_.str();
 }

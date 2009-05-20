@@ -13,7 +13,7 @@ using namespace std;
 
 class GtpResult {
 public:
-  GtpResult ();
+  static GtpResult gfx ();
   static GtpResult success (string response = "");
   static GtpResult failure (string response = "");
   static GtpResult syntax_error ();
@@ -22,11 +22,25 @@ public:
   bool quit_loop ();
   string to_string ();
 
+  // gfx functions
+  void set_influence(Vertex v, float val);
+  void set_label(Vertex v, const string& label);
+
+  enum GfxSymbol { circle, triangle, square };
+  void add_symbol(Vertex v, GfxSymbol s);
+
+  void add_var_move(Move m);
+
+  void set_status_text(const string& status);
+
 private:
+  string response();
+
   enum Status {
     status_success,
     status_failure,
-    status_quit
+    status_quit,
+    status_gfx
   };
 
   string status_marker ();
@@ -34,6 +48,15 @@ private:
 
   Status status_;
   string response_;
+
+  // gfx
+  FastMap <Vertex, float>  influence_;
+  FastMap <Vertex, string> label_;
+  vector <Move> var_;
+  vector <Vertex> circle_;
+  vector <Vertex> triangle_;
+  vector <Vertex> square_;
+  string status_text_;
 };
 
 // ----------------------------------------------------------------------
@@ -59,7 +82,7 @@ public:
   string value_to_string ();
   bool set_value(istream& in);
 
-  string name; 
+  string name;
 
   // emulation of sum type
   enum Type {
@@ -68,7 +91,7 @@ public:
     type_uint,
     type_bool
   } type;
-  
+
   union {
     string* string_param;
     float*  float_param;

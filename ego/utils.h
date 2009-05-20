@@ -30,7 +30,11 @@ float process_user_time ();
 
 class SS {
 public:
-  template <typename T> SS& operator<< (const T& elt);
+  template <typename T> SS& operator<< (const T& elt) {
+    buffer_ << elt;
+    return *this;
+  }
+
   operator std::string () const;
 private:
   std::ostringstream buffer_;
