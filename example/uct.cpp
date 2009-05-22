@@ -21,8 +21,10 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <vector>
+#include <algorithm>
 #include <sstream>
+#include <vector>
+
 #include "stat.h"
 
 // -----------------------------------------------------------------------------

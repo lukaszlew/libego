@@ -6,6 +6,7 @@
 #include <string>
 
 #include "utils.h"
+#include "vertex.h"
 
 using namespace std;
 
