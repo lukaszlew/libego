@@ -18,10 +18,11 @@ public:
       Player  player;
       Vertex   v;
       if (!(params >> player)) return GtpResult::syntax_error ();
-  
+
+      board.set_act_player(player);
       engine_t* engine = new engine_t (board); 
       // TODO we don't need to allocate each time
-      v = engine->genmove (player);
+      v = engine->genmove ();
       delete engine;
 
       if (v != Vertex::resign () &&

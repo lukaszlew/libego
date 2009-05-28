@@ -68,8 +68,8 @@ public:
     prior            = 1.0;
     progress_dots    = false;
 
-    gtp.add_gogui_command (this, "dboard", "AAF.move_value", "black");
-    gtp.add_gogui_command (this, "dboard", "AAF.move_value", "white");
+    gtp.add_gogui_command (this, "gfx", "AAF.move_value", "black");
+    gtp.add_gogui_command (this, "gfx", "AAF.move_value", "white");
 
     gtp.add_gogui_param_float ("AAF.params", "prior",            &prior);
     gtp.add_gogui_param_float ("AAF.params", "aaf_fraction",     &aaf_fraction);
@@ -102,13 +102,18 @@ public:
       }
       if (progress_dots) cerr << endl;
 
-      FastMap<Vertex, float> means;
+      GtpResult gfx = GtpResult::gfx();
+
       vertex_for_each_all (v) {
-        means [v] = aaf_stats.norm_mean_given_move (Move(player, v)) / influence_scale;;
-        if (board->color_at [v] != Color::empty ()) 
-          means [v] = 0.0;
+        gfx.set_influence(v,
+                          aaf_stats.norm_mean_given_move (Move(player, v)) /
+                          influence_scale
+                          );
+        if (board->color_at [v] != Color::empty ()) {
+          gfx.set_influence(v, 0.0);
+        }
       }
-      return GtpResult::success (to_string_2d (means));
+      return gfx;
     }
 
     assert (false);
