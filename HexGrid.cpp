@@ -18,5 +18,6 @@ QRectF HexGrid::boundingRect() const
 
 void HexGrid::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidget*)
 {
+  Q_UNUSED(painter);
   //TODO
 }

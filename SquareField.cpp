@@ -1,4 +1,5 @@
 #include <QPen>
+#include <QBrush>
 
 #include "SquareField.h"
 
@@ -25,6 +26,9 @@ void SquareField::initializeBackgroudItem()
   pen.setStyle(Qt::NoPen);
   m_background->setPen(pen);
   m_background->setPos(pos());
+  QBrush brush;
+  brush.setColor(Qt::blue);
+  m_background->setBrush(brush);
 
   addToGroup(m_background);
 }

@@ -9,11 +9,6 @@ public:
   Grid(int size, QGraphicsItem * parent = 0);
   virtual ~Grid();
 
-  enum
-  {
-    Type = UserType + 1
-  };
-
 protected:
   int m_size;
 };

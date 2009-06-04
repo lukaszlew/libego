@@ -10,7 +10,8 @@ int main(int argc, char *argv[])
 
   QApplication a(argc, argv);
 
-  SquareBoard scene(19);
+  SquareBoard scene(11);
+  //scene.addBlackStone("1-1");
   BoardView view(&scene);
   view.show();
   return a.exec();

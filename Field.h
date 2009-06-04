@@ -2,6 +2,7 @@
 #define FIELD_H
 
 #include <QGraphicsItemGroup>
+#include <QPen>
 
 class Field: public QGraphicsItemGroup
 {
@@ -18,45 +19,48 @@ public:
   int x() const { return m_x; }
   int y() const { return m_y; }
 
-  enum
-  {
-    Type = UserType + 2
-  };
-
   enum EStoneColor
   {
     StoneWhite, StoneBlack
   };
   virtual QGraphicsItem* addStone(EStoneColor stoneColor);
-  virtual void removeStone();
+  void removeStone();
 
-  virtual QGraphicsItem* addMark(QColor color);
-  virtual void removeMark();
+  virtual QGraphicsItem* addMark();
+  void removeMark();
 
-  virtual QGraphicsItem* addCircle(QColor color);
-  virtual void removeCircle();
+  virtual QGraphicsItem* addCircle();
+  void removeCircle();
 
-  virtual QGraphicsItem* addSquare(QColor color);
-  virtual void removeSquare();
+  virtual QGraphicsItem* addSquare();
+  void removeSquare();
 
-  virtual QGraphicsItem* addTriangle(QColor color);
-  virtual void removeTriangle();
+  virtual QGraphicsItem* addTriangle();
+  void removeTriangle();
 
   virtual QGraphicsItem* addLabel(const QString& label);
-  virtual void removeLabel();
+  void removeLabel();
 
 protected:
-  virtual void mousePressEvent(QGraphicsSceneMouseEvent * event);
+  virtual void removeItem(QGraphicsItem*& item);
 
   int m_x, m_y;
   QAbstractGraphicsShapeItem *m_background;
-  QAbstractGraphicsShapeItem *m_triangle;
   QGraphicsItem *m_stone;
+  QGraphicsItem *m_mark;
+  QGraphicsItem *m_circle;
+  QGraphicsItem *m_square;
+  QGraphicsItem *m_triangle;
+  QGraphicsItem *m_label;
+
 
   static const QString s_blackStoneFilename;
   static const QString s_whiteStoneFilename;
 
   static const qreal s_stoneAspectRatio;
+  static const qreal s_shapeAspectRatio;
+
+  static const QPen s_shapePen;
 
 };
 
