@@ -1,14 +1,17 @@
 #include <QtGui>
 #include <QApplication>
 
-#include "gogui.h"
+#include "BoardView.h"
+#include "SquareBoard.h"
 
 int main(int argc, char *argv[])
 {
   Q_INIT_RESOURCE(images);
 
   QApplication a(argc, argv);
-  GoGui w;
-  w.show();
+
+  SquareBoard scene(9);
+  BoardView view(&scene);
+  view.show();
   return a.exec();
 }

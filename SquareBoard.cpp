@@ -2,23 +2,34 @@
 #include "SquareField.h"
 #include "SquareGrid.h"
 
-SquareBoard::SquareBoard(int size, QWidget *parent) :
-  Board(size, parent)
+SquareBoard::SquareBoard(int size, QObject *parent) :
+  BoardScene(size, parent)
 {
-  m_grid = new SquareGrid(size);
-  scene()->addItem(m_grid);
+  addGrid();
 
-  for (int x = 0; x < size; x++)
-    for (int y = 0; y < size; y++) {
-      Field *field = new SquareField(x + 1, y + 1);
-      m_fields[size * x + y] = field;
-      scene()->addItem(field);
+  for (int x = 1; x <= size; x++)
+    for (int y = 1; y <= size; y++) {
+      Field *field = new SquareField(x, y);
+      m_fields.insert(getFieldString(x, y), field);
+      addItem(field);
     }
-
 }
 
 SquareBoard::~SquareBoard()
 {
-
 }
+
+QGraphicsItem* SquareBoard::addGrid()
+{
+  m_grid = new SquareGrid(m_size);
+  addItem(m_grid);
+  return m_grid;
+}
+
+QGraphicsItem* SquareBoard::addRuler()
+{
+  //TODO
+  return NULL;
+}
+
 

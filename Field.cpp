@@ -15,7 +15,6 @@ const qreal Field::s_stoneAspectRatio = 1.0;
 Field::Field(int x, int y, QGraphicsItem *parent) :
   QGraphicsItemGroup(parent), m_x(x), m_y(y), m_background(NULL), m_stone(NULL)
 {
-
 }
 
 Field::~Field()
@@ -37,7 +36,6 @@ void Field::mousePressEvent(QGraphicsSceneMouseEvent * event)
 
 void Field::insertStone(EStoneColor stoneColor)
 {
-  qDebug() << "insertStone " << m_x << ", " << m_y;
   removeStone();
   switch (stoneColor) {
   case StoneBlack:
@@ -61,7 +59,6 @@ void Field::insertStone(EStoneColor stoneColor)
     m_stone->translate(-m_stone->boundingRect().width() / 2,
         -m_stone->boundingRect().height() / 2);
   }
-
 }
 
 void Field::removeStone()

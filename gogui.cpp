@@ -2,11 +2,13 @@
 
 #include "gogui.h"
 #include "SquareBoard.h"
+#include "BoardView.h"
 
 GoGui::GoGui(QWidget *parent) :
   QDialog(parent)
 {
-  m_board = new SquareBoard(9, this);
+  m_boardScene = new SquareBoard(9);
+  m_boardView = new BoardView(m_boardScene, this);
   m_filedEdit = new QLineEdit;
   m_shapeEdit = new QLineEdit;
   m_addButton = new QPushButton(tr("Add"));
@@ -23,7 +25,7 @@ GoGui::GoGui(QWidget *parent) :
   dialogLayout->setSizeConstraint(QLayout::SetMinimumSize);
 
   QVBoxLayout *mainLayout = new QVBoxLayout;
-  mainLayout->addWidget(m_board);
+  mainLayout->addWidget(m_boardView);
   mainLayout->addLayout(dialogLayout);
 
   connect(m_removeButton, SIGNAL(clicked()), m_shapeEdit, SLOT(clear()));

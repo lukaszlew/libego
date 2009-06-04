@@ -3,7 +3,8 @@
 
 #include <QDialog>
 
-class Board;
+class BoardView;
+class BoardScene;
 class QLineEdit;
 class QPushButton;
 
@@ -16,7 +17,8 @@ public:
   ~GoGui();
 
 private:
-  Board *m_board;
+  BoardView *m_boardView;
+  BoardScene *m_boardScene;
   QLineEdit *m_shapeEdit;
   QLineEdit *m_filedEdit;
   QPushButton *m_addButton;
