@@ -19,7 +19,8 @@ public:
   virtual void removeStone(const QString& pos);
 
   /* adds character c on field pos */
-  virtual QGraphicsItem* addMarker(const QString& pos, char c);
+  virtual QGraphicsItem* addLabel(const QString& pos, const QString& label);
+  void removeLabel(const QString& pos)
 
   virtual QGraphicsItem* addCircle(const QString& pos, QColor color);
   virtual void removeCircle(const QString& pos);

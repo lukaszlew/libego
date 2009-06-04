@@ -19,10 +19,10 @@ public:
   {
     StoneWhite, StoneBlack
   };
-  void insertStone(EStoneColor stoneColor);
+  QGraphicsItem* addStone(EStoneColor stoneColor);
   void removeStone();
 
-  void insertTriangle(QColor color);
+  QGraphicsItem* addTriangle(QColor color);
   void removeTriangle();
 
 protected:

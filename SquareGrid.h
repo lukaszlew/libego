@@ -9,6 +9,11 @@ public:
   SquareGrid(int size, QGraphicsItem * parent = 0);
   virtual ~SquareGrid();
 
+  enum
+  {
+    Type = UserType + 1
+  };
+
   virtual QRectF boundingRect() const;
   virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
       QWidget *widget);

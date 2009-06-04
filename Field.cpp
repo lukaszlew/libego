@@ -19,7 +19,6 @@ Field::Field(int x, int y, QGraphicsItem *parent) :
 
 Field::~Field()
 {
-
 }
 
 void Field::mousePressEvent(QGraphicsSceneMouseEvent * event)
@@ -28,13 +27,13 @@ void Field::mousePressEvent(QGraphicsSceneMouseEvent * event)
     removeStone();
   else {
     if (Qt::LeftButton & event->buttons())
-      insertStone(StoneBlack);
+      addStone(StoneBlack);
     else
-      insertStone(StoneWhite);
+      addStone(StoneWhite);
   }
 }
 
-void Field::insertStone(EStoneColor stoneColor)
+QGraphicsItem* Field::addStone(EStoneColor stoneColor)
 {
   removeStone();
   switch (stoneColor) {
@@ -59,6 +58,8 @@ void Field::insertStone(EStoneColor stoneColor)
     m_stone->translate(-m_stone->boundingRect().width() / 2,
         -m_stone->boundingRect().height() / 2);
   }
+
+  return m_stone;
 }
 
 void Field::removeStone()
@@ -71,3 +72,14 @@ void Field::removeStone()
   }
 }
 
+QGraphicsItem* Field::addTriangle(QColor color)
+{
+  Q_UNUSED(color)
+  //TODO
+  return NULL;
+}
+
+void Field::removeTriangle()
+{
+  //TODO
+}

@@ -34,13 +34,17 @@ void BoardScene::removeStone(const QString& pos)
   //TODO
 }
 
-QGraphicsItem* BoardScene::addMarker(const QString& pos, char c)
+QGraphicsItem* BoardScene::addLabel(const QString& pos, const QString& label)
 {
   Q_UNUSED(pos);
-  Q_UNUSED(c);
+  Q_UNUSED(label);
   //TODO
   return NULL;
+}
 
+void BoardScene::::removeLabel(const QString& pos)
+{
+  //TODO
 }
 
 QGraphicsItem* BoardScene::addCircle(const QString& pos, QColor color)
