@@ -72,14 +72,61 @@ void Field::removeStone()
   }
 }
 
+QGraphicsItem* Field::addMark(QColor color)
+{
+  Q_UNUSED(color);
+  //TODO
+  return NULL;
+}
+
+void Field::removeMark()
+{
+  //TODO
+}
+
+QGraphicsItem* Field::addCircle(QColor color)
+{
+  Q_UNUSED(color);
+  //TODO
+  return NULL;
+}
+
+void Field::removeCircle()
+{
+  //TODO
+}
+QGraphicsItem* Field::addSquare(QColor color)
+{
+  Q_UNUSED(color);
+  //TODO
+  return NULL;
+}
+
+void Field::removeSquare()
+{
+  //TODO
+}
+
 QGraphicsItem* Field::addTriangle(QColor color)
 {
-  Q_UNUSED(color)
+  Q_UNUSED(color);
   //TODO
   return NULL;
 }
 
 void Field::removeTriangle()
+{
+  //TODO
+}
+
+QGraphicsItem* Field::addLabel(const QString& label)
+{
+  Q_UNUSED(label);
+  //TODO
+  return NULL;
+}
+
+void Field::removeLabel()
 {
   //TODO
 }

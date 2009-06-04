@@ -15,15 +15,35 @@ public:
   virtual int getWidth() const = 0;
   virtual int getHeight() const = 0;
 
+  int x() const { return m_x; }
+  int y() const { return m_y; }
+
+  enum
+  {
+    Type = UserType + 2
+  };
+
   enum EStoneColor
   {
     StoneWhite, StoneBlack
   };
-  QGraphicsItem* addStone(EStoneColor stoneColor);
-  void removeStone();
+  virtual QGraphicsItem* addStone(EStoneColor stoneColor);
+  virtual void removeStone();
 
-  QGraphicsItem* addTriangle(QColor color);
-  void removeTriangle();
+  virtual QGraphicsItem* addMark(QColor color);
+  virtual void removeMark();
+
+  virtual QGraphicsItem* addCircle(QColor color);
+  virtual void removeCircle();
+
+  virtual QGraphicsItem* addSquare(QColor color);
+  virtual void removeSquare();
+
+  virtual QGraphicsItem* addTriangle(QColor color);
+  virtual void removeTriangle();
+
+  virtual QGraphicsItem* addLabel(const QString& label);
+  virtual void removeLabel();
 
 protected:
   virtual void mousePressEvent(QGraphicsSceneMouseEvent * event);
