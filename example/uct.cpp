@@ -219,7 +219,7 @@ string Node_to_string (Node* node, float min_visit) {
 
 // -----------------------------------------------------------------------------
 
-class Uct {
+class Uct : GtpCommand {
 public:
   
   Uct (Gtp& gtp, FullBoard& base_board_)
@@ -233,6 +233,8 @@ public:
     min_visit_parent  = 0.02;
 
     resign_mean = 0.95;
+
+    gtp.add_gtp_command (this, "genmove");
   }
 
   Vertex genmove () {
@@ -364,6 +366,27 @@ private:
     return;
   }
   
+  virtual GtpResult exec_command (const string& command, istream& params) {
+
+    if (command == "genmove") {
+      Player  player;
+      Vertex   v;
+      if (!(params >> player)) return GtpResult::syntax_error ();
+
+      base_board.set_act_player(player);
+      v = genmove ();
+
+      if (v != Vertex::resign () &&
+          base_board.try_play (player, v) == false) {
+        assert(false);
+      }
+
+      return GtpResult::success (v.to_string());
+    }
+
+    assert(false);
+  } 
+
 private:
 
   float explore_rate;

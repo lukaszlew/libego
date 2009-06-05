@@ -37,7 +37,6 @@ SgfGtp      sgf_gtp   (gtp, sgf_tree, board);
 AllAsFirst  aaf (gtp, board);
 Uct         uct (gtp, board);
 
-GenmoveGtp<Uct>  genmove_gtp (gtp, board, uct);
 
 int main(int argc, char** argv) {
   // no buffering to work well with gogui
