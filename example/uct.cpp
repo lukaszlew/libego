@@ -226,13 +226,19 @@ public:
     : base_board (base_board_), policy(global_random)
   {
     explore_rate                   = 1.0;
-    uct_genmove_playout_cnt        = 100000;
+    genmove_playout_count          = 100000;
     mature_update_count_threshold  = 100.0;
 
     min_visit         = 2500.0;
-    min_visit_parent  = 0.02;
 
     resign_mean = 0.95;
+
+    gtp.add_gogui_param_float ("UCT.params", "explore_rate",  &explore_rate);
+    gtp.add_gogui_param_uint  ("UCT.params", "playout_count",
+                               &genmove_playout_count);
+    gtp.add_gogui_param_float ("UCT.params", "#_updates_to_promote",
+                               &mature_update_count_threshold);
+    gtp.add_gogui_param_float ("UCT.params", "print_min_visit", &min_visit);
 
     gtp.add_gtp_command (this, "genmove");
   }
@@ -241,7 +247,7 @@ public:
     tree.init(base_board.board().act_player());
     root_ensure_children_legality ();
 
-    rep (ii, uct_genmove_playout_cnt)
+    rep (ii, genmove_playout_count)
       do_playout ();
 
     tree.history_reset();
@@ -390,11 +396,10 @@ private:
 private:
 
   float explore_rate;
-  uint  uct_genmove_playout_cnt;
+  uint  genmove_playout_count;
   float mature_update_count_threshold;
 
   float min_visit;
-  float min_visit_parent;
 
   float resign_mean;
 
