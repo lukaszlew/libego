@@ -376,5 +376,4 @@ private:
   SimplePolicy  policy;
 
   Board play_board;
-
 };

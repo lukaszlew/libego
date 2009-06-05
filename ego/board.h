@@ -14,18 +14,10 @@ class Board {
 public:                         // board interface
 
   Board ();
-
   
+
   /* Slow full rules implementation */
 
-  // Implemented by calling try_play. Slow.
-  bool is_legal (Player pl, Vertex v) const;
-
-  // Returns false if move is illegal - forbids suicide and superko. Slow.
-  bool try_play (Player player, Vertex v);
-
-  // Undo move. Slow.
-  bool undo ();
 
   // Tromp-Taylor score.
   // Scoring uses integers, so to get a true result you need to
@@ -111,8 +103,8 @@ public:                         // board interface
   void clear (float komi = -0.5);
 
 private: 
+
   Hash recalc_hash () const;
-  bool is_hash_repeated ();
 
   bool eye_is_ko (Player player, Vertex v);
   bool eye_is_suicide (Vertex v);
