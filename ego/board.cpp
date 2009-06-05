@@ -223,60 +223,9 @@ string Board::to_string (Vertex mark_v) const {
   return out.str ();
 }
 
+
 void Board::print_cerr (Vertex v) const {
   cerr << to_string (v);
-}
-
-bool Board::load_from_ascii (istream& ifs) {
-  uint     bs;
-  char     c;
-
-  Player    play_player[board_area];
-  Vertex    play_v[board_area];
-  uint      play_cnt;
-
-  clear ();
-
-  play_cnt = 0;
-
-  if (!ifs) return false;
-
-  ifs >> bs;
-  if (bs != board_size) return false;
-
-  if (getc_non_space (ifs) != '\n') return false;
-
-  coord_for_each (row) {
-    coord_for_each (col) {
-      Color color;
-
-      c      = getc_non_space (ifs);
-      color  = Color (c); // TODO 0 is to choose the constructor
-
-      if (color == Color::wrong_char ()) return false;
-
-      if (color.is_player ()) {
-        play_player [play_cnt]  = color.to_player ();
-        play_v [play_cnt]       = Vertex (row, col);
-        play_cnt += 1;
-        assertc (board_ac, play_cnt < board_area);
-      }
-    }
-
-    if (getc_non_space (ifs) != '\n') return false;
-  }
-
-  Board  tmp_board [1];
-  rep (pi, play_cnt) {
-    if (tmp_board->is_legal (play_player[pi], play_v[pi]) == false)
-      return false;
-    bool ret = tmp_board->try_play (play_player[pi], play_v[pi]);
-    assertc (board_ac, ret == true);
-  }
-
-  this->load (tmp_board);
-
-  return true;
 }
 
 
@@ -421,6 +370,29 @@ bool Board::eye_is_suicide (Vertex v) {
 
 
 all_inline
+void Board::update_neighbour (Player player, Vertex v, Vertex nbr_v) {
+  nbr_cnt [nbr_v].player_inc (player);
+
+  if (!color_at [nbr_v].is_player ()) return;
+
+  chain_at(nbr_v).lib_cnt -= 1;
+
+  if (color_at [nbr_v] != Color (player)) { // same color of groups
+    if (chain_at(nbr_v).lib_cnt == 0)
+      remove_chain (nbr_v);
+  } else {
+    if (chain_id_ [nbr_v] != chain_id_ [v]) {
+      if (chain_at(v).lib_cnt > chain_at(nbr_v).lib_cnt) {
+        merge_chains (v, nbr_v);
+      } else {
+        merge_chains (nbr_v, v);
+      }
+    }
+  }
+}
+
+
+all_inline
 void Board::play_not_eye (Player player, Vertex v) {
   check ();
   v.check_is_on_board ();
@@ -430,27 +402,7 @@ void Board::play_not_eye (Player player, Vertex v) {
 
   place_stone (player, v);
 
-  vertex_for_each_4_nbr (v, nbr_v, {
-
-      nbr_cnt [nbr_v].player_inc (player);
-
-      if (color_at [nbr_v].is_player ()) {
-        chain_at(nbr_v).lib_cnt -= 1;
-
-        if (color_at [nbr_v] != Color (player)) { // same color of groups
-          if (chain_at(nbr_v).lib_cnt == 0)
-            remove_chain (nbr_v);
-        } else {
-          if (chain_id_ [nbr_v] != chain_id_ [v]) {
-            if (chain_at(v).lib_cnt > chain_at(nbr_v).lib_cnt) {
-              merge_chains (v, nbr_v);
-            } else {
-              merge_chains (nbr_v, v);
-            }
-          }
-        }
-      }
-    });
+  vertex_for_each_4_nbr (v, nbr_v, update_neighbour(player, v, nbr_v));
 
   if (chain_at(v).lib_cnt == 0) {
     assertc (board_ac, last_empty_v_cnt - empty_v_cnt == 1);

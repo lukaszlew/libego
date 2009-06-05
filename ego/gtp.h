@@ -7,6 +7,7 @@
 
 #include "utils.h"
 #include "vertex.h"
+#include "move.h"
 
 using namespace std;
 

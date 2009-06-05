@@ -1,4 +1,4 @@
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                           *
  *  This file is part of Library of Effective GO routines - EGO library      *
  *                                                                           *
@@ -19,28 +19,12 @@
  *  Foundation, Inc., 51 Franklin St, Fifth Floor,                           *
  *  Boston, MA  02110-1301  USA                                              *
  *                                                                           *
-\* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "ego.h"
+#include "full_board.h"
+#include "testing.h"
 
-#include "utils.cpp"
 
-#include "fast_timer.cpp"
-#include "fast_random.cpp"
-
-#include "player.cpp"
-#include "color.cpp"
-#include "vertex.cpp"
-#include "move.cpp"
-
-#include "hash.cpp"
-#include "board.cpp"
-#include "full_board.cpp"
-#include "sgf.cpp"
-
-#include "playout.cpp"
-#include "benchmark.cpp"
-
-#include "gtp.cpp"
-#include "basic_gtp.cpp"
-#include "sgf_gtp.cpp"
+const Board& FullBoard::board() const {
+  return *this;
+}

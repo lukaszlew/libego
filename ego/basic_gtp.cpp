@@ -27,11 +27,10 @@
 
 #include "testing.h"
 
-BasicGtp::BasicGtp (Gtp& gtp, Board& board_) : board (board_) { 
+BasicGtp::BasicGtp (Gtp& gtp, FullBoard& board_) : board (board_) { 
   gtp.add_gtp_command (this, "boardsize");
   gtp.add_gtp_command (this, "clear_board");
   gtp.add_gtp_command (this, "komi");
-  gtp.add_gtp_command (this, "load_position");
   gtp.add_gtp_command (this, "play");
   gtp.add_gtp_command (this, "undo");
   gtp.add_gtp_command (this, "showboard");
@@ -59,20 +58,6 @@ GtpResult BasicGtp::exec_command (const string& command, istream& params) {
     return GtpResult::success ();
   }
 
-  if (command == "load_position") {
-    string file_name;
-    if (!(params >> file_name)) return GtpResult::syntax_error ();
-    ifstream fin (file_name.data ()); // TODO cant use string directly ??
-
-    if (!fin) 
-      return GtpResult::failure ("no such file: " + file_name); 
-
-    if (!board.load_from_ascii (fin)) 
-      return GtpResult::failure ("wrong file format");
-
-    return GtpResult::success ();
-  }
-
   if (command == "play") {
     Player pl;
     Vertex v;
@@ -93,7 +78,7 @@ GtpResult BasicGtp::exec_command (const string& command, istream& params) {
   }
     
   if (command == "showboard") {
-    return GtpResult::success ("\n" + board.to_string());
+    return GtpResult::success ("\n" + board.board().to_string());
   }
 
   assert(false);

@@ -26,6 +26,7 @@
 #include <vector>
 
 #include "stat.h"
+#include "full_board.h"
 
 // -----------------------------------------------------------------------------
 
@@ -219,7 +220,7 @@ string Node_to_string (Node* node, float min_visit) {
 class Uct {
 public:
   
-  Uct (Board& base_board_) : base_board (base_board_), policy(global_random) { 
+  Uct (FullBoard& base_board_) : base_board (base_board_), policy(global_random) { 
     explore_rate                   = 1.0;
     uct_genmove_playout_cnt        = 100000;
     mature_update_count_threshold  = 100.0;
@@ -231,7 +232,7 @@ public:
   }
 
   Vertex genmove () {
-    tree.init(base_board.act_player());
+    tree.init(base_board.board().act_player());
     root_ensure_children_legality ();
 
     rep (ii, uct_genmove_playout_cnt)
@@ -242,8 +243,10 @@ public:
     Vertex best_v   = most_explored_root_move ();
     float best_mean = tree.act_node()->child(best_v)->stat.mean();
     
-    if ((base_board.act_player() == Player::black () && best_mean < -resign_mean) ||
-        (base_board.act_player() == Player::white () && best_mean >  resign_mean)) {
+    if ((base_board.board().act_player() == Player::black () &&
+         best_mean < -resign_mean) ||
+        (base_board.board().act_player() == Player::white ()
+         && best_mean >  resign_mean)) {
       best_v = Vertex::resign ();
     }
 
@@ -258,8 +261,8 @@ private:
     //assertc (uct_ac, tree.history_top == 1);
     assertc (uct_ac, !tree.act_node ()->have_children());
 
-    empty_v_for_each_and_pass (&base_board, v, {
-      if (base_board.is_legal (base_board.act_player(), v))
+    empty_v_for_each_and_pass (&base_board.board(), v, {
+      if (base_board.is_legal (base_board.board().act_player(), v))
         tree.alloc_child (v);
     });
   }
@@ -333,7 +336,7 @@ private:
   }
 
   void do_playout (){
-    play_board.load (&base_board);
+    play_board.load (&base_board.board());
     tree.history_reset ();
     
     while(tree.act_node ()->have_children()) {
@@ -368,11 +371,10 @@ private:
 
   float resign_mean;
 
-  Board&        base_board;
+  FullBoard&    base_board;
   Tree          tree;      // TODO sync tree->root with base_board
   SimplePolicy  policy;
 
   Board play_board;
-
 
 };

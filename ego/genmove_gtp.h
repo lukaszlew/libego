@@ -2,13 +2,13 @@
 #define _GENMOVE_GTP_H_
 
 #include "gtp.h"
-#include "board.h"
+#include "full_board.h"
 #include "testing.h"
 
 template <typename engine_t>
 class GenmoveGtp : public GtpCommand {
 public:
-  GenmoveGtp (Gtp& gtp, Board& board_) : board (board_) { //, engine (engine_)
+  GenmoveGtp (Gtp& gtp, FullBoard& board_) : board (board_) { //, engine (engine_)
     gtp.add_gtp_command (this, "genmove");
   } 
 
@@ -37,7 +37,7 @@ public:
   } 
 
 private:
-  Board& board;
+  FullBoard& board;
 };
 
 #endif

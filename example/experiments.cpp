@@ -51,7 +51,7 @@ public:
 
 class AllAsFirst : public GtpCommand {
 public:
-  Board*      board;
+  FullBoard*  board;
   AafStats    aaf_stats;
   uint        playout_no;
   float       aaf_fraction;
@@ -61,7 +61,7 @@ public:
   SimplePolicy policy;
 
 public:
-  AllAsFirst (Gtp& gtp, Board& board_) : board (&board_), policy(global_random) { 
+  AllAsFirst (Gtp& gtp, FullBoard& board_) : board (&board_), policy(global_random) { 
     playout_no       = 50000;
     aaf_fraction     = 0.5;
     influence_scale  = 6.0;
@@ -78,9 +78,9 @@ public:
     gtp.add_gogui_param_bool  ("AAF.params", "20_progress_dots", &progress_dots);
   }
     
-  void do_playout (const Board* base_board) {
+  void do_playout (const FullBoard* base_board) {
     Board mc_board [1];
-    mc_board->load (base_board);
+    mc_board->load (&base_board->board());
 
     Playout<SimplePolicy> playout(&policy, mc_board);
     playout.run ();
@@ -109,7 +109,7 @@ public:
                           aaf_stats.norm_mean_given_move (Move(player, v)) /
                           influence_scale
                           );
-        if (board->color_at [v] != Color::empty ()) {
+        if (board->board().color_at [v] != Color::empty ()) {
           gfx.set_influence(v, 0.0);
         }
       }

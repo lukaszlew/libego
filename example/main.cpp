@@ -29,7 +29,7 @@
 #include "experiments.cpp"
 
 Gtp      gtp;
-Board    board;
+FullBoard   board;
 SgfTree  sgf_tree;
 
 BasicGtp    basic_gtp (gtp, board);

@@ -2,17 +2,17 @@
 #define _BASIC_GTP_
 
 #include "gtp.h"
-#include "board.h"
+#include "full_board.h"
 
 class BasicGtp : public GtpCommand {
 
 public:
-  BasicGtp (Gtp& gtp, Board& board_);
+  BasicGtp (Gtp& gtp, FullBoard& board_);
   virtual ~BasicGtp () {};
   virtual GtpResult exec_command (const string& command, istream& params); 
 
 private:
-  Board& board;
+  FullBoard& board;
 };
 
 #endif

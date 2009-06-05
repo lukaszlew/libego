@@ -18,10 +18,6 @@ public:                         // board interface
   
   /* Slow full rules implementation */
 
-
-  // Clears the board. (It is faster to load(empty_board))
-  void clear (float komi = -0.5);
-
   // Implemented by calling try_play. Slow.
   bool is_legal (Player pl, Vertex v) const;
 
@@ -102,7 +98,6 @@ public:                         // board interface
   // Returns vertex forbidden by simple ko rule or Vertex::any()
   Vertex ko_v () const;
 
-  bool load_from_ascii (istream& ifs);
   string to_string (Vertex mark_v = Vertex::any ()) const;
 
   // debugging helper
@@ -111,6 +106,9 @@ public:                         // board interface
   uint last_capture_size ();
 
   Move last_move () const;
+
+  // Clears the board. (It is faster to load(empty_board))
+  void clear (float komi = -0.5);
 
 private: 
   Hash recalc_hash () const;
@@ -123,6 +121,7 @@ private:
   void play_not_eye (Player player, Vertex v);
   void play_eye_legal (Player player, Vertex v);
 
+  void update_neighbour (Player player, Vertex v, Vertex nbr_v);
   void merge_chains (Vertex v_base, Vertex v_new);
   void remove_chain (Vertex v);
   void place_stone (Player pl, Vertex v);

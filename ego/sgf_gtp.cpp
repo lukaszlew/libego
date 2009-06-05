@@ -28,7 +28,7 @@
 
 // class gtp_sgf
 
-SgfGtp::SgfGtp (Gtp& _gtp, SgfTree& _sgf_tree, Board& _base_board) : 
+SgfGtp::SgfGtp (Gtp& _gtp, SgfTree& _sgf_tree, FullBoard& _base_board) : 
   sgf_tree (_sgf_tree), gtp (_gtp), base_board (_base_board)
 {
   gtp.add_gtp_command (this, "sgf.load");
@@ -69,7 +69,7 @@ GtpResult SgfGtp::exec_command (const string& command, istream& params) {
       return GtpResult::failure ("invalid board size");
     }
 
-    Board save_board;
+    FullBoard save_board;
     save_board.load (&base_board);
       
     base_board.clear (sgf_tree.properties ().get_komi ());
@@ -120,7 +120,7 @@ void SgfGtp::exec_embedded_gtp_rec (SgfNode* current_node, ostream& response) {
   current_node->properties.set_comment (embedded_response.str ());
 
   // save board
-  Board node_board;
+  FullBoard node_board;
   node_board.load (&base_board);
 
   // recursove call
