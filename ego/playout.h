@@ -113,36 +113,33 @@ public:
 private:
   all_inline
   bool play_local(Board *board) {
-    // No local move when game begins.
-    if (board->move_no == 0) return false;
     // P(local) = 1/3
     if (random.rand_int(3)) return false;
 
-    Vertex center = board->move_history[board->move_no-1].get_vertex();
+    Vertex center = board->last_play();
+    if ((center == Vertex::any()) |
+        (center == Vertex::pass())) return false;
 
-    Vertex legal[8];
-    legal[0] = center.NW();
-    legal[1] = center.N();
-    legal[2] = center.NE();
-    legal[3] = center.W();
-    legal[4] = center.E();
-    legal[5] = center.SW();
-    legal[6] = center.S();
-    legal[7] = center.SE();
-
+    Vertex local[8];
     Player act_player = board->act_player ();
+    uint ii = 0;
 
-    uint i_start = random.rand_int(8), i = i_start;
+    // TODO this introduces serious bias due to non-empty moves
+    vertex_for_each_8_nbr(center, nbr, local[ii++] = nbr);
+
+    uint i_start = random.rand_int(8);
+    ii = i_start;
+
     do {
-      if (legal[i].is_on_board() &&
-          board->color_at[legal[i]] == Color::empty() &&
-          !board->is_eyelike(act_player, legal[i]) &&
-          board->is_pseudo_legal(act_player, legal[i])) {
-        board->play_legal(act_player, legal[i]);
+      Vertex v = local[ii];
+      if (board->color_at[v] == Color::empty() &&
+          !board->is_eyelike(act_player, v) &&
+          board->is_pseudo_legal(act_player, v)) {
+        board->play_legal(act_player, v);
         return true;
       }
-      i = (i + 1) & 7;
-    } while (i != i_start);
+      ii = (ii + 1) & 7;
+    } while (ii != i_start);
 
     // No possibility of a local move
     return false;
