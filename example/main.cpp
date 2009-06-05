@@ -35,7 +35,7 @@ SgfTree    sgf_tree;
 BasicGtp    basic_gtp (gtp, board);
 SgfGtp      sgf_gtp   (gtp, sgf_tree, board);
 AllAsFirst  aaf (gtp, board);
-Uct         uct (gtp, board);
+Mcts        mcts (gtp, board);
 
 
 int main(int argc, char** argv) {

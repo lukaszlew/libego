@@ -118,7 +118,7 @@ private:
 class Tree {
 public:
 
-  Tree () : node_pool(uct_max_nodes) {
+  Tree () : node_pool(mcts_max_nodes) {
   }
 
   void init (Player pl) {
@@ -171,7 +171,7 @@ public:
 
 private:
 
-  static const uint uct_max_nodes = 1000000;
+  static const uint mcts_max_nodes = 1000000;
 
   FastPool <Node> node_pool;
   vector<Node*> path;
@@ -219,26 +219,30 @@ string Node_to_string (Node* node, float min_visit) {
 
 // -----------------------------------------------------------------------------
 
-class Uct : GtpCommand {
+class Mcts : GtpCommand {
 public:
   
-  Uct (Gtp& gtp, FullBoard& base_board_)
+  Mcts (Gtp& gtp, FullBoard& base_board_)
     : base_board (base_board_), policy(global_random)
   {
     explore_rate                   = 1.0;
     genmove_playout_count          = 100000;
     mature_update_count_threshold  = 100.0;
 
-    min_visit         = 2500.0;
-
+    min_visit   = 2500.0;
     resign_mean = 0.95;
+    show_move_count = 6;
 
-    gtp.add_gogui_param_float ("UCT.params", "explore_rate",  &explore_rate);
-    gtp.add_gogui_param_uint  ("UCT.params", "playout_count",
+    gtp.add_gogui_param_float ("MCTS.params", "explore_rate",  &explore_rate);
+    gtp.add_gogui_param_uint  ("MCTS.params", "playout_count",
                                &genmove_playout_count);
-    gtp.add_gogui_param_float ("UCT.params", "#_updates_to_promote",
+    gtp.add_gogui_param_float ("MCTS.params", "#_updates_to_promote",
                                &mature_update_count_threshold);
-    gtp.add_gogui_param_float ("UCT.params", "print_min_visit", &min_visit);
+    gtp.add_gogui_param_float ("MCTS.params", "print_min_visit", &min_visit);
+
+    gtp.add_gogui_command (this, "gfx",  "MCTS.show", "playout");
+    gtp.add_gogui_command (this, "gfx",  "MCTS.show", "more");
+    gtp.add_gogui_command (this, "gfx",  "MCTS.show", "less");
 
     gtp.add_gtp_command (this, "genmove");
   }
@@ -270,8 +274,8 @@ public:
 private:
   // take care about strict legality (superko) in root
   void root_ensure_children_legality () {
-    //assertc (uct_ac, tree.history_top == 1);
-    assertc (uct_ac, !tree.act_node ()->have_children());
+    //assertc (mcts_ac, tree.history_top == 1);
+    assertc (mcts_ac, !tree.act_node ()->have_children());
 
     empty_v_for_each_and_pass (&base_board.board(), v, {
       if (base_board.is_legal (base_board.board().act_player(), v))
@@ -279,7 +283,7 @@ private:
     });
   }
 
-  Vertex uct_child_move() {
+  Vertex mcts_child_move() {
     Node* parent = tree.act_node ();
     Vertex best_v = Vertex::any();
     float best_urgency = -large_float;
@@ -315,7 +319,7 @@ private:
 
 
   bool do_tree_move () {
-    Vertex v = uct_child_move();
+    Vertex v = mcts_child_move();
     tree.descend (v);
       
     if (play_board.is_pseudo_legal (play_board.act_player(), v) == false) {
@@ -362,7 +366,7 @@ private:
     
     if (try_add_children()) {
       bool ok = do_tree_move();
-      assertc(uct_ac, ok);
+      assertc(mcts_ac, ok);
     }
 
     Playout<SimplePolicy> (&policy, &play_board).run ();
@@ -390,10 +394,54 @@ private:
       return GtpResult::success (v.to_string());
     }
 
-    assert(false);
-  } 
+    if (command == "MCTS.show") {
+      string sub;
+
+      if (!(params >> sub)) {
+        return GtpResult::syntax_error();
+      } else if (sub == "playout") {
+        show_move_count = 6;
+
+        Board playout_board;
+        playout_board.load (&base_board.board());
+        SimplePolicy policy(global_random);
+        Playout<SimplePolicy> playout (&policy, &playout_board);
+        playout.run();
+
+        showed_playout.clear();
+        rep (ii, playout.move_history.size)
+          showed_playout.push_back(playout.move_history.tab[ii]);
+
+      } else if (sub == "more") {
+        show_move_count += 1;
+      } else if (sub == "less") {
+        show_move_count -= 1;
+      } else {
+        return GtpResult::syntax_error();
+      }
+
+      show_move_count = max(show_move_count, 0);
+      show_move_count = min(show_move_count, int(showed_playout.size()));
+
+      GtpResult gfx = GtpResult::gfx();
+
+      rep(ii, show_move_count) {
+        gfx.add_var_move(showed_playout[ii]);
+      }
+
+      gfx.add_symbol(showed_playout[show_move_count-1].get_vertex(),
+                     GtpResult::circle);
+
+      return gfx;
+    }
+
+    assert (false);
+  }
 
 private:
+
+  vector<Move> showed_playout;
+  int show_move_count;
 
   float explore_rate;
   uint  genmove_playout_count;
