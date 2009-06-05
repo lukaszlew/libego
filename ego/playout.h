@@ -18,8 +18,7 @@ template <typename Policy> class Playout {
 public:
   Policy*  policy;
   Board*   board;
-  Move*    move_history;
-  uint     move_history_length;
+  FastStack<Move, max_game_length>  move_history;
   PlayoutStatus status;
 
   Playout (Policy* policy_, Board*  board_) : policy (policy_), board (board_) {}
@@ -46,14 +45,14 @@ public:
 
   all_inline
   PlayoutStatus run () {
-    uint begin_move_no = board->move_no;
-    move_history = board->move_history + board->move_no;
+    move_history.clear();
 
     while (!playout_end()) {
       policy->play_move (board);
+      Move m = board->last_move();
+      move_history.push_back(m);
     }
 
-    move_history_length = board->move_no - begin_move_no;
     return status;
   }
   

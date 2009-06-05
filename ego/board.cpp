@@ -374,12 +374,10 @@ void Board::play_eye_legal (Player player, Vertex v) {
 
 // Warning: has to be called before place_stone, because of hash storing
 void Board::basic_play (Player player, Vertex v) {
-  assertc (board_ac, move_no <= max_game_length);
   ko_v_                   = Vertex::any ();
   last_empty_v_cnt        = empty_v_cnt;
   last_player_            = player;
   last_play_ [player]     = v;
-  move_history [move_no]  = Move (player, v);
   move_no                += 1;
 }
 

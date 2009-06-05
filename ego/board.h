@@ -168,8 +168,6 @@ public:
 
   Vertex                   empty_v [board_area]; // TODO use FastSet (empty_pos)
   uint                     empty_v_cnt;
-
-  Move                     move_history [max_game_length]; // TODO FastStack
   uint                     move_no;
 
   enum {

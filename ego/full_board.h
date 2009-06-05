@@ -29,6 +29,7 @@ private:
   void play_legal (Player player, Vertex v);
   bool is_hash_repeated ();
 
+  FastStack<Move, max_game_length>  move_history;
 };
 
 #endif
