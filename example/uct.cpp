@@ -80,8 +80,10 @@ public:
   }
 
   void init (Player pl, Vertex v) {
+    // TODO make NodeData a member
     this->player = pl;
     this->v = v;
+    this->stat.reset();
     vertex_for_each_all (v)
       children_[v] = NULL;
     have_child = false;
@@ -220,7 +222,9 @@ string Node_to_string (Node* node, float min_visit) {
 class Uct {
 public:
   
-  Uct (FullBoard& base_board_) : base_board (base_board_), policy(global_random) { 
+  Uct (Gtp& gtp, FullBoard& base_board_)
+    : base_board (base_board_), policy(global_random)
+  {
     explore_rate                   = 1.0;
     uct_genmove_playout_cnt        = 100000;
     mature_update_count_threshold  = 100.0;

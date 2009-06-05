@@ -28,15 +28,16 @@
 #include "uct.cpp"
 #include "experiments.cpp"
 
-Gtp      gtp;
-FullBoard   board;
-SgfTree  sgf_tree;
+Gtp        gtp;
+FullBoard  board;
+SgfTree    sgf_tree;
 
 BasicGtp    basic_gtp (gtp, board);
 SgfGtp      sgf_gtp   (gtp, sgf_tree, board);
 AllAsFirst  aaf (gtp, board);
+Uct         uct (gtp, board);
 
-GenmoveGtp<Uct>  genmove_gtp (gtp, board);
+GenmoveGtp<Uct>  genmove_gtp (gtp, board, uct);
 
 int main(int argc, char** argv) {
   // no buffering to work well with gogui
