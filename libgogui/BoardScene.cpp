@@ -137,7 +137,6 @@ QString BoardScene::getFieldString(int x, int y) {
 
 ///*
 void BoardScene::debugClick(const QString& pos, Qt::MouseButtons buttons) {
-  qDebug() << "BoardScene::debugClick";
   QString button;
   if (buttons & Qt::LeftButton) {
     addBlackStone(pos);
@@ -153,7 +152,6 @@ void BoardScene::debugClick(const QString& pos, Qt::MouseButtons buttons) {
   }
   if (buttons & Qt::XButton1)
     button += "mid ";
-  qDebug() << button << "button click at " << pos;
 }//*/
 
 ///*
