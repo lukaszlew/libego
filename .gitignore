@@ -4,4 +4,8 @@ cmake_install.cmake
 Makefile
 .cproject
 .project
-
+test/moc_*
+test/test
+libgogui/moc_*
+libgogui/qrc_*
+libgogui/libgogui.a
