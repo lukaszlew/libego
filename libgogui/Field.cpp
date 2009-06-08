@@ -19,14 +19,31 @@ const QPen Field::s_shapePen(Qt::red, 2.0, Qt::SolidLine, Qt::RoundCap, Qt::Roun
 Field::Field(int x, int y, QGraphicsItem *parent) :
   QGraphicsItemGroup(parent), m_x(x), m_y(y), m_background(NULL), m_stone(NULL), m_mark(NULL),
       m_circle(NULL), m_square(NULL), m_triangle(NULL), m_label(NULL) {
+  setAcceptHoverEvents(true);
 }
 
 Field::~Field() {
 }
 
+///* debugging functions
+void Field::hoverEnterEvent ( QGraphicsSceneHoverEvent * event)
+{
+  Q_UNUSED(event);
+  m_background->setBrush(QColor(64,0,0,64));
+  update();
+}
+
+void Field::hoverLeaveEvent ( QGraphicsSceneHoverEvent * event )
+{
+  Q_UNUSED(event);
+  m_background->setBrush(Qt::NoBrush);
+  update();
+
+}
+//*/
+
 void Field::removeItem(QGraphicsItem*& item) {
   if (item) {
-    qDebug() << "removeItem";
     scene()->removeItem(item);
     removeFromGroup(item);
     delete item;

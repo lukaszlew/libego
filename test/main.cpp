@@ -3,6 +3,7 @@
 
 #include "BoardView.h"
 #include "SquareBoard.h"
+#include "HexBoard.h"
 
 int main(int argc, char *argv[])
 {
@@ -10,8 +11,7 @@ int main(int argc, char *argv[])
 
   QApplication a(argc, argv);
 
-  SquareBoard scene(11);
-  scene.addBlackStone("1-1");
+  HexBoard scene(8);
   BoardView view(&scene);
   view.show();
   return a.exec();

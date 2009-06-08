@@ -11,17 +11,18 @@ public:
   ~SquareField();
 
   virtual void initializeBackgroudItem();
-  virtual int getWidth() const
+  virtual qreal getWidth() const
   {
     return s_width;
   }
-  virtual int getHeight() const
+  virtual qreal getHeight() const
   {
     return s_height;
   }
 
-  static const int s_width, s_height;
+  static const qreal s_width, s_height;
 protected:
+
 
 };
 

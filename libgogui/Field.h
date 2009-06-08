@@ -13,8 +13,8 @@ public:
 
   virtual void initializeBackgroudItem() = 0;
 
-  virtual int getWidth() const = 0;
-  virtual int getHeight() const = 0;
+  virtual qreal getWidth() const = 0;
+  virtual qreal getHeight() const = 0;
 
   int x() const { return m_x; }
   int y() const { return m_y; }
@@ -42,6 +42,10 @@ public:
   void removeLabel();
 
 protected:
+  ///* debugging
+  virtual void hoverEnterEvent ( QGraphicsSceneHoverEvent * event );
+  virtual void hoverLeaveEvent ( QGraphicsSceneHoverEvent * event );
+  //*/
   virtual void removeItem(QGraphicsItem*& item);
 
   int m_x, m_y;
