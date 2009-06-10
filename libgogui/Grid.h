@@ -26,9 +26,9 @@ public:
 
   bool isValidCoordinate(int x, int y) const;
 
-protected:
   virtual QPointF getFieldPosition(int x, int y) const = 0;
 
+protected:
   int m_size;
   static const qreal s_gridZVlaue;
   static const qreal s_handicapSpotRadius;

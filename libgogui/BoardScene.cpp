@@ -6,7 +6,7 @@
 #include "Field.h"
 
 BoardScene::BoardScene(int size, QObject *parent) :
-  QGraphicsScene(parent), m_size(size) {
+  QGraphicsScene(parent), m_size(size), m_grid(NULL), m_ruler(NULL) {
   setBackgroundBrush(QPixmap(":/images/wood.png"));
   //DEBUG
   connect(this, SIGNAL(fieldClicked(const QString&, Qt::MouseButtons)), this,
@@ -115,14 +115,6 @@ QGraphicsItem* BoardScene::addLabel(const QString& pos, const QString& label) {
 
 void BoardScene::removeLabel(const QString& pos) {
   removeShape(pos, TypeLabel);
-}
-
-void BoardScene::removeRuler() {
-  if (m_ruler) {
-    removeItem(m_ruler);
-    delete m_ruler;
-    m_ruler = NULL;
-  }
 }
 
 QString BoardScene::getFieldString(int x, int y) {

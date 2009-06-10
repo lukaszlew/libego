@@ -11,7 +11,7 @@
 const QString Field::s_blackStoneFilename(":/images/gogui-black.svg");
 const QString Field::s_whiteStoneFilename(":/images/gogui-white.svg");
 
-const qreal Field::s_stoneAspectRatio = 0.8;
+const qreal Field::s_stoneAspectRatio = 1.0;
 const qreal Field::s_shapeAspectRatio = 0.5;
 
 const QPen Field::s_shapePen(Qt::red, 2.0, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);

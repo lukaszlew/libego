@@ -6,9 +6,8 @@
 #include "BoardView.h"
 
 GoGui::GoGui(QWidget *parent) :
-  QDialog(parent)
-{
-  m_boardScene = new HexBoard(13);
+  QDialog(parent) {
+  m_boardScene = new SquareBoard(17);
   BoardView *boardView = new BoardView(m_boardScene, this);
 
   m_positionEdit = new QLineEdit;
@@ -55,13 +54,11 @@ GoGui::GoGui(QWidget *parent) :
   setLayout(mainLayout);
 }
 
-GoGui::~GoGui()
-{
+GoGui::~GoGui() {
 
 }
 
-void GoGui::typeIndexChanged(const QString& text)
-{
+void GoGui::typeIndexChanged(const QString& text) {
   m_labelEdit->setEnabled(text == "Label");
 }
 
@@ -96,7 +93,7 @@ void GoGui::addButtonClicked() {
 }
 
 void GoGui::removeButtonClicked() {
-  switch(m_typeComboBox->currentIndex()) {
+  switch (m_typeComboBox->currentIndex()) {
   case 0:
   case 1:
     m_boardScene->removeStone(m_positionEdit->text());

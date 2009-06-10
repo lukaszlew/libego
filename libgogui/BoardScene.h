@@ -33,11 +33,6 @@ public:
   virtual QGraphicsItem* addLabel(const QString& pos, const QString& label);
   void removeLabel(const QString& pos);
 
-  virtual QGraphicsItem* addGrid() = 0;
-
-  virtual QGraphicsItem* addRuler() = 0;
-  void removeRuler();
-
   static QString getFieldString(int x, int y);
 
 signals:
@@ -48,6 +43,10 @@ protected slots:
 
 protected:
   void mousePressEvent(QGraphicsSceneMouseEvent * mouseEvent);
+
+  virtual QGraphicsItem* addGrid() = 0;
+
+  virtual QGraphicsItem* addRuler() = 0;
 
   enum EShapeType
   {

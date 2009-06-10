@@ -1,4 +1,4 @@
-set ( SRCS BoardScene.cpp Field.cpp Grid.cpp HexField.cpp SquareField.cpp BoardView.cpp HexBoard.cpp HexGrid.cpp SquareBoard.cpp SquareGrid.cpp )
+set ( SRCS BoardScene.cpp Field.cpp Grid.cpp HexField.cpp SquareField.cpp BoardView.cpp HexBoard.cpp HexGrid.cpp SquareBoard.cpp SquareGrid.cpp Ruler.cpp )
 set ( MOC_HDRS BoardScene.h BoardView.h HexBoard.h SquareBoard.h )
 set ( RCS images.qrc )
 set ( UIS )
