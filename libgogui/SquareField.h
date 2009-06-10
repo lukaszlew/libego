@@ -8,7 +8,6 @@ class SquareField: public Field
 
 public:
   SquareField(int x, int y, QGraphicsItem *parent = 0);
-  ~SquareField();
 
   virtual void initializeBackgroudItem();
   virtual qreal getWidth() const
@@ -21,9 +20,6 @@ public:
   }
 
   static const qreal s_width, s_height;
-protected:
-
-
 };
 
 #endif // SQUAREFIELD_H

@@ -1,23 +1,54 @@
 #include "HexGrid.h"
+#include "HexBoard.h"
 
 HexGrid::HexGrid(int size, QGraphicsItem * parent) :
-  Grid(size, parent)
-{
-  //TODO
+  Grid(size, parent) {
+  QPointF LL = HexBoard::getFieldPosition(minimalCoordinate(), minimalCoordinate(minimalCoordinate()));
+  QPointF LH = HexBoard::getFieldPosition(minimalCoordinate(), maximalCoordinate(minimalCoordinate()));
+  QPointF HL = HexBoard::getFieldPosition(maximalCoordinate(), minimalCoordinate(maximalCoordinate()));
+  QPointF HH = HexBoard::getFieldPosition(maximalCoordinate(), maximalCoordinate(maximalCoordinate()));
+  m_rect = QRectF(LL.x(), HL.y(), HH.x() - LL.x(), LH.y() - HL.y());
 }
 
-HexGrid::~HexGrid()
-{
+void HexGrid::paint(QPainter *painter, const QStyleOptionGraphicsItem* style, QWidget* widget) {
+  drawVerticalLines(painter, style, widget);
+  drawHorizontalLines(painter, style, widget);
+  drawDiagonalLines(painter, style, widget);
+  drawHandicapSpots(painter, style, widget);
 }
 
-QRectF HexGrid::boundingRect() const
-{
-  //TODO
-  return QRectF();
+
+QList<QPair<int, int> > HexGrid::getHandicapCoordinates() const {
+  QList<QPair<int, int> > res;
+
+  if (m_size > 4) {
+    int diff = (m_size < 13) ? 2 : 3;
+    int minField = minimalCoordinate() + diff;
+    int maxField = maximalCoordinate() - diff;
+
+    res.push_back(QPair<int, int> (minField, minimalCoordinate(minField) + diff));
+    res.push_back(QPair<int, int> (minField, maximalCoordinate(minField) - diff));
+    res.push_back(QPair<int, int> (maxField, minimalCoordinate(maxField) + diff));
+    res.push_back(QPair<int, int> (maxField, maximalCoordinate(maxField) - diff));
+    res.push_back(QPair<int, int> (minimalCoordinate(minField) + diff, minField));
+    res.push_back(QPair<int, int> (maximalCoordinate(maxField) - diff, maxField));
+    res.push_back(QPair<int, int> (minimalCoordinate(minField) + diff, maximalCoordinate(maxField) - diff));
+  }
+  return res;
 }
 
-void HexGrid::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidget*)
-{
-  Q_UNUSED(painter);
-  //TODO
+int HexGrid::minimalCoordinate(int x) const {
+  int res = m_size / 2 + 2 - x;
+  return (res < 1) ? 1 : res;
 }
+
+int HexGrid::maximalCoordinate(int x) const {
+  int res = m_size + m_size / 2 + 1 - x;
+  return (res > m_size) ? m_size : res;
+}
+
+QPointF HexGrid::getFieldPosition(int x, int y) const {
+  return HexBoard::getFieldPosition(x, y);
+}
+
+

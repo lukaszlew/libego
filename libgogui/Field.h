@@ -9,7 +9,6 @@ class Field: public QGraphicsItemGroup
 
 public:
   Field(int x, int y, QGraphicsItem *parent = 0);
-  ~Field();
 
   virtual void initializeBackgroudItem() = 0;
 
@@ -41,6 +40,8 @@ public:
   virtual QGraphicsItem* addLabel(const QString& label);
   void removeLabel();
 
+  virtual QPainterPath shape () const { return m_background->shape(); }
+
 protected:
   ///* debugging
   virtual void hoverEnterEvent ( QGraphicsSceneHoverEvent * event );
@@ -49,6 +50,8 @@ protected:
   virtual void removeItem(QGraphicsItem*& item);
 
   int m_x, m_y;
+
+
   QAbstractGraphicsShapeItem *m_background;
   QGraphicsItem *m_stone;
   QGraphicsItem *m_mark;
@@ -65,6 +68,9 @@ protected:
   static const qreal s_shapeAspectRatio;
 
   static const QPen s_shapePen;
+
+  static const qreal s_fieldZValue, s_stoneZValue, s_backgroundZValue, s_shapeZValue, s_labelZValue;
+
 
 };
 

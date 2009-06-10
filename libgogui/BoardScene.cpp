@@ -1,6 +1,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QDebug>
 #include "BoardScene.h"
+#include "Grid.h"
 
 #include "Field.h"
 
@@ -12,9 +13,6 @@ BoardScene::BoardScene(int size, QObject *parent) :
       SLOT(debugClick(const QString&, Qt::MouseButtons)));
 }
 
-BoardScene::~BoardScene() {
-}
-
 QGraphicsItem* BoardScene::addShape(const QString& pos, EShapeType type) {
   map_type::iterator it = m_fields.find(pos);
   if (it != m_fields.end()) {
@@ -22,7 +20,7 @@ QGraphicsItem* BoardScene::addShape(const QString& pos, EShapeType type) {
     case TypeBlackStone:
       return (*it)->addStone(Field::StoneBlack);
     case TypeWhiteStone:
-      return (*it)->addStone(Field::StoneBlack);
+      return (*it)->addStone(Field::StoneWhite);
     case TypeMark:
       return (*it)->addMark();
     case TypeCircle:
@@ -156,14 +154,14 @@ void BoardScene::debugClick(const QString& pos, Qt::MouseButtons buttons) {
 
 ///*
 void BoardScene::mousePressEvent(QGraphicsSceneMouseEvent * mouseEvent) {
-  QList<QGraphicsItem *> _items = items(mouseEvent->buttonDownScenePos(mouseEvent->button()));
-  foreach (QGraphicsItem *item, _items) {
+  QList<QGraphicsItem *> itemList = items(mouseEvent->buttonDownScenePos(mouseEvent->button()));
+  foreach (QGraphicsItem *item, itemList) {
       Field* field = qgraphicsitem_cast<Field*> (item);
 
-      if (!field)
-        continue;
+      if (!field) continue;
 
-      emit fieldClicked(getFieldString(field->x(), field->y()), mouseEvent->buttons());
+      if (field->contains(field->mapFromScene(mouseEvent->buttonDownScenePos(mouseEvent->button()))))
+        emit fieldClicked(getFieldString(field->x(), field->y()), mouseEvent->buttons());
 
     }
   QGraphicsScene::mousePressEvent(mouseEvent);

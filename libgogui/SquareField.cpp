@@ -8,11 +8,7 @@ const qreal SquareField::s_height = 40;
 
 SquareField::SquareField(int x, int y, QGraphicsItem *parent) :
   Field(x, y, parent) {
-  setPos(x * s_width, y * s_height);
   initializeBackgroudItem();
-}
-
-SquareField::~SquareField() {
 }
 
 void SquareField::initializeBackgroudItem() {
@@ -21,5 +17,6 @@ void SquareField::initializeBackgroudItem() {
   pen.setStyle(Qt::NoPen);
   m_background->setPen(pen);
   m_background->setPos(pos());
+  m_background->setZValue(s_backgroundZValue);
   addToGroup(m_background);
 }

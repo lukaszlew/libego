@@ -5,6 +5,7 @@
 #include <QMap>
 
 class Field;
+class Grid;
 
 class BoardScene: public QGraphicsScene
 {
@@ -12,7 +13,6 @@ Q_OBJECT
 
 public:
   BoardScene(int size, QObject *parent = 0);
-  virtual ~BoardScene();
 
   virtual QGraphicsItem* addBlackStone(const QString& pos);
   virtual QGraphicsItem* addWhiteStone(const QString& pos);
@@ -66,9 +66,8 @@ protected:
 
   typedef QMap<QString, Field*> map_type;
   map_type m_fields;
-  QGraphicsItem *m_grid;
+  Grid *m_grid; // not-null
   QGraphicsItem *m_ruler;
-
 };
 
 #endif /* BOARDSCENE_H_ */

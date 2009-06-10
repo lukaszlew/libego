@@ -4,6 +4,7 @@
 #include "BoardView.h"
 #include "SquareBoard.h"
 #include "HexBoard.h"
+#include "gogui.h"
 
 int main(int argc, char *argv[])
 {
@@ -11,8 +12,11 @@ int main(int argc, char *argv[])
 
   QApplication a(argc, argv);
 
-  HexBoard scene(8);
-  BoardView view(&scene);
-  view.show();
+  //SquareBoard scene(19);
+  //scene.addBlackStone("1-1");
+  //BoardView view(&scene);
+  //view.show();
+  GoGui gogui;
+  gogui.show();
   return a.exec();
 }

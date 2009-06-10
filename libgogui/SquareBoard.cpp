@@ -3,33 +3,29 @@
 #include "SquareGrid.h"
 
 SquareBoard::SquareBoard(int size, QObject *parent) :
-  BoardScene(size, parent)
-{
+  BoardScene(size, parent) {
   addGrid();
-
-  for (int x = 1; x <= size; x++)
-    for (int y = 1; y <= size; y++) {
+  for (int x = m_grid->minimalCoordinate(); x <= m_grid->maximalCoordinate(); x++) {
+    for (int y = m_grid->minimalCoordinate(x); y <= m_grid->maximalCoordinate(x); y++) {
       Field *field = new SquareField(x, y);
       m_fields.insert(getFieldString(x, y), field);
+      field->setPos(getFieldPosition(x, y));
       addItem(field);
     }
+  }
 }
 
-SquareBoard::~SquareBoard()
-{
-}
-
-QGraphicsItem* SquareBoard::addGrid()
-{
+QGraphicsItem* SquareBoard::addGrid() {
   m_grid = new SquareGrid(m_size);
   addItem(m_grid);
   return m_grid;
 }
 
-QGraphicsItem* SquareBoard::addRuler()
-{
+QGraphicsItem* SquareBoard::addRuler() {
   //TODO
   return NULL;
 }
 
-
+QPointF SquareBoard::getFieldPosition(int x, int y) {
+  return QPointF(x * SquareField::s_width, y * SquareField::s_height);
+}

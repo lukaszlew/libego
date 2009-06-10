@@ -9,14 +9,11 @@ Q_OBJECT
 
 public:
   HexBoard(int size, QObject *parent = 0);
-  ~HexBoard();
 
   virtual QGraphicsItem* addGrid();
   virtual QGraphicsItem* addRuler();
 
-
-private:
-
+  static QPointF getFieldPosition(int x, int y);
 };
 
 #endif // HEXBOARD_H

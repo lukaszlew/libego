@@ -9,13 +9,11 @@ Q_OBJECT
 
 public:
   SquareBoard(int size, QObject *parent = 0);
-  virtual ~SquareBoard();
 
   virtual QGraphicsItem* addGrid();
   virtual QGraphicsItem* addRuler();
 
-private:
-
+  static QPointF getFieldPosition(int x, int y);
 };
 
 #endif // SQUAREBOARD_H
