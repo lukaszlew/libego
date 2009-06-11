@@ -3,6 +3,7 @@
 
 #include <QGraphicsScene>
 #include <QMap>
+#include <QMutex>
 
 class Field;
 class Grid;
@@ -44,10 +45,6 @@ protected slots:
 protected:
   void mousePressEvent(QGraphicsSceneMouseEvent * mouseEvent);
 
-  virtual QGraphicsItem* addGrid() = 0;
-
-  virtual QGraphicsItem* addRuler() = 0;
-
   enum EShapeType
   {
     TypeBlackStone,
@@ -58,11 +55,22 @@ protected:
     TypeTriangle,
     TypeLabel,
   };
+  virtual QGraphicsItem* addGrid() = 0;
+  virtual QGraphicsItem* addRuler() = 0;
   virtual QGraphicsItem* addShape(const QString& pos, EShapeType type);
   virtual void removeShape(const QString& pos, EShapeType type);
 
-  const int m_size;
+  class locker {
+  public:
+    locker(QMutex& mutex) : m_mutex(mutex) { m_mutex.lock(); }
+    ~locker() {m_mutex.unlock(); }
+  private:
+    QMutex& m_mutex;
+  };
 
+  QMutex m_mutex;
+
+  const int m_size;
   typedef QMap<QString, Field*> map_type;
   map_type m_fields;
   Grid *m_grid; // not-null

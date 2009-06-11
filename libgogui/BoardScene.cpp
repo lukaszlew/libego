@@ -14,6 +14,8 @@ BoardScene::BoardScene(int size, QObject *parent) :
 }
 
 QGraphicsItem* BoardScene::addShape(const QString& pos, EShapeType type) {
+  locker l(m_mutex);
+
   map_type::iterator it = m_fields.find(pos);
   if (it != m_fields.end()) {
     switch (type) {
@@ -38,6 +40,8 @@ QGraphicsItem* BoardScene::addShape(const QString& pos, EShapeType type) {
 }
 
 void BoardScene::removeShape(const QString& pos, EShapeType type) {
+  locker l(m_mutex);
+
   map_type::iterator it = m_fields.find(pos);
   if (it != m_fields.end()) {
     switch (type) {
@@ -105,6 +109,8 @@ void BoardScene::removeTriangle(const QString& pos) {
 }
 
 QGraphicsItem* BoardScene::addLabel(const QString& pos, const QString& label) {
+  locker l(m_mutex);
+
   map_type::iterator it = m_fields.find(pos);
   if (it != m_fields.end()) {
     return (*it)->addLabel(label);
@@ -127,21 +133,16 @@ QString BoardScene::getFieldString(int x, int y) {
 
 ///*
 void BoardScene::debugClick(const QString& pos, Qt::MouseButtons buttons) {
-  QString button;
-  if (buttons & Qt::LeftButton) {
+  if (buttons & Qt::LeftButton)
     addBlackStone(pos);
-    button += "left ";
-  }
-  if (buttons & Qt::RightButton) {
+  if (buttons & Qt::RightButton)
+    addWhiteStone(pos);
+  if (buttons & Qt::MidButton)
     removeStone(pos);
-    button += "right ";
-  }
-  if (buttons & Qt::MidButton) {
-    addMark(pos);
-    button += "mid ";
-  }
   if (buttons & Qt::XButton1)
-    button += "mid ";
+    addCircle(pos);
+  if (buttons & Qt::XButton2)
+    removeCircle(pos);
 }//*/
 
 ///*

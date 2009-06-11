@@ -7,7 +7,7 @@
 
 GoGui::GoGui(QWidget *parent) :
   QDialog(parent) {
-  m_boardScene = new SquareBoard(17);
+  m_boardScene = new HexBoard(11);
   BoardView *boardView = new BoardView(m_boardScene, this);
 
   m_positionEdit = new QLineEdit;
