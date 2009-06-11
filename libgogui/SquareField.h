@@ -9,16 +9,16 @@ class SquareField: public Field
 public:
   SquareField(int x, int y, QGraphicsItem *parent = 0);
 
-  virtual qreal getWidth() const
-  {
+  virtual qreal getWidth() const {
     return s_width;
   }
-  virtual qreal getHeight() const
-  {
+  virtual qreal getHeight() const {
     return s_height;
   }
 
-  virtual QPainterPath shape () const { return m_background->shape(); }
+  virtual QPainterPath shape() const {
+    return m_background->shape();
+  }
 
   static const qreal s_width, s_height;
 };

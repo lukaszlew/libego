@@ -1,5 +1,6 @@
 #include "SquareGrid.h"
 #include "SquareField.h"
+#include "Ruler.h"
 
 QRectF SquareGrid::boundingRect() const {
   return QRectF(getFieldPosition(minimalCoordinate(), minimalCoordinate()),
@@ -40,6 +41,11 @@ QPointF SquareGrid::getFieldPosition(int x, int y) const {
   return QPointF(x * SquareField::s_width, y * SquareField::s_height);
 }
 
-Field* SquareGrid::createField(int x, int y, QGraphicsItem *parent) const {
-  return new SquareField(x, y, parent);
+Field* SquareGrid::createField(int x, int y) {
+  return new SquareField(x, y, this);
+}
+
+Ruler* SquareGrid::createRuler() {
+  return new Ruler(Ruler::LocateBefore | Ruler::LocateAfter, Ruler::LocateAfter | Ruler::LocateBefore
+      | Ruler::TypeLetters, this);
 }

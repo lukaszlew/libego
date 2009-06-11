@@ -1,5 +1,3 @@
-#include <QPen>
-
 #include "SquareField.h"
 
 const qreal SquareField::s_width = 40;

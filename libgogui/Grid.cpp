@@ -1,6 +1,6 @@
-#include <QDebug>
 #include <QPainter>
 #include <QPair>
+
 #include "Grid.h"
 
 const qreal Grid::s_gridZVlaue = 0.0;

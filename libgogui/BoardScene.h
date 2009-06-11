@@ -13,11 +13,7 @@ class BoardScene: public QGraphicsScene
 Q_OBJECT
 
 public:
-  enum EGameType {
-    GoGame,
-    HexGame,
-  };
-  BoardScene(EGameType game, int size, QObject *parent = 0);
+  BoardScene(Grid *grid, QObject *parent = 0);
 
   void addBlackStone(const QString& pos);
   void addWhiteStone(const QString& pos);
@@ -57,7 +53,7 @@ protected:
   void removeShape(const QString& pos, EShapeType type);
 
   QMutex m_mutex;
-  const int m_size;
+  //const int m_size;
   Grid *m_grid; // not-null
   QGraphicsItem *m_ruler;
   typedef QMap<QString, Field*> map_type;

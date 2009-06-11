@@ -4,7 +4,6 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsScene>
 #include <QGraphicsSvgItem>
-#include <QDebug>
 
 #include "Field.h"
 

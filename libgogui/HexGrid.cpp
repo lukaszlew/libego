@@ -1,5 +1,7 @@
 #include "HexGrid.h"
+
 #include "HexField.h"
+#include "Ruler.h"
 
 HexGrid::HexGrid(int size, QGraphicsItem * parent) :
   Grid(size, parent) {
@@ -51,9 +53,12 @@ QPointF HexGrid::getFieldPosition(int x, int y) const {
   return QPointF((x + 0.5 * y) * HexField::s_width, y * 1.5 * HexField::s_height);
 }
 
-Field* HexGrid::createField(int x, int y, QGraphicsItem *parent) const {
-  return new HexField(x, y, parent);
+Field* HexGrid::createField(int x, int y) {
+  return new HexField(x, y, this);
+}
 
+Ruler* HexGrid::createRuler() {
+  return new Ruler(Ruler::LocateBefore, Ruler::LocateAfter | Ruler::TypeLetters, this);
 }
 
 

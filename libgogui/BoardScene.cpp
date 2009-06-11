@@ -1,28 +1,14 @@
 #include <QGraphicsSceneMouseEvent>
-#include <QDebug>
 
 #include "BoardScene.h"
 
 #include "Field.h"
-#include "SquareGrid.h"
-#include "HexGrid.h"
+#include "Grid.h"
 #include "Ruler.h"
 
-BoardScene::BoardScene(EGameType game, int size, QObject *parent) :
-  QGraphicsScene(parent), m_size(size) {
+BoardScene::BoardScene(Grid* grid, QObject *parent) :
+  QGraphicsScene(parent), m_grid(grid), m_ruler(m_grid->createRuler()) {
   setBackgroundBrush(QPixmap(":/images/wood.png"));
-
-  switch (game) {
-  case GoGame:
-    m_grid = new SquareGrid(m_size);
-    m_ruler = new Ruler(Ruler::LocateBefore | Ruler::LocateAfter, Ruler::LocateAfter | Ruler::LocateBefore
-        | Ruler::TypeLetters, m_grid);
-    break;
-  case HexGame:
-    m_grid = new HexGrid(m_size);
-    m_ruler = new Ruler(Ruler::LocateBefore, Ruler::LocateAfter | Ruler::TypeLetters, m_grid);
-    break;
-  }
 
   addItem(m_grid);
   for (int x = m_grid->minimalCoordinate(); x <= m_grid->maximalCoordinate(); x++) {
@@ -30,7 +16,6 @@ BoardScene::BoardScene(EGameType game, int size, QObject *parent) :
       Field *field = m_grid->createField(x, y);
       m_fields.insert(getFieldString(x, y), field);
       field->setPos(m_grid->getFieldPosition(x, y));
-      addItem(field);
     }
   }
 }

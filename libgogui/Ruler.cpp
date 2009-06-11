@@ -1,5 +1,7 @@
 #include <QPainter>
+
 #include "Ruler.h"
+
 #include "Grid.h"
 
 const qreal Ruler::s_size = 15;

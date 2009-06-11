@@ -8,7 +8,6 @@ class HexField: public Field
 public:
   HexField(int x, int y, QGraphicsItem *parent = 0);
 
-
   virtual qreal getWidth() const {
     return s_width;
   }
@@ -16,7 +15,9 @@ public:
     return s_height;
   }
 
-  virtual QPainterPath shape () const { return m_background->shape(); }
+  virtual QPainterPath shape() const {
+    return m_background->shape();
+  }
 
   static const qreal s_width, s_height;
 };

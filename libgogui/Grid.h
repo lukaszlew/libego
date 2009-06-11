@@ -26,11 +26,12 @@ public:
   virtual int minimalCoordinate() const = 0;
   virtual int maximalCoordinate() const = 0;
 
-  bool isValidCoordinate(int x, int y) const;
+  virtual bool isValidCoordinate(int x, int y) const;
 
   virtual QPointF getFieldPosition(int x, int y) const = 0;
 
-  virtual Field* createField(int x, int y, QGraphicsItem *parent = 0) const = 0;
+  virtual Field* createField(int x, int y)= 0;
+  virtual Ruler* createRuler() = 0;
 
 protected:
   int m_size;
