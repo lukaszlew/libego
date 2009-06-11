@@ -22,9 +22,9 @@ public:
 
   static QString getCoordinateString(int type, int coord);
 private:
-  Grid *m_grid;
-  int m_verticalType;
-  int m_horizontalType;
+  const Grid *m_grid;
+  const int m_verticalType;
+  const int m_horizontalType;
   QRectF m_rect;
 
   static const qreal s_size;

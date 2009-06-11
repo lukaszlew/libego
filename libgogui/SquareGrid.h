@@ -19,6 +19,8 @@ public:
   virtual int minimalCoordinate() const { return 1; }
   virtual int maximalCoordinate() const { return m_size; }
 
+  virtual Field* createField(int x, int y, QGraphicsItem *parent = 0) const;
+
 protected:
   virtual QPointF getFieldPosition(int x, int y) const;
 };

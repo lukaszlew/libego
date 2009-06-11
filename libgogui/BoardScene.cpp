@@ -1,41 +1,70 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QDebug>
+
 #include "BoardScene.h"
-#include "Grid.h"
 
 #include "Field.h"
+#include "SquareGrid.h"
+#include "HexGrid.h"
+#include "Ruler.h"
 
-BoardScene::BoardScene(int size, QObject *parent) :
-  QGraphicsScene(parent), m_size(size), m_grid(NULL), m_ruler(NULL) {
+BoardScene::BoardScene(EGameType game, int size, QObject *parent) :
+  QGraphicsScene(parent), m_size(size) {
   setBackgroundBrush(QPixmap(":/images/wood.png"));
-  //DEBUG
-  connect(this, SIGNAL(fieldClicked(const QString&, Qt::MouseButtons)), this,
-      SLOT(debugClick(const QString&, Qt::MouseButtons)));
+
+  switch (game) {
+  case GoGame:
+    m_grid = new SquareGrid(m_size);
+    m_ruler = new Ruler(Ruler::LocateBefore | Ruler::LocateAfter, Ruler::LocateAfter | Ruler::LocateBefore
+        | Ruler::TypeLetters, m_grid);
+    break;
+  case HexGame:
+    m_grid = new HexGrid(m_size);
+    m_ruler = new Ruler(Ruler::LocateBefore, Ruler::LocateAfter | Ruler::TypeLetters, m_grid);
+    break;
+  }
+
+  addItem(m_grid);
+  for (int x = m_grid->minimalCoordinate(); x <= m_grid->maximalCoordinate(); x++) {
+    for (int y = m_grid->minimalCoordinate(x); y <= m_grid->maximalCoordinate(x); y++) {
+      Field *field = m_grid->createField(x, y);
+      m_fields.insert(getFieldString(x, y), field);
+      field->setPos(m_grid->getFieldPosition(x, y));
+      addItem(field);
+    }
+  }
 }
 
-QGraphicsItem* BoardScene::addShape(const QString& pos, EShapeType type) {
+void BoardScene::addShape(const QString& pos, EShapeType type, const QString& label) {
   QMutexLocker locker(&m_mutex);
 
   map_type::iterator it = m_fields.find(pos);
   if (it != m_fields.end()) {
     switch (type) {
     case TypeBlackStone:
-      return (*it)->addStone(Field::StoneBlack);
+      (*it)->addStone(Field::StoneBlack);
+      return;
     case TypeWhiteStone:
-      return (*it)->addStone(Field::StoneWhite);
+      (*it)->addStone(Field::StoneWhite);
+      return;
     case TypeMark:
-      return (*it)->addMark();
+      (*it)->addMark();
+      return;
     case TypeCircle:
-      return (*it)->addCircle();
+      (*it)->addCircle();
+      return;
     case TypeSquare:
-      return (*it)->addSquare();
+      (*it)->addSquare();
+      return;
     case TypeTriangle:
-      return (*it)->addTriangle();
+      (*it)->addTriangle();
+      return;
+    case TypeLabel:
+      (*it)->addLabel(label);
+      return;
     default:
-      return NULL;
+      return;
     }
-  } else {
-    return NULL;
   }
 }
 
@@ -64,11 +93,11 @@ void BoardScene::removeShape(const QString& pos, EShapeType type) {
   }
 }
 
-QGraphicsItem* BoardScene::addBlackStone(const QString& pos) {
+void BoardScene::addBlackStone(const QString& pos) {
   return addShape(pos, TypeBlackStone);
 }
 
-QGraphicsItem* BoardScene::addWhiteStone(const QString& pos) {
+void BoardScene::addWhiteStone(const QString& pos) {
   return addShape(pos, TypeWhiteStone);
 }
 
@@ -76,7 +105,7 @@ void BoardScene::removeStone(const QString& pos) {
   removeShape(pos, TypeBlackStone);
 }
 
-QGraphicsItem* BoardScene::addMark(const QString& pos) {
+void BoardScene::addMark(const QString& pos) {
   return addShape(pos, TypeMark);
 }
 
@@ -84,7 +113,7 @@ void BoardScene::removeMark(const QString& pos) {
   removeShape(pos, TypeMark);
 }
 
-QGraphicsItem* BoardScene::addCircle(const QString& pos) {
+void BoardScene::addCircle(const QString& pos) {
   return addShape(pos, TypeCircle);
 }
 
@@ -92,7 +121,7 @@ void BoardScene::removeCircle(const QString& pos) {
   removeShape(pos, TypeCircle);
 }
 
-QGraphicsItem* BoardScene::addSquare(const QString& pos) {
+void BoardScene::addSquare(const QString& pos) {
   return addShape(pos, TypeSquare);
 }
 
@@ -100,7 +129,7 @@ void BoardScene::removeSquare(const QString& pos) {
   removeShape(pos, TypeSquare);
 }
 
-QGraphicsItem* BoardScene::addTriangle(const QString& pos) {
+void BoardScene::addTriangle(const QString& pos) {
   return addShape(pos, TypeTriangle);
 }
 
@@ -108,15 +137,8 @@ void BoardScene::removeTriangle(const QString& pos) {
   removeShape(pos, TypeTriangle);
 }
 
-QGraphicsItem* BoardScene::addLabel(const QString& pos, const QString& label) {
-  QMutexLocker locker(&m_mutex);
-
-  map_type::iterator it = m_fields.find(pos);
-  if (it != m_fields.end()) {
-    return (*it)->addLabel(label);
-  } else {
-    return NULL;
-  }
+void BoardScene::addLabel(const QString& pos, const QString& label) {
+  return addShape(pos, TypeLabel, label);
 }
 
 void BoardScene::removeLabel(const QString& pos) {
@@ -131,6 +153,22 @@ QString BoardScene::getFieldString(int x, int y) {
   return res;
 }
 
+void BoardScene::mousePressEvent(QGraphicsSceneMouseEvent * mouseEvent) {
+  QList<QGraphicsItem *> itemList = items(mouseEvent->buttonDownScenePos(mouseEvent->button()));
+  foreach (QGraphicsItem *item, itemList)
+    {
+      Field* field = qgraphicsitem_cast<Field*> (item);
+
+      if (!field)
+        continue;
+
+      if (field->contains(field->mapFromScene(mouseEvent->buttonDownScenePos(mouseEvent->button()))))
+        debugClick(getFieldString(field->getX(), field->getY()), mouseEvent->buttons());
+
+    }
+  QGraphicsScene::mousePressEvent(mouseEvent);
+}
+
 ///*
 void BoardScene::debugClick(const QString& pos, Qt::MouseButtons buttons) {
   if (buttons & Qt::LeftButton)
@@ -143,20 +181,5 @@ void BoardScene::debugClick(const QString& pos, Qt::MouseButtons buttons) {
     addCircle(pos);
   if (buttons & Qt::XButton2)
     removeCircle(pos);
-}//*/
-
-///*
-void BoardScene::mousePressEvent(QGraphicsSceneMouseEvent * mouseEvent) {
-  QList<QGraphicsItem *> itemList = items(mouseEvent->buttonDownScenePos(mouseEvent->button()));
-  foreach (QGraphicsItem *item, itemList) {
-      Field* field = qgraphicsitem_cast<Field*> (item);
-
-      if (!field) continue;
-
-      if (field->contains(field->mapFromScene(mouseEvent->buttonDownScenePos(mouseEvent->button()))))
-        emit fieldClicked(getFieldString(field->x(), field->y()), mouseEvent->buttons());
-
-    }
-  QGraphicsScene::mousePressEvent(mouseEvent);
 }
 //*/

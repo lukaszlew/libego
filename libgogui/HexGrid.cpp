@@ -1,12 +1,12 @@
 #include "HexGrid.h"
-#include "HexBoard.h"
+#include "HexField.h"
 
 HexGrid::HexGrid(int size, QGraphicsItem * parent) :
   Grid(size, parent) {
-  QPointF LL = HexBoard::getFieldPosition(minimalCoordinate(), minimalCoordinate(minimalCoordinate()));
-  QPointF LH = HexBoard::getFieldPosition(minimalCoordinate(), maximalCoordinate(minimalCoordinate()));
-  QPointF HL = HexBoard::getFieldPosition(maximalCoordinate(), minimalCoordinate(maximalCoordinate()));
-  QPointF HH = HexBoard::getFieldPosition(maximalCoordinate(), maximalCoordinate(maximalCoordinate()));
+  QPointF LL = getFieldPosition(minimalCoordinate(), minimalCoordinate(minimalCoordinate()));
+  QPointF LH = getFieldPosition(minimalCoordinate(), maximalCoordinate(minimalCoordinate()));
+  QPointF HL = getFieldPosition(maximalCoordinate(), minimalCoordinate(maximalCoordinate()));
+  QPointF HH = getFieldPosition(maximalCoordinate(), maximalCoordinate(maximalCoordinate()));
   m_rect = QRectF(LL.x(), HL.y(), HH.x() - LL.x(), LH.y() - HL.y());
 }
 
@@ -48,7 +48,12 @@ int HexGrid::maximalCoordinate(int x) const {
 }
 
 QPointF HexGrid::getFieldPosition(int x, int y) const {
-  return HexBoard::getFieldPosition(x, y);
+  return QPointF((x + 0.5 * y) * HexField::s_width, y * 1.5 * HexField::s_height);
+}
+
+Field* HexGrid::createField(int x, int y, QGraphicsItem *parent) const {
+  return new HexField(x, y, parent);
+
 }
 
 

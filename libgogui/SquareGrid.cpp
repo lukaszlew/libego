@@ -1,6 +1,5 @@
 #include "SquareGrid.h"
 #include "SquareField.h"
-#include "SquareBoard.h"
 
 QRectF SquareGrid::boundingRect() const {
   return QRectF(getFieldPosition(minimalCoordinate(), minimalCoordinate()),
@@ -38,5 +37,9 @@ QList<QPair<int, int> > SquareGrid::getHandicapCoordinates() const {
 }
 
 QPointF SquareGrid::getFieldPosition(int x, int y) const {
-  return SquareBoard::getFieldPosition(x, y);
+  return QPointF(x * SquareField::s_width, y * SquareField::s_height);
+}
+
+Field* SquareGrid::createField(int x, int y, QGraphicsItem *parent) const {
+  return new SquareField(x, y, parent);
 }

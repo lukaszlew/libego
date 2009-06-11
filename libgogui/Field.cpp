@@ -33,7 +33,7 @@ Field::Field(int x, int y, QGraphicsItem *parent) :
 void Field::hoverEnterEvent ( QGraphicsSceneHoverEvent * event)
 {
   Q_UNUSED(event);
-  m_background->setBrush(QColor(64,0,0,64));
+  m_background->setBrush(QColor(64,64,64,64));
   update();
 }
 
@@ -42,7 +42,6 @@ void Field::hoverLeaveEvent ( QGraphicsSceneHoverEvent * event )
   Q_UNUSED(event);
   m_background->setBrush(Qt::NoBrush);
   update();
-
 }
 //*/
 
@@ -86,31 +85,28 @@ void Field::removeStone() {
   removeItem(m_stone);
 }
 
-class Mark : public QGraphicsRectItem {
+class Mark: public QGraphicsRectItem
+{
 public:
-  Mark(QGraphicsItem * parent = 0);
-  Mark(const QRectF & rect, QGraphicsItem * parent = 0);
-  Mark(qreal x, qreal y, qreal width, qreal height, QGraphicsItem * parent = 0);
-  ~Mark() {}
+  Mark(QGraphicsItem * parent = 0) :
+    QGraphicsRectItem(parent) {
+  }
+  Mark(const QRectF & rect, QGraphicsItem * parent = 0) :
+    QGraphicsRectItem(rect, parent) {
+  }
+  ;
+  Mark(qreal x, qreal y, qreal width, qreal height, QGraphicsItem * parent = 0) :
+    QGraphicsRectItem(x, y, width, height, parent) {
+  }
+  ~Mark() {
+  }
 
-  virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+  virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
+    painter->setPen(pen());
+    painter->drawLine(rect().bottomLeft(), rect().topRight());
+    painter->drawLine(rect().topLeft(), rect().bottomRight());
+  }
 };
-
-Mark::Mark(QGraphicsItem * parent) : QGraphicsRectItem(parent) {}
-
-Mark::Mark(const QRectF & rect, QGraphicsItem * parent) : QGraphicsRectItem(rect, parent) {}
-
-Mark::Mark(qreal x, qreal y, qreal width, qreal height, QGraphicsItem * parent)
-  : QGraphicsRectItem(x, y, width, height, parent) {}
-
-void Mark::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
-  Q_UNUSED(option);
-  Q_UNUSED(widget);
-  painter->setPen(pen());
-  painter->drawLine(rect().bottomLeft(), rect().topRight());
-  painter->drawLine(rect().topLeft(), rect().bottomRight());
-
-}
 
 QGraphicsItem* Field::addMark() {
   Mark* mark;

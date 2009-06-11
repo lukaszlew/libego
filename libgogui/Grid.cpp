@@ -1,5 +1,6 @@
 #include <QDebug>
 #include <QPainter>
+#include <QPair>
 #include "Grid.h"
 
 const qreal Grid::s_gridZVlaue = 0.0;
@@ -11,7 +12,7 @@ Grid::Grid(int size, QGraphicsItem * parent) :
   setZValue(s_gridZVlaue);
 }
 
-void Grid::drawHorizontalLines(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
+void Grid::drawHorizontalLines(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) const {
   QVector<QLineF> lines;
   for (int x = minimalCoordinate(); x <= maximalCoordinate(); x++) {
     lines.push_back(QLineF(getFieldPosition(minimalCoordinate(x), x), getFieldPosition(maximalCoordinate(x),
@@ -20,7 +21,7 @@ void Grid::drawHorizontalLines(QPainter *painter, const QStyleOptionGraphicsItem
   painter->drawLines(lines);
 }
 
-void Grid::drawVerticalLines(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
+void Grid::drawVerticalLines(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) const {
   QVector<QLineF> lines;
   for (int x = minimalCoordinate(); x <= maximalCoordinate(); x++) {
     QPointF startPoint = getFieldPosition(x, minimalCoordinate(x));
@@ -30,7 +31,7 @@ void Grid::drawVerticalLines(QPainter *painter, const QStyleOptionGraphicsItem *
   painter->drawLines(lines);
 }
 
-void Grid::drawDiagonalLines(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
+void Grid::drawDiagonalLines(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) const {
   QVector<QLineF> lines;
   for (int x = minimalCoordinate(); x < maximalCoordinate(); x++) {
     if (x >= minimalCoordinate(minimalCoordinate())) {
@@ -47,15 +48,14 @@ void Grid::drawDiagonalLines(QPainter *painter, const QStyleOptionGraphicsItem *
     }
   }
   painter->drawLines(lines);
-
 }
 
-void Grid::drawHandicapSpots(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
+void Grid::drawHandicapSpots(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) const {
   painter->setBrush(Qt::black);
   QList<QPair<int,int> > points = getHandicapCoordinates();
 
-  typedef QPair<int,int> intpair;
-  foreach(intpair point, points)
+  QPair<int, int> point(0,0);
+  foreach(point, points)
     {
       painter->drawEllipse(getFieldPosition(point.first, point.second),
           s_handicapSpotRadius , s_handicapSpotRadius);

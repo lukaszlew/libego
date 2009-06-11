@@ -5,10 +5,6 @@ const qreal HexField::s_height = 40;
 
 HexField::HexField(int x, int y, QGraphicsItem *parent) :
   Field(x, y, parent) {
-  initializeBackgroudItem();
-}
-
-void HexField::initializeBackgroudItem() {
   QPolygonF szesciokat(6);
   szesciokat[0] = QPointF(0, -s_height);
   szesciokat[1] = QPointF(s_width / 2, -s_height / 2);

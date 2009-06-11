@@ -1,13 +1,12 @@
 #include <QtGui>
 
 #include "gogui.h"
-#include "HexBoard.h"
-#include "SquareBoard.h"
+#include "BoardScene.h"
 #include "BoardView.h"
 
 GoGui::GoGui(QWidget *parent) :
   QDialog(parent) {
-  m_boardScene = new HexBoard(11);
+  m_boardScene = new BoardScene(BoardScene::HexGame, 13);
   BoardView *boardView = new BoardView(m_boardScene, this);
 
   m_positionEdit = new QLineEdit;
