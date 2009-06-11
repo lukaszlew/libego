@@ -60,14 +60,6 @@ protected:
   virtual QGraphicsItem* addShape(const QString& pos, EShapeType type);
   virtual void removeShape(const QString& pos, EShapeType type);
 
-  class locker {
-  public:
-    locker(QMutex& mutex) : m_mutex(mutex) { m_mutex.lock(); }
-    ~locker() {m_mutex.unlock(); }
-  private:
-    QMutex& m_mutex;
-  };
-
   QMutex m_mutex;
 
   const int m_size;

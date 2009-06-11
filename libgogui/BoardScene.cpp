@@ -14,7 +14,7 @@ BoardScene::BoardScene(int size, QObject *parent) :
 }
 
 QGraphicsItem* BoardScene::addShape(const QString& pos, EShapeType type) {
-  locker l(m_mutex);
+  QMutexLocker locker(&m_mutex);
 
   map_type::iterator it = m_fields.find(pos);
   if (it != m_fields.end()) {
@@ -40,7 +40,7 @@ QGraphicsItem* BoardScene::addShape(const QString& pos, EShapeType type) {
 }
 
 void BoardScene::removeShape(const QString& pos, EShapeType type) {
-  locker l(m_mutex);
+  QMutexLocker locker(&m_mutex);
 
   map_type::iterator it = m_fields.find(pos);
   if (it != m_fields.end()) {
@@ -109,7 +109,7 @@ void BoardScene::removeTriangle(const QString& pos) {
 }
 
 QGraphicsItem* BoardScene::addLabel(const QString& pos, const QString& label) {
-  locker l(m_mutex);
+  QMutexLocker locker(&m_mutex);
 
   map_type::iterator it = m_fields.find(pos);
   if (it != m_fields.end()) {
