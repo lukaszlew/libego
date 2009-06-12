@@ -17,11 +17,15 @@ public:
   void drawVerticalLines(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) const;
   void drawDiagonalLines(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) const;
   void drawHandicapSpots(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) const;
+  void drawFieldsShape(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) const;
 
   virtual QList<QPair<int,int> > getHandicapCoordinates() const = 0;
 
-  virtual int minimalCoordinate(int x) const = 0;
-  virtual int maximalCoordinate(int x) const = 0;
+  virtual int minimalXCoordinate(int y) const = 0;
+  virtual int maximalXCoordinate(int y) const = 0;
+
+  virtual int minimalYCoordinate(int x) const = 0;
+  virtual int maximalYCoordinate(int x) const = 0;
 
   virtual int minimalCoordinate() const = 0;
   virtual int maximalCoordinate() const = 0;
@@ -30,8 +34,10 @@ public:
 
   virtual QPointF getFieldPosition(int x, int y) const = 0;
 
-  virtual Field* createField(int x, int y)= 0;
+  virtual QPainterPath getPath() const = 0;
   virtual Ruler* createRuler() = 0;
+
+  Field* createField(int x, int y, QGraphicsItem * parent = 0);
 
 protected:
   int m_size;

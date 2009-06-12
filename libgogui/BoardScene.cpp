@@ -12,10 +12,11 @@ BoardScene::BoardScene(Grid* grid, QObject *parent) :
 
   addItem(m_grid);
   for (int x = m_grid->minimalCoordinate(); x <= m_grid->maximalCoordinate(); x++) {
-    for (int y = m_grid->minimalCoordinate(x); y <= m_grid->maximalCoordinate(x); y++) {
+    for (int y = m_grid->minimalYCoordinate(x); y <= m_grid->maximalYCoordinate(x); y++) {
       Field *field = m_grid->createField(x, y);
       m_fields.insert(getFieldString(x, y), field);
       field->setPos(m_grid->getFieldPosition(x, y));
+      addItem(field);
     }
   }
 }
@@ -166,5 +167,6 @@ void BoardScene::debugClick(const QString& pos, Qt::MouseButtons buttons) {
     addCircle(pos);
   if (buttons & Qt::XButton2)
     removeCircle(pos);
+
 }
 //*/

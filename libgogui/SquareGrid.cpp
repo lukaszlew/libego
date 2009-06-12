@@ -1,6 +1,8 @@
 #include "SquareGrid.h"
-#include "SquareField.h"
 #include "Ruler.h"
+
+const qreal SquareGrid::s_width = 40;
+const qreal SquareGrid::s_height = 40;
 
 QRectF SquareGrid::boundingRect() const {
   return QRectF(getFieldPosition(minimalCoordinate(), minimalCoordinate()),
@@ -38,11 +40,13 @@ QList<QPair<int, int> > SquareGrid::getHandicapCoordinates() const {
 }
 
 QPointF SquareGrid::getFieldPosition(int x, int y) const {
-  return QPointF(x * SquareField::s_width, y * SquareField::s_height);
+  return QPointF(x * s_width, y * s_height);
 }
 
-Field* SquareGrid::createField(int x, int y) {
-  return new SquareField(x, y, this);
+QPainterPath SquareGrid::getPath() const {
+  QPainterPath path;
+  path.addRect(-s_width / 2, -s_height / 2, s_width, s_height);
+  return path;
 }
 
 Ruler* SquareGrid::createRuler() {

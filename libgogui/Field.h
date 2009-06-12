@@ -8,10 +8,7 @@ class Field: public QGraphicsItemGroup
 {
 
 public:
-  Field(int x, int y, QGraphicsItem *parent = 0);
-
-  virtual qreal getWidth() const = 0;
-  virtual qreal getHeight() const = 0;
+  Field(const QPainterPath & path, int x, int y, QGraphicsItem *parent = 0);
 
   int getX() const { return m_x; }
   int getY() const { return m_y; }
@@ -37,6 +34,10 @@ public:
 
   virtual QGraphicsItem* addLabel(const QString& label);
   void removeLabel();
+
+  virtual QPainterPath shape() const {
+    return m_background->shape();
+  }
 
 protected:
   ///* debugging

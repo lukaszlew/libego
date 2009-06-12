@@ -1,14 +1,16 @@
 #include "HexGrid.h"
 
-#include "HexField.h"
 #include "Ruler.h"
+
+const qreal HexGrid::s_width = 40 * 1.73205;
+const qreal HexGrid::s_height = 40;
 
 HexGrid::HexGrid(int size, QGraphicsItem * parent) :
   Grid(size, parent) {
-  QPointF LL = getFieldPosition(minimalCoordinate(), minimalCoordinate(minimalCoordinate()));
-  QPointF LH = getFieldPosition(minimalCoordinate(), maximalCoordinate(minimalCoordinate()));
-  QPointF HL = getFieldPosition(maximalCoordinate(), minimalCoordinate(maximalCoordinate()));
-  QPointF HH = getFieldPosition(maximalCoordinate(), maximalCoordinate(maximalCoordinate()));
+  QPointF LL = getFieldPosition(minimalCoordinate(), minimalYCoordinate(minimalCoordinate()));
+  QPointF LH = getFieldPosition(minimalCoordinate(), maximalYCoordinate(minimalCoordinate()));
+  QPointF HL = getFieldPosition(maximalCoordinate(), minimalYCoordinate(maximalCoordinate()));
+  QPointF HH = getFieldPosition(maximalCoordinate(), maximalYCoordinate(maximalCoordinate()));
   m_rect = QRectF(LL.x(), HL.y(), HH.x() - LL.x(), LH.y() - HL.y());
 }
 
@@ -28,37 +30,53 @@ QList<QPair<int, int> > HexGrid::getHandicapCoordinates() const {
     int minField = minimalCoordinate() + diff;
     int maxField = maximalCoordinate() - diff;
 
-    res.push_back(QPair<int, int> (minField, minimalCoordinate(minField) + diff));
-    res.push_back(QPair<int, int> (minField, maximalCoordinate(minField) - diff));
-    res.push_back(QPair<int, int> (maxField, minimalCoordinate(maxField) + diff));
-    res.push_back(QPair<int, int> (maxField, maximalCoordinate(maxField) - diff));
-    res.push_back(QPair<int, int> (minimalCoordinate(minField) + diff, minField));
-    res.push_back(QPair<int, int> (maximalCoordinate(maxField) - diff, maxField));
-    res.push_back(QPair<int, int> (minimalCoordinate(minField) + diff, maximalCoordinate(maxField) - diff));
+    res.push_back(QPair<int, int> (minField, minimalYCoordinate(minField) + diff));
+    res.push_back(QPair<int, int> (minField, maximalYCoordinate(minField) - diff));
+    res.push_back(QPair<int, int> (maxField, minimalYCoordinate(maxField) + diff));
+    res.push_back(QPair<int, int> (maxField, maximalYCoordinate(maxField) - diff));
+    res.push_back(QPair<int, int> (minimalXCoordinate(minField) + diff, minField));
+    res.push_back(QPair<int, int> (maximalXCoordinate(maxField) - diff, maxField));
+    res.push_back(QPair<int, int> (minimalXCoordinate(minField) + diff, maximalYCoordinate(maxField) - diff));
   }
   return res;
 }
 
-int HexGrid::minimalCoordinate(int x) const {
-  int res = m_size / 2 + 2 - x;
+int HexGrid::minimalXCoordinate(int y) const {
+  int res = m_size / 2 + 2 - y;
   return (res < 1) ? 1 : res;
 }
 
-int HexGrid::maximalCoordinate(int x) const {
-  int res = m_size + m_size / 2 + 1 - x;
+int HexGrid::maximalXCoordinate(int y) const {
+  int res = m_size + m_size / 2 + 1 - y;
   return (res > m_size) ? m_size : res;
 }
 
-QPointF HexGrid::getFieldPosition(int x, int y) const {
-  return QPointF((x + 0.5 * y) * HexField::s_width, y * 1.5 * HexField::s_height);
+int HexGrid::minimalYCoordinate(int x) const {
+  return minimalXCoordinate(x);
 }
 
-Field* HexGrid::createField(int x, int y) {
-  return new HexField(x, y, this);
+int HexGrid::maximalYCoordinate(int x) const {
+  return maximalXCoordinate(x);
+}
+
+QPainterPath HexGrid::getPath() const {
+  QPolygonF szesciokat(7);
+  szesciokat[0] = QPointF(0, -s_height);
+  szesciokat[1] = QPointF(s_width / 2, -s_height / 2);
+  szesciokat[2] = QPointF(s_width / 2, s_height / 2);
+  szesciokat[3] = QPointF(0, s_height);
+  szesciokat[4] = QPointF(-s_width / 2, s_height / 2);
+  szesciokat[5] = QPointF(-s_width / 2, -s_height / 2);
+  szesciokat[6] = QPointF(0, -s_height);
+  QPainterPath path;
+  path.addPolygon(szesciokat);
+  return path;
 }
 
 Ruler* HexGrid::createRuler() {
-  return new Ruler(Ruler::LocateBefore, Ruler::LocateAfter | Ruler::TypeLetters, this);
+  return new Ruler(Ruler::LocateAfter, Ruler::LocateBefore | Ruler::TypeLetters, this);
 }
 
-
+QPointF HexGrid::getFieldPosition(int x, int y) const {
+  return QPointF((x + 0.5 * y) * s_width, y * 1.5 * s_height);
+}

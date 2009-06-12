@@ -21,11 +21,17 @@ const qreal Field::s_backgroundZValue = 0.0;
 const qreal Field::s_shapeZValue = 2.0;
 const qreal Field::s_labelZValue = 3.0;
 
-Field::Field(int x, int y, QGraphicsItem *parent) :
-  QGraphicsItemGroup(parent), m_x(x), m_y(y), m_background(NULL), m_stone(NULL), m_mark(NULL),
-      m_circle(NULL), m_square(NULL), m_triangle(NULL), m_label(NULL) {
+Field::Field(const QPainterPath & path, int x, int y, QGraphicsItem *parent) :
+  QGraphicsItemGroup(parent), m_x(x), m_y(y), m_background(new QGraphicsPathItem(path, this)), m_stone(NULL),
+  m_mark(NULL), m_circle(NULL), m_square(NULL), m_triangle(NULL), m_label(NULL) {
   setAcceptHoverEvents(true);
   setZValue(s_fieldZValue);
+
+  QPen pen;
+  pen.setStyle(Qt::NoPen);
+  m_background->setPen(pen);
+  m_background->setZValue(s_backgroundZValue);
+  addToGroup(m_background);
 }
 
 ///* debugging functions
@@ -67,8 +73,8 @@ QGraphicsItem* Field::addStone(EStoneColor stoneColor) {
   }
 
   if (m_stone) {
-    int max = (getWidth() > getHeight()) ? getWidth() : getHeight();
-    qreal scaleRatio = s_stoneAspectRatio * max / m_stone->boundingRect().width();
+    int min = (boundingRect().width() < boundingRect().height()) ? boundingRect().width() : boundingRect().height();
+    qreal scaleRatio = s_stoneAspectRatio * min / m_stone->boundingRect().width();
 
     addToGroup(m_stone);
 
@@ -110,7 +116,7 @@ public:
 QGraphicsItem* Field::addMark() {
   Mark* mark;
   removeMark();
-  qreal width = s_shapeAspectRatio * ((getWidth() > getHeight()) ? getWidth() : getHeight());
+  qreal width = s_shapeAspectRatio * ((boundingRect().width() > boundingRect().height()) ? boundingRect().width() : boundingRect().height());
   m_mark = mark = new Mark(-width / 2, -width / 2, width, width, this);
   mark->setPen(s_shapePen);
   mark->setZValue(s_shapeZValue);
@@ -125,7 +131,7 @@ void Field::removeMark() {
 QGraphicsItem* Field::addCircle() {
   QGraphicsEllipseItem *circle;
   removeCircle();
-  qreal width = s_shapeAspectRatio * ((getWidth() > getHeight()) ? getWidth() : getHeight());
+  qreal width = s_shapeAspectRatio * ((boundingRect().width() > boundingRect().height()) ? boundingRect().width() : boundingRect().height());
   m_circle = circle = new QGraphicsEllipseItem(- width / 2, - width / 2, width, width, this);
 
   circle->setPen(s_shapePen);
@@ -142,7 +148,7 @@ void Field::removeCircle() {
 QGraphicsItem* Field::addSquare() {
   QGraphicsRectItem *square;
   removeSquare();
-  qreal width = s_shapeAspectRatio * ((getWidth() > getHeight()) ? getWidth() : getHeight());
+  qreal width = s_shapeAspectRatio * ((boundingRect().width() > boundingRect().height()) ? boundingRect().width() : boundingRect().height());
   m_square = square = new QGraphicsRectItem(- width / 2, - width / 2, width, width, this);
   square->setPen(s_shapePen);
   square->setZValue(s_shapeZValue);
@@ -157,7 +163,7 @@ void Field::removeSquare() {
 QGraphicsItem* Field::addTriangle() {
   QGraphicsPolygonItem *triangle;
   removeTriangle();
-  qreal width = s_shapeAspectRatio * ((getWidth() > getHeight()) ? getWidth() : getHeight());
+  qreal width = s_shapeAspectRatio * ((boundingRect().width() > boundingRect().height()) ? boundingRect().width() : boundingRect().height());
   QPolygonF polygon(3);
   polygon[0] = QPointF(-width / 2, width / 2);
   polygon[1] = QPointF(width / 2, width / 2);
@@ -181,7 +187,7 @@ QGraphicsItem* Field::addLabel(const QString& labelString) {
   label->setPen(s_shapePen);
   addToGroup(m_label);
   label->setZValue(s_labelZValue);
-  int max = (getWidth() > getHeight()) ? getWidth() : getHeight();
+  int max = (boundingRect().width() > boundingRect().height()) ? boundingRect().width() : boundingRect().height();
   qreal scaleRatio = s_shapeAspectRatio * max / m_label->boundingRect().height();
   m_label->scale(scaleRatio, scaleRatio);
   m_label->translate(-m_label->boundingRect().width() / 2, -m_label->boundingRect().height() / 2);

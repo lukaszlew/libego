@@ -53,7 +53,6 @@ protected:
   void removeShape(const QString& pos, EShapeType type);
 
   QMutex m_mutex;
-  //const int m_size;
   Grid *m_grid; // not-null
   QGraphicsItem *m_ruler;
   typedef QMap<QString, Field*> map_type;
