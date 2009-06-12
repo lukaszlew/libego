@@ -6,10 +6,10 @@ const qreal HexGrid::s_width = 40 * 1.73205;
 const qreal HexGrid::s_height = 80;
 
 QRectF HexGrid::boundingRect() const {
-  QPointF LL = getFieldPosition(minimalCoordinate(), minimalYCoordinate(minimalCoordinate()));
-  QPointF LH = getFieldPosition(minimalCoordinate(), maximalYCoordinate(minimalCoordinate()));
-  QPointF HL = getFieldPosition(maximalCoordinate(), minimalYCoordinate(maximalCoordinate()));
-  QPointF HH = getFieldPosition(maximalCoordinate(), maximalYCoordinate(maximalCoordinate()));
+  QPointF LL = getFieldPosition(minimalXCoordinate(), minimalYCoordinate(minimalXCoordinate()));
+  QPointF LH = getFieldPosition(minimalXCoordinate(), maximalYCoordinate(minimalXCoordinate()));
+  QPointF HL = getFieldPosition(maximalXCoordinate(), minimalYCoordinate(maximalXCoordinate()));
+  QPointF HH = getFieldPosition(maximalXCoordinate(), maximalYCoordinate(maximalXCoordinate()));
   return QRectF(QPointF(LL.x(), HL.y()) - fieldSize() / 2, QPointF(HH.x(), LH.y()) + fieldSize() / 2);
 }
 

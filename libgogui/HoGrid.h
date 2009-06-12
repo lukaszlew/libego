@@ -18,6 +18,13 @@ public:
   virtual int minimalYCoordinate(int x) const;
   virtual int maximalYCoordinate(int x) const;
 
+  virtual int minimalXCoordinate() const { return 1; }
+  virtual int maximalXCoordinate() const { return m_size; }
+
+  virtual int minimalYCoordinate() const { return 1; }
+  virtual int maximalYCoordinate() const { return m_size; }
+
+
   virtual Ruler* createRuler();
 };
 

@@ -6,10 +6,10 @@ const qreal HavannahGrid::s_width = 80;
 const qreal HavannahGrid::s_height = 40 * 1.73205;
 
 QRectF HavannahGrid::boundingRect() const {
-  QPointF top = getFieldPosition(minimalXCoordinate(minimalCoordinate()), minimalCoordinate());
-  QPointF left = getFieldPosition(minimalCoordinate(), maximalYCoordinate(minimalCoordinate()));
-  QPointF right = getFieldPosition(maximalCoordinate(), minimalYCoordinate(maximalCoordinate()));
-  QPointF bottom = getFieldPosition(maximalXCoordinate(maximalCoordinate()), maximalCoordinate());
+  QPointF top = getFieldPosition(minimalXCoordinate(minimalYCoordinate()), minimalYCoordinate());
+  QPointF left = getFieldPosition(minimalXCoordinate(), maximalYCoordinate(minimalXCoordinate()));
+  QPointF right = getFieldPosition(maximalXCoordinate(), minimalYCoordinate(maximalXCoordinate()));
+  QPointF bottom = getFieldPosition(maximalXCoordinate(maximalYCoordinate()), maximalYCoordinate());
   return QRectF(QPointF(left.x() , top.y()) - fieldSize() / 2, QPointF(right.x(), bottom.y()) + fieldSize() / 2);
 }
 

@@ -4,9 +4,9 @@
 YGrid::YGrid(int size, QGraphicsItem * parent) : HexGrid(size, parent) {}
 
 QRectF YGrid::boundingRect() const {
-  QPointF top = getFieldPosition(maximalCoordinate(), minimalYCoordinate(maximalCoordinate()));
-  QPointF bottomLeft = getFieldPosition(minimalXCoordinate(maximalCoordinate()), maximalCoordinate());
-  QPointF bottomRight = getFieldPosition(maximalXCoordinate(maximalCoordinate()), maximalCoordinate());
+  QPointF top = getFieldPosition(maximalXCoordinate(), minimalYCoordinate(maximalXCoordinate()));
+  QPointF bottomLeft = getFieldPosition(minimalXCoordinate(maximalYCoordinate()), maximalYCoordinate());
+  QPointF bottomRight = getFieldPosition(maximalXCoordinate(maximalYCoordinate()), maximalYCoordinate());
   return QRectF(QPointF(bottomLeft.x(), top.y()) - fieldSize() / 2, bottomRight + fieldSize() / 2);
 }
 

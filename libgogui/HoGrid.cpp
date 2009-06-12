@@ -13,16 +13,19 @@ QList<QPair<int, int> > HoGrid::getHandicapCoordinates() const {
 
   if (m_size > 4) {
     int diff = (m_size < 13) ? 2 : 3;
-    int minField = minimalCoordinate() + diff;
-    int maxField = maximalCoordinate() - diff;
+    int minXField = minimalXCoordinate() + diff;
+    int maxXField = maximalXCoordinate() - diff;
+    int minYField = minimalYCoordinate() + diff;
+    int maxYField = maximalYCoordinate() - diff;
 
-    res.push_back(QPair<int, int> (minField, minimalYCoordinate(minField) + diff));
-    res.push_back(QPair<int, int> (minField, maximalYCoordinate(minField) - diff));
-    res.push_back(QPair<int, int> (maxField, minimalYCoordinate(maxField) + diff));
-    res.push_back(QPair<int, int> (maxField, maximalYCoordinate(maxField) - diff));
-    res.push_back(QPair<int, int> (minimalXCoordinate(minField) + diff, minField));
-    res.push_back(QPair<int, int> (maximalXCoordinate(maxField) - diff, maxField));
-    res.push_back(QPair<int, int> (minimalXCoordinate(minField) + diff, maximalYCoordinate(maxField) - diff));
+
+    res.push_back(QPair<int, int> (minXField, minimalYCoordinate(minXField) + diff));
+    res.push_back(QPair<int, int> (minXField, maximalYCoordinate(minXField) - diff));
+    res.push_back(QPair<int, int> (maxXField, minimalYCoordinate(maxXField) + diff));
+    res.push_back(QPair<int, int> (maxXField, maximalYCoordinate(maxXField) - diff));
+    res.push_back(QPair<int, int> (minimalXCoordinate(minYField) + diff, minYField));
+    res.push_back(QPair<int, int> (maximalXCoordinate(maxYField) - diff, maxYField));
+    res.push_back(QPair<int, int> (minimalXCoordinate(minYField) + diff, maximalYCoordinate(maxXField) - diff));
   }
   return res;
 }

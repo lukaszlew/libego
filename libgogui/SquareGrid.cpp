@@ -5,8 +5,8 @@ const qreal SquareGrid::s_width = 40;
 const qreal SquareGrid::s_height = 40;
 
 QRectF SquareGrid::boundingRect() const {
-  QPointF topLeft = getFieldPosition(minimalCoordinate(), minimalCoordinate()) - fieldSize() / 2;
-  QPointF bottomRight = getFieldPosition(maximalCoordinate(), maximalCoordinate()) + fieldSize() / 2;
+  QPointF topLeft = getFieldPosition(minimalXCoordinate(), minimalYCoordinate()) - fieldSize() / 2;
+  QPointF bottomRight = getFieldPosition(maximalXCoordinate(), maximalYCoordinate()) + fieldSize() / 2;
   return QRectF(topLeft, bottomRight);
 }
 
@@ -14,27 +14,28 @@ void SquareGrid::paint(QPainter *painter, const QStyleOptionGraphicsItem* style,
   drawVerticalLines(painter, style, widget);
   drawHorizontalLines(painter, style, widget);
   drawHandicapSpots(painter, style, widget);
+  drawDiagonalLines(painter, style, widget);
 }
 
 QList<QPair<int, int> > SquareGrid::getHandicapCoordinates() const {
   QList<QPair<int, int> > res;
 
   if (m_size > 4) {
-    int minField = (m_size < 13) ? 3 : 4;
-    int maxField = maximalCoordinate() - minField + 1;
+    int diff = (m_size < 13) ? 2 : 3;
 
-    res.push_back(QPair<int, int> (minField, minField));
-    res.push_back(QPair<int, int> (minField, maxField));
-    res.push_back(QPair<int, int> (maxField, minField));
-    res.push_back(QPair<int, int> (maxField, maxField));
+    res.push_back(QPair<int, int> (minimalXCoordinate() + diff, minimalYCoordinate() + diff));
+    res.push_back(QPair<int, int> (minimalXCoordinate() + diff, maximalYCoordinate() - diff));
+    res.push_back(QPair<int, int> (maximalXCoordinate() - diff, minimalYCoordinate() + diff));
+    res.push_back(QPair<int, int> (maximalXCoordinate() - diff, maximalYCoordinate() - diff));
 
     if (m_size & 1 && m_size > 8) {
-      int middleField = (minimalCoordinate() + maximalCoordinate()) / 2;
-      res.push_back(QPair<int, int> (middleField, minField));
-      res.push_back(QPair<int, int> (middleField, maxField));
-      res.push_back(QPair<int, int> (minField, middleField));
-      res.push_back(QPair<int, int> (maxField, middleField));
-      res.push_back(QPair<int, int> (middleField, middleField));
+      int middleXField = (minimalXCoordinate() + maximalXCoordinate()) / 2;
+      int middleYField = (minimalYCoordinate() + maximalYCoordinate()) / 2;
+      res.push_back(QPair<int, int> (middleXField, minimalYCoordinate() + diff));
+      res.push_back(QPair<int, int> (middleXField, maximalYCoordinate() - diff));
+      res.push_back(QPair<int, int> (minimalXCoordinate() + diff, middleYField));
+      res.push_back(QPair<int, int> (maximalXCoordinate() - diff, middleYField));
+      res.push_back(QPair<int, int> (middleXField, middleYField));
     }
   }
   return res;

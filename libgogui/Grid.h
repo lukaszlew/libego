@@ -27,8 +27,11 @@ public:
   virtual int minimalYCoordinate(int x) const = 0;
   virtual int maximalYCoordinate(int x) const = 0;
 
-  virtual int minimalCoordinate() const = 0;
-  virtual int maximalCoordinate() const = 0;
+  virtual int minimalXCoordinate() const = 0;
+  virtual int maximalXCoordinate() const = 0;
+
+  virtual int minimalYCoordinate() const = 0;
+  virtual int maximalYCoordinate() const = 0;
 
   virtual bool isValidCoordinate(int x, int y) const;
 

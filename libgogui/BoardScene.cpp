@@ -11,7 +11,7 @@ BoardScene::BoardScene(Grid* grid, QObject *parent) :
   setBackgroundBrush(QPixmap(":/images/wood.png"));
 
   addItem(m_grid);
-  for (int x = m_grid->minimalCoordinate(); x <= m_grid->maximalCoordinate(); x++) {
+  for (int x = m_grid->minimalXCoordinate(); x <= m_grid->maximalXCoordinate(); x++) {
     for (int y = m_grid->minimalYCoordinate(x); y <= m_grid->maximalYCoordinate(x); y++) {
       Field *field = m_grid->createField(x, y);
       m_fields.insert(getFieldString(x, y), field);

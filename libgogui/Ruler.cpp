@@ -29,28 +29,28 @@ void Ruler::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWi
   painter->setFont(font);
 
   if (m_horizontalType & LocateBefore)
-    for (int y = m_grid->minimalCoordinate(); y <= m_grid->maximalCoordinate(); y++) {
+    for (int y = m_grid->minimalYCoordinate(); y <= m_grid->maximalYCoordinate(); y++) {
       QRectF rect(m_grid->getFieldPosition(m_grid->minimalXCoordinate(y) - 1, y) - m_grid->fieldSize() / 2,
           QSizeF(m_grid->fieldSize().x() , m_grid->fieldSize().y() ));
       painter->drawText(rect, Qt::AlignHCenter | Qt::AlignVCenter, getCoordinateString(m_horizontalType, y));
     }
 
   if (m_horizontalType & LocateAfter)
-    for (int y = m_grid->minimalCoordinate(); y <= m_grid->maximalCoordinate(); y++) {
+    for (int y = m_grid->minimalYCoordinate(); y <= m_grid->maximalYCoordinate(); y++) {
       QRectF rect(m_grid->getFieldPosition(m_grid->maximalXCoordinate(y) + 1, y) - m_grid->fieldSize() / 2,
           QSizeF(m_grid->fieldSize().x() , m_grid->fieldSize().y() ));
       painter->drawText(rect, Qt::AlignHCenter | Qt::AlignVCenter, getCoordinateString(m_horizontalType, y));
     }
 
   if (m_verticalType & LocateBefore)
-    for (int x = m_grid->minimalCoordinate(); x <= m_grid->maximalCoordinate(); x++) {
+    for (int x = m_grid->minimalXCoordinate(); x <= m_grid->maximalXCoordinate(); x++) {
       QRectF rect(m_grid->getFieldPosition(x, m_grid->minimalYCoordinate(x) - 1) - m_grid->fieldSize() / 2,
           QSizeF(m_grid->fieldSize().x() , m_grid->fieldSize().y() ));
       painter->drawText(rect, Qt::AlignHCenter | Qt::AlignVCenter, getCoordinateString(m_verticalType, x));
     }
 
   if (m_verticalType & LocateAfter)
-    for (int x = m_grid->minimalCoordinate(); x <= m_grid->maximalCoordinate(); x++) {
+    for (int x = m_grid->minimalXCoordinate(); x <= m_grid->maximalXCoordinate(); x++) {
       QRectF rect(m_grid->getFieldPosition(x, m_grid->maximalYCoordinate(x) + 1) - m_grid->fieldSize() / 2,
           QSizeF(m_grid->fieldSize().x() , m_grid->fieldSize().y() ));
       painter->drawText(rect, Qt::AlignHCenter | Qt::AlignVCenter, getCoordinateString(m_verticalType, x));

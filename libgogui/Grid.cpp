@@ -15,7 +15,7 @@ Grid::Grid(int size, QGraphicsItem * parent) :
 
 void Grid::drawHorizontalLines(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) const {
   QVector<QLineF> lines;
-  for (int y = minimalCoordinate(); y <= maximalCoordinate(); y++) {
+  for (int y = minimalYCoordinate(); y <= maximalYCoordinate(); y++) {
     QPointF startPoint = getFieldPosition(minimalXCoordinate(y), y);
     QPointF endPoint = getFieldPosition(maximalXCoordinate(y), y);
     lines.push_back(QLineF(startPoint, endPoint));
@@ -25,7 +25,7 @@ void Grid::drawHorizontalLines(QPainter *painter, const QStyleOptionGraphicsItem
 
 void Grid::drawVerticalLines(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) const {
   QVector<QLineF> lines;
-  for (int x = minimalCoordinate(); x <= maximalCoordinate(); x++) {
+  for (int x = minimalXCoordinate(); x <= maximalXCoordinate(); x++) {
     QPointF startPoint = getFieldPosition(x, minimalYCoordinate(x));
     QPointF endPoint = getFieldPosition(x, maximalYCoordinate(x));
     lines.push_back(QLineF(startPoint, endPoint));
@@ -35,17 +35,17 @@ void Grid::drawVerticalLines(QPainter *painter, const QStyleOptionGraphicsItem *
 
 void Grid::drawDiagonalLines(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) const {
   QVector<QLineF> lines;
-  for (int x = minimalCoordinate(); x < maximalCoordinate(); x++) {
-    if (x >= minimalXCoordinate(minimalCoordinate())) {
-      QPointF startPoint = getFieldPosition(minimalCoordinate(), x);
-      QPointF endPoint = getFieldPosition(x, minimalCoordinate());
+  for (int x = minimalXCoordinate(); x < maximalXCoordinate(); x++) {
+    if (x >= minimalXCoordinate(minimalYCoordinate())) {
+      QPointF startPoint = getFieldPosition(minimalYCoordinate(), x);
+      QPointF endPoint = getFieldPosition(x, minimalYCoordinate());
       lines.push_back(QLineF(startPoint, endPoint));
     }
   }
-  for (int x = minimalCoordinate(); x < maximalCoordinate(); x++) {
-    if (x <= maximalXCoordinate(maximalCoordinate())) {
-      QPointF startPoint = getFieldPosition(maximalCoordinate(), x);
-      QPointF endPoint = getFieldPosition(x, maximalCoordinate());
+  for (int y = minimalYCoordinate(); y < maximalYCoordinate(); y++) {
+    if (y <= maximalYCoordinate(maximalXCoordinate())) {
+      QPointF startPoint = getFieldPosition(maximalXCoordinate(), y);
+      QPointF endPoint = getFieldPosition(y, maximalXCoordinate());
       lines.push_back(QLineF(startPoint, endPoint));
     }
   }
@@ -66,7 +66,7 @@ void Grid::drawHandicapSpots(QPainter *painter, const QStyleOptionGraphicsItem *
 
 void Grid::drawFieldsShape(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) const {
   QTransform transform = painter->transform();
-  for (int x = minimalCoordinate(); x <= maximalCoordinate(); x++) {
+  for (int x = minimalXCoordinate(); x <= maximalXCoordinate(); x++) {
     for (int y = minimalYCoordinate(x); y <= maximalYCoordinate(x); y++) {
       painter->setTransform(transform);
       painter->translate(getFieldPosition(x, y));
