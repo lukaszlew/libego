@@ -1,4 +1,5 @@
 #include "HoGrid.h"
+#include "Ruler.h"
 
 void HoGrid::paint(QPainter *painter, const QStyleOptionGraphicsItem* style, QWidget* widget) {
   drawVerticalLines(painter, style, widget);
@@ -42,4 +43,8 @@ int HoGrid::minimalYCoordinate(int x) const {
 
 int HoGrid::maximalYCoordinate(int x) const {
   return maximalXCoordinate(x);
+}
+
+Ruler* HoGrid::createRuler() {
+  return new Ruler(Ruler::LocateAfter | Ruler::TypeLetters, Ruler::LocateBefore, this);
 }

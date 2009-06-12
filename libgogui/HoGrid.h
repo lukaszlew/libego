@@ -17,6 +17,8 @@ public:
 
   virtual int minimalYCoordinate(int x) const;
   virtual int maximalYCoordinate(int x) const;
+
+  virtual Ruler* createRuler();
 };
 
 #endif /* HOGRID_H_ */

@@ -2,7 +2,7 @@
 
 #include "Ruler.h"
 
-const qreal HavannahGrid::s_width = 40;
+const qreal HavannahGrid::s_width = 80;
 const qreal HavannahGrid::s_height = 40 * 1.73205;
 
 QRectF HavannahGrid::boundingRect() const {
@@ -10,8 +10,7 @@ QRectF HavannahGrid::boundingRect() const {
   QPointF left = getFieldPosition(minimalCoordinate(), maximalYCoordinate(minimalCoordinate()));
   QPointF right = getFieldPosition(maximalCoordinate(), minimalYCoordinate(maximalCoordinate()));
   QPointF bottom = getFieldPosition(maximalXCoordinate(maximalCoordinate()), maximalCoordinate());
-  return QRectF(QPointF(left.x() - fieldWidth() / 2, top.y() - fieldHeight() / 2),
-      QPointF(right.x() + fieldWidth() / 2, bottom.y() + fieldHeight() / 2));
+  return QRectF(QPointF(left.x() , top.y()) - fieldSize() / 2, QPointF(right.x(), bottom.y()) + fieldSize() / 2);
 }
 
 void HavannahGrid::paint(QPainter *painter, const QStyleOptionGraphicsItem* style, QWidget* widget) {
@@ -42,13 +41,13 @@ int HavannahGrid::maximalYCoordinate(int x) const {
 
 QPainterPath HavannahGrid::getPath() const {
   QPolygonF szesciokat(7);
-  szesciokat[0] = QPointF(-s_width, 0);
-  szesciokat[1] = QPointF(-s_width / 2, -s_height / 2);
-  szesciokat[2] = QPointF(s_width / 2, -s_height / 2);
-  szesciokat[3] = QPointF(s_width, 0);
-  szesciokat[4] = QPointF(s_width / 2, s_height / 2);
-  szesciokat[5] = QPointF(-s_width / 2, s_height / 2);
-  szesciokat[6] = QPointF(-s_width, 0);
+  szesciokat[0] = QPointF(-s_width / 2, 0);
+  szesciokat[1] = QPointF(-s_width / 4, -s_height / 2);
+  szesciokat[2] = QPointF(s_width / 4, -s_height / 2);
+  szesciokat[3] = QPointF(s_width / 2, 0);
+  szesciokat[4] = QPointF(s_width / 4, s_height / 2);
+  szesciokat[5] = QPointF(-s_width / 4, s_height / 2);
+  szesciokat[6] = QPointF(-s_width / 2, 0);
   QPainterPath path;
   path.addPolygon(szesciokat);
   return path;
@@ -59,5 +58,5 @@ Ruler* HavannahGrid::createRuler() {
 }
 
 QPointF HavannahGrid::getFieldPosition(int x, int y) const {
-  return QPointF(1.5 * x * s_width, (0.5 * x + y) * s_height);
+  return QPointF(0.75 * x * s_width, (0.5 * x + y) * s_height);
 }

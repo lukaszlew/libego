@@ -17,6 +17,9 @@ public:
   virtual int minimalYCoordinate(int x) const { return m_size - x + 1; }
   virtual int maximalYCoordinate(int x) const { return m_size; }
 
+  Ruler* createRuler();
+
+
 };
 
 #endif /* YGRID_H_ */

@@ -5,10 +5,8 @@ const qreal SquareGrid::s_width = 40;
 const qreal SquareGrid::s_height = 40;
 
 QRectF SquareGrid::boundingRect() const {
-  QPointF topLeft = getFieldPosition(minimalCoordinate(), minimalCoordinate()) - QPointF(fieldWidth(),
-      fieldHeight());
-  QPointF bottomRight = getFieldPosition(maximalCoordinate(), maximalCoordinate()) + QPointF(fieldWidth(),
-      fieldHeight());
+  QPointF topLeft = getFieldPosition(minimalCoordinate(), minimalCoordinate()) - fieldSize() / 2;
+  QPointF bottomRight = getFieldPosition(maximalCoordinate(), maximalCoordinate()) + fieldSize() / 2;
   return QRectF(topLeft, bottomRight);
 }
 

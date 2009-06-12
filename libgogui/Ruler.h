@@ -26,7 +26,6 @@ private:
   const int m_verticalType;
   const int m_horizontalType;
 
-  static const qreal s_size;
   static const int s_fontSize;
 };
 

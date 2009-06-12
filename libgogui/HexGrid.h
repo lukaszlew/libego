@@ -25,8 +25,7 @@ public:
   virtual QPainterPath getPath() const;
   virtual Ruler* createRuler();
 
-  virtual qreal fieldWidth() const { return s_width; }
-  virtual qreal fieldHeight() const { return s_height; }
+  virtual QPointF fieldSize() const { return QPointF(s_width, s_height); }
 
 protected:
   virtual QPointF getFieldPosition(int x, int y) const;

@@ -39,8 +39,7 @@ public:
 
   Field* createField(int x, int y, QGraphicsItem * parent = 0);
 
-  virtual qreal fieldWidth() const = 0;
-  virtual qreal fieldHeight() const = 0;
+  virtual QPointF fieldSize() const = 0;
 
 protected:
   int m_size;

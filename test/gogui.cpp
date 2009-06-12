@@ -11,7 +11,7 @@
 
 GoGui::GoGui(QWidget *parent) :
   QDialog(parent) {
-  m_boardScene = new BoardScene(new HavannahGrid(7));
+  m_boardScene = new BoardScene(new HavannahGrid(13));
   BoardView *boardView = new BoardView(m_boardScene, this);
 
   m_positionEdit = new QLineEdit;
