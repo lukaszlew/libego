@@ -13,7 +13,7 @@ const QString Field::s_whiteStoneFilename(":/images/gogui-white.svg");
 const qreal Field::s_stoneAspectRatio = 1.0;
 const qreal Field::s_shapeAspectRatio = 0.5;
 
-const QPen Field::s_shapePen(Qt::red, 2.0, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+const QPen Field::s_shapePen(Qt::red, 3.0, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
 
 const qreal Field::s_fieldZValue = 1.0;
 const qreal Field::s_stoneZValue = 1.0;
@@ -35,15 +35,13 @@ Field::Field(const QPainterPath & path, int x, int y, QGraphicsItem *parent) :
 }
 
 ///* debugging functions
-void Field::hoverEnterEvent ( QGraphicsSceneHoverEvent * event)
-{
+void Field::hoverEnterEvent(QGraphicsSceneHoverEvent * event) {
   Q_UNUSED(event);
-  m_background->setBrush(QColor(64,64,64,64));
+  m_background->setBrush(QColor(64, 64, 64, 64));
   update();
 }
 
-void Field::hoverLeaveEvent ( QGraphicsSceneHoverEvent * event )
-{
+void Field::hoverLeaveEvent(QGraphicsSceneHoverEvent * event) {
   Q_UNUSED(event);
   m_background->setBrush(Qt::NoBrush);
   update();

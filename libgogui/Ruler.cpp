@@ -5,24 +5,24 @@
 #include "Grid.h"
 
 const qreal Ruler::s_size = 15;
-const int Ruler::s_fontSize = 24;
+const int Ruler::s_fontSize = 20;
 
 Ruler::Ruler(int verticalType, int horizontalType, Grid* grid) :
   QGraphicsItem(grid), m_grid(grid), m_verticalType(verticalType), m_horizontalType(horizontalType) {
-  QPointF LL = m_grid->getFieldPosition(m_grid->minimalCoordinate() - 1, m_grid->minimalYCoordinate(
-      m_grid->minimalCoordinate()) - 1);
-  QPointF LH = m_grid->getFieldPosition(m_grid->minimalCoordinate() - 1, m_grid->maximalYCoordinate(
-      m_grid->minimalCoordinate()) + 1);
-  QPointF HL = m_grid->getFieldPosition(m_grid->maximalCoordinate() + 1, m_grid->minimalYCoordinate(
-      m_grid->maximalCoordinate()) - 1);
-  QPointF HH = m_grid->getFieldPosition(m_grid->maximalCoordinate() + 1, m_grid->maximalYCoordinate(
-      m_grid->maximalCoordinate()) + 1);
-  m_rect
-      = QRectF(LL.x() - s_size, HL.y() - s_size, HH.x() - LL.x() + 2* s_size , LH.y() - HL.y() + 2* s_size );
 }
 
 QRectF Ruler::boundingRect() const {
-  return m_rect;
+  QPointF topLeft = m_grid->boundingRect().topLeft();
+  QPointF bottomRight = m_grid->boundingRect().bottomRight();
+  if (m_horizontalType & LocateBefore)
+    topLeft -= QPointF(m_grid->fieldWidth(), 0);
+  if (m_horizontalType & LocateAfter)
+    bottomRight += QPointF(m_grid->fieldWidth(), 0);
+  if (m_verticalType & LocateBefore)
+    topLeft -= QPointF(0, m_grid->fieldHeight());
+  if (m_verticalType & LocateAfter)
+    bottomRight += QPointF(0, m_grid->fieldHeight());
+  return QRectF(topLeft, bottomRight);
 }
 
 void Ruler::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {

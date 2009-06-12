@@ -25,7 +25,6 @@ private:
   const Grid *m_grid;
   const int m_verticalType;
   const int m_horizontalType;
-  QRectF m_rect;
 
   static const qreal s_size;
   static const int s_fontSize;

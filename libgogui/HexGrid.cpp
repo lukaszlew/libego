@@ -5,58 +5,21 @@
 const qreal HexGrid::s_width = 40 * 1.73205;
 const qreal HexGrid::s_height = 40;
 
-HexGrid::HexGrid(int size, QGraphicsItem * parent) :
-  Grid(size, parent) {
+QRectF HexGrid::boundingRect() const {
   QPointF LL = getFieldPosition(minimalCoordinate(), minimalYCoordinate(minimalCoordinate()));
   QPointF LH = getFieldPosition(minimalCoordinate(), maximalYCoordinate(minimalCoordinate()));
   QPointF HL = getFieldPosition(maximalCoordinate(), minimalYCoordinate(maximalCoordinate()));
   QPointF HH = getFieldPosition(maximalCoordinate(), maximalYCoordinate(maximalCoordinate()));
-  m_rect = QRectF(LL.x(), HL.y(), HH.x() - LL.x(), LH.y() - HL.y());
+  return QRectF(QPointF(LL.x() - fieldWidth() / 2, HL.y() - fieldHeight() / 2),
+      QPointF(HH.x() + fieldWidth() / 2, LH.y() + fieldHeight() / 2));
 }
 
 void HexGrid::paint(QPainter *painter, const QStyleOptionGraphicsItem* style, QWidget* widget) {
-  drawVerticalLines(painter, style, widget);
-  drawHorizontalLines(painter, style, widget);
-  drawDiagonalLines(painter, style, widget);
-  drawHandicapSpots(painter, style, widget);
+  drawFieldsShape(painter, style, widget);
 }
-
 
 QList<QPair<int, int> > HexGrid::getHandicapCoordinates() const {
-  QList<QPair<int, int> > res;
-
-  if (m_size > 4) {
-    int diff = (m_size < 13) ? 2 : 3;
-    int minField = minimalCoordinate() + diff;
-    int maxField = maximalCoordinate() - diff;
-
-    res.push_back(QPair<int, int> (minField, minimalYCoordinate(minField) + diff));
-    res.push_back(QPair<int, int> (minField, maximalYCoordinate(minField) - diff));
-    res.push_back(QPair<int, int> (maxField, minimalYCoordinate(maxField) + diff));
-    res.push_back(QPair<int, int> (maxField, maximalYCoordinate(maxField) - diff));
-    res.push_back(QPair<int, int> (minimalXCoordinate(minField) + diff, minField));
-    res.push_back(QPair<int, int> (maximalXCoordinate(maxField) - diff, maxField));
-    res.push_back(QPair<int, int> (minimalXCoordinate(minField) + diff, maximalYCoordinate(maxField) - diff));
-  }
-  return res;
-}
-
-int HexGrid::minimalXCoordinate(int y) const {
-  int res = m_size / 2 + 2 - y;
-  return (res < 1) ? 1 : res;
-}
-
-int HexGrid::maximalXCoordinate(int y) const {
-  int res = m_size + m_size / 2 + 1 - y;
-  return (res > m_size) ? m_size : res;
-}
-
-int HexGrid::minimalYCoordinate(int x) const {
-  return minimalXCoordinate(x);
-}
-
-int HexGrid::maximalYCoordinate(int x) const {
-  return maximalXCoordinate(x);
+  return QList<QPair<int, int> >();
 }
 
 QPainterPath HexGrid::getPath() const {
@@ -74,7 +37,7 @@ QPainterPath HexGrid::getPath() const {
 }
 
 Ruler* HexGrid::createRuler() {
-  return new Ruler(Ruler::LocateAfter, Ruler::LocateBefore | Ruler::TypeLetters, this);
+  return new Ruler(Ruler::LocateAfter | Ruler::TypeLetters, Ruler::LocateBefore, this);
 }
 
 QPointF HexGrid::getFieldPosition(int x, int y) const {

@@ -6,10 +6,12 @@
 #include "SquareGrid.h"
 #include "HexGrid.h"
 #include "YGrid.h"
+#include "HoGrid.h"
+#include "HavannahGrid.h"
 
 GoGui::GoGui(QWidget *parent) :
   QDialog(parent) {
-  m_boardScene = new BoardScene(new YGrid(7));
+  m_boardScene = new BoardScene(new HavannahGrid(7));
   BoardView *boardView = new BoardView(m_boardScene, this);
 
   m_positionEdit = new QLineEdit;

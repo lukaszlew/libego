@@ -5,8 +5,11 @@ const qreal SquareGrid::s_width = 40;
 const qreal SquareGrid::s_height = 40;
 
 QRectF SquareGrid::boundingRect() const {
-  return QRectF(getFieldPosition(minimalCoordinate(), minimalCoordinate()),
-      getFieldPosition(maximalCoordinate(), maximalCoordinate()));
+  QPointF topLeft = getFieldPosition(minimalCoordinate(), minimalCoordinate()) - QPointF(fieldWidth(),
+      fieldHeight());
+  QPointF bottomRight = getFieldPosition(maximalCoordinate(), maximalCoordinate()) + QPointF(fieldWidth(),
+      fieldHeight());
+  return QRectF(topLeft, bottomRight);
 }
 
 void SquareGrid::paint(QPainter *painter, const QStyleOptionGraphicsItem* style, QWidget* widget) {
@@ -50,6 +53,6 @@ QPainterPath SquareGrid::getPath() const {
 }
 
 Ruler* SquareGrid::createRuler() {
-  return new Ruler(Ruler::LocateBefore | Ruler::LocateAfter, Ruler::LocateAfter | Ruler::LocateBefore
-      | Ruler::TypeLetters, this);
+  return new Ruler(Ruler::LocateBefore | Ruler::LocateAfter | Ruler::TypeLetters, Ruler::LocateAfter
+      | Ruler::LocateBefore, this);
 }

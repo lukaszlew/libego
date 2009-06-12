@@ -164,9 +164,9 @@ void BoardScene::debugClick(const QString& pos, Qt::MouseButtons buttons) {
   if (buttons & Qt::MidButton)
     removeStone(pos);
   if (buttons & Qt::XButton1)
-    addCircle(pos);
+    addMark(pos);
   if (buttons & Qt::XButton2)
-    removeCircle(pos);
+    removeMark(pos);
 
 }
 //*/

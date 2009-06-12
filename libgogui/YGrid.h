@@ -8,8 +8,7 @@ class YGrid: public HexGrid
 public:
   YGrid(int size, QGraphicsItem * parent = 0);
 
-  virtual QList<QPair<int,int> > getHandicapCoordinates() const;
-
+  virtual QRectF boundingRect() const;
   virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *style, QWidget *widget);
 
   virtual int minimalXCoordinate(int y) const { return m_size - y + 1; }
