@@ -3,6 +3,7 @@
 
 #include "utils.h"
 #include "board.h"
+#include "fast_stack.h"
 
 #include <cmath>
 
