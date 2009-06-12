@@ -3,7 +3,7 @@
 
 #include "board.h"
 
-class FullBoard : private Board {
+class FullBoard : public Board {
 public:
   void clear(float komi = -0.5);
 

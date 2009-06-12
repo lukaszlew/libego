@@ -28,6 +28,7 @@
 void FullBoard::clear(float komi) {
   // move_no = 0;
   Board::clear(komi);
+  move_history.clear();
 }
 
 
