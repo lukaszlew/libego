@@ -3,15 +3,13 @@
 
 #include <QGraphicsItemGroup>
 #include <QPen>
+#include <boost/function.hpp>
 
 class Field: public QGraphicsItemGroup
 {
 
 public:
-  Field(const QPainterPath & path, int x, int y, QGraphicsItem *parent = 0);
-
-  int getX() const { return m_x; }
-  int getY() const { return m_y; }
+  Field(const QPainterPath & path, QGraphicsItem *parent = 0);
 
   enum EStoneColor
   {
@@ -39,14 +37,17 @@ public:
     return m_background->shape();
   }
 
+  typedef boost::function<void (Qt::MouseButtons buttons)> callback_type;
+  void setMousePressHandler(const callback_type& handler);
+
 protected:
+  virtual void mousePressEvent ( QGraphicsSceneMouseEvent * event );
   ///* debugging
   virtual void hoverEnterEvent ( QGraphicsSceneHoverEvent * event );
   virtual void hoverLeaveEvent ( QGraphicsSceneHoverEvent * event );
   //*/
   virtual void removeItem(QGraphicsItem*& item);
 
-  int m_x, m_y;
   QAbstractGraphicsShapeItem *m_background;
   QGraphicsItem *m_stone;
   QGraphicsItem *m_mark;
@@ -54,6 +55,7 @@ protected:
   QGraphicsItem *m_square;
   QGraphicsItem *m_triangle;
   QGraphicsItem *m_label;
+  callback_type m_mousePressHandler;
 
   static const QString s_blackStoneFilename;
   static const QString s_whiteStoneFilename;

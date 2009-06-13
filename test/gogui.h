@@ -34,7 +34,8 @@ private:
   //*/
 
   BoardScene *m_boardScene;
-  QLineEdit* m_positionEdit;
+  QLineEdit* m_xEdit;
+  QLineEdit* m_yEdit;
   QLineEdit* m_labelEdit;
   QComboBox *m_typeComboBox;
 

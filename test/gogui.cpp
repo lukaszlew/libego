@@ -1,4 +1,5 @@
 #include <QtGui>
+ #include <QIntValidator>
 
 #include "gogui.h"
 #include "BoardScene.h"
@@ -11,12 +12,16 @@
 
 GoGui::GoGui(QWidget *parent) :
   QDialog(parent) {
-  m_boardScene = new BoardScene(new SquareGrid(17));
+  Grid *grid = new SquareGrid(17);
+  m_boardScene = new BoardScene(grid);
   BoardView *boardView = new BoardView(m_boardScene, this);
 
-  m_positionEdit = new QLineEdit;
+  m_xEdit = new QLineEdit;
+  m_xEdit->setValidator(new QIntValidator(grid->minimalXCoordinate(), grid->maximalXCoordinate(), m_xEdit));
+  m_yEdit = new QLineEdit;
+  m_yEdit->setValidator(new QIntValidator(grid->minimalYCoordinate(), grid->maximalYCoordinate(), m_yEdit));
   QLabel *positionLabel = new QLabel("Position");
-  positionLabel->setBuddy(m_positionEdit);
+  positionLabel->setBuddy(m_xEdit);
 
   m_labelEdit = new QLineEdit;
   QLabel *labelLabel = new QLabel("Label");
@@ -39,7 +44,8 @@ GoGui::GoGui(QWidget *parent) :
 
   QGridLayout *layout = new QGridLayout;
   layout->addWidget(positionLabel, 0, 0);
-  layout->addWidget(m_positionEdit, 0, 1, 1, 2);
+  layout->addWidget(m_xEdit, 0, 1);
+  layout->addWidget(m_yEdit, 0, 2);
   layout->addWidget(labelLabel, 1, 0);
   layout->addWidget(m_labelEdit, 1, 1, 1, 2);
   layout->addWidget(typeLabel, 2, 0);
@@ -69,25 +75,25 @@ void GoGui::typeIndexChanged(const QString& text) {
 void GoGui::addButtonClicked() {
   switch (m_typeComboBox->currentIndex()) {
   case 0:
-    m_boardScene->addBlackStone(m_positionEdit->text());
+    m_boardScene->addBlackStone(m_xEdit->text().toInt(), m_yEdit->text().toInt());
     break;
   case 1:
-    m_boardScene->addWhiteStone(m_positionEdit->text());
+    m_boardScene->addWhiteStone(m_xEdit->text().toInt(), m_yEdit->text().toInt());
     break;
   case 2:
-    m_boardScene->addMark(m_positionEdit->text());
+    m_boardScene->addMark(m_xEdit->text().toInt(), m_yEdit->text().toInt());
     break;
   case 3:
-    m_boardScene->addCircle(m_positionEdit->text());
+    m_boardScene->addCircle(m_xEdit->text().toInt(), m_yEdit->text().toInt());
     break;
   case 4:
-    m_boardScene->addSquare(m_positionEdit->text());
+    m_boardScene->addSquare(m_xEdit->text().toInt(), m_yEdit->text().toInt());
     break;
   case 5:
-    m_boardScene->addTriangle(m_positionEdit->text());
+    m_boardScene->addTriangle(m_xEdit->text().toInt(), m_yEdit->text().toInt());
     break;
   case 6:
-    m_boardScene->addLabel(m_positionEdit->text(), m_labelEdit->text());
+    m_boardScene->addLabel(m_xEdit->text().toInt(), m_yEdit->text().toInt(), m_labelEdit->text());
     break;
   default:
     qDebug() << "wrong combobox current index";
@@ -100,27 +106,26 @@ void GoGui::removeButtonClicked() {
   switch (m_typeComboBox->currentIndex()) {
   case 0:
   case 1:
-    m_boardScene->removeStone(m_positionEdit->text());
+    m_boardScene->removeStone(m_xEdit->text().toInt(), m_yEdit->text().toInt());
     break;
   case 2:
-    m_boardScene->removeMark(m_positionEdit->text());
+    m_boardScene->removeMark(m_xEdit->text().toInt(), m_yEdit->text().toInt());
     break;
   case 3:
-    m_boardScene->removeCircle(m_positionEdit->text());
+    m_boardScene->removeCircle(m_xEdit->text().toInt(), m_yEdit->text().toInt());
     break;
   case 4:
-    m_boardScene->removeSquare(m_positionEdit->text());
+    m_boardScene->removeSquare(m_xEdit->text().toInt(), m_yEdit->text().toInt());
     break;
   case 5:
-    m_boardScene->removeTriangle(m_positionEdit->text());
+    m_boardScene->removeTriangle(m_xEdit->text().toInt(), m_yEdit->text().toInt());
     break;
   case 6:
-    m_boardScene->removeLabel(m_positionEdit->text());
+    m_boardScene->removeLabel(m_xEdit->text().toInt(), m_yEdit->text().toInt());
     break;
   default:
     qDebug() << "wrong combobox current index";
     break;
   }
-
 }
 

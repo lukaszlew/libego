@@ -120,8 +120,8 @@ void Grid::drawFieldsShape(QPainter *painter, const QStyleOptionGraphicsItem *op
   }
 }
 
-Field* Grid::createField(int x, int y, QGraphicsItem * parent) {
-  return new Field(getPath(), x, y, parent);
+Field* Grid::createField(QGraphicsItem * parent) {
+  return new Field(getPath(), parent);
 }
 
 bool Grid::isValidCoordinate(int x, int y) const {

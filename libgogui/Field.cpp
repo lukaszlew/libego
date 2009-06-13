@@ -4,6 +4,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsScene>
 #include <QGraphicsSvgItem>
+#include <QDebug>
 
 #include "Field.h"
 
@@ -21,8 +22,8 @@ const qreal Field::s_backgroundZValue = 0.0;
 const qreal Field::s_shapeZValue = 2.0;
 const qreal Field::s_labelZValue = 3.0;
 
-Field::Field(const QPainterPath & path, int x, int y, QGraphicsItem *parent) :
-  QGraphicsItemGroup(parent), m_x(x), m_y(y), m_background(new QGraphicsPathItem(path, this)), m_stone(NULL),
+Field::Field(const QPainterPath & path, QGraphicsItem *parent) :
+  QGraphicsItemGroup(parent), m_background(new QGraphicsPathItem(path, this)), m_stone(NULL),
   m_mark(NULL), m_circle(NULL), m_square(NULL), m_triangle(NULL), m_label(NULL) {
   setAcceptHoverEvents(true);
   setZValue(s_fieldZValue);
@@ -32,6 +33,15 @@ Field::Field(const QPainterPath & path, int x, int y, QGraphicsItem *parent) :
   m_background->setPen(pen);
   m_background->setZValue(s_backgroundZValue);
   addToGroup(m_background);
+}
+
+void Field::setMousePressHandler(const callback_type& handler) {
+  m_mousePressHandler = handler;
+}
+
+void Field::mousePressEvent ( QGraphicsSceneMouseEvent * event ) {
+  if (m_mousePressHandler)
+    m_mousePressHandler(event->buttons());
 }
 
 ///* debugging functions

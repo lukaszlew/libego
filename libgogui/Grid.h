@@ -41,7 +41,7 @@ public:
   virtual QPainterPath getPath() const = 0;
   virtual Ruler* createRuler() = 0;
 
-  Field* createField(int x, int y, QGraphicsItem * parent = 0);
+  Field* createField(QGraphicsItem * parent = 0);
 
   virtual QPointF fieldSize() const = 0;
 

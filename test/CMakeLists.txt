@@ -3,6 +3,7 @@ set ( MOC_HDRS gogui.h )
 set ( RCS )
 set ( UIS )
 
+set ( BOOST_ROOT /usr/local/include/boost-1_39 )
 add_definitions ( -Wall )
 
 find_package(Qt4 REQUIRED)
@@ -14,6 +15,7 @@ qt4_wrap_cpp ( MOC_SRCS ${MOC_HDRS} )
 include_directories (
   ${gogui_SOURCE_DIR}/libgogui
   ${CMAKE_BINARY_DIR}
+  ${BOOST_ROOT}
 )  
 
 link_directories ( ${gogui_BINARY_DIR}/libgogui )

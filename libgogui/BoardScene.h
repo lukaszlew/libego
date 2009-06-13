@@ -4,50 +4,45 @@
 #include <QGraphicsScene>
 #include <QMap>
 #include <QMutex>
+#include <boost/function.hpp>
 
 class Field;
 class Grid;
-
-namespace boost {
-template<typename Arg1, typename Arg2, typename Res>
-class function;
-}
 
 class BoardScene: public QGraphicsScene
 {
 Q_OBJECT
 
 public:
-  typedef boost::function<int, int, void> callback_type;
+  typedef boost::function<void (int,int)> callback_type;
 
   BoardScene(Grid *grid, QObject *parent = 0);
 
-  void addBlackStone(const QString& pos);
-  void addWhiteStone(const QString& pos);
-  void removeStone(const QString& pos);
+  void addBlackStone(int x, int y);
+  void addWhiteStone(int x, int y);
+  void removeStone(int x, int y);
 
-  void addMark(const QString& pos);
-  void removeMark(const QString& pos);
+  void addMark(int x, int y);
+  void removeMark(int x, int y);
 
-  void addCircle(const QString& pos);
-  void removeCircle(const QString& pos);
+  void addCircle(int x, int y);
+  void removeCircle(int x, int y);
 
-  void addSquare(const QString& pos);
-  void removeSquare(const QString& pos);
+  void addSquare(int x, int y);
+  void removeSquare(int x, int y);
 
-  void addTriangle(const QString& pos);
-  void removeTriangle(const QString& pos);
+  void addTriangle(int x, int y);
+  void removeTriangle(int x, int y);
 
-  void addLabel(const QString& pos, const QString& label);
-  void removeLabel(const QString& pos);
+  void addLabel(int x, int y, const QString& label);
+  void removeLabel(int x, int y);
 
   static QString getFieldString(int x, int y);
 
-  void handleLeftClick(int x, int y);
-  void handleRightClick(int x, int y);
+  void handleMousePress(int x, int y, Qt::MouseButtons buttons);
 
 protected:
-  void mousePressEvent(QGraphicsSceneMouseEvent * mouseEvent);
+  //void mousePressEvent(QGraphicsSceneMouseEvent * mouseEvent);
 
   enum EShapeType
   {
@@ -59,8 +54,8 @@ protected:
     TypeTriangle,
     TypeLabel,
   };
-  void addShape(const QString& pos, EShapeType type, const QString& label = QString());
-  void removeShape(const QString& pos, EShapeType type);
+  void addShape(int x, int y, EShapeType type, const QString& label = QString());
+  void removeShape(int x, int y, EShapeType type);
 
   QMutex m_mutex;
   Grid *m_grid; // not-null
@@ -68,7 +63,7 @@ protected:
   typedef QMap<QString, Field*> map_type;
   map_type m_fields;
 
-  void debugClick(const QString& pos, Qt::MouseButtons buttons);
+  //void debugClick(const QString& pos, Qt::MouseButtons buttons);
 };
 
 #endif /* BOARDSCENE_H_ */
