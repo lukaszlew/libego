@@ -15,7 +15,8 @@ public:
 
   void drawHorizontalLines(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) const;
   void drawVerticalLines(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) const;
-  void drawDiagonalLines(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) const;
+  void drawRightDiagonalLines(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) const;
+  void drawLeftDiagonalLines(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) const;
   void drawHandicapSpots(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) const;
   void drawFieldsShape(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) const;
 

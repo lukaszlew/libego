@@ -14,7 +14,6 @@ void SquareGrid::paint(QPainter *painter, const QStyleOptionGraphicsItem* style,
   drawVerticalLines(painter, style, widget);
   drawHorizontalLines(painter, style, widget);
   drawHandicapSpots(painter, style, widget);
-  drawDiagonalLines(painter, style, widget);
 }
 
 QList<QPair<int, int> > SquareGrid::getHandicapCoordinates() const {

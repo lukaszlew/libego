@@ -11,14 +11,14 @@ BoardScene::BoardScene(Grid* grid, QObject *parent) :
   setBackgroundBrush(QPixmap(":/images/wood.png"));
 
   addItem(m_grid);
-  for (int x = m_grid->minimalXCoordinate(); x <= m_grid->maximalXCoordinate(); x++) {
-    for (int y = m_grid->minimalYCoordinate(x); y <= m_grid->maximalYCoordinate(x); y++) {
-      Field *field = m_grid->createField(x, y);
-      m_fields.insert(getFieldString(x, y), field);
-      field->setPos(m_grid->getFieldPosition(x, y));
-      addItem(field);
-    }
-  }
+  for (int x = m_grid->minimalXCoordinate(); x <= m_grid->maximalXCoordinate(); x++)
+    for (int y = m_grid->minimalYCoordinate(x); y <= m_grid->maximalYCoordinate(x); y++)
+      if (m_grid->isValidCoordinate(x, y)) {
+        Field *field = m_grid->createField(x, y);
+        m_fields.insert(getFieldString(x, y), field);
+        field->setPos(m_grid->getFieldPosition(x, y));
+        addItem(field);
+      }
 }
 
 void BoardScene::addShape(const QString& pos, EShapeType type, const QString& label) {

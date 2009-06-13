@@ -4,7 +4,7 @@
 void HoGrid::paint(QPainter *painter, const QStyleOptionGraphicsItem* style, QWidget* widget) {
   drawVerticalLines(painter, style, widget);
   drawHorizontalLines(painter, style, widget);
-  drawDiagonalLines(painter, style, widget);
+  drawRightDiagonalLines(painter, style, widget);
   drawHandicapSpots(painter, style, widget);
 }
 
