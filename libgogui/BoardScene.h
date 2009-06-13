@@ -8,11 +8,18 @@
 class Field;
 class Grid;
 
+namespace boost {
+template<typename Arg1, typename Arg2, typename Res>
+class function;
+}
+
 class BoardScene: public QGraphicsScene
 {
 Q_OBJECT
 
 public:
+  typedef boost::function<int, int, void> callback_type;
+
   BoardScene(Grid *grid, QObject *parent = 0);
 
   void addBlackStone(const QString& pos);
@@ -35,6 +42,9 @@ public:
   void removeLabel(const QString& pos);
 
   static QString getFieldString(int x, int y);
+
+  void handleLeftClick(int x, int y);
+  void handleRightClick(int x, int y);
 
 protected:
   void mousePressEvent(QGraphicsSceneMouseEvent * mouseEvent);
