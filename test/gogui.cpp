@@ -13,8 +13,7 @@
 
 GoGui::GoGui(QWidget *parent) :
   QDialog(parent) {
-  Grid *grid = new SquareGrid(11);
-  BoardScene *boardScene = new BoardScene(grid);
+  BoardScene *boardScene = BoardScene::createGoScene(13);
   BoardView *boardView = new BoardView(boardScene, this);
   manager *m = new manager(boardScene, this);
 

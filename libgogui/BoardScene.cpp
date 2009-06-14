@@ -8,6 +8,12 @@
 #include "Grid.h"
 #include "Ruler.h"
 
+#include "SquareGrid.h"
+#include "HexGrid.h"
+#include "HoGrid.h"
+#include "HavannahGrid.h"
+#include "YGrid.h"
+
 BoardScene::BoardScene(Grid* grid, QObject *parent) :
   QGraphicsScene(parent), m_grid(grid), m_ruler(m_grid->createRuler()) {
   setBackgroundBrush(QPixmap(":/images/wood.png"));
@@ -22,6 +28,26 @@ BoardScene::BoardScene(Grid* grid, QObject *parent) :
         field->setPos(m_grid->getFieldPosition(x, y));
         addItem(field);
       }
+}
+
+BoardScene *BoardScene::createHavannahScene(int size, QObject *parent) {
+  return new BoardScene(new HavannahGrid(size), parent);
+}
+
+BoardScene *BoardScene::createHexScene(int size, QObject *parent) {
+  return new BoardScene(new HexGrid(size), parent);
+}
+
+BoardScene *BoardScene::createHoScene(int size, QObject *parent) {
+  return new BoardScene(new HoGrid(size), parent);
+}
+
+BoardScene *BoardScene::createGoScene(int size, QObject *parent) {
+  return new BoardScene(new SquareGrid(size), parent);
+}
+
+BoardScene *BoardScene::createYScene(int size, QObject *parent) {
+  return new BoardScene(new YGrid(size), parent);
 }
 
 void BoardScene::addShape(int x, int y, EShapeType type, const QString& label) {

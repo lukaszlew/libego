@@ -14,6 +14,13 @@ class BoardScene: public QGraphicsScene
 Q_OBJECT
 
 public:
+  static BoardScene *createHavannahScene(int size, QObject *parent = 0);
+  static BoardScene *createHexScene(int size, QObject *parent = 0);
+  static BoardScene *createHoScene(int size, QObject *parent = 0);
+  static BoardScene *createGoScene(int size, QObject *parent = 0);
+  static BoardScene *createYScene(int size, QObject *parent = 0);
+
+public:
   BoardScene(Grid *grid, QObject *parent = 0);
 
   void addBlackStone(int x, int y);
