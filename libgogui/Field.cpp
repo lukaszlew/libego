@@ -188,15 +188,13 @@ void Field::removeTriangle() {
 }
 
 QGraphicsItem* Field::addLabel(const QString& labelString) {
-
-  QGraphicsSimpleTextItem *label;
+  QGraphicsTextItem *label;
   removeLabel();
-  m_label = label = new QGraphicsSimpleTextItem(labelString, this);
-  label->setPen(s_shapePen);
+  m_label = label = new QGraphicsTextItem(labelString, this);
+  label->setFont(QFont("Arial", 20));
   addToGroup(m_label);
   label->setZValue(s_labelZValue);
-  int max = (boundingRect().width() > boundingRect().height()) ? boundingRect().width() : boundingRect().height();
-  qreal scaleRatio = s_shapeAspectRatio * max / m_label->boundingRect().height();
+  qreal scaleRatio = s_shapeAspectRatio * boundingRect().height() / m_label->boundingRect().height();
   m_label->scale(scaleRatio, scaleRatio);
   m_label->translate(-m_label->boundingRect().width() / 2, -m_label->boundingRect().height() / 2);
   return m_label;

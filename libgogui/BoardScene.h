@@ -14,8 +14,6 @@ class BoardScene: public QGraphicsScene
 Q_OBJECT
 
 public:
-  typedef boost::function<void (int,int)> callback_type;
-
   BoardScene(Grid *grid, QObject *parent = 0);
 
   void addBlackStone(int x, int y);
@@ -41,9 +39,14 @@ public:
 
   void handleMousePress(int x, int y, Qt::MouseButtons buttons);
 
-protected:
-  //void mousePressEvent(QGraphicsSceneMouseEvent * mouseEvent);
+  typedef boost::function<void (int,int)> callback_type;
+  void setLeftButtonHandler(const callback_type& handler) { m_LeftButtonHandler = handler; }
+  void setRightButtonHandler(const callback_type& handler) { m_rightButtonHandler = handler; }
+  void setMidButtonHandler(const callback_type& handler) { m_midButtonHandler = handler; }
+  void setXButton1Handler(const callback_type& handler) { m_xButton1Handler = handler; }
+  void setXButton2Handler(const callback_type& handler) { m_xButton2Handler = handler; }
 
+protected:
   enum EShapeType
   {
     TypeBlackStone,
@@ -62,8 +65,11 @@ protected:
   QGraphicsItem *m_ruler;
   typedef QMap<QString, Field*> map_type;
   map_type m_fields;
-
-  //void debugClick(const QString& pos, Qt::MouseButtons buttons);
+  callback_type m_LeftButtonHandler,
+    m_rightButtonHandler,
+    m_midButtonHandler,
+    m_xButton1Handler,
+    m_xButton2Handler;
 };
 
 #endif /* BOARDSCENE_H_ */

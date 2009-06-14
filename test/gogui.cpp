@@ -1,7 +1,8 @@
 #include <QtGui>
- #include <QIntValidator>
+#include <QIntValidator>
 
 #include "gogui.h"
+#include "manager.h"
 #include "BoardScene.h"
 #include "BoardView.h"
 #include "SquareGrid.h"
@@ -12,120 +13,44 @@
 
 GoGui::GoGui(QWidget *parent) :
   QDialog(parent) {
-  Grid *grid = new SquareGrid(17);
-  m_boardScene = new BoardScene(grid);
-  BoardView *boardView = new BoardView(m_boardScene, this);
+  Grid *grid = new SquareGrid(11);
+  BoardScene *boardScene = new BoardScene(grid);
+  BoardView *boardView = new BoardView(boardScene, this);
+  manager *m = new manager(boardScene, this);
 
-  m_xEdit = new QLineEdit;
-  m_xEdit->setValidator(new QIntValidator(grid->minimalXCoordinate(), grid->maximalXCoordinate(), m_xEdit));
-  m_yEdit = new QLineEdit;
-  m_yEdit->setValidator(new QIntValidator(grid->minimalYCoordinate(), grid->maximalYCoordinate(), m_yEdit));
-  QLabel *positionLabel = new QLabel("Position");
-  positionLabel->setBuddy(m_xEdit);
-
-  m_labelEdit = new QLineEdit;
+  labelEdit = new QLineEdit;
   QLabel *labelLabel = new QLabel("Label");
-  labelLabel->setBuddy(m_labelEdit);
-  m_labelEdit->setEnabled(false);
+  labelLabel->setBuddy(labelEdit);
+  labelEdit->setEnabled(false);
 
-  m_typeComboBox = new QComboBox;
+  QComboBox *typeComboBox = new QComboBox;
   QLabel *typeLabel = new QLabel("Type");
-  typeLabel->setBuddy(m_typeComboBox);
-  m_typeComboBox->addItem("Black Stone");
-  m_typeComboBox->addItem("White Stone");
-  m_typeComboBox->addItem("Mark");
-  m_typeComboBox->addItem("Circle");
-  m_typeComboBox->addItem("Square");
-  m_typeComboBox->addItem("Triangle");
-  m_typeComboBox->addItem("Label");
-
-  QPushButton *addButton = new QPushButton(tr("Add"));
-  QPushButton *removeButton = new QPushButton(tr("Remove"));
+  typeLabel->setBuddy(typeComboBox);
+  typeComboBox->addItem("Black Stone");
+  typeComboBox->addItem("White Stone");
+  typeComboBox->addItem("Mark");
+  typeComboBox->addItem("Circle");
+  typeComboBox->addItem("Square");
+  typeComboBox->addItem("Triangle");
+  typeComboBox->addItem("Label");
 
   QGridLayout *layout = new QGridLayout;
-  layout->addWidget(positionLabel, 0, 0);
-  layout->addWidget(m_xEdit, 0, 1);
-  layout->addWidget(m_yEdit, 0, 2);
-  layout->addWidget(labelLabel, 1, 0);
-  layout->addWidget(m_labelEdit, 1, 1, 1, 2);
-  layout->addWidget(typeLabel, 2, 0);
-  layout->addWidget(m_typeComboBox, 2, 1, 1, 2);
-  layout->addWidget(addButton, 3, 1);
-  layout->addWidget(removeButton, 3, 2);
+  layout->addWidget(labelLabel, 0, 0);
+  layout->addWidget(labelEdit, 0, 1);
+  layout->addWidget(typeLabel, 1, 0);
+  layout->addWidget(typeComboBox, 1, 1);
 
   QVBoxLayout *mainLayout = new QVBoxLayout;
   mainLayout->addWidget(boardView);
   mainLayout->addLayout(layout);
 
-  connect(m_typeComboBox, SIGNAL(currentIndexChanged(const QString&)), this,
-      SLOT(typeIndexChanged(const QString& )));
-  connect(addButton, SIGNAL(clicked()), this, SLOT(addButtonClicked()));
-  connect(removeButton, SIGNAL(clicked()), this, SLOT(removeButtonClicked()));
+  connect(typeComboBox, SIGNAL(currentIndexChanged(const QString&)), this, SLOT(typeIndexChanged(const QString& )));
+  connect(typeComboBox, SIGNAL(currentIndexChanged(int)), m, SLOT(setIndex(int)));
+  connect(labelEdit, SIGNAL(textChanged(const QString &)), m, SLOT(setLabel(const QString&)));
   setLayout(mainLayout);
 }
 
-GoGui::~GoGui() {
-
-}
-
 void GoGui::typeIndexChanged(const QString& text) {
-  m_labelEdit->setEnabled(text == "Label");
-}
-
-void GoGui::addButtonClicked() {
-  switch (m_typeComboBox->currentIndex()) {
-  case 0:
-    m_boardScene->addBlackStone(m_xEdit->text().toInt(), m_yEdit->text().toInt());
-    break;
-  case 1:
-    m_boardScene->addWhiteStone(m_xEdit->text().toInt(), m_yEdit->text().toInt());
-    break;
-  case 2:
-    m_boardScene->addMark(m_xEdit->text().toInt(), m_yEdit->text().toInt());
-    break;
-  case 3:
-    m_boardScene->addCircle(m_xEdit->text().toInt(), m_yEdit->text().toInt());
-    break;
-  case 4:
-    m_boardScene->addSquare(m_xEdit->text().toInt(), m_yEdit->text().toInt());
-    break;
-  case 5:
-    m_boardScene->addTriangle(m_xEdit->text().toInt(), m_yEdit->text().toInt());
-    break;
-  case 6:
-    m_boardScene->addLabel(m_xEdit->text().toInt(), m_yEdit->text().toInt(), m_labelEdit->text());
-    break;
-  default:
-    qDebug() << "wrong combobox current index";
-    break;
-  }
-
-}
-
-void GoGui::removeButtonClicked() {
-  switch (m_typeComboBox->currentIndex()) {
-  case 0:
-  case 1:
-    m_boardScene->removeStone(m_xEdit->text().toInt(), m_yEdit->text().toInt());
-    break;
-  case 2:
-    m_boardScene->removeMark(m_xEdit->text().toInt(), m_yEdit->text().toInt());
-    break;
-  case 3:
-    m_boardScene->removeCircle(m_xEdit->text().toInt(), m_yEdit->text().toInt());
-    break;
-  case 4:
-    m_boardScene->removeSquare(m_xEdit->text().toInt(), m_yEdit->text().toInt());
-    break;
-  case 5:
-    m_boardScene->removeTriangle(m_xEdit->text().toInt(), m_yEdit->text().toInt());
-    break;
-  case 6:
-    m_boardScene->removeLabel(m_xEdit->text().toInt(), m_yEdit->text().toInt());
-    break;
-  default:
-    qDebug() << "wrong combobox current index";
-    break;
-  }
+  labelEdit->setEnabled(text == "Label");
 }
 

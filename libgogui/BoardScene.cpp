@@ -137,22 +137,13 @@ void BoardScene::removeLabel(int x, int y) {
 }
 
 QString BoardScene::getFieldString(int x, int y) {
-  QString res;
-  res += QString::number(x);
-  res += '-';
-  res += QString::number(y);
-  return res;
+  return QString::number(x) + '-' + QString::number(y);
 }
 
 void BoardScene::handleMousePress(int x, int y, Qt::MouseButtons buttons) {
-  if (buttons & Qt::LeftButton)
-    addBlackStone(x, y);
-  if (buttons & Qt::RightButton)
-    addWhiteStone(x, y);
-  if (buttons & Qt::MidButton)
-    removeStone(x, y);
-  if (buttons & Qt::XButton1)
-    addMark(x, y);
-  if (buttons & Qt::XButton2)
-    removeMark(x, y);
+  if (buttons & Qt::LeftButton && m_LeftButtonHandler) m_LeftButtonHandler(x, y);
+  if (buttons & Qt::RightButton && m_rightButtonHandler) m_rightButtonHandler(x, y);
+  if (buttons & Qt::MidButton && m_midButtonHandler) m_midButtonHandler(x, y);
+  if (buttons & Qt::XButton1 && m_xButton1Handler) m_xButton1Handler(x, y);
+  if (buttons & Qt::XButton2 && m_xButton2Handler) m_xButton2Handler(x, y);
 }
