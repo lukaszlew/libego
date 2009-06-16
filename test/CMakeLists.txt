@@ -13,14 +13,14 @@ qt4_wrap_ui ( UI_HDRS ${UIS} )
 qt4_wrap_cpp ( MOC_SRCS ${MOC_HDRS} )
 
 include_directories (
-  ${gogui_SOURCE_DIR}/libgogui
+  ${BoardGameGui_SOURCE_DIR}/libgamegui
   ${CMAKE_BINARY_DIR}
   ${BOOST_ROOT}
 )  
 
-link_directories ( ${gogui_BINARY_DIR}/libgogui )
+link_directories ( ${BoardGameGui_BINARY_DIR}/libgamegui )
 
 add_executable (test  ${SRCS} ${RC_SRCS} ${UI_HDRS} ${MOC_SRCS} )
 
-target_link_libraries(test gogui ${QT_LIBRARIES})
+target_link_libraries(test gamegui ${QT_LIBRARIES})
 

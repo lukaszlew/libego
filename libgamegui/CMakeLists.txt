@@ -16,6 +16,6 @@ qt4_wrap_cpp ( MOC_SRCS ${MOC_HDRS} )
 
 include_directories ( ${CMAKE_BINARY_DIR} ${BOOST_ROOT} )
 
-add_library(gogui ${SRCS} ${RC_SRCS} ${UI_HDRS} ${MOC_SRCS} )
+add_library(gamegui ${SRCS} ${RC_SRCS} ${UI_HDRS} ${MOC_SRCS} )
 
-target_link_libraries(gogui ${QT_LIBRARIES})
+target_link_libraries(gamegui ${QT_LIBRARIES})
