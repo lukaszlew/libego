@@ -1,8 +1,8 @@
 #include <QWheelEvent>
 
-#include "BoardView.h"
+#include "ResizableView.h"
 
-BoardView::BoardView(QWidget *parent) :
+ResizableView::ResizableView(QWidget *parent) :
   QGraphicsView(parent)
 {
   setResizeAnchor(QGraphicsView::AnchorViewCenter);
@@ -10,7 +10,7 @@ BoardView::BoardView(QWidget *parent) :
   setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 }
 
-BoardView::BoardView(QGraphicsScene * scene, QWidget * parent) :
+ResizableView::ResizableView(QGraphicsScene * scene, QWidget * parent) :
   QGraphicsView(scene, parent)
 {
   setResizeAnchor(QGraphicsView::AnchorViewCenter);
@@ -19,11 +19,11 @@ BoardView::BoardView(QGraphicsScene * scene, QWidget * parent) :
 }
 
 
-BoardView::~BoardView()
+ResizableView::~ResizableView()
 {
 }
 
-void BoardView::wheelEvent(QWheelEvent *event)
+void ResizableView::wheelEvent(QWheelEvent *event)
 {
   Q_UNUSED(event);
   ///*
@@ -34,7 +34,7 @@ void BoardView::wheelEvent(QWheelEvent *event)
   //*/
 }
 
-void BoardView::resizeEvent(QResizeEvent* event)
+void ResizableView::resizeEvent(QResizeEvent* event)
 {
   /* whole scene should be visible */
   fitInView(scene()->sceneRect(), Qt::KeepAspectRatio);

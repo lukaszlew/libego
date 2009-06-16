@@ -4,7 +4,7 @@
 #include "gogui.h"
 #include "manager.h"
 #include "BoardScene.h"
-#include "BoardView.h"
+#include "ResizableView.h"
 #include "SquareGrid.h"
 #include "HexGrid.h"
 #include "YGrid.h"
@@ -14,7 +14,7 @@
 GoGui::GoGui(QWidget *parent) :
   QDialog(parent) {
   BoardScene *boardScene = BoardScene::createGoScene(13);
-  BoardView *boardView = new BoardView(boardScene, this);
+  ResizableView *boardView = new ResizableView(boardScene, this);
   manager *m = new manager(boardScene, this);
 
   labelEdit = new QLineEdit;

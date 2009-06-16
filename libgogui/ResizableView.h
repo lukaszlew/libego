@@ -3,14 +3,14 @@
 
 #include <QGraphicsView>
 
-class BoardView: public QGraphicsView
+class ResizableView: public QGraphicsView
 {
 Q_OBJECT
 
 public:
-  BoardView(QWidget *parent = 0);
-  BoardView(QGraphicsScene * scene, QWidget * parent = 0);
-  ~BoardView();
+  ResizableView(QWidget *parent = 0);
+  ResizableView(QGraphicsScene * scene, QWidget * parent = 0);
+  ~ResizableView();
 
 protected:
   void wheelEvent(QWheelEvent *event);
