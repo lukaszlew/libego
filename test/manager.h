@@ -4,13 +4,13 @@
 #include <QObject>
 #include <QString>
 
-class BoardScene;
+class GameScene;
 
 class manager : public QObject
 {
   Q_OBJECT
 public:
-  manager(BoardScene *scene, QObject * parent = 0);
+  manager(GameScene *scene, QObject * parent = 0);
 
   void handleLeftClick(int x, int y);
   void handleRightClick(int x, int y);
@@ -22,7 +22,7 @@ public slots:
 private:
   int m_index;
   QString m_label;
-  BoardScene *m_boardScene;
+  GameScene *m_gameScene;
 
 };
 

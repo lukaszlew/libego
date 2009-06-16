@@ -8,6 +8,6 @@ Makefile
 .project
 test/moc_*
 test/test
-libgogui/moc_*
-libgogui/qrc_*
-libgogui/libgogui.a
+libgamegui/moc_*
+libgamegui/qrc_*
+libgamegui/libgamegui.a

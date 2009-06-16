@@ -3,7 +3,7 @@
 
 #include "gogui.h"
 #include "manager.h"
-#include "BoardScene.h"
+#include "GameScene.h"
 #include "ResizableView.h"
 #include "SquareGrid.h"
 #include "HexGrid.h"
@@ -13,9 +13,9 @@
 
 GoGui::GoGui(QWidget *parent) :
   QDialog(parent) {
-  BoardScene *boardScene = BoardScene::createGoScene(13);
-  ResizableView *boardView = new ResizableView(boardScene, this);
-  manager *m = new manager(boardScene, this);
+  GameScene *gameScene = GameScene::createGoScene(13);
+  ResizableView *view = new ResizableView(gameScene, this);
+  manager *m = new manager(gameScene, this);
 
   labelEdit = new QLineEdit;
   QLabel *labelLabel = new QLabel("Label");
@@ -40,7 +40,7 @@ GoGui::GoGui(QWidget *parent) :
   layout->addWidget(typeComboBox, 1, 1);
 
   QVBoxLayout *mainLayout = new QVBoxLayout;
-  mainLayout->addWidget(boardView);
+  mainLayout->addWidget(view);
   mainLayout->addLayout(layout);
 
   connect(typeComboBox, SIGNAL(currentIndexChanged(const QString&)), this, SLOT(typeIndexChanged(const QString& )));

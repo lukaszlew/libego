@@ -2,7 +2,7 @@
 #include <QDebug>
 #include <boost/bind.hpp>
 
-#include "BoardScene.h"
+#include "GameScene.h"
 
 #include "Field.h"
 #include "Grid.h"
@@ -14,7 +14,7 @@
 #include "HavannahGrid.h"
 #include "YGrid.h"
 
-BoardScene::BoardScene(Grid* grid, QObject *parent) :
+GameScene::GameScene(Grid* grid, QObject *parent) :
   QGraphicsScene(parent), m_grid(grid), m_ruler(m_grid->createRuler()) {
   setBackgroundBrush(QPixmap(":/images/wood.png"));
 
@@ -23,34 +23,34 @@ BoardScene::BoardScene(Grid* grid, QObject *parent) :
     for (int y = m_grid->minimalYCoordinate(x); y <= m_grid->maximalYCoordinate(x); y++)
       if (m_grid->isValidCoordinate(x, y)) {
         Field *field = m_grid->createField();
-        field->setMousePressHandler(boost::bind(&BoardScene::handleMousePress, this, x, y, _1));
+        field->setMousePressHandler(boost::bind(&GameScene::handleMousePress, this, x, y, _1));
         m_fields.insert(getFieldString(x, y), field);
         field->setPos(m_grid->getFieldPosition(x, y));
         addItem(field);
       }
 }
 
-BoardScene *BoardScene::createHavannahScene(int size, QObject *parent) {
-  return new BoardScene(new HavannahGrid(size), parent);
+GameScene *GameScene::createHavannahScene(int size, QObject *parent) {
+  return new GameScene(new HavannahGrid(size), parent);
 }
 
-BoardScene *BoardScene::createHexScene(int size, QObject *parent) {
-  return new BoardScene(new HexGrid(size), parent);
+GameScene *GameScene::createHexScene(int size, QObject *parent) {
+  return new GameScene(new HexGrid(size), parent);
 }
 
-BoardScene *BoardScene::createHoScene(int size, QObject *parent) {
-  return new BoardScene(new HoGrid(size), parent);
+GameScene *GameScene::createHoScene(int size, QObject *parent) {
+  return new GameScene(new HoGrid(size), parent);
 }
 
-BoardScene *BoardScene::createGoScene(int size, QObject *parent) {
-  return new BoardScene(new SquareGrid(size), parent);
+GameScene *GameScene::createGoScene(int size, QObject *parent) {
+  return new GameScene(new SquareGrid(size), parent);
 }
 
-BoardScene *BoardScene::createYScene(int size, QObject *parent) {
-  return new BoardScene(new YGrid(size), parent);
+GameScene *GameScene::createYScene(int size, QObject *parent) {
+  return new GameScene(new YGrid(size), parent);
 }
 
-void BoardScene::addShape(int x, int y, EShapeType type, const QString& label) {
+void GameScene::addShape(int x, int y, EShapeType type, const QString& label) {
   QString pos = getFieldString(x, y);
   QMutexLocker locker(&m_mutex);
 
@@ -84,7 +84,7 @@ void BoardScene::addShape(int x, int y, EShapeType type, const QString& label) {
   }
 }
 
-void BoardScene::removeShape(int x, int y, EShapeType type) {
+void GameScene::removeShape(int x, int y, EShapeType type) {
   QString pos = getFieldString(x, y);
   QMutexLocker locker(&m_mutex);
 
@@ -110,63 +110,63 @@ void BoardScene::removeShape(int x, int y, EShapeType type) {
   }
 }
 
-void BoardScene::addBlackStone(int x, int y) {
+void GameScene::addBlackStone(int x, int y) {
   return addShape(x, y, TypeBlackStone);
 }
 
-void BoardScene::addWhiteStone(int x, int y) {
+void GameScene::addWhiteStone(int x, int y) {
   return addShape(x, y, TypeWhiteStone);
 }
 
-void BoardScene::removeStone(int x, int y) {
+void GameScene::removeStone(int x, int y) {
   removeShape(x, y, TypeBlackStone);
 }
 
-void BoardScene::addMark(int x, int y) {
+void GameScene::addMark(int x, int y) {
   return addShape(x, y, TypeMark);
 }
 
-void BoardScene::removeMark(int x, int y) {
+void GameScene::removeMark(int x, int y) {
   removeShape(x, y, TypeMark);
 }
 
-void BoardScene::addCircle(int x, int y) {
+void GameScene::addCircle(int x, int y) {
   return addShape(x, y, TypeCircle);
 }
 
-void BoardScene::removeCircle(int x, int y) {
+void GameScene::removeCircle(int x, int y) {
   removeShape(x, y, TypeCircle);
 }
 
-void BoardScene::addSquare(int x, int y) {
+void GameScene::addSquare(int x, int y) {
   return addShape(x, y, TypeSquare);
 }
 
-void BoardScene::removeSquare(int x, int y) {
+void GameScene::removeSquare(int x, int y) {
   removeShape(x, y, TypeSquare);
 }
 
-void BoardScene::addTriangle(int x, int y) {
+void GameScene::addTriangle(int x, int y) {
   return addShape(x, y, TypeTriangle);
 }
 
-void BoardScene::removeTriangle(int x, int y) {
+void GameScene::removeTriangle(int x, int y) {
   removeShape(x, y, TypeTriangle);
 }
 
-void BoardScene::addLabel(int x, int y, const QString& label) {
+void GameScene::addLabel(int x, int y, const QString& label) {
   return addShape(x, y, TypeLabel, label);
 }
 
-void BoardScene::removeLabel(int x, int y) {
+void GameScene::removeLabel(int x, int y) {
   removeShape(x, y, TypeLabel);
 }
 
-QString BoardScene::getFieldString(int x, int y) {
+QString GameScene::getFieldString(int x, int y) {
   return QString::number(x) + '-' + QString::number(y);
 }
 
-void BoardScene::handleMousePress(int x, int y, Qt::MouseButtons buttons) {
+void GameScene::handleMousePress(int x, int y, Qt::MouseButtons buttons) {
   if (buttons & Qt::LeftButton && m_LeftButtonHandler) m_LeftButtonHandler(x, y);
   if (buttons & Qt::RightButton && m_rightButtonHandler) m_rightButtonHandler(x, y);
   if (buttons & Qt::MidButton && m_midButtonHandler) m_midButtonHandler(x, y);

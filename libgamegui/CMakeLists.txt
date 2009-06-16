@@ -1,5 +1,5 @@
-set ( SRCS BoardScene.cpp Field.cpp Grid.cpp ResizableView.cpp HexGrid.cpp SquareGrid.cpp Ruler.cpp YGrid.cpp HoGrid.cpp HavannahGrid.cpp )
-set ( MOC_HDRS BoardScene.h ResizableView.h )
+set ( SRCS GameScene.cpp Field.cpp Grid.cpp ResizableView.cpp HexGrid.cpp SquareGrid.cpp Ruler.cpp YGrid.cpp HoGrid.cpp HavannahGrid.cpp )
+set ( MOC_HDRS GameScene.h ResizableView.h )
 set ( RCS images.qrc )
 set ( UIS )
 

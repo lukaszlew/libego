@@ -9,19 +9,19 @@
 class Field;
 class Grid;
 
-class BoardScene: public QGraphicsScene
+class GameScene: public QGraphicsScene
 {
 Q_OBJECT
 
 public:
-  static BoardScene *createHavannahScene(int size, QObject *parent = 0);
-  static BoardScene *createHexScene(int size, QObject *parent = 0);
-  static BoardScene *createHoScene(int size, QObject *parent = 0);
-  static BoardScene *createGoScene(int size, QObject *parent = 0);
-  static BoardScene *createYScene(int size, QObject *parent = 0);
+  static GameScene *createHavannahScene(int size, QObject *parent = 0);
+  static GameScene *createHexScene(int size, QObject *parent = 0);
+  static GameScene *createHoScene(int size, QObject *parent = 0);
+  static GameScene *createGoScene(int size, QObject *parent = 0);
+  static GameScene *createYScene(int size, QObject *parent = 0);
 
 public:
-  BoardScene(Grid *grid, QObject *parent = 0);
+  GameScene(Grid *grid, QObject *parent = 0);
 
   void addBlackStone(int x, int y);
   void addWhiteStone(int x, int y);
@@ -72,11 +72,11 @@ protected:
   QGraphicsItem *m_ruler;
   typedef QMap<QString, Field*> map_type;
   map_type m_fields;
-  callback_type m_LeftButtonHandler,
-    m_rightButtonHandler,
-    m_midButtonHandler,
-    m_xButton1Handler,
-    m_xButton2Handler;
+  callback_type m_LeftButtonHandler;
+  callback_type m_rightButtonHandler;
+  callback_type m_midButtonHandler;
+  callback_type m_xButton1Handler;
+  callback_type m_xButton2Handler;
 };
 
 #endif /* BOARDSCENE_H_ */
