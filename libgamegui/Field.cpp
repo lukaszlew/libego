@@ -35,13 +35,24 @@ Field::Field(const QPainterPath & path, QGraphicsItem *parent) :
   addToGroup(m_background);
 }
 
-void Field::setMousePressHandler(const callback_type& handler) {
-  m_mousePressHandler = handler;
-}
-
 void Field::mousePressEvent ( QGraphicsSceneMouseEvent * event ) {
   if (m_mousePressHandler)
     m_mousePressHandler(event->buttons());
+}
+
+void Field::mouseDoubleClickEvent ( QGraphicsSceneMouseEvent * event ) {
+  if (m_mouseDoubleClickHandler)
+    m_mouseDoubleClickHandler(event->buttons());
+}
+
+void Field::mouseReleaseEvent ( QGraphicsSceneMouseEvent * event ) {
+  if (m_mouseReleaseHandler)
+    m_mouseReleaseHandler(event->buttons());
+}
+
+void Field::wheelEvent ( QGraphicsSceneWheelEvent * event ) {
+  if (m_mouseWheelHandler)
+    m_mouseWheelHandler(event->delta());
 }
 
 ///* debugging functions
@@ -49,12 +60,16 @@ void Field::hoverEnterEvent(QGraphicsSceneHoverEvent * event) {
   Q_UNUSED(event);
   m_background->setBrush(QColor(64, 64, 64, 64));
   update();
+  if (m_hooverEnterHandler)
+    m_hooverEnterHandler();
 }
 
 void Field::hoverLeaveEvent(QGraphicsSceneHoverEvent * event) {
   Q_UNUSED(event);
   m_background->setBrush(Qt::NoBrush);
   update();
+  if (m_hooverLeaveHandler)
+    m_hooverLeaveHandler();
 }
 //*/
 

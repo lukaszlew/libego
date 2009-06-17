@@ -24,6 +24,11 @@ GameScene::GameScene(Grid* grid, QObject *parent) :
       if (m_grid->isValidCoordinate(x, y)) {
         Field *field = m_grid->createField();
         field->setMousePressHandler(boost::bind(&GameScene::handleMousePress, this, x, y, _1));
+        field->setMouseDoubleClickHandler(boost::bind(&GameScene::handleMouseDoubleClick, this, x, y, _1));
+        field->setMouseReleaseHandler(boost::bind(&GameScene::handleMouseRelease, this, x, y, _1));
+        field->setMouseWheelHandler(boost::bind(&GameScene::handleWheelMove, this, x, y, _1));
+        field->setHooverEnterHandler(boost::bind(&GameScene::handleHooverEnter, this, x, y));
+        field->setHooverLeaveHandler(boost::bind(&GameScene::handleHooverLeave, this, x, y));
         m_fields.insert(getFieldString(x, y), field);
         field->setPos(m_grid->getFieldPosition(x, y));
         addItem(field);
@@ -166,10 +171,37 @@ QString GameScene::getFieldString(int x, int y) {
   return QString::number(x) + '-' + QString::number(y);
 }
 
+/*
 void GameScene::handleMousePress(int x, int y, Qt::MouseButtons buttons) {
   if (buttons & Qt::LeftButton && m_LeftButtonHandler) m_LeftButtonHandler(x, y);
   if (buttons & Qt::RightButton && m_rightButtonHandler) m_rightButtonHandler(x, y);
   if (buttons & Qt::MidButton && m_midButtonHandler) m_midButtonHandler(x, y);
   if (buttons & Qt::XButton1 && m_xButton1Handler) m_xButton1Handler(x, y);
   if (buttons & Qt::XButton2 && m_xButton2Handler) m_xButton2Handler(x, y);
+}
+
+//*/
+
+void GameScene::handleMousePress(int x, int y, Qt::MouseButtons buttons) {
+  emit mousePressed(x, y, buttons);
+}
+
+void GameScene::handleMouseDoubleClick(int x, int y, Qt::MouseButtons buttons) {
+  emit mouseDoubleClicked(x, y, buttons);
+}
+
+void GameScene::handleMouseRelease(int x, int y, Qt::MouseButtons buttons) {
+  emit mouseReleased(x, y ,buttons);
+}
+
+void GameScene::handleWheelMove(int x, int y, int delta) {
+  emit mouseWheelMoved(x, y, delta);
+}
+
+void GameScene::handleHooverEnter(int x, int y) {
+  emit hooverEntered(x, y);
+}
+
+void GameScene::handleHooverLeave(int x, int y) {
+  emit hooverLeft(x, y);
 }

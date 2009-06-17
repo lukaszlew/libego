@@ -37,15 +37,24 @@ public:
     return m_background->shape();
   }
 
-  typedef boost::function<void (Qt::MouseButtons buttons)> callback_type;
-  void setMousePressHandler(const callback_type& handler);
+  typedef boost::function<void (Qt::MouseButtons buttons)> mouse_callback_type;
+  typedef boost::function<void (int delta)> wheel_callback_type;
+  typedef boost::function<void ()> hoover_callback_type;
+  void setMousePressHandler(const mouse_callback_type& handler) { m_mousePressHandler = handler; }
+  void setMouseDoubleClickHandler(const mouse_callback_type& handler) { m_mouseDoubleClickHandler = handler; }
+  void setMouseReleaseHandler(const mouse_callback_type& handler) { m_mouseReleaseHandler = handler; }
+  void setMouseWheelHandler(const wheel_callback_type& handler) { m_mouseWheelHandler = handler; }
+  void setHooverEnterHandler(const hoover_callback_type& handler) { m_hooverEnterHandler = handler; }
+  void setHooverLeaveHandler(const hoover_callback_type& handler) { m_hooverLeaveHandler = handler; }
 
 protected:
   virtual void mousePressEvent ( QGraphicsSceneMouseEvent * event );
-  ///* debugging
+  virtual void mouseDoubleClickEvent ( QGraphicsSceneMouseEvent * event );
+  virtual void mouseReleaseEvent ( QGraphicsSceneMouseEvent * event );
+  virtual void wheelEvent ( QGraphicsSceneWheelEvent * event );
   virtual void hoverEnterEvent ( QGraphicsSceneHoverEvent * event );
   virtual void hoverLeaveEvent ( QGraphicsSceneHoverEvent * event );
-  //*/
+
   virtual void removeItem(QGraphicsItem*& item);
 
   QAbstractGraphicsShapeItem *m_background;
@@ -55,7 +64,12 @@ protected:
   QGraphicsItem *m_square;
   QGraphicsItem *m_triangle;
   QGraphicsItem *m_label;
-  callback_type m_mousePressHandler;
+  mouse_callback_type m_mousePressHandler;
+  mouse_callback_type m_mouseReleaseHandler;
+  mouse_callback_type m_mouseDoubleClickHandler;
+  wheel_callback_type m_mouseWheelHandler;
+  hoover_callback_type m_hooverEnterHandler;
+  hoover_callback_type m_hooverLeaveHandler;
 
   static const QString s_blackStoneFilename;
   static const QString s_whiteStoneFilename;

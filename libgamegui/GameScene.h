@@ -4,7 +4,6 @@
 #include <QGraphicsScene>
 #include <QMap>
 #include <QMutex>
-#include <boost/function.hpp>
 
 class Field;
 class Grid;
@@ -45,13 +44,19 @@ public:
   static QString getFieldString(int x, int y);
 
   void handleMousePress(int x, int y, Qt::MouseButtons buttons);
+  void handleMouseDoubleClick(int x, int y, Qt::MouseButtons buttons);
+  void handleMouseRelease(int x, int y, Qt::MouseButtons buttons);
+  void handleWheelMove(int x, int y, int delta);
+  void handleHooverEnter(int x, int y);
+  void handleHooverLeave(int x, int y);
 
-  typedef boost::function<void (int,int)> callback_type;
-  void setLeftButtonHandler(const callback_type& handler) { m_LeftButtonHandler = handler; }
-  void setRightButtonHandler(const callback_type& handler) { m_rightButtonHandler = handler; }
-  void setMidButtonHandler(const callback_type& handler) { m_midButtonHandler = handler; }
-  void setXButton1Handler(const callback_type& handler) { m_xButton1Handler = handler; }
-  void setXButton2Handler(const callback_type& handler) { m_xButton2Handler = handler; }
+  signals:
+    void mousePressed(int x, int y, Qt::MouseButtons buttons);
+    void mouseDoubleClicked(int x, int y, Qt::MouseButtons buttons);
+    void mouseReleased(int x, int y, Qt::MouseButtons buttons);
+    void mouseWheelMoved(int x, int y, int delta);
+    void hooverEntered(int x, int y);
+    void hooverLeft(int x, int y);
 
 protected:
   enum EShapeType
@@ -72,11 +77,6 @@ protected:
   QGraphicsItem *m_ruler;
   typedef QMap<QString, Field*> map_type;
   map_type m_fields;
-  callback_type m_LeftButtonHandler;
-  callback_type m_rightButtonHandler;
-  callback_type m_midButtonHandler;
-  callback_type m_xButton1Handler;
-  callback_type m_xButton2Handler;
 };
 
 #endif /* BOARDSCENE_H_ */

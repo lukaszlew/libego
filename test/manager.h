@@ -12,10 +12,9 @@ class manager : public QObject
 public:
   manager(GameScene *scene, QObject * parent = 0);
 
-  void handleLeftClick(int x, int y);
-  void handleRightClick(int x, int y);
 
 public slots:
+  void handleMousePress(int x, int y, Qt::MouseButtons buttons);
   void setIndex(int index) { m_index = index; }
   void setLabel(const QString& label) { m_label = label; }
 
