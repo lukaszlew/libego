@@ -10,8 +10,13 @@
 using namespace std;
 
 // TODO this have to be renamed to max_board_size
-const uint board_size = 9;
 
+#ifdef BOARDSIZE
+const uint board_size = BOARDSIZE;
+#undef BOARDSIZE
+#else
+const uint board_size = 9;
+#endif
 
 class Coord {
 public:

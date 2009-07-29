@@ -1,5 +1,6 @@
 DIR=release_build &&
+rm -fr ./${DIR} &&
 mkdir -p ${DIR} &&
 cd ${DIR} &&
-cmake -D CMAKE_BUILD_TYPE=Release .. &&
+cmake -D CMAKE_BUILD_TYPE=Release $@ .. &&
 make 

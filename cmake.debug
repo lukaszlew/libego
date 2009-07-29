@@ -1,5 +1,6 @@
 DIR=debug_build &&
+rm -fr ./${DIR} &&
 mkdir -p ${DIR} &&
 cd ${DIR} &&
-cmake -D CMAKE_BUILD_TYPE=Debug .. &&
+cmake -D CMAKE_BUILD_TYPE=Debug $@ .. &&
 make 

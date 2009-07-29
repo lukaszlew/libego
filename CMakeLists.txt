@@ -6,6 +6,14 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_COMPILER_IS_GNUCXX)
 
   message("Linux and g++ detected.")
 
+  if(${BOARDSIZE} MATCHES [0-9]+)
+    message ("Custom board size: ${BOARDSIZE}")
+    add_definitions(-DBOARDSIZE=${BOARDSIZE})
+  else()
+    message ("Default board size: 9")
+    add_definitions(-DBOARDSIZE=9)
+  endif()
+
   set (MY_CXX_FLAGS 
     "-ggdb3 -Wall -Wextra -Wswitch-enum -Wunused")
   set (MY_CXX_FLAGS_RELEASE
