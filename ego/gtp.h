@@ -13,17 +13,9 @@ using namespace std;
 
 // ----------------------------------------------------------------------
 
-class GtpResult {
+class Gfx {
 public:
-  static GtpResult gfx ();
-  static GtpResult success (string response = "");
-  static GtpResult failure (string response = "");
-  static GtpResult syntax_error ();
-  static GtpResult quit ();
-
-  bool quit_loop ();
-  string to_string ();
-
+  Gfx();
   // gfx functions
   void set_influence(Vertex v, float val);
   void set_label(Vertex v, const string& label);
@@ -35,22 +27,9 @@ public:
 
   void set_status_text(const string& status);
 
+  string to_string ();
+
 private:
-  string response();
-
-  enum Status {
-    status_success,
-    status_failure,
-    status_quit,
-    status_gfx
-  };
-
-  string status_marker ();
-  GtpResult (Status status, string response="");
-
-  Status status_;
-  string response_;
-
   // gfx
   FastMap <Vertex, float>  influence_;
   FastMap <Vertex, string> label_;
@@ -59,6 +38,35 @@ private:
   vector <Vertex> triangle_;
   vector <Vertex> square_;
   string status_text_;
+};
+
+// -----------------------------------------------------------------------------
+
+class GtpResult {
+public:
+  static GtpResult success (string response = "");
+  static GtpResult failure (string response = "");
+  static GtpResult syntax_error ();
+  static GtpResult quit ();
+
+  bool quit_loop ();
+  string to_string ();
+
+
+private:
+  string response();
+
+  enum Status {
+    status_success,
+    status_failure,
+    status_quit,
+  };
+
+  string status_marker ();
+  GtpResult (Status status, string response="");
+
+  Status status_;
+  string response_;
 };
 
 // ----------------------------------------------------------------------

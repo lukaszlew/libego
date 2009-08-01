@@ -29,10 +29,6 @@
 
 // ----------------------------------------------------------------------
 
-GtpResult GtpResult::gfx () {
-  return GtpResult (status_gfx, "");
-}
-
 GtpResult GtpResult::success (string response) {
   return GtpResult (status_success, response);
 }
@@ -55,15 +51,61 @@ bool GtpResult::quit_loop () {
 
 string GtpResult::to_string () {
   // sanitize return string
-  string res = response();
+  string res = response_;
   remove_empty_lines         (&res);
   remove_trailing_whitespace (&res);
   return status_marker () + " " + res + "\n\n";
 }
 
-string GtpResult::response () {
-  if (status_ != status_gfx) return response_;
+string GtpResult::status_marker () {
+  switch (status_) {
+  case status_success: return "=";
+  case status_failure: return "?";
+  case status_quit:    return "=";
+  default: assert (false);
+  }
+}
 
+
+GtpResult::GtpResult (Status status, string response)
+  : status_ (status), response_ (response)
+{
+}
+
+// -----------------------------------------------------------------------------
+
+void Gfx::set_influence(Vertex v, float val) {
+  influence_[v] = val;
+}
+
+void Gfx::set_label(Vertex v, const string& label) {
+  label_[v] = label;
+}
+
+void Gfx::add_symbol(Vertex v, GfxSymbol s) {
+  switch(s) {
+  case circle:   circle_.push_back(v); return;
+  case triangle: triangle_.push_back(v); return;
+  case square:   square_.push_back(v); return;
+  default: assert(false);
+  }
+}
+
+void Gfx::add_var_move(Move m) {
+  var_.push_back(m);
+}
+
+void Gfx::set_status_text(const string& status) {
+  status_text_ = status;
+}
+
+Gfx::Gfx () {
+  influence_.SetAll(0.0);
+  label_.SetAll("");
+}
+
+
+string Gfx::to_string () {
   stringstream influence, label, var, circle, triangle, square, status;
   bool influence_b = false;
   bool label_b = false;
@@ -133,49 +175,6 @@ string GtpResult::response () {
     (square_b    ? square.str()    : "") +
     (status_b    ? status.str()    : "");
 }
-
-string GtpResult::status_marker () {
-  switch (status_) {
-  case status_gfx:     return "=";
-  case status_success: return "=";
-  case status_failure: return "?";
-  case status_quit:    return "=";
-  default: assert (false);
-  }
-}
-
-void GtpResult::set_influence(Vertex v, float val) {
-  influence_[v] = val;
-}
-
-void GtpResult::set_label(Vertex v, const string& label) {
-  label_[v] = label;
-}
-
-void GtpResult::add_symbol(Vertex v, GfxSymbol s) {
-  switch(s) {
-  case circle:   circle_.push_back(v); return;
-  case triangle: triangle_.push_back(v); return;
-  case square:   square_.push_back(v); return;
-  default: assert(false);
-  }
-}
-
-void GtpResult::add_var_move(Move m) {
-  var_.push_back(m);
-}
-
-void GtpResult::set_status_text(const string& status) {
-  status_text_ = status;
-}
-
-GtpResult::GtpResult (Status status, string response)
-  : status_ (status), response_ (response)
-{
-  influence_.SetAll(0.0);
-  label_.SetAll("");
-}
-
 
 // ----------------------------------------------------------------------
 

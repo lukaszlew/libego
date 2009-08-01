@@ -102,7 +102,7 @@ public:
       }
       if (progress_dots) cerr << endl;
 
-      GtpResult gfx = GtpResult::gfx();
+      Gfx gfx;
 
       vertex_for_each_all (v) {
         gfx.set_influence(v,
@@ -113,7 +113,7 @@ public:
           gfx.set_influence(v, 0.0);
         }
       }
-      return gfx;
+      return GtpResult::success(gfx.to_string());
     }
 
     assert (false);

@@ -423,16 +423,16 @@ private:
       show_move_count = max(show_move_count, 0);
       show_move_count = min(show_move_count, int(showed_playout.size()));
 
-      GtpResult gfx = GtpResult::gfx();
+      Gfx gfx;
 
       rep(ii, show_move_count) {
         gfx.add_var_move(showed_playout[ii]);
       }
 
       gfx.add_symbol(showed_playout[show_move_count-1].get_vertex(),
-                     GtpResult::circle);
+                     Gfx::circle);
 
-      return gfx;
+      return GtpResult::success(gfx.to_string());
     }
 
     assert (false);
