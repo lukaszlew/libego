@@ -1,47 +1,49 @@
 cmake_minimum_required(VERSION 2.6)
 project (libego)
 
+include (CheckCXXCompilerFlag)
+
+# Define BOARDSIZE macro.
+
+if(NOT DEFINED BOARDSIZE OR NOT BOARDSIZE MATCHES [0-9]+)
+  set (BOARDSIZE 9)
+endif()
+
+add_definitions(-DBOARDSIZE=${BOARDSIZE})
+message("BOARDSIZE = ${BOARDSIZE}")
+
+# Set compiler flags.
+
 if()
-elseif((CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Darwin") AND CMAKE_COMPILER_IS_GNUCXX)
-  if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    message("Linux and g++ detected.")
-  elseif(CMAKE_SYSTEM_MAKE STREQUAL "Darwin")
-    message("Darwin and g++ detected.")
+elseif(CMAKE_COMPILER_IS_GNUCXX)
+
+  message("${CMAKE_SYSTEM_NAME} and g++ detected.")
+
+  CHECK_CXX_COMPILER_FLAG ("-march=native" GNUCXX_SUPPORTS_MARCH_NATIVE)
+  CHECK_CXX_COMPILER_FLAG ("-march=i686"   GNUCXX_SUPPORTS_MARCH_I686)
+
+  if ()
+  elseif (GNUCXX_SUPPORTS_MARCH_NATIVE)
+    set (CMAKE_CXX_MARCH_FLAGS "-march=native")
+  elseif (GNUCXX_SUPPORTS_MARCH_I686)
+    set (CMAKE_CXX_MARCH_FLAGS "-march=i686")
+  else ()
+    message ("Please upgrade your compiler")
+    set (CMAKE_CXX_MARCH_FLAGS "")
   endif()
 
-  if(${BOARDSIZE} MATCHES [0-9]+)
-    message ("Custom board size: ${BOARDSIZE}")
-    add_definitions(-DBOARDSIZE=${BOARDSIZE})
-  else()
-    message ("Default board size: 9")
-    add_definitions(-DBOARDSIZE=9)
-  endif()
-
-  set (MY_CXX_FLAGS 
-    "-ggdb3 -Wall -Wextra -Wswitch-enum -Wunused")
-  set (ALL_CXX_FLAGS_RELEASE "-O3 -fomit-frame-pointer -frename-registers -ffast-math")
-  if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    set (MY_CXX_FLAGS_RELEASE "-march=native ${ALL_CXX_FLAGS_RELEASE}")
-  else()
-    set (MY_CXX_FLAGS_RELEASE ${ALL_CXX_FLAGS_RELEASE})
-  endif()
-  set (MY_CXX_FLAGS_DEBUG
-    "-fno-inline -DTESTING")
-  set (CMAKE_CXX_FLAGS_DEBUG
-    "${MY_CXX_FLAGS} ${MY_CXX_FLAGS_DEBUG}")
-  set (CMAKE_CXX_FLAGS_RELEASE
-    "${MY_CXX_FLAGS} ${MY_CXX_FLAGS_RELEASE}")
-
-elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-
-  message ("Windows detected")
-  message ("If it works for you, let us know libego-devel@googlegroups.com")
+  set (CMAKE_CXX_FLAGS "-ggdb3 -Wall -Wextra -Wswitch-enum -Wunused")
+  set (CMAKE_CXX_FLAGS_RELEASE "-O3 -fomit-frame-pointer -frename-registers -ffast-math ${CMAKE_CXX_MARCH_FLAGS}")
+  set (CMAKE_CXX_FLAGS_DEBUG "-fno-inline -DTESTING")
 
 else()
 
-  message(FATAL_ERROR "${CMAKE_SYSTEM_NAME} not supported")
+  message("${CMAKE_SYSTEM_NAME}  detected.")
+  message ("If it works/not works for you, let us know libego-devel@googlegroups.com")
 
 endif()
+
+# Add subdirectories.
 
 add_subdirectory (ego)
 add_subdirectory (example)
