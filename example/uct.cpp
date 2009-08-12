@@ -230,7 +230,7 @@ public:
     mature_update_count_threshold  = 100.0;
 
     min_visit   = 2500.0;
-    resign_mean = 0.95;
+    resign_mean = -0.95;
     show_move_count = 6;
 
     gtp.add_gogui_param_float ("MCTS.params", "explore_rate",  &explore_rate);
@@ -247,27 +247,31 @@ public:
     gtp.add_gtp_command (this, "genmove");
   }
 
-  Vertex genmove () {
+  Vertex genmove (Player player) {
+    // init
+    base_board.set_act_player(player);
     tree.init(base_board.board().act_player());
     root_ensure_children_legality ();
 
+    // find best move
     rep (ii, genmove_playout_count)
       do_playout ();
 
     tree.history_reset();
+    Vertex best_v = most_explored_root_move ();
 
-    Vertex best_v   = most_explored_root_move ();
-    float best_mean = tree.act_node()->child(best_v)->stat.mean();
-    
-    if ((base_board.board().act_player() == Player::black () &&
-         best_mean < -resign_mean) ||
-        (base_board.board().act_player() == Player::white ()
-         && best_mean >  resign_mean)) {
-      best_v = Vertex::resign ();
-    }
-
+    // log
     cerr << Node_to_string (tree.act_node(), min_visit) << endl;
 
+    // play and return
+    float best_mean = tree.act_node()->child(best_v)->stat.mean();
+
+    if (base_board.board().act_player().subjective_score(best_mean) < resign_mean) {
+      return Vertex::resign ();
+    }
+
+    bool ok = base_board.try_play (player, best_v);
+    assert(ok);
     return best_v;
   }
 
@@ -383,13 +387,7 @@ private:
       Vertex   v;
       if (!(params >> player)) return GtpResult::syntax_error ();
 
-      base_board.set_act_player(player);
-      v = genmove ();
-
-      if (v != Vertex::resign () &&
-          base_board.try_play (player, v) == false) {
-        assert(false);
-      }
+      v = genmove (player);
 
       return GtpResult::success (v.to_string());
     }

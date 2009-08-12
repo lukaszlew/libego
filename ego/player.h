@@ -21,6 +21,8 @@ public:
 
   string to_string () const;
 
+  template <typename T> T subjective_score (const T& score);
+
   explicit Player ();
   explicit Player (uint _idx);
 
@@ -45,5 +47,15 @@ ostream& operator<< (ostream& out, Player& pl);
 
 #define player_for_each(pl) \
   for (Player pl = Player::black (); pl.in_range (); pl.next ())
+
+// -----------------------------------------------------------------------------
+// internal
+
+template <typename T> T Player::subjective_score (const T& score) {
+  T tab[2];
+  tab[0] = score;
+  tab[1] = - score;
+  return tab[idx];
+}
 
 #endif
