@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 2.6)
 project (libego)
 
+set (CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
+
+include (EnsureOutOfSourceBuild)
+include (AddBoostCxxTest)
 include (CheckCXXCompilerFlag)
 
 # Define BOARDSIZE macro.
@@ -47,3 +51,4 @@ endif()
 
 add_subdirectory (ego)
 add_subdirectory (example)
+add_subdirectory (libgtp)
