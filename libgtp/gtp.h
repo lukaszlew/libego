@@ -29,15 +29,6 @@ public:
   // Throws syntax_error if a non-whitespace is still in In()
   void CheckEmpty ();
 
-  // Exception that can be throwed by a command and will be catched by Repl.
-  // TODO take out of Io.
-  struct Error {
-    Error (const string& msg_) : msg(msg_) {}
-    string msg;
-  };
-
-  const static Error syntax_error;
-
 private:
   Io (istringstream& arg_line);
   friend class Repl;
@@ -45,6 +36,19 @@ private:
   istringstream& in;
   ostringstream out;
 };
+
+// Exceptions that can be throwed by a command and will be catched by Repl:
+
+// GTP command failure with message
+struct Error {
+  Error (const string& msg_) : msg(msg_) {}
+  string msg;
+};
+
+extern const Error syntax_error;
+
+// quit GTP Run loop.
+class Quit {};
 
 // -----------------------------------------------------------------------------
 // GTP::Callback and some constructors.
@@ -55,7 +59,7 @@ typedef boost::function< void(Io&) > Callback;
 // Creates GTP callback out of object pointer and a method.
 // Example: OfMethod<MyClass> (this, &MyClass::MyMethod)
 template <class T>
-Callback OfMethod (T* object, void(T::*member)(Io&)); // TODO integrate
+Callback OfMethod (T* object, void(T::*member)(Io&));
 
 // Creates a GTP callback that always returns the same string.
 Callback StaticCommand (const string& ret);
@@ -71,12 +75,15 @@ Callback GetSetCommand (T* var);
 class Repl {
 public:
   Repl ();
-  void RegisterCommand (const string& name, Callback command);
-  void Run (istream&, ostream&);
-  bool IsCommand (const string& name);
 
-  // exception that can be raised by a command
-  class Quit {};
+  void RegisterCommand (const string& name, Callback command);
+
+  template <class T>
+  void RegisterCommand (const string& name, T* object, void(T::*member)(Io&));
+
+  void Run (istream&, ostream&);
+
+  bool IsCommand (const string& name);
 
 private:
   // commands built-in into interpreter (registered during interpreter construction)
@@ -109,6 +116,12 @@ template <class T>
 Callback OfMethod(T* object, void (T::*member) (Io&)) {
   return boost::bind(member, object, _1);
 }
+
+template <class T>
+void Repl::RegisterCommand (const string& name, T* object, void(T::*member)(Io&)) {
+  RegisterCommand (name, OfMethod(object, member));
+}
+
 
 namespace {
   template <typename T>

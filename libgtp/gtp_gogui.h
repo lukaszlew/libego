@@ -21,7 +21,7 @@ public:
   Repl& GetRepl();
 
   void RegisterGfxCommand (const string& name,
-                           const string& params, // TODO simplify params
+                           const string& params,
                            Callback command);
 
   template <typename T>

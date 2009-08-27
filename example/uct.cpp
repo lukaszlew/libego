@@ -414,7 +414,7 @@ private:
     } else if (sub == "less") {
       show_move_count -= 1;
     } else {
-      throw Gtp::Io::syntax_error;
+      throw Gtp::syntax_error;
     }
 
     show_move_count = max(show_move_count, 0);

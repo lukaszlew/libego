@@ -46,7 +46,7 @@ BasicGtp::BasicGtp (Gtp::Repl& gtp, FullBoard& board_) : board (board_) {
 void BasicGtp::CBoardsize (Gtp::Io& io) {
   int new_board_size = io.Read<int> ();
   if (new_board_size != int (board_size)) { 
-    throw Gtp::Io::Error ("unacceptable size"); 
+    throw Gtp::Error ("unacceptable size"); 
   }
   io.CheckEmpty();
 }
@@ -68,14 +68,14 @@ void BasicGtp::CPlay (Gtp::Io& io) {
   io.CheckEmpty ();
 
   if (v != Vertex::resign () && board.try_play (pl, v) == false) {
-    throw Gtp::Io::Error ("illegal move");
+    throw Gtp::Error ("illegal move");
   }
 }
 
 void BasicGtp::CUndo (Gtp::Io& io) {
   io.CheckEmpty ();
   if (board.undo () == false) {
-    throw Gtp::Io::Error ("too many undo");
+    throw Gtp::Error ("too many undo");
   }
 }
     

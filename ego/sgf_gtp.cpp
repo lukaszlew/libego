@@ -42,7 +42,7 @@ void SgfGtp::CLoad (Gtp::Io& io) {
   io.CheckEmpty();
 
   if (!sgf_tree.load_from_file(file_name)) {
-    throw Gtp::Io::Error ("file not found or invalid SGF: " + file_name);
+    throw Gtp::Error ("file not found or invalid SGF: " + file_name);
   }
 }
 
@@ -50,18 +50,18 @@ void SgfGtp::CSave (Gtp::Io& io) {
   string file_name = io.Read<string> ();
   io.CheckEmpty();
   if (!sgf_tree.save_to_file(file_name)) {
-    throw Gtp::Io::Error ("file cound not be created: " + file_name);
+    throw Gtp::Error ("file cound not be created: " + file_name);
   }
 }
 
 void SgfGtp::CGtpExec (Gtp::Io& io) {
   io.CheckEmpty();
   if (!sgf_tree.is_loaded ()) {
-    throw Gtp::Io::Error ("SGF file not loaded");
+    throw Gtp::Error ("SGF file not loaded");
   }
 
   if (sgf_tree.properties ().get_board_size () != board_size) {
-    throw Gtp::Io::Error ("invalid board size");
+    throw Gtp::Error ("invalid board size");
   }
 
   FullBoard save_board;

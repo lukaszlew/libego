@@ -2,7 +2,7 @@
 #include <iostream>
 #include <boost/algorithm/string/trim.hpp>
 #define BOOST_TEST_MAIN
-#define BOOST_TEST_DYN_LINK // TODO why do I need this?
+#define BOOST_TEST_DYN_LINK // IMPROVE: why do I need this?
 #include <boost/test/unit_test.hpp>
 
 #include "gtp.h"
@@ -32,7 +32,7 @@ struct Fixture {
   int i;
   float f;
   string s;
-  // TODO try custom
+  // TODO try custom type with << >> operators
 
   Fixture()
     : analyze (gtp), i(1), f(1.5), s("one_and_half")

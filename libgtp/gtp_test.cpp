@@ -2,7 +2,7 @@
 #include <iostream>
 #include <boost/algorithm/string/trim.hpp>
 #define BOOST_TEST_MAIN
-#define BOOST_TEST_DYN_LINK // TODO why do I need this?
+#define BOOST_TEST_DYN_LINK // IMPROVE: why do I need this?
 #include <boost/test/unit_test.hpp>
 
 #include "gtp.h"
@@ -24,6 +24,7 @@ class DummyGtpUser {
 public:
   DummyGtpUser (Gtp::Repl& gtp) {
     gtp.RegisterCommand ("echo", Gtp::OfMethod(this, &DummyGtpUser::CEcho));
+    gtp.RegisterCommand ("echo2", this, &DummyGtpUser::CEcho); // same as above
   }
 private:
   void CEcho (Gtp::Io& io) {
@@ -77,6 +78,7 @@ BOOST_AUTO_TEST_CASE (BuiltInCommands) {
     << "= "
     << "+" << endl
     << "echo" << endl
+    << "echo2" << endl
     << "help" << endl
     << "known_command" << endl
     << "list_commands" << endl
@@ -104,6 +106,7 @@ BOOST_AUTO_TEST_CASE (BuiltInCommands) {
 BOOST_AUTO_TEST_CASE (RegisteredCommands) {
   in
     << "echo  GTP was never so simple  " << endl
+    << "echo2 command registered with a helper works too" << endl
     << "+  1  2  " << endl
     << "  +  1  2 3 " << endl
     << "  whoami " << endl
@@ -113,6 +116,7 @@ BOOST_AUTO_TEST_CASE (RegisteredCommands) {
     ;
   expected_out
     << "= GTP was never so simple" << endl << endl
+    << "= command registered with a helper works too" << endl << endl
     << "= 3" << endl << endl
     << "? syntax error" << endl << endl
     << "= Santa !" << endl << endl
