@@ -14,10 +14,10 @@ using std::string;
 
 // -----------------------------------------------------------------------------
 
-void DoGfx (Gtp::Io& io) {
+void DoGfx (Gtp::Io&) {
 }
 
-void DoBlah (Gtp::Io& io) {
+void DoBlah (Gtp::Io&) {
 }
 
 // Environement of all unit tests.
@@ -35,7 +35,7 @@ struct Fixture {
   // TODO try custom
 
   Fixture()
-    : gtp (in, out), analyze (gtp), i(1), f(1.5), s("one_and_half")
+    : analyze (gtp), i(1), f(1.5), s("one_and_half")
   {
     out << endl;
     expected_out << endl;
@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE (ListCommands) {
     << endl
     ;
 
-  gtp.Run();
+  gtp.Run(in, out);
   BOOST_CHECK_EQUAL (out.str(), expected_out.str());
 }
 
@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE (GoguiAnalyzeCommands) {
     << "= " << endl
     << endl
     ;
-  gtp.Run();
+  gtp.Run(in, out);
   BOOST_CHECK_EQUAL (out.str(), expected_out.str());
 }
 
@@ -127,7 +127,7 @@ BOOST_AUTO_TEST_CASE (GfxVariable1) {
     << "= 1.5" << endl
     << endl
     ;
-  gtp.Run();
+  gtp.Run(in, out);
   BOOST_CHECK_EQUAL (out.str(), expected_out.str());
 }
 
@@ -157,7 +157,7 @@ BOOST_AUTO_TEST_CASE (GfxVariable2) {
     << "= string_with_no_spaces" << endl
     << endl
     ;
-  gtp.Run();
+  gtp.Run(in, out);
   BOOST_CHECK_EQUAL (out.str(), expected_out.str());
   BOOST_CHECK_EQUAL (f, 11.5);
   BOOST_CHECK_EQUAL (s, "string_with_no_spaces");

@@ -19,7 +19,7 @@ public:
   Analyze (Repl& gtp);
 
   void RegisterGfxCommand (const string& name,
-                           const string& params,
+                           const string& params, // TODO simplify params
                            Callback command);
 
   template <typename T>
@@ -32,7 +32,7 @@ private:
   void CParam (const string& cmd_name, Io& io);
 
 private:
-  Repl& gtp;
+  Repl& gtp; // TODO provide access to normal gtp
   stringstream analyze_list;
   map <string, map <string, Callback> > params; // params [cmd_name] [param_name]
 };
