@@ -85,12 +85,12 @@ BOOST_AUTO_TEST_CASE (GoguiAnalyzeCommands) {
     ;
   expected_out
     << "= "
-    << "gfx / do_gfx all / do_gfx all" << endl
-    << "gfx / do_gfx half / do_gfx half" << endl
-    << "gfx / do_gfx / do_gfx" << endl
-    << "gfx / do_blah / do_blah" << endl
-    << "param / test.params / test.params" << endl
-    << "param / test.params2 / test.params2" << endl
+    << "gfx/do_gfx all/do_gfx all" << endl
+    << "gfx/do_gfx half/do_gfx half" << endl
+    << "gfx/do_gfx/do_gfx" << endl
+    << "gfx/do_blah/do_blah" << endl
+    << "param/test.params/test.params" << endl
+    << "param/test.params2/test.params2" << endl
     << endl
     << "= " << endl
     << endl

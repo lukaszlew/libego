@@ -17,7 +17,7 @@ void Analyze::RegisterGfxCommand (const string& name,
 {
   string full_name = params == "" ? name : name + " " + params;
   analyze_list
-    << "gfx / " << full_name << " / " << full_name << endl;
+    << "gfx/" << full_name << "/" << full_name << endl;
   if (!gtp.IsCommand (name)) {
     gtp.RegisterCommand (name, command);
   }
