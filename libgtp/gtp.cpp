@@ -35,11 +35,12 @@ ostream& Io::Out () {
   return out;
 }
 
-const Io::Error Io::syntax_error("syntax error");
+const Error syntax_error("syntax error");
 
 // -----------------------------------------------------------------------------
 
-// TODO simplify
+// IMPROVE: can't Static Aux be anonymous function
+
 void StaticAux(const string& ret, Io& io) {
   io.CheckEmpty ();
   io.Out() << ret;
@@ -101,8 +102,8 @@ void Repl::Run (istream& in, ostream& out) {
       callbacks [cmd_name] (io); // callback call
       Report (out, true, io.out.str());
     }
-    catch (Io::Error e) { Report (out, false, e.msg); }
-    catch (Quit)        { Report (out, true, "bye"); break; }
+    catch (Error e) { Report (out, false, e.msg); }
+    catch (Quit)    { Report (out, true, "bye"); break; }
   }
 }
 

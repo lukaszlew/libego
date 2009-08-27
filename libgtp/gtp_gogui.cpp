@@ -42,7 +42,7 @@ void Analyze::CParam (const string& cmd_name, Io& io) {
   }
   string var_name = io.Read<string> ();
   if (vars.find (var_name) == vars.end ()) {
-    throw Io::Error ("unknown variable: \"" + var_name + "\"");
+    throw Error ("unknown variable: \"" + var_name + "\"");
   }
   vars[var_name] (io);
 }
