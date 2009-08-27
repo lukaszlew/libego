@@ -249,8 +249,8 @@ public:
     gogui_analyze.RegisterGfxCommand ("MCTS.show", "less",
                                       Gtp::OfMethod (this, &Mcts::CShow));
 
-    gogui_analyze.RegisterGfxCommand ("genmove", "",
-                                      Gtp::OfMethod (this, &Mcts::CGenmove));
+    gogui_analyze.GetRepl().RegisterCommand ("genmove", 
+                                             Gtp::OfMethod (this, &Mcts::CGenmove));
   }
 
   Vertex genmove (Player player) {

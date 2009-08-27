@@ -2,7 +2,7 @@
 #define _BASIC_GTP_
 
 #include "full_board.h"
-#include "../libgtp/gtp.h"
+#include "gtp.h"
 
 class BasicGtp {
 
