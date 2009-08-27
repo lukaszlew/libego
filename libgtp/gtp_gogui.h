@@ -18,6 +18,8 @@ class Analyze {
 public:
   Analyze (Repl& gtp);
 
+  Repl& GetRepl();
+
   void RegisterGfxCommand (const string& name,
                            const string& params, // TODO simplify params
                            Callback command);
@@ -32,7 +34,7 @@ private:
   void CParam (const string& cmd_name, Io& io);
 
 private:
-  Repl& gtp; // TODO provide access to normal gtp
+  Repl& gtp;
   stringstream analyze_list;
   map <string, map <string, Callback> > params; // params [cmd_name] [param_name]
 };

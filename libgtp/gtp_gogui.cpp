@@ -11,6 +11,11 @@ Analyze::Analyze (Repl& gtp_) : gtp (gtp_) {
                        OfMethod (this, &Analyze::CAnalyze));
 }
 
+Repl& Analyze::GetRepl() {
+  return gtp;
+}
+
+
 void Analyze::RegisterGfxCommand (const string& name,
                                   const string& params,
                                   Callback command)
