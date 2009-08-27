@@ -48,7 +48,7 @@ struct Fixture {
   string s;
 
   Fixture()
-  : gtp (in, out), gtp_user (gtp), f (1.5), i(-1), s("GTP rulez")
+  : gtp_user (gtp), f (1.5), i(-1), s("GTP rulez")
   {
     gtp.RegisterCommand("+", CAdd);
     gtp.RegisterCommand("whoami", Gtp::StaticCommand("Santa !"));
@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE (BuiltInCommands) {
     << "= bye" << endl << endl
     ;
 
-  gtp.Run();
+  gtp.Run(in, out);
   BOOST_CHECK_EQUAL (out.str(), expected_out.str());
 }
 
@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE (RegisteredCommands) {
     << "? unknown command: \"who\"" << endl << endl
     ;
 
-  gtp.Run();
+  gtp.Run(in, out);
   BOOST_CHECK_EQUAL (out.str(), expected_out.str());
 }
 
@@ -145,7 +145,7 @@ BOOST_AUTO_TEST_CASE (GetSetCommands) {
     << "? syntax error" << endl << endl
     << "? syntax error" << endl << endl
     ;
-  gtp.Run();
+  gtp.Run(in, out);
   BOOST_CHECK_EQUAL (out.str(), expected_out.str());
   BOOST_CHECK_EQUAL (f, 123.25);
   BOOST_CHECK_EQUAL (i, 321);

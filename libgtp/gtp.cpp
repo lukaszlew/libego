@@ -51,7 +51,7 @@ Callback StaticCommand (const string& ret) {
 
 // -----------------------------------------------------------------------------
 
-Repl::Repl(istream& in_, ostream& out_) : in(in_), out(out_) {
+Repl::Repl () {
   RegisterCommand ("list_commands",
                   OfMethod(this, &Repl::CListCommands));
   RegisterCommand ("help",
@@ -80,7 +80,8 @@ void Preprocess (string* line) {
   *line = ret.str ();
 }
 
-void Repl::Run () {
+void Repl::Run (istream& in, ostream& out) {
+  in.clear();
   while (true) {
     string line;
     if (!getline (in, line)) break;
@@ -91,21 +92,21 @@ void Repl::Run () {
     if (!(line_stream >> cmd_name)) continue; // empty line
 
     if (!IsCommand (cmd_name)) {
-      Report (false, "unknown command: \"" + cmd_name + "\"");
+      Report (out, false, "unknown command: \"" + cmd_name + "\"");
       continue;
     }
 
     try {
       Io io(line_stream);
       callbacks [cmd_name] (io); // callback call
-      Report (true, io.out.str());
+      Report (out, true, io.out.str());
     }
-    catch (Io::Error e) { Report (false, e.msg); }
-    catch (Quit)    { Report (true, "bye"); break; }
+    catch (Io::Error e) { Report (out, false, e.msg); }
+    catch (Quit)        { Report (out, true, "bye"); break; }
   }
 }
 
-void Repl::Report (bool success, const string& msg) {
+void Repl::Report (ostream& out, bool success, const string& msg) {
   out << (success ? "=" : "?") << " "
       << boost::trim_right_copy(msg) // remove bad endl in msg
       << endl << endl;

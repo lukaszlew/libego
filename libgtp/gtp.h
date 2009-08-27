@@ -30,6 +30,7 @@ public:
   void CheckEmpty ();
 
   // Exception that can be throwed by a command and will be catched by Repl.
+  // TODO take out of Io.
   struct Error {
     Error (const string& msg_) : msg(msg_) {}
     string msg;
@@ -54,7 +55,7 @@ typedef boost::function< void(Io&) > Callback;
 // Creates GTP callback out of object pointer and a method.
 // Example: OfMethod<MyClass> (this, &MyClass::MyMethod)
 template <class T>
-Callback OfMethod (T* object, void(T::*member)(Io&));
+Callback OfMethod (T* object, void(T::*member)(Io&)); // TODO integrate
 
 // Creates a GTP callback that always returns the same string.
 Callback StaticCommand (const string& ret);
@@ -69,9 +70,9 @@ Callback GetSetCommand (T* var);
 
 class Repl {
 public:
-  Repl (istream&, ostream&);
+  Repl ();
   void RegisterCommand (const string& name, Callback command);
-  void Run ();
+  void Run (istream&, ostream&);
   bool IsCommand (const string& name);
 
   // exception that can be raised by a command
@@ -83,12 +84,10 @@ private:
   void CKnownCommand (Io&);
   void CQuit (Io&);
   
-  void Report (bool success, const string& name);
+  void Report (ostream& out, bool success, const string& name);
 
 private:
   map <string, Callback> callbacks;
-  istream& in;
-  ostream& out;
 };
 
 // -----------------------------------------------------------------------------
@@ -96,10 +95,10 @@ private:
 
 template <typename T>
 T Io::Read () {
-  assert(in.good());
+  in.clear();
   T t;
   in >> t;
-  if (!in) {
+  if (in.fail()) {
     in.clear();
     throw syntax_error;
   }
