@@ -41,6 +41,6 @@
 #include "playout.cpp"
 #include "benchmark.cpp"
 
-#include "gtp.cpp"
+#include "gfx.cpp"
 #include "basic_gtp.cpp"
 #include "sgf_gtp.cpp"

@@ -2,18 +2,22 @@
 #define _SGF_GTP_H_
 
 #include "full_board.h"
-#include "gtp.h"
 #include "sgf.h"
+#include "gtp.h"
 
-class SgfGtp : public GtpCommand {
+class SgfGtp {
 public:
-  SgfGtp (Gtp& _gtp, SgfTree& _sgf_tree, FullBoard& _base_board);
+  SgfGtp (Gtp::Repl& _gtp, SgfTree& _sgf_tree, FullBoard& _base_board);
   virtual ~SgfGtp () {}
-  virtual GtpResult exec_command (const string& command, istream& params);
   void exec_embedded_gtp_rec (SgfNode* current_node, ostream& response);
+
+ private:
+  void CLoad (Gtp::Io& io);
+  void CSave (Gtp::Io& io);
+  void CGtpExec (Gtp::Io& io);
   
   SgfTree&   sgf_tree;
-  Gtp&       gtp;
+  Gtp::Repl& gtp;
   FullBoard& base_board;
 };
 

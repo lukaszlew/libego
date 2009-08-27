@@ -28,63 +28,53 @@
 
 // class gtp_sgf
 
-SgfGtp::SgfGtp (Gtp& _gtp, SgfTree& _sgf_tree, FullBoard& _base_board) : 
+SgfGtp::SgfGtp (Gtp::Repl& _gtp, SgfTree& _sgf_tree, FullBoard& _base_board) : 
   sgf_tree (_sgf_tree), gtp (_gtp), base_board (_base_board)
 {
-  gtp.add_gtp_command (this, "sgf.load");
-  gtp.add_gtp_command (this, "sgf.save");
-  gtp.add_gtp_command (this, "sgf.gtp.exec");
+  gtp.RegisterCommand ("sgf.load",      Gtp::OfMethod (this, &SgfGtp::CLoad));
+  gtp.RegisterCommand ("sgf.save",      Gtp::OfMethod (this, &SgfGtp::CSave));
+  gtp.RegisterCommand ("sgf.gtp.exec",  Gtp::OfMethod (this, &SgfGtp::CGtpExec));
 }
 
-GtpResult SgfGtp::exec_command (const string& command, istream& params) {
-  // ---------------------------------------------------------------------
-  if (command == "sgf.load") {
-    string file_name;
 
-    if (!(params >> file_name)) return GtpResult::syntax_error ();
-    if (!sgf_tree.load_from_file(file_name)) {
-      return GtpResult::failure ("file not found or invalid SGF: " + file_name);
-    }
-    return GtpResult::success ();
+void SgfGtp::CLoad (Gtp::Io& io) {
+  string file_name = io.Read<string> ();
+  io.CheckEmpty();
+
+  if (!sgf_tree.load_from_file(file_name)) {
+    throw Gtp::Io::Error ("file not found or invalid SGF: " + file_name);
+  }
+}
+
+void SgfGtp::CSave (Gtp::Io& io) {
+  string file_name = io.Read<string> ();
+  io.CheckEmpty();
+  if (!sgf_tree.save_to_file(file_name)) {
+    throw Gtp::Io::Error ("file cound not be created: " + file_name);
+  }
+}
+
+void SgfGtp::CGtpExec (Gtp::Io& io) {
+  io.CheckEmpty();
+  if (!sgf_tree.is_loaded ()) {
+    throw Gtp::Io::Error ("SGF file not loaded");
   }
 
-  // ---------------------------------------------------------------------
-  if (command == "sgf.save") {
-    string file_name;
-
-    if (!(params >> file_name)) return GtpResult::syntax_error ();
-    if (!sgf_tree.save_to_file(file_name)) {
-      return GtpResult::failure ("file cound not be created: " + file_name);
-    }
-    return GtpResult::success ();
+  if (sgf_tree.properties ().get_board_size () != board_size) {
+    throw Gtp::Io::Error ("invalid board size");
   }
 
-  // ---------------------------------------------------------------------
-  if (command == "sgf.gtp.exec") {
-    if (!sgf_tree.is_loaded ()) {
-      return GtpResult::failure ("SGF file not loaded");
-    }
-
-    if (sgf_tree.properties ().get_board_size () != board_size) {
-      return GtpResult::failure ("invalid board size");
-    }
-
-    FullBoard save_board;
-    save_board.load (&base_board);
+  FullBoard save_board;
+  save_board.load (&base_board);
       
-    base_board.clear (sgf_tree.properties ().get_komi ());
+  base_board.clear (sgf_tree.properties ().get_komi ());
 
-    ostringstream response;
-    exec_embedded_gtp_rec (sgf_tree.game_node (), response);
+  ostringstream response;
+  exec_embedded_gtp_rec (sgf_tree.game_node (), response);
 
-    base_board.load (&save_board);
+  base_board.load (&save_board);
 
-    return GtpResult::success (response.str ());
-  }
-
-  // ---------------------------------------------------------------------
-  //fatal_error ("this should not happen!: error number = 0x994827");
-  assert (false);
+  io.Out() << response.str ();
 }
 
 // It goes through a whole sgf and executes GTP commends embedded in SGF comments.
@@ -115,7 +105,7 @@ void SgfGtp::exec_embedded_gtp_rec (SgfNode* current_node, ostream& response) {
   // process gtp
   istringstream embedded_gtp (current_node->properties.get_embedded_gtp ());
   ostringstream embedded_response;
-  gtp.run_loop (embedded_gtp, embedded_response, true);
+  gtp.Run (embedded_gtp, embedded_response); // TODO add command logging
   // TODO make gtp filter out double newlines
   current_node->properties.set_comment (embedded_response.str ());
 

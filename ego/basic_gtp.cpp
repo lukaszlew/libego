@@ -27,59 +27,59 @@
 
 #include "testing.h"
 
-BasicGtp::BasicGtp (Gtp& gtp, FullBoard& board_) : board (board_) { 
-  gtp.add_gtp_command (this, "boardsize");
-  gtp.add_gtp_command (this, "clear_board");
-  gtp.add_gtp_command (this, "komi");
-  gtp.add_gtp_command (this, "play");
-  gtp.add_gtp_command (this, "undo");
-  gtp.add_gtp_command (this, "showboard");
+BasicGtp::BasicGtp (Gtp::Repl& gtp, FullBoard& board_) : board (board_) { 
+  gtp.RegisterCommand ("boardsize",
+                       Gtp::OfMethod (this, &BasicGtp::CBoardsize));
+  gtp.RegisterCommand ("clear_board",
+                       Gtp::OfMethod (this, &BasicGtp::CClear_board));
+  gtp.RegisterCommand ("komi",
+                       Gtp::OfMethod (this, &BasicGtp::CKomi));
+  gtp.RegisterCommand ("play",
+                       Gtp::OfMethod (this, &BasicGtp::CPlay));
+  gtp.RegisterCommand ("undo",
+                       Gtp::OfMethod (this, &BasicGtp::CUndo));
+  gtp.RegisterCommand ("showboard",
+                       Gtp::OfMethod (this, &BasicGtp::CShowboard));
 }
 
-GtpResult BasicGtp::exec_command (const string& command, istream& params) {
-  if (command == "boardsize") {
-    int new_board_size;;
-    if (!(params >> new_board_size)) return GtpResult::syntax_error ();
-    if (new_board_size != int (board_size)) { 
-      return GtpResult::failure ("unacceptable size"); 
-    }
-    return GtpResult::success ();
+
+void BasicGtp::CBoardsize (Gtp::Io& io) {
+  int new_board_size = io.Read<int> ();
+  if (new_board_size != int (board_size)) { 
+    throw Gtp::Io::Error ("unacceptable size"); 
   }
+  io.CheckEmpty();
+}
 
-  if (command == "clear_board") {
-    board.clear ();
-    return GtpResult::success ();
+void BasicGtp::CClear_board (Gtp::Io& io) {
+  io.CheckEmpty();
+  board.clear ();
+}
+
+void BasicGtp::CKomi (Gtp::Io& io) {
+  float new_komi = io.Read<float> ();
+  io.CheckEmpty();
+  board.set_komi (-new_komi);
+}
+
+void BasicGtp::CPlay (Gtp::Io& io) {
+  Player pl = io.Read<Player> ();
+  Vertex v  = io.Read<Vertex> ();
+  io.CheckEmpty ();
+
+  if (v != Vertex::resign () && board.try_play (pl, v) == false) {
+    throw Gtp::Io::Error ("illegal move");
   }
+}
 
-  if (command == "komi") {
-    float new_komi;
-    if (!(params >> new_komi)) return GtpResult::syntax_error ();
-    board.set_komi (-new_komi);
-    return GtpResult::success ();
+void BasicGtp::CUndo (Gtp::Io& io) {
+  io.CheckEmpty ();
+  if (board.undo () == false) {
+    throw Gtp::Io::Error ("too many undo");
   }
-
-  if (command == "play") {
-    Player pl;
-    Vertex v;
-    if (!(params >> pl >> v))
-      return GtpResult::syntax_error ();
-  
-    if (v != Vertex::resign () && board.try_play (pl, v) == false)
-      return GtpResult::failure ("illegal move");
-
-    return GtpResult::success ();
-  }
-
-  if (command == "undo") {
-    if (board.undo () == false)
-      return GtpResult::failure ("too many undo");
-
-    return GtpResult::success ();
-  }
+}
     
-  if (command == "showboard") {
-    return GtpResult::success ("\n" + board.board().to_string());
-  }
-
-  assert(false);
-} 
+void BasicGtp::CShowboard (Gtp::Io& io) {
+  io.CheckEmpty ();
+  io.Out() << endl << board.board().to_string();
+}

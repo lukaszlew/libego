@@ -22,6 +22,7 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "stat.h"
+#include "gtp_gogui.h"
 
 // ----------------------------------------------------------------------
 
@@ -49,7 +50,7 @@ public:
 
 // ----------------------------------------------------------------------
 
-class AllAsFirst : public GtpCommand {
+class AllAsFirst {
 public:
   FullBoard*  board;
   AafStats    aaf_stats;
@@ -61,21 +62,25 @@ public:
   SimplePolicy policy;
 
 public:
-  AllAsFirst (Gtp& gtp, FullBoard& board_) : board (&board_), policy(global_random) { 
+  AllAsFirst (Gtp::Gogui::Analyze& gogui, FullBoard& board_)
+    : board (&board_), policy(global_random)
+  { 
     playout_no       = 50000;
     aaf_fraction     = 0.5;
     influence_scale  = 6.0;
     prior            = 1.0;
     progress_dots    = false;
 
-    gtp.add_gogui_command (this, "gfx", "AAF.move_value", "black");
-    gtp.add_gogui_command (this, "gfx", "AAF.move_value", "white");
+    gogui.RegisterGfxCommand ("AAF.move_value", "black", 
+                              Gtp::OfMethod (this, &AllAsFirst::CMoveValue));
+    gogui.RegisterGfxCommand ("AAF.move_value", "white", 
+                              Gtp::OfMethod (this, &AllAsFirst::CMoveValue));
 
-    gtp.add_gogui_param_float ("AAF.params", "prior",            &prior);
-    gtp.add_gogui_param_float ("AAF.params", "aaf_fraction",     &aaf_fraction);
-    gtp.add_gogui_param_float ("AAF.params", "influence_scale",  &influence_scale);
-    gtp.add_gogui_param_uint  ("AAF.params", "playout_number",   &playout_no);
-    gtp.add_gogui_param_bool  ("AAF.params", "20_progress_dots", &progress_dots);
+    gogui.RegisterParam ("AAF.params", "prior",            &prior);
+    gogui.RegisterParam ("AAF.params", "aaf_fraction",     &aaf_fraction);
+    gogui.RegisterParam ("AAF.params", "influence_scale",  &influence_scale);
+    gogui.RegisterParam ("AAF.params", "playout_number",   &playout_no);
+    gogui.RegisterParam ("AAF.params", "20_progress_dots", &progress_dots);
   }
     
   void do_playout (const FullBoard* base_board) {
@@ -91,31 +96,28 @@ public:
     aaf_stats.update (playout.move_history.tab, aaf_move_count, score);
   }
 
-  virtual GtpResult exec_command (const string& command, istream& params) {
-    if (command == "AAF.move_value") {
-      Player player;
-      if (!(params >> player)) return GtpResult::syntax_error ();
-      aaf_stats.reset (prior);
-      rep (ii, playout_no) {
-        if (progress_dots && (ii * 20) % playout_no == 0) cerr << "." << flush;
-        do_playout (board);
-      }
-      if (progress_dots) cerr << endl;
+  void CMoveValue (Gtp::Io& io) {
+    Player player = io.Read<Player> ();
+    io.CheckEmpty ();
 
-      Gfx gfx;
-
-      vertex_for_each_all (v) {
-        gfx.set_influence(v,
-                          aaf_stats.norm_mean_given_move (Move(player, v)) /
-                          influence_scale
-                          );
-        if (board->board().color_at [v] != Color::empty ()) {
-          gfx.set_influence(v, 0.0);
-        }
-      }
-      return GtpResult::success(gfx.to_string());
+    aaf_stats.reset (prior);
+    rep (ii, playout_no) {
+      if (progress_dots && (ii * 20) % playout_no == 0) cerr << "." << flush;
+      do_playout (board);
     }
+    if (progress_dots) cerr << endl;
 
-    assert (false);
+    Gfx gfx;
+
+    vertex_for_each_all (v) {
+      gfx.set_influence(v,
+                        aaf_stats.norm_mean_given_move (Move(player, v)) /
+                        influence_scale
+                        );
+      if (board->board().color_at [v] != Color::empty ()) {
+        gfx.set_influence(v, 0.0);
+      }
+    }
+    io.Out () << gfx.to_string();
   }
 };

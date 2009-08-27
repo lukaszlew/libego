@@ -27,6 +27,8 @@
 
 #include "stat.h"
 #include "full_board.h"
+#include "gtp.h"
+#include "gtp_gogui.h"
 
 // -----------------------------------------------------------------------------
 
@@ -219,10 +221,10 @@ string Node_to_string (Node* node, float min_visit) {
 
 // -----------------------------------------------------------------------------
 
-class Mcts : GtpCommand {
+class Mcts {
 public:
   
-  Mcts (Gtp& gtp, FullBoard& base_board_)
+  Mcts (Gtp::Gogui::Analyze& gogui_analyze, FullBoard& base_board_)
     : base_board (base_board_), policy(global_random)
   {
     explore_rate                   = 1.0;
@@ -233,18 +235,22 @@ public:
     resign_mean = -0.95;
     show_move_count = 6;
 
-    gtp.add_gogui_param_float ("MCTS.params", "explore_rate",  &explore_rate);
-    gtp.add_gogui_param_uint  ("MCTS.params", "playout_count",
-                               &genmove_playout_count);
-    gtp.add_gogui_param_float ("MCTS.params", "#_updates_to_promote",
-                               &mature_update_count_threshold);
-    gtp.add_gogui_param_float ("MCTS.params", "print_min_visit", &min_visit);
+    gogui_analyze.RegisterParam ("MCTS.params", "explore_rate",  &explore_rate);
+    gogui_analyze.RegisterParam ("MCTS.params", "playout_count",
+                                 &genmove_playout_count);
+    gogui_analyze.RegisterParam ("MCTS.params", "#_updates_to_promote",
+                                 &mature_update_count_threshold);
+    gogui_analyze.RegisterParam ("MCTS.params", "print_min_visit", &min_visit);
 
-    gtp.add_gogui_command (this, "gfx",  "MCTS.show", "playout");
-    gtp.add_gogui_command (this, "gfx",  "MCTS.show", "more");
-    gtp.add_gogui_command (this, "gfx",  "MCTS.show", "less");
+    gogui_analyze.RegisterGfxCommand ("MCTS.show", "playout",
+                                      Gtp::OfMethod (this, &Mcts::CShow));
+    gogui_analyze.RegisterGfxCommand ("MCTS.show", "more",
+                                      Gtp::OfMethod (this, &Mcts::CShow));
+    gogui_analyze.RegisterGfxCommand ("MCTS.show", "less",
+                                      Gtp::OfMethod (this, &Mcts::CShow));
 
-    gtp.add_gtp_command (this, "genmove");
+    gogui_analyze.RegisterGfxCommand ("genmove", "",
+                                      Gtp::OfMethod (this, &Mcts::CGenmove));
   }
 
   Vertex genmove (Player player) {
@@ -380,60 +386,50 @@ private:
     return;
   }
   
-  virtual GtpResult exec_command (const string& command, istream& params) {
+  void CGenmove (Gtp::Io& io) {
+    Player player = io.Read<Player> ();
+    io.CheckEmpty ();
+    io.Out () << genmove (player).to_string();
+  }
 
-    if (command == "genmove") {
-      Player  player;
-      Vertex   v;
-      if (!(params >> player)) return GtpResult::syntax_error ();
+  void CShow (Gtp::Io& io) {
+    string sub = io.Read<string> ();
+    io.CheckEmpty ();
 
-      v = genmove (player);
+    if (sub == "playout") {
+      show_move_count = 6;
 
-      return GtpResult::success (v.to_string());
+      Board playout_board;
+      playout_board.load (&base_board.board());
+      SimplePolicy policy(global_random);
+      Playout<SimplePolicy> playout (&policy, &playout_board);
+      playout.run();
+
+      showed_playout.clear();
+      rep (ii, playout.move_history.size)
+        showed_playout.push_back(playout.move_history.tab[ii]);
+
+    } else if (sub == "more") {
+      show_move_count += 1;
+    } else if (sub == "less") {
+      show_move_count -= 1;
+    } else {
+      throw Gtp::Io::syntax_error;
     }
 
-    if (command == "MCTS.show") {
-      string sub;
+    show_move_count = max(show_move_count, 0);
+    show_move_count = min(show_move_count, int(showed_playout.size()));
 
-      if (!(params >> sub)) {
-        return GtpResult::syntax_error();
-      } else if (sub == "playout") {
-        show_move_count = 6;
+    Gfx gfx;
 
-        Board playout_board;
-        playout_board.load (&base_board.board());
-        SimplePolicy policy(global_random);
-        Playout<SimplePolicy> playout (&policy, &playout_board);
-        playout.run();
-
-        showed_playout.clear();
-        rep (ii, playout.move_history.size)
-          showed_playout.push_back(playout.move_history.tab[ii]);
-
-      } else if (sub == "more") {
-        show_move_count += 1;
-      } else if (sub == "less") {
-        show_move_count -= 1;
-      } else {
-        return GtpResult::syntax_error();
-      }
-
-      show_move_count = max(show_move_count, 0);
-      show_move_count = min(show_move_count, int(showed_playout.size()));
-
-      Gfx gfx;
-
-      rep(ii, show_move_count) {
-        gfx.add_var_move(showed_playout[ii]);
-      }
-
-      gfx.add_symbol(showed_playout[show_move_count-1].get_vertex(),
-                     Gfx::circle);
-
-      return GtpResult::success(gfx.to_string());
+    rep(ii, show_move_count) {
+      gfx.add_var_move(showed_playout[ii]);
     }
 
-    assert (false);
+    gfx.add_symbol(showed_playout[show_move_count-1].get_vertex(),
+                   Gfx::circle);
+
+    io.Out () << gfx.to_string ();
   }
 
 private:

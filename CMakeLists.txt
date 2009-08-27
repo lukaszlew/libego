@@ -49,6 +49,6 @@ endif()
 
 # Add subdirectories.
 
+add_subdirectory (libgtp)
 add_subdirectory (ego)
 add_subdirectory (example)
-add_subdirectory (libgtp)

@@ -22,20 +22,26 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <iostream>
+#include <fstream>
 
 #include "ego.h"
 #include "benchmark.h"
 #include "uct.cpp"
 #include "experiments.cpp"
 
-Gtp        gtp;
+#include "gtp.h"
+
+
+Gtp::Repl           gtp;
+Gtp::Gogui::Analyze gogui_analyze (gtp);
+
 FullBoard  board;
 SgfTree    sgf_tree;
 
 BasicGtp    basic_gtp (gtp, board);
-SgfGtp      sgf_gtp   (gtp, sgf_tree, board);
-AllAsFirst  aaf (gtp, board);
-Mcts        mcts (gtp, board);
+SgfGtp      sgf_gtp (gtp, sgf_tree, board);
+AllAsFirst  aaf (gogui_analyze, board);
+Mcts        mcts (gogui_analyze, board);
 
 
 int main(int argc, char** argv) {
@@ -79,18 +85,22 @@ int main(int argc, char** argv) {
       }
       ii += 1;
       string config = argv[ii];
-      if (gtp.run_file (config, cout) == false) {
-        cerr << "Fatal: GTP file not found: " << config << endl;
-        return 1;
+
+      ifstream in (argv[ii]);
+      if (in) {
+        gtp.Run (in, cout);
+        in.close ();
+        continue;
+      } else {
+        return false;
       }
-      continue;
     }
 
     cerr << "Fatal: unknown option: " << arg << endl;
     return 1;
   }
 
-  gtp.run_loop (cin, cout);
+  gtp.Run (cin, cout);
 
   return 0;
 }

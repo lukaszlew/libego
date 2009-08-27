@@ -22,7 +22,7 @@
 #include "playout.h"
 #include "benchmark.h"
 
-#include "gtp.h"
+#include "gfx.h"
 
 #include "basic_gtp.h"
 #include "sgf_gtp.h"
