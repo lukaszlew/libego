@@ -1,13 +1,24 @@
 cmake_minimum_required(VERSION 2.6)
 project (libego)
 
+# Import some cmake modules.
+
 set (CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 
 include (EnsureOutOfSourceBuild)
 include (AddBoostCxxTest)
 include (CheckCXXCompilerFlag)
 
-# Define BOARDSIZE macro.
+# Ensure the build type is chosen
+
+if(NOT CMAKE_BUILD_TYPE OR NOT CMAKE_BUILD_TYPE MATCHES "Debug|Release")
+  message(
+    FATAL_ERROR
+    "\nChoose the type of build, options are: Debug, Release."
+    )
+endif(NOT CMAKE_BUILD_TYPE OR NOT CMAKE_BUILD_TYPE MATCHES "Debug|Release")
+
+# Ensure BOARDSIZE is correct.
 
 if(NOT DEFINED BOARDSIZE OR NOT BOARDSIZE MATCHES [0-9]+)
   set (BOARDSIZE 9)

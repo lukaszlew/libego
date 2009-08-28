@@ -17,13 +17,12 @@
 
 #include "hash.h"
 #include "board.h"
-#include "sgf.h"
 
 #include "playout.h"
 #include "benchmark.h"
 
+#include "sgf.h"
 #include "gfx.h"
-
 #include "basic_gtp.h"
 #include "sgf_gtp.h"
 

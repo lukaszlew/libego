@@ -36,11 +36,11 @@
 #include "hash.cpp"
 #include "board.cpp"
 #include "full_board.cpp"
-#include "sgf.cpp"
 
 #include "playout.cpp"
 #include "benchmark.cpp"
 
+#include "sgf.cpp"
 #include "gfx.cpp"
 #include "basic_gtp.cpp"
 #include "sgf_gtp.cpp"
