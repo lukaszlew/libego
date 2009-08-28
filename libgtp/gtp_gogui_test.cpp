@@ -17,8 +17,11 @@ using std::string;
 void DoGfx (Gtp::Io&) {
 }
 
-void DoBlah (Gtp::Io&) {
-}
+class DummyAnalyzeUser {
+public:
+  void DoBlah (Gtp::Io&) {
+  }
+};
 
 // Environement of all unit tests.
 struct Fixture {
@@ -28,6 +31,7 @@ struct Fixture {
 
   Gtp::Repl gtp;
   Gtp::Gogui::Analyze analyze;
+  DummyAnalyzeUser dau;
 
   int i;
   float f;
@@ -42,7 +46,10 @@ struct Fixture {
     analyze.RegisterGfxCommand ("do_gfx",  "all",  &DoGfx);
     analyze.RegisterGfxCommand ("do_gfx",  "half", &DoGfx);
     analyze.RegisterGfxCommand ("do_gfx",  "",     &DoGfx);
-    analyze.RegisterGfxCommand ("do_blah", "",     &DoBlah);
+    analyze.RegisterGfxCommand ("do_blah",
+                                "",
+                                &dau,
+                                &DummyAnalyzeUser::DoBlah);
     analyze.RegisterParam ("test.params",  "int",   &i);
     analyze.RegisterParam ("test.params",  "float", &f);
     analyze.RegisterParam ("test.params",  "str",   &s);
