@@ -242,15 +242,11 @@ public:
                                  &mature_update_count_threshold);
     gogui_analyze.RegisterParam ("MCTS.params", "print_min_visit", &min_visit);
 
-    gogui_analyze.RegisterGfxCommand ("MCTS.show", "playout",
-                                      Gtp::OfMethod (this, &Mcts::CShow));
-    gogui_analyze.RegisterGfxCommand ("MCTS.show", "more",
-                                      Gtp::OfMethod (this, &Mcts::CShow));
-    gogui_analyze.RegisterGfxCommand ("MCTS.show", "less",
-                                      Gtp::OfMethod (this, &Mcts::CShow));
+    gogui_analyze.RegisterGfxCommand ("MCTS.show", "playout", this, &Mcts::CShow);
+    gogui_analyze.RegisterGfxCommand ("MCTS.show", "more",    this, &Mcts::CShow);
+    gogui_analyze.RegisterGfxCommand ("MCTS.show", "less",    this, &Mcts::CShow);
 
-    gogui_analyze.GetRepl().RegisterCommand ("genmove", 
-                                             Gtp::OfMethod (this, &Mcts::CGenmove));
+    gogui_analyze.GetRepl().RegisterCommand ("genmove", this, &Mcts::CGenmove);
   }
 
   Vertex genmove (Player player) {

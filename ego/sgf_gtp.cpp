@@ -31,9 +31,9 @@
 SgfGtp::SgfGtp (Gtp::Repl& _gtp, SgfTree& _sgf_tree, FullBoard& _base_board) : 
   sgf_tree (_sgf_tree), gtp (_gtp), base_board (_base_board)
 {
-  gtp.RegisterCommand ("sgf.load",      Gtp::OfMethod (this, &SgfGtp::CLoad));
-  gtp.RegisterCommand ("sgf.save",      Gtp::OfMethod (this, &SgfGtp::CSave));
-  gtp.RegisterCommand ("sgf.gtp.exec",  Gtp::OfMethod (this, &SgfGtp::CGtpExec));
+  gtp.RegisterCommand ("sgf.load",     this, &SgfGtp::CLoad);
+  gtp.RegisterCommand ("sgf.save",     this, &SgfGtp::CSave);
+  gtp.RegisterCommand ("sgf.gtp.exec", this, &SgfGtp::CGtpExec);
 }
 
 

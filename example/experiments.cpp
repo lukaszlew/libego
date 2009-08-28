@@ -72,9 +72,9 @@ public:
     progress_dots    = false;
 
     gogui.RegisterGfxCommand ("AAF.move_value", "black", 
-                              Gtp::OfMethod (this, &AllAsFirst::CMoveValue));
+                              this, &AllAsFirst::CMoveValue);
     gogui.RegisterGfxCommand ("AAF.move_value", "white", 
-                              Gtp::OfMethod (this, &AllAsFirst::CMoveValue));
+                              this, &AllAsFirst::CMoveValue);
 
     gogui.RegisterParam ("AAF.params", "prior",            &prior);
     gogui.RegisterParam ("AAF.params", "aaf_fraction",     &aaf_fraction);
