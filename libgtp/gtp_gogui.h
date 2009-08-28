@@ -24,6 +24,12 @@ public:
                            const string& params,
                            Callback command);
 
+  template <class T>
+  void RegisterGfxCommand (const string& name,
+                           const string& params,
+                           T* object,
+                           void(T::*member)(Io&));
+
   template <typename T>
   void RegisterParam (const string& cmd_name,
                       const string& param_name,
@@ -42,6 +48,14 @@ private:
 // -----------------------------------------------------------------------------
 // internal
 
+template <class T>
+void Analyze::RegisterGfxCommand (const string& name,
+                                  const string& params,
+                                  T* object,
+                                  void(T::*member)(Io&))
+{
+  RegisterGfxCommand (name, params, OfMethod(object, member));
+}
 
 template <typename T>
 void Analyze::RegisterParam (const string& cmd_name,
