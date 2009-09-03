@@ -23,6 +23,9 @@ public:
   // Reads and returns type T, throws syntax_error otherwise.
   template <typename T> T Read ();
 
+  // Reads and returns type T, returns default value in case of syntax error.
+  template <typename T> T Read (const T& default_value);
+
   // Returns true is all that's left in In() is whitespace.
   bool IsEmpty ();
 
@@ -110,6 +113,15 @@ T Io::Read () {
     throw syntax_error;
   }
   return t;
+}
+
+template <typename T>
+T Io::Read (const T& default_value) {
+  try {
+    return Read <T> ();
+  } catch (Error) {
+    return default_value;
+  }
 }
 
 template <class T>

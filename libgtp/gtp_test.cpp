@@ -15,7 +15,7 @@ using std::string;
 
 // A simple command.
 void CAdd (Gtp::Io& io) {
-  io.Out() << io.Read<int>() + io.Read<int>();
+  io.Out() << io.Read<int>() + io.Read<int>(11);
   io.CheckEmpty ();
 }
 
@@ -109,6 +109,7 @@ BOOST_AUTO_TEST_CASE (RegisteredCommands) {
     << "echo2 command registered with a helper works too" << endl
     << "+  1  2  " << endl
     << "  +  1  2 3 " << endl
+    << "  +  11" << endl
     << "  whoami " << endl
     << "  whoami today  " << endl
     << "   " << endl
@@ -119,6 +120,7 @@ BOOST_AUTO_TEST_CASE (RegisteredCommands) {
     << "= command registered with a helper works too" << endl << endl
     << "= 3" << endl << endl
     << "? syntax error" << endl << endl
+    << "= 22" << endl << endl
     << "= Santa !" << endl << endl
     << "? syntax error" << endl << endl
     << "? unknown command: \"who\"" << endl << endl
