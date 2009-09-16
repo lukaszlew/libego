@@ -22,6 +22,9 @@ typedef unsigned long long uint64;
 #define seq(i,a,b)   for (let (i, a); i <= (b); i++)
 #define dseq(i,b,a)  for (let (i, b); i >= (a); i--)
 
+#define _STRING(x) #x
+#define STRING(x) _STRING(x)
+
 const float large_float = 1000000000000.0;
 
 float process_user_time ();

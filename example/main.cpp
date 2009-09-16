@@ -31,12 +31,16 @@
 
 #include "gtp.h"
 
+// TODO automatize through CMake (and add git SHA1)
+#ifndef VERSION
+#define VERSION unknown
+#endif
 
-Gtp::Repl           gtp;
+Gtp::Repl gtp;
 Gtp::Gogui::Analyze gogui_analyze (gtp);
 
-FullBoard  board;
-SgfTree    sgf_tree;
+FullBoard board;
+SgfTree sgf_tree;
 
 BasicGtp    basic_gtp (gtp, board);
 SgfGtp      sgf_gtp (gtp, sgf_tree, board);
@@ -99,6 +103,10 @@ int main(int argc, char** argv) {
     cerr << "Fatal: unknown option: " << arg << endl;
     return 1;
   }
+
+  gtp.RegisterCommand("name", Gtp::StaticCommand("Libego"));
+  gtp.RegisterCommand("version", Gtp::StaticCommand(STRING(VERSION)));
+  gtp.RegisterCommand("protocol_version", Gtp::StaticCommand("2"));
 
   gtp.Run (cin, cout);
 
