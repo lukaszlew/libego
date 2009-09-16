@@ -34,6 +34,12 @@
 
 class NodeData {
 public:
+  void init2 (Player pl, Vertex v) {
+    this->player = pl;
+    this->v = v;
+    this->stat.reset();
+  }
+
   string to_string() {
     stringstream s;
     s << player.to_string () << " " 
@@ -81,11 +87,7 @@ public:
     return Iterator(*this);
   }
 
-  void init (Player pl, Vertex v) {
-    // TODO make NodeData a member
-    this->player = pl;
-    this->v = v;
-    this->stat.reset();
+  void init () {
     vertex_for_each_all (v)
       children_[v] = NULL;
     have_child = false;
@@ -126,8 +128,10 @@ public:
   void init (Player pl) {
     node_pool.reset();
     path.clear();
-    path.push_back(node_pool.malloc());
-    path.back()->init (pl.other(), Vertex::any());
+    Node* new_node = node_pool.malloc();
+    path.push_back(new_node);
+    new_node->init (); // TODO move to malloc // TODO use Pool Boost
+    new_node->init2 (pl.other(), Vertex::any());
   }
 
   void history_reset () {
@@ -146,7 +150,8 @@ public:
   void alloc_child (Vertex v) {
     Node* new_node;
     new_node = node_pool.malloc ();
-    new_node->init (act_node()->player.other(), v);
+    new_node->init ();
+    new_node->init2 (act_node()->player.other(), v);
     act_node ()->add_child (v, new_node);
   }
   
