@@ -3,17 +3,16 @@
 
 // -----------------------------------------------------------------------------
 
-template <class NodeData>
+template <class Data>
 class TreeT {
 public:
 
   class Node;
 
-  TreeT () : node_pool(mcts_max_nodes) {
+  TreeT (FastPool<Node>& node_pool_) : node_pool(node_pool_) {
   }
 
   void init () {
-    node_pool.reset();
     path.clear();
     Node* new_node = node_pool.malloc();
     path.push_back(new_node);
@@ -62,15 +61,14 @@ public:
   }
 
 private:
-  static const uint mcts_max_nodes = 1000000;
-  FastPool <Node> node_pool;
+  FastPool<Node>& node_pool;
   vector<Node*> path;
 };
 
 // -----------------------------------------------------------------------------
 
-template <class NodeData>
-class TreeT<NodeData> :: Node : public NodeData {
+template <class Data>
+class TreeT<Data> :: Node : public Data {
 public:
 
   class Iterator;
@@ -110,8 +108,8 @@ private:
 
 // -----------------------------------------------------------------------------
 
-template <class NodeData>
-class TreeT<NodeData> :: Node :: Iterator {
+template <class Data>
+class TreeT<Data> :: Node :: Iterator {
 public:
 
   Iterator(Node& parent) : parent_(parent), act_v_(0) { Sync (); }

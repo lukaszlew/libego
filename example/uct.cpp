@@ -101,7 +101,8 @@ class Mcts {
 public:
   
   Mcts (Gtp::Gogui::Analyze& gogui_analyze, FullBoard& base_board_)
-    : base_board (base_board_), policy(global_random)
+    : base_board (base_board_), policy(global_random),
+      node_pool(max_nodes), tree(node_pool)
   {
     explore_rate                   = 1.0;
     genmove_playout_count          = 100000;
@@ -128,7 +129,10 @@ public:
   Vertex genmove (Player player) {
     // init
     base_board.set_act_player(player);
+    node_pool.reset();
     tree.init();
+
+    // prepare root
     tree.act_node()->init_data (base_board.board().act_player().other(),
                                 Vertex::any());
     root_ensure_children_legality ();
@@ -328,8 +332,11 @@ private:
   float resign_mean;
 
   FullBoard&    base_board;
-  Tree          tree;      // TODO sync tree->root with base_board
   SimplePolicy  policy;
+
+  static const uint max_nodes = 1000000;
+  FastPool<Tree::Node> node_pool;
+  Tree tree;                   // TODO sync tree->root with base_board
 
   Board play_board;
 };
