@@ -13,8 +13,8 @@ public:
   }
 
   void init () {
-    path.clear();
     Node* new_node = node_pool.malloc();
+    path.clear();
     path.push_back(new_node);
     new_node->init (); // TODO move to malloc // TODO use Pool Boost
   }
@@ -45,13 +45,6 @@ public:
     assertc (tree_ac, path.size() >= 2);
     path.pop_back();
     path.back()->remove_child (v);
-  }
-
-  void free_subtree (Node* parent) {
-    for(typename Node::Iterator child(*parent); child; ++child) {
-      free_subtree(child);
-      node_pool.free(child);
-    };
   }
 
   // TODO free history (for sync with base board)
