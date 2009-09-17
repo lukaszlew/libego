@@ -34,7 +34,7 @@
 
 class NodeData {
 public:
-  void init2 (Player pl, Vertex v) {
+  void init_data (Player pl, Vertex v) {
     this->player = pl;
     this->v = v;
     this->stat.reset();
@@ -88,8 +88,7 @@ public:
   }
 
   void init () {
-    vertex_for_each_all (v)
-      children_[v] = NULL;
+    children_.memset(NULL);
     have_child = false;
   }
 
@@ -125,13 +124,12 @@ public:
   Tree () : node_pool(mcts_max_nodes) {
   }
 
-  void init (Player pl) {
+  void init () {
     node_pool.reset();
     path.clear();
     Node* new_node = node_pool.malloc();
     path.push_back(new_node);
     new_node->init (); // TODO move to malloc // TODO use Pool Boost
-    new_node->init2 (pl.other(), Vertex::any());
   }
 
   void history_reset () {
@@ -147,12 +145,12 @@ public:
     assertc (tree_ac, act_node () != NULL);
   }
   
-  void alloc_child (Vertex v) {
+  Node* alloc_child (Vertex v) {
     Node* new_node;
     new_node = node_pool.malloc ();
     new_node->init ();
-    new_node->init2 (act_node()->player.other(), v);
     act_node ()->add_child (v, new_node);
+    return new_node;
   }
   
   void delete_act_node (Vertex v) {
@@ -170,10 +168,9 @@ public:
   }
 
   // TODO free history (for sync with base board)
-  
-  void update_history (float sample) {
-    rep (hi, path.size())
-       path [hi]->stat.update (sample);
+
+  vector<Node*>& history () {
+    return path;
   }
 
 private:
@@ -257,7 +254,9 @@ public:
   Vertex genmove (Player player) {
     // init
     base_board.set_act_player(player);
-    tree.init(base_board.board().act_player());
+    tree.init();
+    tree.act_node()->init_data (base_board.board().act_player().other(),
+                                Vertex::any());
     root_ensure_children_legality ();
 
     // find best move
@@ -289,8 +288,9 @@ private:
     assertc (mcts_ac, !tree.act_node ()->have_children());
 
     empty_v_for_each_and_pass (&base_board.board(), v, {
-      if (base_board.is_legal (base_board.board().act_player(), v))
-        tree.alloc_child (v);
+      if (base_board.is_legal (base_board.board().act_player(), v)) {
+        tree.alloc_child (v)->init_data (tree.act_node()->player.other(), v);
+      }
     });
   }
 
@@ -354,13 +354,22 @@ private:
     if (tree.act_node()->stat.update_count() >
         mature_update_count_threshold) {
       empty_v_for_each_and_pass (&play_board, v, {
-        tree.alloc_child (v); // TODO simple ko should be handled here
+        tree.alloc_child (v)->init_data (tree.act_node()->player.other(), v);
+        // TODO simple ko should be handled here
         // (suicides and ko recaptures, needs to be dealt with later)
       });
       return true;
     }
     return false;
   }
+  
+  void update_history (float score) {
+    rep (hi, tree.history().size()) {
+      // black -> 1, white -> -1
+       tree.history()[hi]->stat.update (score);
+    }
+  }
+
 
   void do_playout (){
     play_board.load (&base_board.board());
@@ -370,7 +379,7 @@ private:
       if (!do_tree_move()) return;
 
       if (play_board.both_player_pass()) {
-        tree.update_history (play_board.tt_winner().to_score());
+        update_history (play_board.tt_winner().to_score());
         return;
       }
     }
@@ -382,9 +391,7 @@ private:
 
     Playout<SimplePolicy> (&policy, &play_board).run ();
 
-    int score = play_board.playout_winner().to_score();
-    tree.update_history (score); // black -> 1, white -> -1
-    return;
+    update_history (play_board.playout_winner().to_score());
   }
   
   void CGenmove (Gtp::Io& io) {
