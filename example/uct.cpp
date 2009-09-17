@@ -25,6 +25,7 @@
 #include <sstream>
 #include <vector>
 
+#include "fast_tree.h"
 #include "stat.h"
 #include "full_board.h"
 #include "gtp.h"
@@ -54,138 +55,11 @@ public:
   Vertex v;
 };
 
-// -----------------------------------------------------------------------------
-
-class Node : public NodeData {
-public:
-
-  // ------------------------------------------------------------------
-
-  class Iterator {
-  public:
-    Iterator(Node& parent) : parent_(parent), act_v_(0) { Sync (); }
-
-    Node& operator* ()  { return *parent_.children_[act_v_]; }
-    Node* operator-> () { return parent_.children_[act_v_]; }
-    operator Node* ()   { return parent_.children_[act_v_]; }
-
-    void operator++ () { act_v_.next(); Sync (); }
-    operator bool () { return act_v_.in_range(); } 
-  private:
-    void Sync () {
-      while (act_v_.in_range () && parent_.children_[act_v_] == NULL) {
-        act_v_.next();
-      }
-    }
-    Node& parent_;
-    Vertex act_v_;
-  };
-
-  // ------------------------------------------------------------------
-
-  Iterator children() {
-    return Iterator(*this);
-  }
-
-  void init () {
-    children_.memset(NULL);
-    have_child = false;
-  }
-
-  void add_child (Vertex v, Node* new_child) { // TODO sorting?
-    have_child = true;
-    // TODO assert
-    children_[v] = new_child;
-  }
-
-  void remove_child (Vertex v) { // TODO inefficient
-    assertc (tree_ac, children_[v] != NULL);
-    children_[v] = NULL;
-  }
-
-  bool have_children () {
-    return have_child;
-  }
-
-  Node* child(Vertex v) {
-    return children_[v];
-  }
-
-private:
-  FastMap<Vertex, Node*> children_;
-  bool have_child;
-};
-
-// -----------------------------------------------------------------------------
-
-class Tree {
-public:
-
-  Tree () : node_pool(mcts_max_nodes) {
-  }
-
-  void init () {
-    node_pool.reset();
-    path.clear();
-    Node* new_node = node_pool.malloc();
-    path.push_back(new_node);
-    new_node->init (); // TODO move to malloc // TODO use Pool Boost
-  }
-
-  void history_reset () {
-    path.resize(1);
-  }
-  
-  Node* act_node () {
-    return path.back();
-  }
-  
-  void descend (Vertex v) {
-    path.push_back(path.back()->child(v));
-    assertc (tree_ac, act_node () != NULL);
-  }
-  
-  Node* alloc_child (Vertex v) {
-    Node* new_node;
-    new_node = node_pool.malloc ();
-    new_node->init ();
-    act_node ()->add_child (v, new_node);
-    return new_node;
-  }
-  
-  void delete_act_node (Vertex v) {
-    assertc (tree_ac, !act_node ()->have_children ());
-    assertc (tree_ac, path.size() >= 2);
-    path.pop_back();
-    path.back()->remove_child (v);
-  }
-  
-  void free_subtree (Node* parent) {
-    for(Node::Iterator child(*parent); child; ++child) {
-      free_subtree(child);
-      node_pool.free(child);
-    };
-  }
-
-  // TODO free history (for sync with base board)
-
-  vector<Node*>& history () {
-    return path;
-  }
-
-private:
-
-  static const uint mcts_max_nodes = 1000000;
-
-  FastPool <Node> node_pool;
-  vector<Node*> path;
-
-};
-
+typedef TreeT<NodeData> Tree;
 
 struct CmpNodeMean { 
   CmpNodeMean(Player player) : player_(player) {}
-  bool operator()(Node* a, Node* b) {
+  bool operator()(Tree::Node* a, Tree::Node* b) {
     if (player_ == Player::black ()) {
       return a->stat.mean() < b->stat.mean();
     } else {
@@ -196,18 +70,18 @@ struct CmpNodeMean {
 };
 
 
-void Node_rec_print (Node* node, ostream& out, uint depth, float min_visit) {
+void Node_rec_print (Tree::Node* node, ostream& out, uint depth, float min_visit) {
   rep (d, depth) out << "  ";
   out << node->to_string () << endl;
 
-  vector <Node*> child_tab;
-  for(Node::Iterator child(*node); child; ++child)
+  vector <Tree::Node*> child_tab;
+  for(Tree::Node::Iterator child(*node); child; ++child)
     child_tab.push_back(child);
 
   sort (child_tab.begin(), child_tab.end(), CmpNodeMean(node->player));
 
   while (child_tab.size() > 0) {
-    Node* act_child = child_tab.front();
+    Tree::Node* act_child = child_tab.front();
     child_tab.erase(child_tab.begin());
     if (act_child->stat.update_count() < min_visit) continue;
     Node_rec_print (act_child, out, depth + 1, min_visit);
@@ -215,7 +89,7 @@ void Node_rec_print (Node* node, ostream& out, uint depth, float min_visit) {
 }
 
 
-string Node_to_string (Node* node, float min_visit) { 
+string Node_to_string (Tree::Node* node, float min_visit) { 
   ostringstream out_str;
   Node_rec_print (node, out_str, 0, min_visit); 
   return out_str.str ();
@@ -295,12 +169,12 @@ private:
   }
 
   Vertex mcts_child_move() {
-    Node* parent = tree.act_node ();
+    Tree::Node* parent = tree.act_node ();
     Vertex best_v = Vertex::any();
     float best_urgency = -large_float;
     float explore_coeff = log (parent->stat.update_count()) * explore_rate;
 
-    for(Node::Iterator ni(*parent); ni; ++ni) {
+    for(Tree::Node::Iterator ni(*parent); ni; ++ni) {
       float child_urgency = ni->stat.ucb (ni->player, explore_coeff);
       if (child_urgency > best_urgency) {
         best_urgency  = child_urgency;
@@ -317,7 +191,7 @@ private:
     Vertex best = Vertex::any();
     float best_update_count = -1;
 
-    for(Node::Iterator child(*tree.act_node()); child; ++child) {
+    for(Tree::Node::Iterator child(*tree.act_node()); child; ++child) {
       if (child->stat.update_count() > best_update_count) {
         best_update_count = child->stat.update_count();
         best = child->v;
