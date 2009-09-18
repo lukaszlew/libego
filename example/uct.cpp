@@ -142,21 +142,21 @@ public:
     rep (ii, genmove_playout_count)
       do_playout ();
 
-    Vertex best_v = most_explored_root_move ();
+    MctsNode* best_node = most_explored_root_node ();
 
     // log
     cerr << Node_to_string (act_node, min_visit) << endl;
 
     // play and return
-    float best_mean = act_node->child(best_v)->stat.mean();
+    float best_mean = best_node->stat.mean();
 
     if (base_board.board().act_player().subjective_score(best_mean) < resign_mean) {
       return Vertex::resign ();
     }
 
-    bool ok = base_board.try_play (player, best_v);
+    bool ok = base_board.try_play (player, best_node->v);
     assert(ok);
-    return best_v;
+    return best_node->v;
   }
 
 private:
@@ -189,19 +189,19 @@ private:
     return best_v;
   }
 
-  Vertex most_explored_root_move () {
+  MctsNode* most_explored_root_node () {
     act_node.ResetToRoot();
-    Vertex best = Vertex::any();
+    MctsNode* best = NULL;
     float best_update_count = -1;
 
     for(MctsNode::ChildrenIterator child(*act_node); child; ++child) {
       if (child->stat.update_count() > best_update_count) {
         best_update_count = child->stat.update_count();
-        best = child->v;
+        best = child;
       }
     }
 
-    assertc (tree_ac, best != Vertex::any());
+    assertc (tree_ac, best != NULL);
     return best;
   }
 

@@ -10,7 +10,8 @@ public:
   class Iterator;
   class ChildrenIterator;
 
-  void PoolConstruct () {
+  // TODO replace this by placement new in pool or Boost::pool
+  Node () {
     children.memset(NULL);
     child_count = 0;
   }
@@ -29,10 +30,6 @@ public:
 
   bool HaveChildren () {
     return child_count > 0;
-  }
-
-  Node* child(Vertex v) {
-    return children[v];
   }
 
 private:
@@ -57,7 +54,7 @@ public:
 
   void Descend (Vertex v) {
     assertc (tree_ac, path.size() > 0);
-    path.push_back(path.back()->child(v));
+    path.push_back(path.back()->children[v]);
     assertc (tree_ac, ActNode () != NULL);
   }
   
@@ -90,13 +87,18 @@ template <class Data>
 class Node<Data> :: ChildrenIterator {
 public:
 
-  ChildrenIterator(Node& parent) : parent_(parent), act_v_(0) { Sync (); }
+  ChildrenIterator(Node& parent) : parent_(parent), act_v_(0) { 
+    Sync ();
+  }
 
-  Node& operator* ()  { return *parent_.children[act_v_]; }
   Node* operator-> () { return parent_.children[act_v_]; }
   operator Node* ()   { return parent_.children[act_v_]; }
 
-  void operator++ () { act_v_.next(); Sync (); }
+  void operator++ () {
+    act_v_.next();
+    Sync ();
+  }
+
   operator bool () { return act_v_.in_range(); }
 
 private:
@@ -105,6 +107,7 @@ private:
       act_v_.next();
     }
   }
+
 private:
   Node& parent_;
   Vertex act_v_;
