@@ -12,35 +12,6 @@ public:
 
   class Node;
   class Iterator;
-
-  TreeT (FastPool<Node>& node_pool_) : node_pool(node_pool_) {
-  }
-
-  void init () {
-    Node* new_node = node_pool.malloc();
-    new_node->init (); // TODO move to malloc // TODO use Pool Boost
-    it.init(new_node);
-  }
-
-  Node* alloc_child (Vertex v) {
-    Node* new_node;
-    new_node = node_pool.malloc ();
-    new_node->init ();
-    it.act_node ()->add_child (v, new_node);
-    return new_node;
-  }
-
-  void delete_act_node (Vertex v) {
-    assertc (tree_ac, !it.act_node ()->have_children ());
-    it.ascend();
-    it.act_node()->remove_child (v);
-  }
-
-  // TODO free history (for sync with base board)
-
-  Iterator it;
-private:
-  FastPool<Node>& node_pool;
 };
 
 // -----------------------------------------------------------------------------
@@ -48,10 +19,9 @@ private:
 template <class Data>
 class TreeT<Data> :: Iterator {
 public:
-
-  void init (Node* new_node) {
+  void SetRoot (Node* root) {
     path.clear();
-    path.push_back(new_node);
+    path.push_back(root);
   }
 
   void history_reset () {
@@ -59,10 +29,12 @@ public:
   }
 
   Node* act_node () {
+    assertc (tree_ac, path.size() > 0);
     return path.back();
   }
 
   void descend (Vertex v) {
+    assertc (tree_ac, path.size() > 0);
     path.push_back(path.back()->child(v));
     assertc (tree_ac, act_node () != NULL);
   }
@@ -73,6 +45,7 @@ public:
   }
 
   vector<Node*>& history () {
+    assertc (tree_ac, path.size() > 0);
     return path;
   }
 
