@@ -33,29 +33,23 @@
 
 // -----------------------------------------------------------------------------
 
-class NodeData {
-public:
-  void init_data (Player pl, Vertex v) {
-    this->player = pl;
-    this->v = v;
-    this->stat.reset();
-  }
+struct NodeData {
+  Stat stat;                    // stat is initalized during construction
+  Player player;
+  Vertex v;
 
-  string to_string() {
+  string ToString() {
     stringstream s;
     s << player.to_string () << " " 
       << v.to_string () << " " 
       << stat.to_string();
     return s.str();
   }
-
-public:
-  Stat   stat;
-  Player player;
-  Vertex v;
 };
 
 typedef Node<NodeData> MctsNode;
+
+// -----------------------------------------------------------------------------
 
 struct CmpNodeMean { 
   CmpNodeMean(Player player) : player_(player) {}
@@ -72,7 +66,7 @@ struct CmpNodeMean {
 
 void Node_rec_print (MctsNode* node, ostream& out, uint depth, float min_visit) {
   rep (d, depth) out << "  ";
-  out << node->to_string () << endl;
+  out << node->ToString () << endl;
 
   vector <MctsNode*> child_tab;
   for(MctsNode::ChildrenIterator child(*node); child; ++child)
@@ -101,7 +95,7 @@ class Mcts {
 public:
   
   Mcts (Gtp::Gogui::Analyze& gogui_analyze, FullBoard& base_board_)
-    : base_board (base_board_), policy(global_random), node_pool(max_nodes)
+    : base_board (base_board_), policy(global_random)
   {
     explore_rate                   = 1.0;
     genmove_playout_count          = 100000;
@@ -128,14 +122,13 @@ public:
   Vertex genmove (Player player) {
     // init
     base_board.set_act_player(player);
-    node_pool.reset();
+    node_pool.Reset();
 
     // prepare root
-    MctsNode* root = node_pool.malloc();
-    act_node.SetRoot(root);
+    act_node.SetToRoot(node_pool.Alloc());
+    act_node->player = base_board.board().act_player().other();
+    act_node->v = Vertex::any();
 
-    act_node->init_data (base_board.board().act_player().other(),
-                                   Vertex::any());
     root_ensure_children_legality ();
 
     // find best move
@@ -167,7 +160,9 @@ private:
 
     empty_v_for_each_and_pass (&base_board.board(), v, {
       if (base_board.is_legal (base_board.board().act_player(), v)) {
-        alloc_child (v)->init_data (act_node->player.other(), v);
+        MctsNode* child = alloc_child (v);
+        child->player = act_node->player.other();
+        child->v = v;
       }
     });
   }
@@ -212,7 +207,7 @@ private:
   }
 
   MctsNode* alloc_child (Vertex v) {
-    MctsNode* new_node = node_pool.malloc ();
+    MctsNode* new_node = node_pool.Alloc ();
     act_node->AttachChild (v, new_node);
     return new_node;
   }
@@ -242,7 +237,9 @@ private:
     if (act_node->stat.update_count() >
         mature_update_count_threshold) {
       empty_v_for_each_and_pass (&play_board, v, {
-        alloc_child (v)->init_data (act_node->player.other(), v);
+        MctsNode* child = alloc_child (v);
+        child->player = act_node->player.other();
+        child->v = v;
         // TODO simple ko should be handled here
         // (suicides and ko recaptures, needs to be dealt with later)
       });
@@ -345,7 +342,7 @@ private:
   SimplePolicy  policy;
 
   static const uint max_nodes = 1000000;
-  FastPool<MctsNode> node_pool;
+  FastPool<MctsNode, max_nodes> node_pool;
   MctsNode::Iterator act_node;      // TODO sync tree->root with base_board
 
   Board play_board;

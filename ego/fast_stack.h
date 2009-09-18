@@ -41,7 +41,7 @@ public:
     return size == 0;
   }
 
-  uint Size() {
+  uint Size() const {
     return size;
   }
   
@@ -49,7 +49,7 @@ public:
     return tab;
   }
 
-  void Push (Elt& elt) {
+  void Push (const Elt& elt) {
     tab [size++] = elt;
     Check ();
   }

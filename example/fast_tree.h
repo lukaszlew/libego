@@ -11,7 +11,7 @@ public:
   class ChildrenIterator;
 
   // TODO replace this by placement new in pool or Boost::pool
-  void PoolConstruct () {
+  Node () {
     children.memset(NULL);
     child_count = 0;
   }
@@ -42,7 +42,7 @@ private:
 template <class Data>
 class Node<Data> :: Iterator {
 public:
-  void SetRoot (Node* root) {
+  void SetToRoot (Node* root) {
     path.clear();
     path.push_back(root);
   }

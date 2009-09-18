@@ -1,45 +1,48 @@
 #ifndef _FAST_POOL_H_
 #define _FAST_POOL_H_
 
+#include "fast_stack.h"
 #include "utils.h"
 #include "testing.h"
 
-template <class elt_t> class FastPool {
+template <class Elt, uint size>
+class FastPool {
 public:
-  FastPool (uint pool_size) {
-    this->pool_size = pool_size;
-    memory   = new elt_t  [pool_size];
-    free_elt = new elt_t* [pool_size];
-  }
 
-  void reset() {
-    free_elt_count = pool_size;
-    rep (i, pool_size) free_elt [i] = memory + i;
+  FastPool () {
+    memory = new Elt[size];
+    free_elts = new FreeEltsStack;
+    Reset ();
   }
 
   ~FastPool () {
     delete [] memory;
-    delete [] free_elt;
+    delete free_elts;
   }
 
-  elt_t* malloc () { 
-    assertc (pool_ac, free_elt_count > 0);
-    elt_t* ret = free_elt [--free_elt_count];
-    ret->PoolConstruct();
-    return ret;
+  void Reset() {
+    free_elts->Clear(); // TODO tu skonczylem
+    rep (i, size) {
+      free_elts->Push (memory + i);
+    }
   }
 
-  void free (elt_t* elt) { 
-    free_elt [free_elt_count++] = elt;  
+  Elt* Alloc () { 
+    return new (free_elts->PopTop ()) Elt;
+  }
+
+  void Free (Elt* elt) { 
+    elt-~Elt();
+    free_elts->Push (elt);
   }
 
 private:
-  uint pool_size;
 
-  elt_t* memory;
+  typedef FastStack<Elt*, size> FreeEltsStack;
 
-  elt_t** free_elt;
-  uint    free_elt_count;
+private:
+  Elt* memory;
+  FreeEltsStack* free_elts;
 };
 
 #endif
