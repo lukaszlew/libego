@@ -150,7 +150,9 @@ public:
       gfx.add_var_move(playout[ii]);
     }
 
-    gfx.add_symbol(playout[show_move_count-1].get_vertex(), Gfx::circle);
+    if (show_move_count > 0) {
+      gfx.add_symbol(playout[show_move_count-1].get_vertex(), Gfx::circle);
+    }
 
     io.Out () << gfx.to_string ();
   }
