@@ -106,18 +106,79 @@ private:
 
 // -----------------------------------------------------------------------------
 
+class PlayoutGfx {
+public:
+  PlayoutGfx (Gtp::Gogui::Analyze& gogui_analyze, const string& prefix) {
+    const string cmd_name = prefix + "show";
+    gogui_analyze.RegisterGfxCommand (cmd_name, "",     this, &PlayoutGfx::CShow);
+    gogui_analyze.RegisterGfxCommand (cmd_name, "6", this, &PlayoutGfx::CShow);
+    gogui_analyze.RegisterGfxCommand (cmd_name, "more", this, &PlayoutGfx::CShow);
+    gogui_analyze.RegisterGfxCommand (cmd_name, "less", this, &PlayoutGfx::CShow);
+    show_move_count = 6;
+  }
+
+  void Clear () {
+    playout.clear();
+  }
+
+  void AddMove (Move m) {
+    playout.push_back(m);
+  }
+
+  void CShow (Gtp::Io& io) {
+    int n = io.Read<int> (-1);
+    if (n > 0) {
+      io.CheckEmpty ();
+      show_move_count = n;
+    } else {
+      string sub = io.Read<string> ("");
+      io.CheckEmpty ();
+      if (sub == "") {
+      } else if (sub == "more") {
+        show_move_count += 1;
+      } else if (sub == "less") {
+        show_move_count -= 1;
+      } else {
+        throw Gtp::syntax_error;
+      }
+    }
+
+    show_move_count = max(show_move_count, 0);
+    show_move_count = min(show_move_count, int(playout.size()));
+
+    Gfx gfx;
+
+    rep(ii, show_move_count) {
+      gfx.add_var_move(playout[ii]);
+    }
+
+    gfx.add_symbol(playout[show_move_count-1].get_vertex(), Gfx::circle);
+
+    io.Out () << gfx.to_string ();
+  }
+
+private:
+  vector<Move> playout;
+  int show_move_count;
+};
+
+// -----------------------------------------------------------------------------
+
 class Mcts {
 public:
   
   Mcts (Gtp::Gogui::Analyze& gogui_analyze, FullBoard& base_board_)
-    : base_board (base_board_), policy(global_random), tree_to_string(2500.0)
+    : base_board (base_board_), policy(global_random),
+      tree_to_string(2500.0), playout_gfx(gogui_analyze, "MCTS.")
   {
     explore_rate                   = 1.0;
     genmove_playout_count          = 100000;
     mature_update_count_threshold  = 100.0;
 
     resign_mean = -0.95;
-    show_move_count = 6;
+
+    gogui_analyze.RegisterGfxCommand ("MCTS.show_new_playout", "", this,
+                                      &Mcts::CShowNewPlayout);
 
     gogui_analyze.RegisterParam ("MCTS.params", "explore_rate",  &explore_rate);
     gogui_analyze.RegisterParam ("MCTS.params", "playout_count",
@@ -126,10 +187,6 @@ public:
                                  &mature_update_count_threshold);
     gogui_analyze.RegisterParam ("MCTS.params", "print_min_visit",
                                  &tree_to_string.min_visit);
-
-    gogui_analyze.RegisterGfxCommand ("MCTS.show", "playout", this, &Mcts::CShow);
-    gogui_analyze.RegisterGfxCommand ("MCTS.show", "more",    this, &Mcts::CShow);
-    gogui_analyze.RegisterGfxCommand ("MCTS.show", "less",    this, &Mcts::CShow);
 
     gogui_analyze.GetRepl().RegisterCommand ("genmove", this, &Mcts::CGenmove);
   }
@@ -294,50 +351,23 @@ private:
     io.Out () << genmove (player).to_string();
   }
 
-  void CShow (Gtp::Io& io) {
-    string sub = io.Read<string> ();
+  void CShowNewPlayout (Gtp::Io& io) {
     io.CheckEmpty ();
 
-    if (sub == "playout") {
-      show_move_count = 6;
-
-      Board playout_board;
-      playout_board.load (&base_board.board());
-      SimplePolicy policy(global_random);
-      Playout<SimplePolicy> playout (&policy, &playout_board);
-      playout.run();
-
-      showed_playout.clear();
-      rep (ii, playout.move_history.Size())
-        showed_playout.push_back(playout.move_history[ii]);
-
-    } else if (sub == "more") {
-      show_move_count += 1;
-    } else if (sub == "less") {
-      show_move_count -= 1;
-    } else {
-      throw Gtp::syntax_error;
+    Board playout_board;
+    playout_board.load (&base_board.board());
+    SimplePolicy policy(global_random);
+    Playout<SimplePolicy> playout (&policy, &playout_board);
+    playout.run();
+    
+    playout_gfx.Clear();
+    rep (ii, playout.move_history.Size()) {
+      playout_gfx.AddMove (playout.move_history[ii]);
     }
-
-    show_move_count = max(show_move_count, 0);
-    show_move_count = min(show_move_count, int(showed_playout.size()));
-
-    Gfx gfx;
-
-    rep(ii, show_move_count) {
-      gfx.add_var_move(showed_playout[ii]);
-    }
-
-    gfx.add_symbol(showed_playout[show_move_count-1].get_vertex(),
-                   Gfx::circle);
-
-    io.Out () << gfx.to_string ();
+    playout_gfx.CShow (io);
   }
 
 private:
-
-  vector<Move> showed_playout;
-  int show_move_count;
 
   float explore_rate;
   uint  genmove_playout_count;
@@ -355,4 +385,5 @@ private:
   Board play_board;
 
   TreeToString tree_to_string;
+  PlayoutGfx playout_gfx;
 };
