@@ -208,51 +208,38 @@ public:
     gogui_analyze.GetRepl().RegisterCommand ("genmove", this, &Mcts::CGenmove);
   }
 
-  Vertex genmove (Player player) {
-    // init
-    base_board.set_act_player(player);
-    node_pool.Reset();
+private:
 
-    // prepare root
+  Vertex genmove () {
+    Player act_player = base_board.board().act_player();
+    // prepare pool and root of the tree
+    node_pool.Reset();
     act_node.SetToRoot(node_pool.Alloc());
-    act_node->player = base_board.board().act_player().other();
+    act_node->player = act_player.other();
     act_node->v = Vertex::any();
 
-    root_ensure_children_legality ();
-
-    // find best move
-    rep (ii, params.genmove_playout_count)
-      do_playout ();
-
-    MctsNode* best_node = most_explored_root_node ();
-
-    // log
-    cerr << tree_to_string (act_node, params.min_visit) << endl;
-
-    // play and return
-    float best_mean = best_node->stat.mean();
-
-    if (base_board.board().act_player().subjective_score(best_mean) < 
-        params.resign_mean) {
-      return Vertex::resign ();
-    }
-
-    bool ok = base_board.try_play (player, best_node->v);
-    assert(ok);
-    return best_node->v;
-  }
-
-private:
-  // take care about strict legality (superko) in root
-  void root_ensure_children_legality () {
-    //assertc (mcts_ac, tree.history_top == 1);
-    assertc (mcts_ac, !act_node->HaveChildren());
-
+    // add 1 level of tree with superko detection // TODO remove
     empty_v_for_each_and_pass (&base_board.board(), v, {
-      if (base_board.is_legal (base_board.board().act_player(), v)) {
-        alloc_child (act_node->player.other(), v);
+      if (base_board.is_legal (act_player, v)) {
+        alloc_child (act_player, v);
       }
     });
+
+    // do playouts 
+    rep (ii, params.genmove_playout_count) {
+      do_playout ();
+    }
+
+    // find best move
+    MctsNode* best_node = most_explored_root_node ();
+
+    // log and return
+    cerr << tree_to_string (act_node, params.min_visit) << endl;
+
+    return
+      (act_player.subjective_score (best_node->stat.mean()) < params.resign_mean) ? 
+      Vertex::resign () :
+      best_node->v;
   }
 
   Vertex mcts_child_move() {
@@ -277,7 +264,7 @@ private:
     MctsNode* best = NULL;
     float best_update_count = -1;
 
-    for(MctsNode::ChildrenIterator child(*act_node); child; ++child) {
+    for (MctsNode::ChildrenIterator child(*act_node); child; ++child) {
       if (child->stat.update_count() > best_update_count) {
         best_update_count = child->stat.update_count();
         best = child;
@@ -366,7 +353,18 @@ private:
   void CGenmove (Gtp::Io& io) {
     Player player = io.Read<Player> ();
     io.CheckEmpty ();
-    io.Out () << genmove (player).to_string();
+
+    base_board.set_act_player(player);
+
+    Vertex v = genmove ();
+    
+    if (v != Vertex::resign ()) {
+      bool ok = base_board.try_play (player, v);
+      assert(ok);
+      io.Out () << v.to_string();
+    } else {
+      io.Out () << "resign";
+    }
   }
 
   void CShowNewPlayout (Gtp::Io& io) {
@@ -386,19 +384,23 @@ private:
   }
 
 private:
+  // base board
   FullBoard&    base_board;
+  
+  // playout
+  Board play_board;
   SimplePolicy  policy;
 
-  static const uint max_nodes = 1000000;
-  FastPool<MctsNode, max_nodes> node_pool;
+  // tree
+  FastPool<MctsNode, 500000> node_pool;
   MctsNode::Iterator act_node;      // TODO sync tree->root with base_board
 
+  // params
   MctsParams params;
 
-  Board play_board;
-
+  // presentation
   TreeToString tree_to_string;
-  PlayoutGfx playout_gfx;
+  PlayoutGfx   playout_gfx;
 };
 
 // -----------------------------------------------------------------------------
