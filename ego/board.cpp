@@ -495,18 +495,18 @@ int Board::tt_score() const {
     vertex_for_each_all(v) {
       visited[v] = false;
       if (color_at[v] == Color(pl)) {
-        queue.push_back(v);
+        queue.Push(v);
         visited[v] = true;
       }
     }
 
-    while (!queue.empty()) {
-      Vertex v = queue.pop_top();
+    while (!queue.IsEmpty()) {
+      Vertex v = queue.PopTop();
       assertc (board_ac, visited[v]);
       score[pl] += 1;
       vertex_for_each_4_nbr(v, nbr, {
         if (!visited[nbr] && color_at[nbr] == Color::empty()) {
-          queue.push_back(nbr);
+          queue.Push(nbr);
           visited[nbr] = true;
         }
       });

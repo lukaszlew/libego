@@ -51,7 +51,7 @@ public:
     while (!playout_end()) {
       policy->play_move (board);
       Move m = board->last_move();
-      move_history.push_back(m);
+      move_history.Push(m);
     }
 
     return status;

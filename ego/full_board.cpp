@@ -50,7 +50,7 @@ void FullBoard::load (const FullBoard* save_board) {
 void FullBoard::play_legal (Player player, Vertex v) {
   Board::play_legal(player, v);
   Move m = Board::last_move(); // TODO why can't I inline it?
-  move_history.push_back(m);
+  move_history.Push(m);
 }
 
 

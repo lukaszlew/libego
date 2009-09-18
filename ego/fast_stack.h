@@ -28,58 +28,80 @@
 #include "testing.h"
 #include "fast_random.h"
 
-template <typename elt_t, uint _max_size> class FastStack {
+template <typename Elt, uint max_size> class FastStack {
 public:
   FastStack () : size (0) {
   }
 
-  void Clear () { size = 0; }
-
-  void check () const {
-    assertc (stack_ac, size <= _max_size);
+  void Clear () {
+    size = 0;
   }
 
-  bool empty () const { return size == 0; }
-
-  elt_t& top () { assertc (stack_ac, size > 0); return tab [size-1]; }
-
-  void push_back (elt_t& elt) { tab [size++] = elt; check (); }
-  elt_t& new_top() { size += 1; check();  return tab [size-1]; }
-
-
-  elt_t pop_random (FastRandom& fr) {
-    assertc (stack_ac, size > 0);
-    uint idx = fr.rand_int (size);
-    elt_t elt = tab [idx];
-    size--;
-    tab [idx] = tab [size];
-    return elt;
-  }
-
-  void pop () { size--; check (); }
-
-  elt_t& pop_top () { size--; check(); return tab [size]; }
-
-  elt_t& operator[] (uint i) { 
-    assertc (stack_ac, i < size);
-    return tab [i];
-  }
-
-  const elt_t& operator[] (uint i) const {
-    assertc (stack_ac, i < size);
-    return tab [i];
+  bool IsEmpty () const {
+    return size == 0;
   }
 
   uint Size() {
     return size;
   }
   
-  elt_t* Data() {
+  Elt* Data() {
     return tab;
   }
 
+  void Push (Elt& elt) {
+    tab [size++] = elt;
+    Check ();
+  }
+
+  Elt& Top () {
+    assertc (stack_ac, size > 0);
+    return tab [size-1];
+  }
+
+  Elt& NewTop() {
+    size += 1;
+    Check();
+    return Top();
+  }
+
+  void Pop () {
+    size--;
+    Check ();
+  }
+
+  Elt& PopTop () {
+    size--;
+    Check();
+    return tab [size];
+  }
+
+  Elt PopRandom (FastRandom& fr) {
+    assertc (stack_ac, size > 0);
+    uint idx = fr.rand_int (size);
+    Elt elt = tab [idx];
+    size--;
+    tab [idx] = tab [size];
+    return elt;
+  }
+
+  Elt& operator[] (uint i) { 
+    assertc (stack_ac, i < size);
+    return tab [i];
+  }
+
+  const Elt& operator[] (uint i) const {
+    assertc (stack_ac, i < size);
+    return tab [i];
+  }
+
 private:
-  elt_t tab [_max_size];
+  void Check () const {
+    assertc (stack_ac, size <= max_size);
+  }
+
+private:
+  Elt tab [max_size];
   uint size;
 };
 
