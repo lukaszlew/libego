@@ -51,43 +51,58 @@ typedef Node<NodeData> MctsNode;
 
 // -----------------------------------------------------------------------------
 
-struct CmpNodeMean { 
-  CmpNodeMean(Player player) : player_(player) {}
-  bool operator()(MctsNode* a, MctsNode* b) {
-    if (player_ == Player::black ()) {
-      return a->stat.mean() < b->stat.mean();
-    } else {
-      return a->stat.mean() > b->stat.mean();
+class TreeToString {
+public:
+  TreeToString (float min_visit_) : min_visit (min_visit_) {
+  }
+
+  string operator () (MctsNode* node) { 
+    out.clear();
+    depth = 0;
+    RecPrint (node); 
+    return out.str ();
+  }
+
+  float min_visit;
+
+private:
+
+  struct CompareNodeMean { 
+    CompareNodeMean(Player player) : player_(player) {}
+    bool operator()(MctsNode* a, MctsNode* b) {
+      if (player_ == Player::black ()) {
+        return a->stat.mean() < b->stat.mean();
+      } else {
+        return a->stat.mean() > b->stat.mean();
+      }
+    }
+    Player player_;
+  };
+
+  void RecPrint (MctsNode* node) {
+    rep (d, depth) out << "  ";
+    out << node->ToString () << endl;
+
+    vector <MctsNode*> child_tab;
+    for(MctsNode::ChildrenIterator child(*node); child; ++child)
+      child_tab.push_back(child);
+
+    sort (child_tab.begin(), child_tab.end(), CompareNodeMean(node->player));
+
+    while (child_tab.size() > 0) {
+      MctsNode* act_child = child_tab.front();
+      child_tab.erase(child_tab.begin());
+      if (act_child->stat.update_count() < min_visit) continue;
+      depth += 1;
+      RecPrint (act_child);
+      depth -= 1;
     }
   }
-  Player player_;
+
+private:
+  ostringstream out;
+  uint depth;
 };
-
-
-void Node_rec_print (MctsNode* node, ostream& out, uint depth, float min_visit) {
-  rep (d, depth) out << "  ";
-  out << node->ToString () << endl;
-
-  vector <MctsNode*> child_tab;
-  for(MctsNode::ChildrenIterator child(*node); child; ++child)
-    child_tab.push_back(child);
-
-  sort (child_tab.begin(), child_tab.end(), CmpNodeMean(node->player));
-
-  while (child_tab.size() > 0) {
-    MctsNode* act_child = child_tab.front();
-    child_tab.erase(child_tab.begin());
-    if (act_child->stat.update_count() < min_visit) continue;
-    Node_rec_print (act_child, out, depth + 1, min_visit);
-  }
-}
-
-
-string Node_to_string (MctsNode* node, float min_visit) { 
-  ostringstream out_str;
-  Node_rec_print (node, out_str, 0, min_visit); 
-  return out_str.str ();
-}
 
 // -----------------------------------------------------------------------------
 
@@ -95,13 +110,12 @@ class Mcts {
 public:
   
   Mcts (Gtp::Gogui::Analyze& gogui_analyze, FullBoard& base_board_)
-    : base_board (base_board_), policy(global_random)
+    : base_board (base_board_), policy(global_random), tree_to_string(2500.0)
   {
     explore_rate                   = 1.0;
     genmove_playout_count          = 100000;
     mature_update_count_threshold  = 100.0;
 
-    min_visit   = 2500.0;
     resign_mean = -0.95;
     show_move_count = 6;
 
@@ -110,7 +124,8 @@ public:
                                  &genmove_playout_count);
     gogui_analyze.RegisterParam ("MCTS.params", "#_updates_to_promote",
                                  &mature_update_count_threshold);
-    gogui_analyze.RegisterParam ("MCTS.params", "print_min_visit", &min_visit);
+    gogui_analyze.RegisterParam ("MCTS.params", "print_min_visit",
+                                 &tree_to_string.min_visit);
 
     gogui_analyze.RegisterGfxCommand ("MCTS.show", "playout", this, &Mcts::CShow);
     gogui_analyze.RegisterGfxCommand ("MCTS.show", "more",    this, &Mcts::CShow);
@@ -138,7 +153,7 @@ public:
     MctsNode* best_node = most_explored_root_node ();
 
     // log
-    cerr << Node_to_string (act_node, min_visit) << endl;
+    cerr << tree_to_string (act_node) << endl;
 
     // play and return
     float best_mean = best_node->stat.mean();
@@ -328,8 +343,6 @@ private:
   uint  genmove_playout_count;
   float mature_update_count_threshold;
 
-  float min_visit;
-
   float resign_mean;
 
   FullBoard&    base_board;
@@ -340,4 +353,6 @@ private:
   MctsNode::Iterator act_node;      // TODO sync tree->root with base_board
 
   Board play_board;
+
+  TreeToString tree_to_string;
 };
