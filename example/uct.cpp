@@ -55,6 +55,7 @@ class TreeToString {
 public:
   string operator () (MctsNode* node, float min_visit_) { 
     min_visit = min_visit_;
+    out.str("");
     out.clear();
     depth = 0;
     RecPrint (node); 
@@ -166,7 +167,7 @@ public:
   
   MctsParams (Gtp::Gogui::Analyze& gogui_analyze) {
     explore_rate                   = 1.0;
-    genmove_playout_count          = 100000;
+    genmove_playout_count          = 10000;
     mature_update_count_threshold  = 100.0;
     min_visit                      = 2500;
     resign_mean                    = -0.95;
@@ -246,9 +247,14 @@ private:
 
   void do_playout (){
     while(act_node->HaveChildren()) {
-      if (!do_tree_move()) return;
+      do_tree_move();
 
-      if (play_board.both_player_pass()) {
+      if (play_board.last_move_status != Board::play_ok) {
+        delete_act_node (play_board.last_play ());
+        return;
+      }
+
+      if (play_board.both_player_pass()) { // TODO move out
         update_history (play_board.tt_winner().to_score());
         return;
       }
@@ -258,10 +264,13 @@ private:
       // leaf is ready to expand
       // (suicides and ko recaptures, needs to be dealt with later)
       // TODO at least (simple) ko should be handled here
-      empty_v_for_each_and_pass (&play_board, v, 
-                                 alloc_child (act_node->player.other(), v));
-      bool ok = do_tree_move();
-      assertc(mcts_ac, ok);
+      empty_v_for_each_and_pass (&play_board, v, {
+        if (play_board.is_pseudo_legal (play_board.act_player(), v)) {
+          alloc_child (act_node->player.other(), v);
+        }
+      });
+      do_tree_move();
+      assertc (mcts_ac, play_board.last_move_status != Board::play_ok);
     }
 
     Playout<SimplePolicy> (&policy, &play_board).run ();
@@ -269,23 +278,13 @@ private:
     update_history (play_board.playout_winner().to_score());
   }
   
-  bool do_tree_move () {
+  void do_tree_move () {
     Vertex v = mcts_child_move();
     act_node.Descend (v);
       
-    if (play_board.is_pseudo_legal (play_board.act_player(), v) == false) {
-      delete_act_node (v);
-      return false;
-    }
-      
+    assertc (mcts_ac, play_board.is_pseudo_legal (play_board.act_player(), v));
+
     play_board.play_legal (play_board.act_player(), v);
-
-    if (play_board.last_move_status != Board::play_ok) {
-      delete_act_node (v);
-      return false;
-    }
-
-    return true;
   }
 
   Vertex mcts_child_move() {
