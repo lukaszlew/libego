@@ -233,12 +233,12 @@ private:
       do_playout ();
     }
 
-    // find best move
+    // Find best move from the root and print tree.
+    act_node.ResetToRoot();
     MctsNode* best_node = most_explored_root_node ();
-
-    // log and return
     cerr << tree_to_string (act_node, params.min_visit) << endl;
 
+    // Return the best move or resign.
     return
       (act_player.subjective_score (best_node->stat.mean()) < params.resign_mean) ? 
       Vertex::resign () :
@@ -246,45 +246,50 @@ private:
   }
 
   void do_playout (){
+    // descent the MCTS tree
     while(act_node->HaveChildren()) {
       do_tree_move();
-
       if (play_board.last_move_status != Board::play_ok) {
-        delete_act_node (play_board.last_play ());
+        // large suicide
+        delete_act_node ();
         return;
       }
+    }
+    // exit from MCTS tree
 
-      if (play_board.both_player_pass()) { // TODO move out
-        update_history (play_board.tt_winner().to_score());
-        return;
-      }
+    if (play_board.both_player_pass()) {
+      update_history (play_board.tt_winner().to_score());
+      return;
     }
     
+    // Is leaf is ready to expand ?
     if (act_node->stat.update_count() > params.mature_update_count_threshold) {
-      // leaf is ready to expand
-      // (suicides and ko recaptures, needs to be dealt with later)
-      // TODO at least (simple) ko should be handled here
+      Player pl = play_board.act_player();
+      assertc (mcts_ac, pl == act_node->player.other());
+
       empty_v_for_each_and_pass (&play_board, v, {
-        if (play_board.is_pseudo_legal (play_board.act_player(), v)) {
-          alloc_child (act_node->player.other(), v);
-        }
+        // big suicides and superko nodes have to be removed from the tree later
+        if (play_board.is_pseudo_legal (pl, v)) alloc_child (pl, v);
       });
+
+      // Descend one more level.
       do_tree_move();
-      assertc (mcts_ac, play_board.last_move_status != Board::play_ok);
+      assertc (mcts_ac, play_board.last_move_status == Board::play_ok);
     }
 
+    // Finish with regular playout.
     Playout<SimplePolicy> (&policy, &play_board).run ();
-
+    
+    // Update score.
     update_history (play_board.playout_winner().to_score());
   }
   
   void do_tree_move () {
     Vertex v = mcts_child_move();
     act_node.Descend (v);
-      
-    assertc (mcts_ac, play_board.is_pseudo_legal (play_board.act_player(), v));
-
-    play_board.play_legal (play_board.act_player(), v);
+    Player pl = play_board.act_player ();
+    assertc (mcts_ac, play_board.is_pseudo_legal (pl, v));
+    play_board.play_legal (pl, v);
   }
 
   Vertex mcts_child_move() {
@@ -312,7 +317,6 @@ private:
   }
 
   MctsNode* most_explored_root_node () {
-    act_node.ResetToRoot();
     MctsNode* best = NULL;
     float best_update_count = -1;
 
@@ -327,10 +331,12 @@ private:
     return best;
   }
 
-  void delete_act_node (Vertex v) {
+  void delete_act_node () {
     assertc (tree_ac, !act_node->HaveChildren ());
+    Vertex v = act_node->v;
     act_node.Ascend();
     act_node->DeattachChild (v);
+    // TODO free in the pool
   }
 
   MctsNode* alloc_child (Player pl, Vertex v) {
