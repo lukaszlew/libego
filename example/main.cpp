@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
 
     if (arg == "--seed") {
       uint new_seed;
-      if (ii+1 < (uint)argc &&
+      if (ii+1 < argc &&
           string_to<uint>(argv[ii+1], &new_seed)) {
           ii += 1;
           global_random.set_seed(new_seed);
@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
 
     if (arg == "--benchmark" || arg == "-b") {
       int playout_cnt = 200;
-      if (ii+1 < (uint)argc) {
+      if (ii+1 < argc) {
         if (string_to<int>(argv[ii+1], &playout_cnt)) {
           ii += 1;
         }
@@ -84,7 +84,7 @@ int main(int argc, char** argv) {
     }
     
     if (arg == "--run-gtp-file" || arg == "-r") {
-      if (ii+1 == (uint)argc) {
+      if (ii+1 == argc) {
         cerr << "Fatal: no config file given" << endl;
         return 1;
       }

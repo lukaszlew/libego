@@ -18,9 +18,7 @@ typedef unsigned long long uint64;
 #define unused(p) (void)(p)
 
 #define rep(i,n)     for (uint i = 0; i != (uint)(n); i++)
-#define reps(i,s,n)  for (uint i = (s); i != (uint)(n); i++)
-#define seq(i,a,b)   for (let (i, a); i <= (b); i++)
-#define dseq(i,b,a)  for (let (i, b); i >= (a); i--)
+#define reps(i,s,n)  for (int i = (s); i < int(n); i++)
 
 #define _STRING(x) #x
 #define STRING(x) _STRING(x)
