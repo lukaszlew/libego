@@ -53,17 +53,13 @@ typedef Node<NodeData> MctsNode;
 
 class TreeToString {
 public:
-  TreeToString (float min_visit_) : min_visit (min_visit_) {
-  }
-
-  string operator () (MctsNode* node) { 
+  string operator () (MctsNode* node, float min_visit_) { 
+    min_visit = min_visit_;
     out.clear();
     depth = 0;
     RecPrint (node); 
     return out.str ();
   }
-
-  float min_visit;
 
 private:
 
@@ -102,6 +98,7 @@ private:
 private:
   ostringstream out;
   uint depth;
+  float min_visit;
 };
 
 // -----------------------------------------------------------------------------
@@ -164,30 +161,50 @@ private:
 
 // -----------------------------------------------------------------------------
 
-class Mcts {
+class MctsParams {
 public:
   
-  Mcts (Gtp::Gogui::Analyze& gogui_analyze, FullBoard& base_board_)
-    : base_board (base_board_), policy(global_random),
-      tree_to_string(2500.0), playout_gfx(gogui_analyze, "MCTS.")
-  {
+  MctsParams (Gtp::Gogui::Analyze& gogui_analyze) {
     explore_rate                   = 1.0;
     genmove_playout_count          = 100000;
     mature_update_count_threshold  = 100.0;
+    min_visit                      = 2500;
+    resign_mean                    = -0.95;
 
-    resign_mean = -0.95;
-
-    gogui_analyze.RegisterGfxCommand ("MCTS.show_new_playout", "", this,
-                                      &Mcts::CShowNewPlayout);
-
-    gogui_analyze.RegisterParam ("MCTS.params", "explore_rate",  &explore_rate);
+    gogui_analyze.RegisterParam ("MCTS.params", "explore_rate",
+                                 &explore_rate);
     gogui_analyze.RegisterParam ("MCTS.params", "playout_count",
                                  &genmove_playout_count);
     gogui_analyze.RegisterParam ("MCTS.params", "#_updates_to_promote",
                                  &mature_update_count_threshold);
     gogui_analyze.RegisterParam ("MCTS.params", "print_min_visit",
-                                 &tree_to_string.min_visit);
+                                 &min_visit);
+  }
 
+private:
+
+  friend class Mcts;
+
+  float explore_rate;
+  uint  genmove_playout_count;
+  float mature_update_count_threshold;
+  float resign_mean;
+  float min_visit;
+};
+
+// -----------------------------------------------------------------------------
+
+class Mcts {
+public:
+  
+  Mcts (Gtp::Gogui::Analyze& gogui_analyze, FullBoard& base_board_)
+    : base_board (base_board_),
+      policy (global_random),
+      params (gogui_analyze),
+      playout_gfx(gogui_analyze, "MCTS.")
+  {
+    gogui_analyze.RegisterGfxCommand ("MCTS.show_new_playout", "", this,
+                                      &Mcts::CShowNewPlayout);
     gogui_analyze.GetRepl().RegisterCommand ("genmove", this, &Mcts::CGenmove);
   }
 
@@ -204,18 +221,19 @@ public:
     root_ensure_children_legality ();
 
     // find best move
-    rep (ii, genmove_playout_count)
+    rep (ii, params.genmove_playout_count)
       do_playout ();
 
     MctsNode* best_node = most_explored_root_node ();
 
     // log
-    cerr << tree_to_string (act_node) << endl;
+    cerr << tree_to_string (act_node, params.min_visit) << endl;
 
     // play and return
     float best_mean = best_node->stat.mean();
 
-    if (base_board.board().act_player().subjective_score(best_mean) < resign_mean) {
+    if (base_board.board().act_player().subjective_score(best_mean) < 
+        params.resign_mean) {
       return Vertex::resign ();
     }
 
@@ -240,7 +258,7 @@ private:
   Vertex mcts_child_move() {
     Vertex best_v = Vertex::any();
     float best_urgency = -large_float;
-    float explore_coeff = log (act_node->stat.update_count()) * explore_rate;
+    float explore_coeff = log (act_node->stat.update_count()) * params.explore_rate;
 
     for(MctsNode::ChildrenIterator ni(*act_node); ni; ++ni) {
       float child_urgency = ni->stat.ucb (ni->player, explore_coeff);
@@ -304,7 +322,7 @@ private:
   }
 
   bool try_add_children () {
-    if (act_node->stat.update_count() <= mature_update_count_threshold) 
+    if (act_node->stat.update_count() <= params.mature_update_count_threshold) 
       return false;
 
     // leaf is ready to expand
@@ -368,13 +386,6 @@ private:
   }
 
 private:
-
-  float explore_rate;
-  uint  genmove_playout_count;
-  float mature_update_count_threshold;
-
-  float resign_mean;
-
   FullBoard&    base_board;
   SimplePolicy  policy;
 
@@ -382,8 +393,12 @@ private:
   FastPool<MctsNode, max_nodes> node_pool;
   MctsNode::Iterator act_node;      // TODO sync tree->root with base_board
 
+  MctsParams params;
+
   Board play_board;
 
   TreeToString tree_to_string;
   PlayoutGfx playout_gfx;
 };
+
+// -----------------------------------------------------------------------------
