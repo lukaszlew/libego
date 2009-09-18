@@ -200,8 +200,8 @@ private:
 class Mcts {
 public:
   
-  Mcts (Gtp::Gogui::Analyze& gogui_analyze, FullBoard& base_board_)
-    : base_board (base_board_),
+  Mcts (Gtp::Gogui::Analyze& gogui_analyze, FullBoard& full_board_)
+    : full_board (full_board_),
       policy (global_random),
       params (gogui_analyze),
       playout_gfx(gogui_analyze, "MCTS.")
@@ -211,7 +211,7 @@ public:
   }
 
   Vertex Genmove () {
-    Player act_player = base_board.board().act_player();
+    Player act_player = full_board.board().act_player();
     // prepare pool and root of the tree
     node_pool.Reset();
     act_node.SetToRoot(node_pool.Alloc());
@@ -219,8 +219,8 @@ public:
     act_node->v = Vertex::any();
 
     // add 1 level of tree with superko detection // TODO remove
-    empty_v_for_each_and_pass (&base_board.board(), v, {
-      if (base_board.is_legal (act_player, v)) {
+    empty_v_for_each_and_pass (&full_board.board(), v, {
+      if (full_board.is_legal (act_player, v)) {
         alloc_child (act_player, v);
       }
     });
@@ -244,7 +244,7 @@ public:
 
   void DoOnePlayout (){
     // Prepare simulation board and tree iterator.
-    play_board.load (&base_board.board());
+    play_board.load (&full_board.board());
     act_node.ResetToRoot ();
     // descent the MCTS tree
     while(act_node->HaveChildren()) {
@@ -353,7 +353,7 @@ private:
     io.CheckEmpty ();
 
     Board playout_board;
-    playout_board.load (&base_board.board());
+    playout_board.load (&full_board.board());
     SimplePolicy policy(global_random);
     Playout<SimplePolicy> playout (&policy, &playout_board);
     playout.run();
@@ -367,7 +367,7 @@ private:
 
 private:
   // base board
-  FullBoard& base_board;
+  FullBoard& full_board;
   
   // playout
   Board play_board;
@@ -375,7 +375,7 @@ private:
 
   // tree
   FastPool<MctsNode, 500000> node_pool;
-  MctsNode::Iterator act_node;      // TODO sync tree->root with base_board
+  MctsNode::Iterator act_node;      // TODO sync tree->root with full_board
 
   // params
   MctsParams params;
