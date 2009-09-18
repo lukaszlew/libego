@@ -10,37 +10,34 @@ public:
   class Iterator;
   class ChildrenIterator;
 
-  Iterator children() {
-    return Iterator(*this);
+  void PoolConstruct () {
+    children.memset(NULL);
+    child_count = 0;
   }
 
-  void init () {
-    children_.memset(NULL);
-    have_child = false;
+  void AttachChild (Vertex v, Node* new_child) {
+    assertc (tree_ac, children[v] == NULL);
+    children[v] = new_child;
+    child_count += 1;
   }
 
-  void add_child (Vertex v, Node* new_child) { // TODO sorting?
-    have_child = true;
-    // TODO assert
-    children_[v] = new_child;
+  void DeattachChild (Vertex v) {
+    assertc (tree_ac, children[v] != NULL);
+    children[v] = NULL;
+    child_count -= 1;
   }
 
-  void remove_child (Vertex v) { // TODO inefficient
-    assertc (tree_ac, children_[v] != NULL);
-    children_[v] = NULL;
-  }
-
-  bool have_children () {
-    return have_child;
+  bool HaveChildren () {
+    return child_count > 0;
   }
 
   Node* child(Vertex v) {
-    return children_[v];
+    return children[v];
   }
 
 private:
-  FastMap<Vertex, Node*> children_;
-  bool have_child;
+  FastMap<Vertex, Node*> children;
+  int child_count;
 };
 
 // -----------------------------------------------------------------------------
@@ -95,16 +92,16 @@ public:
 
   ChildrenIterator(Node& parent) : parent_(parent), act_v_(0) { Sync (); }
 
-  Node& operator* ()  { return *parent_.children_[act_v_]; }
-  Node* operator-> () { return parent_.children_[act_v_]; }
-  operator Node* ()   { return parent_.children_[act_v_]; }
+  Node& operator* ()  { return *parent_.children[act_v_]; }
+  Node* operator-> () { return parent_.children[act_v_]; }
+  operator Node* ()   { return parent_.children[act_v_]; }
 
   void operator++ () { act_v_.next(); Sync (); }
   operator bool () { return act_v_.in_range(); }
 
 private:
   void Sync () {
-    while (act_v_.in_range () && parent_.children_[act_v_] == NULL) {
+    while (act_v_.in_range () && parent_.children[act_v_] == NULL) {
       act_v_.next();
     }
   }

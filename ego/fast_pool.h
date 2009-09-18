@@ -24,7 +24,9 @@ public:
 
   elt_t* malloc () { 
     assertc (pool_ac, free_elt_count > 0);
-    return free_elt [--free_elt_count]; 
+    elt_t* ret = free_elt [--free_elt_count];
+    ret->PoolConstruct();
+    return ret;
   }
 
   void free (elt_t* elt) { 

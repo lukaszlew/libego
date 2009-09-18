@@ -132,7 +132,6 @@ public:
 
     // prepare root
     MctsNode* root = node_pool.malloc();
-    root->init (); // TODO move to malloc // TODO use Pool Boost
     act_node.SetRoot(root);
 
     act_node->init_data (base_board.board().act_player().other(),
@@ -164,7 +163,7 @@ private:
   // take care about strict legality (superko) in root
   void root_ensure_children_legality () {
     //assertc (mcts_ac, tree.history_top == 1);
-    assertc (mcts_ac, !act_node->have_children());
+    assertc (mcts_ac, !act_node->HaveChildren());
 
     empty_v_for_each_and_pass (&base_board.board(), v, {
       if (base_board.is_legal (base_board.board().act_player(), v)) {
@@ -207,15 +206,14 @@ private:
   }
 
   void delete_act_node (Vertex v) {
-    assertc (tree_ac, !act_node->have_children ());
+    assertc (tree_ac, !act_node->HaveChildren ());
     act_node.Ascend();
-    act_node->remove_child (v);
+    act_node->DeattachChild (v);
   }
 
   MctsNode* alloc_child (Vertex v) {
     MctsNode* new_node = node_pool.malloc ();
-    new_node->init ();
-    act_node->add_child (v, new_node);
+    act_node->AttachChild (v, new_node);
     return new_node;
   }
 
@@ -265,7 +263,7 @@ private:
     play_board.load (&base_board.board());
     act_node.ResetToRoot ();
     
-    while(act_node->have_children()) {
+    while(act_node->HaveChildren()) {
       if (!do_tree_move()) return;
 
       if (play_board.both_player_pass()) {
