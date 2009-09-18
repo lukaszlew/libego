@@ -160,9 +160,7 @@ private:
 
     empty_v_for_each_and_pass (&base_board.board(), v, {
       if (base_board.is_legal (base_board.board().act_player(), v)) {
-        MctsNode* child = alloc_child (v);
-        child->player = act_node->player.other();
-        child->v = v;
+        alloc_child (act_node->player.other(), v);
       }
     });
   }
@@ -206,8 +204,10 @@ private:
     act_node->DeattachChild (v);
   }
 
-  MctsNode* alloc_child (Vertex v) {
+  MctsNode* alloc_child (Player pl, Vertex v) {
     MctsNode* new_node = node_pool.Alloc ();
+    new_node->player = pl;
+    new_node->v = v;
     act_node->AttachChild (v, new_node);
     return new_node;
   }
@@ -232,20 +232,15 @@ private:
   }
 
   bool try_add_children () {
-    // If the leaf is ready expand the tree -- add children - 
-    // all potential legal v (i.e.empty)
-    if (act_node->stat.update_count() >
-        mature_update_count_threshold) {
-      empty_v_for_each_and_pass (&play_board, v, {
-        MctsNode* child = alloc_child (v);
-        child->player = act_node->player.other();
-        child->v = v;
-        // TODO simple ko should be handled here
-        // (suicides and ko recaptures, needs to be dealt with later)
-      });
-      return true;
-    }
-    return false;
+    if (act_node->stat.update_count() <= mature_update_count_threshold) 
+      return false;
+
+    // leaf is ready to expand
+    // (suicides and ko recaptures, needs to be dealt with later)
+    // TODO at least (simple) ko should be handled here
+    empty_v_for_each_and_pass (&play_board, v, 
+                               alloc_child (act_node->player.other(), v));
+    return true;
   }
   
   void update_history (float score) {
@@ -254,7 +249,6 @@ private:
        act_node.Path()[hi]->stat.update (score);
     }
   }
-
 
   void do_playout (){
     play_board.load (&base_board.board());
