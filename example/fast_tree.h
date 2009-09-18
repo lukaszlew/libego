@@ -3,21 +3,50 @@
 
 // -----------------------------------------------------------------------------
 
-// TODO extract iterator with path
-// pool podawac jako parametr
-
 template <class Data>
-class TreeT {
+class Node : public Data {
 public:
 
-  class Node;
   class Iterator;
+  class ChildrenIterator;
+
+  Iterator children() {
+    return Iterator(*this);
+  }
+
+  void init () {
+    children_.memset(NULL);
+    have_child = false;
+  }
+
+  void add_child (Vertex v, Node* new_child) { // TODO sorting?
+    have_child = true;
+    // TODO assert
+    children_[v] = new_child;
+  }
+
+  void remove_child (Vertex v) { // TODO inefficient
+    assertc (tree_ac, children_[v] != NULL);
+    children_[v] = NULL;
+  }
+
+  bool have_children () {
+    return have_child;
+  }
+
+  Node* child(Vertex v) {
+    return children_[v];
+  }
+
+private:
+  FastMap<Vertex, Node*> children_;
+  bool have_child;
 };
 
 // -----------------------------------------------------------------------------
 
 template <class Data>
-class TreeT<Data> :: Iterator {
+class Node<Data> :: Iterator {
 public:
   void SetRoot (Node* root) {
     path.clear();
@@ -61,51 +90,10 @@ private:
 // -----------------------------------------------------------------------------
 
 template <class Data>
-class TreeT<Data> :: Node : public Data {
+class Node<Data> :: ChildrenIterator {
 public:
 
-  class Iterator;
-
-  Iterator children() {
-    return Iterator(*this);
-  }
-
-  void init () {
-    children_.memset(NULL);
-    have_child = false;
-  }
-
-  void add_child (Vertex v, Node* new_child) { // TODO sorting?
-    have_child = true;
-    // TODO assert
-    children_[v] = new_child;
-  }
-
-  void remove_child (Vertex v) { // TODO inefficient
-    assertc (tree_ac, children_[v] != NULL);
-    children_[v] = NULL;
-  }
-
-  bool have_children () {
-    return have_child;
-  }
-
-  Node* child(Vertex v) {
-    return children_[v];
-  }
-
-private:
-  FastMap<Vertex, Node*> children_;
-  bool have_child;
-};
-
-// -----------------------------------------------------------------------------
-
-template <class Data>
-class TreeT<Data> :: Node :: Iterator {
-public:
-
-  Iterator(Node& parent) : parent_(parent), act_v_(0) { Sync (); }
+  ChildrenIterator(Node& parent) : parent_(parent), act_v_(0) { Sync (); }
 
   Node& operator* ()  { return *parent_.children_[act_v_]; }
   Node* operator-> () { return parent_.children_[act_v_]; }
