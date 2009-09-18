@@ -227,6 +227,8 @@ private:
 
     // do playouts 
     rep (ii, params.genmove_playout_count) {
+      play_board.load (&base_board.board());
+      act_node.ResetToRoot ();
       do_playout ();
     }
 
@@ -240,6 +242,50 @@ private:
       (act_player.subjective_score (best_node->stat.mean()) < params.resign_mean) ? 
       Vertex::resign () :
       best_node->v;
+  }
+
+  void do_playout (){
+    while(act_node->HaveChildren()) {
+      if (!do_tree_move()) return;
+
+      if (play_board.both_player_pass()) {
+        update_history (play_board.tt_winner().to_score());
+        return;
+      }
+    }
+    
+    if (act_node->stat.update_count() > params.mature_update_count_threshold) {
+      // leaf is ready to expand
+      // (suicides and ko recaptures, needs to be dealt with later)
+      // TODO at least (simple) ko should be handled here
+      empty_v_for_each_and_pass (&play_board, v, 
+                                 alloc_child (act_node->player.other(), v));
+      bool ok = do_tree_move();
+      assertc(mcts_ac, ok);
+    }
+
+    Playout<SimplePolicy> (&policy, &play_board).run ();
+
+    update_history (play_board.playout_winner().to_score());
+  }
+  
+  bool do_tree_move () {
+    Vertex v = mcts_child_move();
+    act_node.Descend (v);
+      
+    if (play_board.is_pseudo_legal (play_board.act_player(), v) == false) {
+      delete_act_node (v);
+      return false;
+    }
+      
+    play_board.play_legal (play_board.act_player(), v);
+
+    if (play_board.last_move_status != Board::play_ok) {
+      delete_act_node (v);
+      return false;
+    }
+
+    return true;
   }
 
   Vertex mcts_child_move() {
@@ -257,6 +303,13 @@ private:
 
     assertc (tree_ac, best_v != Vertex::any()); // at least pass
     return best_v;
+  }
+
+  void update_history (float score) {
+    rep (hi, act_node.Path().size()) {
+      // black -> 1, white -> -1
+      act_node.Path()[hi]->stat.update (score);
+    }
   }
 
   MctsNode* most_explored_root_node () {
@@ -289,67 +342,6 @@ private:
     return new_node;
   }
 
-  bool do_tree_move () {
-    Vertex v = mcts_child_move();
-    act_node.Descend (v);
-      
-    if (play_board.is_pseudo_legal (play_board.act_player(), v) == false) {
-      delete_act_node (v);
-      return false;
-    }
-      
-    play_board.play_legal (play_board.act_player(), v);
-
-    if (play_board.last_move_status != Board::play_ok) {
-      delete_act_node (v);
-      return false;
-    }
-
-    return true;
-  }
-
-  bool try_add_children () {
-    if (act_node->stat.update_count() <= params.mature_update_count_threshold) 
-      return false;
-
-    // leaf is ready to expand
-    // (suicides and ko recaptures, needs to be dealt with later)
-    // TODO at least (simple) ko should be handled here
-    empty_v_for_each_and_pass (&play_board, v, 
-                               alloc_child (act_node->player.other(), v));
-    return true;
-  }
-  
-  void update_history (float score) {
-    rep (hi, act_node.Path().size()) {
-      // black -> 1, white -> -1
-       act_node.Path()[hi]->stat.update (score);
-    }
-  }
-
-  void do_playout (){
-    play_board.load (&base_board.board());
-    act_node.ResetToRoot ();
-    
-    while(act_node->HaveChildren()) {
-      if (!do_tree_move()) return;
-
-      if (play_board.both_player_pass()) {
-        update_history (play_board.tt_winner().to_score());
-        return;
-      }
-    }
-    
-    if (try_add_children()) {
-      bool ok = do_tree_move();
-      assertc(mcts_ac, ok);
-    }
-
-    Playout<SimplePolicy> (&policy, &play_board).run ();
-
-    update_history (play_board.playout_winner().to_score());
-  }
-  
   void CGenmove (Gtp::Io& io) {
     Player player = io.Read<Player> ();
     io.CheckEmpty ();
@@ -385,11 +377,11 @@ private:
 
 private:
   // base board
-  FullBoard&    base_board;
+  FullBoard& base_board;
   
   // playout
   Board play_board;
-  SimplePolicy  policy;
+  SimplePolicy policy;
 
   // tree
   FastPool<MctsNode, 500000> node_pool;
@@ -400,7 +392,7 @@ private:
 
   // presentation
   TreeToString tree_to_string;
-  PlayoutGfx   playout_gfx;
+  PlayoutGfx playout_gfx;
 };
 
 // -----------------------------------------------------------------------------
