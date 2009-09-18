@@ -302,8 +302,8 @@ private:
       playout.run();
 
       showed_playout.clear();
-      rep (ii, playout.move_history.size)
-        showed_playout.push_back(playout.move_history.tab[ii]);
+      rep (ii, playout.move_history.Size())
+        showed_playout.push_back(playout.move_history[ii]);
 
     } else if (sub == "more") {
       show_move_count += 1;

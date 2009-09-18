@@ -28,7 +28,7 @@
 void FullBoard::clear(float komi) {
   // move_no = 0;
   Board::clear(komi);
-  move_history.clear();
+  move_history.Clear();
 }
 
 
@@ -64,7 +64,7 @@ bool FullBoard::undo () {
     return false;
 
   rep (mn, game_length-1)
-    replay [mn] = move_history.tab [mn];
+    replay [mn] = move_history [mn];
 
   clear (old_komi);  // TODO maybe last_player should be preserverd as well
 
@@ -85,8 +85,8 @@ bool FullBoard::is_legal (Player pl, Vertex v) const {
 bool FullBoard::is_hash_repeated () {
   Board tmp_board;
   rep (mn, move_no-1) {
-    tmp_board.play_legal (move_history.tab [mn].get_player (),
-                          move_history.tab [mn].get_vertex ());
+    tmp_board.play_legal (move_history[mn].get_player (),
+                          move_history[mn].get_vertex ());
     if (hash() == tmp_board.hash())
       return true;
   }

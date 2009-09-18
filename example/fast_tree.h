@@ -11,7 +11,7 @@ public:
   class ChildrenIterator;
 
   // TODO replace this by placement new in pool or Boost::pool
-  Node () {
+  void PoolConstruct () {
     children.memset(NULL);
     child_count = 0;
   }

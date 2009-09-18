@@ -90,10 +90,10 @@ public:
     Playout<SimplePolicy> playout(&policy, mc_board);
     playout.run ();
 
-    uint aaf_move_count = uint (float(playout.move_history.size)*aaf_fraction);
+    uint aaf_move_count = uint (float(playout.move_history.Size())*aaf_fraction);
     float score = mc_board->playout_score ();
 
-    aaf_stats.update (playout.move_history.tab, aaf_move_count, score);
+    aaf_stats.update (playout.move_history.Data(), aaf_move_count, score);
   }
 
   void CMoveValue (Gtp::Io& io) {

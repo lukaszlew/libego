@@ -30,12 +30,10 @@
 
 template <typename elt_t, uint _max_size> class FastStack {
 public:
-  elt_t tab [_max_size];
-  uint size;
+  FastStack () : size (0) {
+  }
 
-  FastStack () { clear (); }
-
-  void clear () { size = 0; }
+  void Clear () { size = 0; }
 
   void check () const {
     assertc (stack_ac, size <= _max_size);
@@ -61,6 +59,28 @@ public:
   void pop () { size--; check (); }
 
   elt_t& pop_top () { size--; check(); return tab [size]; }
+
+  elt_t& operator[] (uint i) { 
+    assertc (stack_ac, i < size);
+    return tab [i];
+  }
+
+  const elt_t& operator[] (uint i) const {
+    assertc (stack_ac, i < size);
+    return tab [i];
+  }
+
+  uint Size() {
+    return size;
+  }
+  
+  elt_t* Data() {
+    return tab;
+  }
+
+private:
+  elt_t tab [_max_size];
+  uint size;
 };
 
 // TODO add iterators

@@ -46,7 +46,7 @@ public:
 
   all_inline
   PlayoutStatus run () {
-    move_history.clear();
+    move_history.Clear();
 
     while (!playout_end()) {
       policy->play_move (board);
