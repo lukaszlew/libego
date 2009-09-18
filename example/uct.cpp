@@ -133,9 +133,9 @@ public:
     // prepare root
     Tree::Node* root = node_pool.malloc();
     root->init (); // TODO move to malloc // TODO use Pool Boost
-    tree_it.SetRoot(new_node);
+    act_node.SetRoot(root);
 
-    tree_it.act_node()->init_data (base_board.board().act_player().other(),
+    act_node->init_data (base_board.board().act_player().other(),
                                    Vertex::any());
     root_ensure_children_legality ();
 
@@ -143,14 +143,13 @@ public:
     rep (ii, genmove_playout_count)
       do_playout ();
 
-    tree_it.history_reset();
     Vertex best_v = most_explored_root_move ();
 
     // log
-    cerr << Node_to_string (tree_it.act_node(), min_visit) << endl;
+    cerr << Node_to_string (act_node, min_visit) << endl;
 
     // play and return
-    float best_mean = tree_it.act_node()->child(best_v)->stat.mean();
+    float best_mean = act_node->child(best_v)->stat.mean();
 
     if (base_board.board().act_player().subjective_score(best_mean) < resign_mean) {
       return Vertex::resign ();
@@ -165,22 +164,21 @@ private:
   // take care about strict legality (superko) in root
   void root_ensure_children_legality () {
     //assertc (mcts_ac, tree.history_top == 1);
-    assertc (mcts_ac, !tree_it.act_node ()->have_children());
+    assertc (mcts_ac, !act_node->have_children());
 
     empty_v_for_each_and_pass (&base_board.board(), v, {
       if (base_board.is_legal (base_board.board().act_player(), v)) {
-        alloc_child (v)->init_data (tree_it.act_node()->player.other(), v);
+        alloc_child (v)->init_data (act_node->player.other(), v);
       }
     });
   }
 
   Vertex mcts_child_move() {
-    Tree::Node* parent = tree_it.act_node ();
     Vertex best_v = Vertex::any();
     float best_urgency = -large_float;
-    float explore_coeff = log (parent->stat.update_count()) * explore_rate;
+    float explore_coeff = log (act_node->stat.update_count()) * explore_rate;
 
-    for(Tree::Node::Iterator ni(*parent); ni; ++ni) {
+    for(Tree::Node::Iterator ni(*act_node); ni; ++ni) {
       float child_urgency = ni->stat.ucb (ni->player, explore_coeff);
       if (child_urgency > best_urgency) {
         best_urgency  = child_urgency;
@@ -193,11 +191,11 @@ private:
   }
 
   Vertex most_explored_root_move () {
-    tree_it.history_reset();
+    act_node.ResetToRoot();
     Vertex best = Vertex::any();
     float best_update_count = -1;
 
-    for(Tree::Node::Iterator child(*tree_it.act_node()); child; ++child) {
+    for(Tree::Node::Iterator child(*act_node); child; ++child) {
       if (child->stat.update_count() > best_update_count) {
         best_update_count = child->stat.update_count();
         best = child->v;
@@ -209,21 +207,21 @@ private:
   }
 
   void delete_act_node (Vertex v) {
-    assertc (tree_ac, !tree_it.act_node ()->have_children ());
-    tree_it.ascend();
-    tree_it.act_node()->remove_child (v);
+    assertc (tree_ac, !act_node->have_children ());
+    act_node.Ascend();
+    act_node->remove_child (v);
   }
 
   Tree::Node* alloc_child (Vertex v) {
     Tree::Node* new_node = node_pool.malloc ();
     new_node->init ();
-    tree_it.act_node ()->add_child (v, new_node);
+    act_node->add_child (v, new_node);
     return new_node;
   }
 
   bool do_tree_move () {
     Vertex v = mcts_child_move();
-    tree_it.descend (v);
+    act_node.Descend (v);
       
     if (play_board.is_pseudo_legal (play_board.act_player(), v) == false) {
       delete_act_node (v);
@@ -243,10 +241,10 @@ private:
   bool try_add_children () {
     // If the leaf is ready expand the tree -- add children - 
     // all potential legal v (i.e.empty)
-    if (tree_it.act_node()->stat.update_count() >
+    if (act_node->stat.update_count() >
         mature_update_count_threshold) {
       empty_v_for_each_and_pass (&play_board, v, {
-        alloc_child (v)->init_data (tree_it.act_node()->player.other(), v);
+        alloc_child (v)->init_data (act_node->player.other(), v);
         // TODO simple ko should be handled here
         // (suicides and ko recaptures, needs to be dealt with later)
       });
@@ -256,18 +254,18 @@ private:
   }
   
   void update_history (float score) {
-    rep (hi, tree_it.history().size()) {
+    rep (hi, act_node.Path().size()) {
       // black -> 1, white -> -1
-       tree_it.history()[hi]->stat.update (score);
+       act_node.Path()[hi]->stat.update (score);
     }
   }
 
 
   void do_playout (){
     play_board.load (&base_board.board());
-    tree_it.history_reset ();
+    act_node.ResetToRoot ();
     
-    while(tree_it.act_node ()->have_children()) {
+    while(act_node->have_children()) {
       if (!do_tree_move()) return;
 
       if (play_board.both_player_pass()) {
@@ -350,7 +348,7 @@ private:
 
   static const uint max_nodes = 1000000;
   FastPool<Tree::Node> node_pool;
-  Tree::Iterator tree_it;      // TODO sync tree->root with base_board
+  Tree::Iterator act_node;      // TODO sync tree->root with base_board
 
   Board play_board;
 };

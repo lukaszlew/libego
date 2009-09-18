@@ -23,30 +23,35 @@ public:
     path.clear();
     path.push_back(root);
   }
-
-  void history_reset () {
+  
+  void ResetToRoot () {
+    assertc (tree_ac, path.size() > 0);
     path.resize(1);
   }
 
-  Node* act_node () {
-    assertc (tree_ac, path.size() > 0);
-    return path.back();
-  }
-
-  void descend (Vertex v) {
+  void Descend (Vertex v) {
     assertc (tree_ac, path.size() > 0);
     path.push_back(path.back()->child(v));
-    assertc (tree_ac, act_node () != NULL);
+    assertc (tree_ac, ActNode () != NULL);
   }
   
-  void ascend () {
+  void Ascend () {
     assertc (tree_ac, path.size() >= 2);
     path.pop_back ();
   }
 
-  vector<Node*>& history () {
+  vector<Node*>& Path () {
     assertc (tree_ac, path.size() > 0);
     return path;
+  }
+
+  Node* operator-> () { return ActNode (); }
+  operator Node* ()   { return ActNode (); }
+
+private:
+  Node* ActNode() {
+    assertc (tree_ac, path.size() > 0);
+    return path.back();
   }
 
 private:
