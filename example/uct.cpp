@@ -206,12 +206,9 @@ public:
   {
     gogui_analyze.RegisterGfxCommand ("MCTS.show_new_playout", "", this,
                                       &Mcts::CShowNewPlayout);
-    gogui_analyze.GetRepl().RegisterCommand ("genmove", this, &Mcts::CGenmove);
   }
 
-private:
-
-  Vertex genmove () {
+  Vertex Genmove () {
     Player act_player = base_board.board().act_player();
     // prepare pool and root of the tree
     node_pool.Reset();
@@ -228,9 +225,7 @@ private:
 
     // do playouts 
     rep (ii, params.genmove_playout_count) {
-      play_board.load (&base_board.board());
-      act_node.ResetToRoot ();
-      do_playout ();
+      DoOnePlayout ();
     }
 
     // Find best move from the root and print tree.
@@ -245,7 +240,10 @@ private:
       best_node->v;
   }
 
-  void do_playout (){
+  void DoOnePlayout (){
+    // Prepare simulation board and tree iterator.
+    play_board.load (&base_board.board());
+    act_node.ResetToRoot ();
     // descent the MCTS tree
     while(act_node->HaveChildren()) {
       do_tree_move();
@@ -284,6 +282,8 @@ private:
     update_history (play_board.playout_winner().to_score());
   }
   
+private:
+
   void do_tree_move () {
     Vertex v = mcts_child_move();
     act_node.Descend (v);
@@ -347,23 +347,6 @@ private:
     return new_node;
   }
 
-  void CGenmove (Gtp::Io& io) {
-    Player player = io.Read<Player> ();
-    io.CheckEmpty ();
-
-    base_board.set_act_player(player);
-
-    Vertex v = genmove ();
-    
-    if (v != Vertex::resign ()) {
-      bool ok = base_board.try_play (player, v);
-      assert(ok);
-      io.Out () << v.to_string();
-    } else {
-      io.Out () << "resign";
-    }
-  }
-
   void CShowNewPlayout (Gtp::Io& io) {
     io.CheckEmpty ();
 
@@ -401,3 +384,33 @@ private:
 };
 
 // -----------------------------------------------------------------------------
+
+class Genmove {
+public:
+  Genmove (Gtp::Repl& gtp, FullBoard& full_board_, Mcts& mcts_)
+    : mcts(mcts_), full_board(full_board_)
+  {
+    gtp.RegisterCommand ("genmove", this, &Genmove::CGenmove);
+  }
+
+private:
+  void CGenmove (Gtp::Io& io) {
+    Player player = io.Read<Player> ();
+    io.CheckEmpty ();
+
+    full_board.set_act_player(player);
+
+    Vertex v = mcts.Genmove ();
+
+    if (v != Vertex::resign ()) {
+      bool ok = full_board.try_play (player, v);
+      assert(ok);
+      io.Out () << v.to_string();
+    } else {
+      io.Out () << "resign";
+    }
+  }
+
+  Mcts& mcts;
+  FullBoard& full_board;
+};

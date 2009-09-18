@@ -45,8 +45,9 @@ SgfTree sgf_tree;
 BasicGtp    basic_gtp (gtp, board);
 SgfGtp      sgf_gtp (gtp, sgf_tree, board);
 AllAsFirst  aaf (gogui_analyze, board);
-Mcts        mcts (gogui_analyze, board);
 
+Mcts        mcts (gogui_analyze, board);
+Genmove     genmove (gtp, board, mcts);
 
 int main(int argc, char** argv) {
   // no buffering to work well with gogui
