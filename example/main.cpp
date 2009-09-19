@@ -48,6 +48,8 @@ AllAsFirst  aaf       (gtp, board);
 Mcts        mcts      (gtp, board);
 Genmove     genmove   (gtp, board, mcts);
 
+PlayoutGfx<Mcts> playout_gfx(gtp, mcts, "MCTS.");
+
 int main(int argc, char** argv) {
   // no buffering to work well with gogui
   setbuf (stdout, NULL);

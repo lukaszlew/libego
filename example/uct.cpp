@@ -104,23 +104,17 @@ private:
 
 // -----------------------------------------------------------------------------
 
+template <class Source>
 class PlayoutGfx {
 public:
-  PlayoutGfx (Gtp::ReplWithGogui& gtp, const string& prefix) {
+  PlayoutGfx (Gtp::ReplWithGogui& gtp, Source& source_, const string& prefix)
+    : source (source_)
+  {
     const string cmd_name = prefix + "show";
-    gtp.RegisterGfx (cmd_name, "",     this, &PlayoutGfx::CShow);
-    gtp.RegisterGfx (cmd_name, "6",    this, &PlayoutGfx::CShow);
+    gtp.RegisterGfx (cmd_name, "new",  this, &PlayoutGfx::CShow);
     gtp.RegisterGfx (cmd_name, "more", this, &PlayoutGfx::CShow);
     gtp.RegisterGfx (cmd_name, "less", this, &PlayoutGfx::CShow);
     show_move_count = 6;
-  }
-
-  void Clear () {
-    playout.clear();
-  }
-
-  void AddMove (Move m) {
-    playout.push_back(m);
   }
 
   void CShow (Gtp::Io& io) {
@@ -129,9 +123,11 @@ public:
       io.CheckEmpty ();
       show_move_count = n;
     } else {
-      string sub = io.Read<string> ("");
+      string sub = io.Read<string> ();
       io.CheckEmpty ();
-      if (sub == "") {
+      if (sub == "new") {
+        show_move_count = 6;
+        playout = source.NewPlayout ();
       } else if (sub == "more") {
         show_move_count += 1;
       } else if (sub == "less") {
@@ -160,6 +156,7 @@ public:
 private:
   vector<Move> playout;
   int show_move_count;
+  Source& source;
 };
 
 // -----------------------------------------------------------------------------
@@ -199,10 +196,8 @@ public:
   Mcts (Gtp::ReplWithGogui& gtp, FullBoard& full_board_)
     : full_board (full_board_),
       policy (global_random),
-      params (gtp),
-      playout_gfx(gtp, "MCTS.")
+      params (gtp)
   {
-    gtp.RegisterGfx ("MCTS.show_new_playout", "", this, &Mcts::CShowNewPlayout);
   }
 
   void Reset () {
@@ -244,6 +239,21 @@ public:
       (act_player.subjective_score (best_node->stat.mean()) < params.resign_mean) ? 
       Vertex::resign () :
       best_node->v;
+  }
+
+  vector<Move> NewPlayout () {
+    vector<Move> ret;
+
+    Board playout_board;
+    playout_board.load (&full_board.board());
+    SimplePolicy policy(global_random);
+    Playout<SimplePolicy> playout (&policy, &playout_board);
+    playout.run();
+    
+    rep (ii, playout.move_history.Size()) {
+      ret.push_back (playout.move_history[ii]);
+    }
+    return ret;
   }
 
 private:
@@ -353,22 +363,6 @@ private:
     return new_node;
   }
 
-  void CShowNewPlayout (Gtp::Io& io) {
-    io.CheckEmpty ();
-
-    Board playout_board;
-    playout_board.load (&full_board.board());
-    SimplePolicy policy(global_random);
-    Playout<SimplePolicy> playout (&policy, &playout_board);
-    playout.run();
-    
-    playout_gfx.Clear();
-    rep (ii, playout.move_history.Size()) {
-      playout_gfx.AddMove (playout.move_history[ii]);
-    }
-    playout_gfx.CShow (io);
-  }
-
 private:
   // base board
   FullBoard& full_board;
@@ -386,7 +380,6 @@ private:
 
   // presentation
   TreeToString tree_to_string;
-  PlayoutGfx playout_gfx;
 };
 
 // -----------------------------------------------------------------------------
