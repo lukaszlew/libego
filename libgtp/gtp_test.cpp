@@ -23,8 +23,8 @@ void CAdd (Gtp::Io& io) {
 class DummyGtpUser {
 public:
   DummyGtpUser (Gtp::Repl& gtp) {
-    gtp.RegisterCommand ("echo", Gtp::OfMethod(this, &DummyGtpUser::CEcho));
-    gtp.RegisterCommand ("echo2", this, &DummyGtpUser::CEcho); // same as above
+    gtp.Register ("echo", Gtp::OfMethod(this, &DummyGtpUser::CEcho));
+    gtp.Register ("echo2", this, &DummyGtpUser::CEcho); // same as above
   }
 private:
   void CEcho (Gtp::Io& io) {
@@ -51,11 +51,12 @@ struct Fixture {
   Fixture()
   : gtp_user (gtp), f (1.5), i(-1), s("GTP rulez")
   {
-    gtp.RegisterCommand("+", CAdd);
-    gtp.RegisterCommand("whoami", Gtp::StaticCommand("Santa !"));
-    gtp.RegisterCommand("var_f", Gtp::GetSetCommand (&f));
-    gtp.RegisterCommand("var_i", Gtp::GetSetCommand (&i));
-    gtp.RegisterCommand("var_s", Gtp::GetSetCommand (&s));
+    gtp.Register ("+", CAdd);
+    gtp.Register ("whoami", Gtp::StaticCommand("Santa !"));
+    gtp.Register ("whoareyou", Gtp::StaticCommand("Merry"));
+    gtp.Register ("var_f", Gtp::GetSetCommand (&f));
+    gtp.Register ("var_i", Gtp::GetSetCommand (&i));
+    gtp.Register ("var_s", Gtp::GetSetCommand (&s));
   }
 };
 
@@ -87,6 +88,7 @@ BOOST_AUTO_TEST_CASE (BuiltInCommands) {
     << "var_i" << endl
     << "var_s" << endl
     << "whoami" << endl
+    << "whoareyou" << endl
     << endl
     ;
 
@@ -112,6 +114,7 @@ BOOST_AUTO_TEST_CASE (RegisteredCommands) {
     << "  +  11" << endl
     << "  whoami " << endl
     << "  whoami today  " << endl
+    << "  whoareyou  " << endl
     << "   " << endl
     << "  who are you " << endl
     ;
@@ -123,6 +126,7 @@ BOOST_AUTO_TEST_CASE (RegisteredCommands) {
     << "= 22" << endl << endl
     << "= Santa !" << endl << endl
     << "? syntax error" << endl << endl
+    << "= Merry" << endl << endl
     << "? unknown command: \"who\"" << endl << endl
     ;
 

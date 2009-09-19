@@ -53,19 +53,19 @@ Callback StaticCommand (const string& ret) {
 // -----------------------------------------------------------------------------
 
 Repl::Repl () {
-  RegisterCommand ("list_commands",
-                  OfMethod(this, &Repl::CListCommands));
-  RegisterCommand ("help",
-                  OfMethod(this, &Repl::CListCommands));
-  RegisterCommand ("known_command",
-                  OfMethod(this, &Repl::CKnownCommand));
-  RegisterCommand ("quit",
-                  OfMethod(this, &Repl::CQuit));
+  Register ("list_commands", this, &Repl::CListCommands);
+  Register ("help",          this, &Repl::CListCommands);
+  Register ("known_command", this, &Repl::CKnownCommand);
+  Register ("quit",          this, &Repl::CQuit);
 }
 
-void Repl::RegisterCommand (const string& name, Callback callback) {
+void Repl::Register (const string& name, Callback callback) {
   assert(!IsCommand(name));
   callbacks[name] = callback;
+}
+
+void Repl::RegisterStatic (const string& name, const string& response) {
+  Register (name, StaticCommand(response));
 }
 
 void Preprocess (string* line) {
@@ -89,6 +89,7 @@ void Repl::Run (istream& in, ostream& out) {
     Preprocess(&line);
     istringstream line_stream (line);
 
+    // TODO handle numbered commands
     string cmd_name;
     if (!(line_stream >> cmd_name)) continue; // empty line
 

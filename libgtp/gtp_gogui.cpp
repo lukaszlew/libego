@@ -7,8 +7,7 @@ namespace Gtp {
 namespace Gogui {
 
 Analyze::Analyze (Repl& gtp_) : gtp (gtp_) {
-  gtp.RegisterCommand ("gogui_analyze_commands",
-                       OfMethod (this, &Analyze::CAnalyze));
+  gtp.Register ("gogui_analyze_commands", this, &Analyze::CAnalyze);
 }
 
 Repl& Analyze::GetRepl() {
@@ -24,7 +23,7 @@ void Analyze::RegisterGfxCommand (const string& name,
   analyze_list
     << "gfx/" << full_name << "/" << full_name << endl;
   if (!gtp.IsCommand (name)) {
-    gtp.RegisterCommand (name, command);
+    gtp.Register (name, command);
   }
 }
 

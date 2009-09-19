@@ -65,8 +65,7 @@ void Analyze::RegisterParam (const string& cmd_name,
   params [cmd_name] [param_name] = GetSetCommand (param);
   if (gtp.IsCommand (cmd_name)) return;
   analyze_list << "param/" << cmd_name << "/" << cmd_name << endl; // NOTE: factor out
-  gtp.RegisterCommand (cmd_name,
-                       boost::bind (&Analyze::CParam, this, cmd_name, _1));
+  gtp.Register (cmd_name, boost::bind (&Analyze::CParam, this, cmd_name, _1));
 }
 
 } // namespace Gogui
