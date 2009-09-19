@@ -196,7 +196,6 @@ public:
   
   Mcts (Gtp::ReplWithGogui& gtp, FullBoard& full_board_)
     : full_board (full_board_),
-      policy (global_random),
       params (gtp)
   {
   }
@@ -243,18 +242,14 @@ public:
   }
 
   vector<Move> NewPlayout () {
-    vector<Move> ret;
+    Playout::MoveHistory history;
 
     Board playout_board;
     playout_board.load (&full_board.board());
-    SimplePolicy policy(global_random);
-    Playout<SimplePolicy> playout (&policy, &playout_board);
-    playout.run();
+    Playout playout (&playout_board);
+    playout.DoLightPlayout (history);
     
-    rep (ii, playout.move_history.Size()) {
-      ret.push_back (playout.move_history[ii]);
-    }
-    return ret;
+    return history.AsVector ();
   }
 
 private:
@@ -295,7 +290,7 @@ private:
     }
 
     // Finish with regular playout.
-    Playout<SimplePolicy> (&policy, &play_board).run ();
+    Playout (&play_board).DoLightPlayout ();
     
     // Update score.
     update_history (play_board.playout_winner().to_score());
@@ -369,7 +364,6 @@ private:
   
   // playout
   Board play_board;
-  SimplePolicy policy;
 
   // tree
   FastPool<MctsNode, 500000> node_pool;

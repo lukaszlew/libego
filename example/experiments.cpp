@@ -59,11 +59,9 @@ public:
   float       influence_scale;
   float       prior;
   bool        progress_dots;
-  SimplePolicy policy;
 
 public:
-  AllAsFirst (Gtp::ReplWithGogui& gtp, FullBoard& board_)
-    : board (&board_), policy(global_random)
+  AllAsFirst (Gtp::ReplWithGogui& gtp, FullBoard& board_) : board (&board_)
   { 
     playout_no       = 50000;
     aaf_fraction     = 0.5;
@@ -85,13 +83,14 @@ public:
     Board mc_board [1];
     mc_board->load (&base_board->board());
 
-    Playout<SimplePolicy> playout(&policy, mc_board);
-    playout.run ();
+    Playout playout(mc_board);
+    Playout::MoveHistory history;
+    playout.DoLightPlayout (history);
 
-    uint aaf_move_count = uint (float(playout.move_history.Size())*aaf_fraction);
+    uint aaf_move_count = uint (float(history.Size())*aaf_fraction);
     float score = mc_board->playout_score ();
 
-    aaf_stats.update (playout.move_history.Data(), aaf_move_count, score);
+    aaf_stats.update (history.Data(), aaf_move_count, score);
   }
 
   void CMoveValue (Gtp::Io& io) {

@@ -9,65 +9,46 @@
 
 // mercy rule
 
-const bool use_mercy_rule      = false;
-const uint mercy_threshold     = 25;
-const uint max_playout_length  = board_area * 2;
 
-enum PlayoutStatus { pass_pass, mercy, too_long};
-
-template <typename Policy> class Playout {
+class Playout {
 public:
-  Policy*  policy;
-  Board*   board;
-  FastStack<Move, max_game_length>  move_history;
-  PlayoutStatus status;
+  enum Status { pass_pass, mercy, too_long };
+  static const uint default_max_length = board_area * 2;
+  typedef FastStack <Move, default_max_length> MoveHistory;
 
-  Playout (Policy* policy_, Board*  board_) : policy (policy_), board (board_) {}
+public:
+  Playout (Board* board_,
+           FastRandom& random_ = global_random,
+           uint max_length_ = default_max_length)
+    : board (board_), random (random_), max_length (max_length_)
+  {
+  }
 
-  all_inline flatten
-  bool playout_end() {
-    if (board->both_player_pass ()) {
-      status = pass_pass;
-      return true;
+  template <uint stack_size>
+  all_inline
+  Status DoLightPlayout (FastStack<Move, stack_size>& history) {
+    while (true) {
+      if (board->both_player_pass ())       return pass_pass;
+      if (board->move_no >= max_length)     return too_long;
+      //if (abs(board->approx_score ()) > 25) return mercy;
+      PlayLightMove ();
+      if (!history.IsFull ())
+        history.Push (board->last_move());
     }
-
-    if (board->move_no >= max_playout_length) {
-      status = too_long;
-      return true;
-    }
-
-    if (use_mercy_rule &&
-        uint (abs (float(board->approx_score ()))) > mercy_threshold) {
-      status = mercy;
-      return true;
-    }
-    return false;
   }
 
   all_inline
-  PlayoutStatus run () {
-    move_history.Clear();
-
-    while (!playout_end()) {
-      policy->play_move (board);
-      Move m = board->last_move();
-      move_history.Push(m);
+  Status DoLightPlayout () {
+    while (true) {
+      if (board->both_player_pass ())       return pass_pass;
+      if (board->move_no >= max_length)     return too_long;
+      //if (abs(board->approx_score ()) > 25) return mercy;
+      PlayLightMove ();
     }
-
-    return status;
-  }
-  
-};
-
-// -----------------------------------------------------------------------------
-
-class SimplePolicy {
-public:
-  SimplePolicy(FastRandom& random_) : random(random_) { 
   }
 
   all_inline
-  void play_move (Board* board) {
+  void PlayLightMove () {
     uint ii_start = random.rand_int (board->empty_v_cnt); 
     uint ii = ii_start;
     Player act_player = board->act_player ();
@@ -89,30 +70,7 @@ public:
     }
   }
 
-protected:
-  FastRandom& random;
-};
-
-typedef Playout<SimplePolicy> SimplePlayout;
-
-// -----------------------------------------------------------------------------
-
-// TODO simplify and test performance
-class LocalPolicy : protected SimplePolicy {
-public:
-
-  LocalPolicy(FastRandom& random_) : SimplePolicy(random_) { 
-  }
-
-  all_inline
-  void play_move (Board* board) {
-    if (play_local(board)) return;
-    SimplePolicy::play_move(board);
-  }
-
-private:
-  all_inline
-  bool play_local(Board *board) {
+  bool PlayLocalMove () {
     // P(local) = 1/3
     if (random.rand_int(3)) return false;
 
@@ -145,6 +103,12 @@ private:
     return false;
   }
 
+private:
+  Board* board;
+  FastRandom& random;
+  uint max_length;
 };
+
+// -----------------------------------------------------------------------------
 
 #endif

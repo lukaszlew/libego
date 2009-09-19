@@ -24,6 +24,8 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#include <vector>
+
 #include "utils.h"
 #include "testing.h"
 #include "fast_random.h"
@@ -41,12 +43,26 @@ public:
     return size == 0;
   }
 
+  bool IsFull () const {
+    return size == max_size;
+  }
+
   uint Size() const {
     return size;
   }
-  
+
+  uint Capacity () const {
+    return max_size - size;
+  }
+
   Elt* Data() {
     return tab;
+  }
+
+  vector<Elt> AsVector () {
+    vector<Elt> ret(size);
+    rep (ii, size) ret[ii] = tab[ii];
+    return ret;
   }
 
   void Push (const Elt& elt) {
