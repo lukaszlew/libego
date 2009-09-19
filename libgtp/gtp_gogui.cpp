@@ -4,13 +4,12 @@
 #define FOREACH BOOST_FOREACH
 
 namespace Gtp {
-namespace Gogui {
 
-Analyze::Analyze () : Repl () {
-  Register ("gogui_analyze_commands", this, &Analyze::CAnalyze);
+ReplWithGogui::ReplWithGogui () : Repl () {
+  Register ("gogui_analyze_commands", this, &ReplWithGogui::CAnalyze);
 }
 
-void Analyze::RegisterGfx (const string& name,
+void ReplWithGogui::RegisterGfx (const string& name,
                            const string& params,
                            Callback command)
 {
@@ -22,7 +21,7 @@ void Analyze::RegisterGfx (const string& name,
   }
 }
 
-void Analyze::CParam (const string& cmd_name, Io& io) {
+void ReplWithGogui::CParam (const string& cmd_name, Io& io) {
   map<string, Callback>& vars = params[cmd_name];
   if (io.IsEmpty ()) {
     // print all vars and their values
@@ -41,9 +40,8 @@ void Analyze::CParam (const string& cmd_name, Io& io) {
   vars[var_name] (io);
 }
 
-void Analyze::CAnalyze (Io& io) {
+void ReplWithGogui::CAnalyze (Io& io) {
   io.Out () << analyze_list.str ();
 }
 
-} // namespace Gogui
 } // namespace Gtp

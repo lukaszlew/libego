@@ -29,7 +29,7 @@ struct Fixture {
   stringstream out;
   stringstream expected_out;
 
-  Gtp::Gogui::Analyze analyze;
+  Gtp::ReplWithGogui gtp;
   DummyAnalyzeUser dau;
 
   int i;
@@ -42,17 +42,17 @@ struct Fixture {
   {
     out << endl;
     expected_out << endl;
-    analyze.RegisterGfx ("do_gfx",  "all",  &DoGfx);
-    analyze.RegisterGfx ("do_gfx",  "half", &DoGfx);
-    analyze.RegisterGfx ("do_gfx",  "",     &DoGfx);
-    analyze.RegisterGfx ("do_blah",
+    gtp.RegisterGfx ("do_gfx",  "all",  &DoGfx);
+    gtp.RegisterGfx ("do_gfx",  "half", &DoGfx);
+    gtp.RegisterGfx ("do_gfx",  "",     &DoGfx);
+    gtp.RegisterGfx ("do_blah",
                                 "",
                                 &dau,
                                 &DummyAnalyzeUser::DoBlah);
-    analyze.RegisterParam ("test.params",  "int",   &i);
-    analyze.RegisterParam ("test.params",  "float", &f);
-    analyze.RegisterParam ("test.params",  "str",   &s);
-    analyze.RegisterParam ("test.params2", "same_str", &s);
+    gtp.RegisterParam ("test.params",  "int",   &i);
+    gtp.RegisterParam ("test.params",  "float", &f);
+    gtp.RegisterParam ("test.params",  "str",   &s);
+    gtp.RegisterParam ("test.params2", "same_str", &s);
   }
 };
 
@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE (ListCommands) {
     << endl
     ;
 
-  analyze.Run(in, out);
+  gtp.Run(in, out);
   BOOST_CHECK_EQUAL (out.str(), expected_out.str());
 }
 
@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE (GoguiAnalyzeCommands) {
     << "= " << endl
     << endl
     ;
-  analyze.Run(in, out);
+  gtp.Run(in, out);
   BOOST_CHECK_EQUAL (out.str(), expected_out.str());
 }
 
@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE (GfxVariable1) {
     << "= 1.5" << endl
     << endl
     ;
-  analyze.Run(in, out);
+  gtp.Run(in, out);
   BOOST_CHECK_EQUAL (out.str(), expected_out.str());
 }
 
@@ -163,7 +163,7 @@ BOOST_AUTO_TEST_CASE (GfxVariable2) {
     << "= string_with_no_spaces" << endl
     << endl
     ;
-  analyze.Run(in, out);
+  gtp.Run(in, out);
   BOOST_CHECK_EQUAL (out.str(), expected_out.str());
   BOOST_CHECK_EQUAL (f, 11.5);
   BOOST_CHECK_EQUAL (s, "string_with_no_spaces");
