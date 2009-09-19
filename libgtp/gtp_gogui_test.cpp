@@ -29,7 +29,6 @@ struct Fixture {
   stringstream out;
   stringstream expected_out;
 
-  Gtp::Repl gtp;
   Gtp::Gogui::Analyze analyze;
   DummyAnalyzeUser dau;
 
@@ -39,14 +38,14 @@ struct Fixture {
   // TODO try custom type with << >> operators
 
   Fixture()
-    : analyze (gtp), i(1), f(1.5), s("one_and_half")
+    : i(1), f(1.5), s("one_and_half")
   {
     out << endl;
     expected_out << endl;
-    analyze.RegisterGfxCommand ("do_gfx",  "all",  &DoGfx);
-    analyze.RegisterGfxCommand ("do_gfx",  "half", &DoGfx);
-    analyze.RegisterGfxCommand ("do_gfx",  "",     &DoGfx);
-    analyze.RegisterGfxCommand ("do_blah",
+    analyze.RegisterGfx ("do_gfx",  "all",  &DoGfx);
+    analyze.RegisterGfx ("do_gfx",  "half", &DoGfx);
+    analyze.RegisterGfx ("do_gfx",  "",     &DoGfx);
+    analyze.RegisterGfx ("do_blah",
                                 "",
                                 &dau,
                                 &DummyAnalyzeUser::DoBlah);
@@ -80,7 +79,7 @@ BOOST_AUTO_TEST_CASE (ListCommands) {
     << endl
     ;
 
-  gtp.Run(in, out);
+  analyze.Run(in, out);
   BOOST_CHECK_EQUAL (out.str(), expected_out.str());
 }
 
@@ -104,7 +103,7 @@ BOOST_AUTO_TEST_CASE (GoguiAnalyzeCommands) {
     << "= " << endl
     << endl
     ;
-  gtp.Run(in, out);
+  analyze.Run(in, out);
   BOOST_CHECK_EQUAL (out.str(), expected_out.str());
 }
 
@@ -134,7 +133,7 @@ BOOST_AUTO_TEST_CASE (GfxVariable1) {
     << "= 1.5" << endl
     << endl
     ;
-  gtp.Run(in, out);
+  analyze.Run(in, out);
   BOOST_CHECK_EQUAL (out.str(), expected_out.str());
 }
 
@@ -164,7 +163,7 @@ BOOST_AUTO_TEST_CASE (GfxVariable2) {
     << "= string_with_no_spaces" << endl
     << endl
     ;
-  gtp.Run(in, out);
+  analyze.Run(in, out);
   BOOST_CHECK_EQUAL (out.str(), expected_out.str());
   BOOST_CHECK_EQUAL (f, 11.5);
   BOOST_CHECK_EQUAL (s, "string_with_no_spaces");

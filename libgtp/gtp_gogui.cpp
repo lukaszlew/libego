@@ -6,24 +6,19 @@
 namespace Gtp {
 namespace Gogui {
 
-Analyze::Analyze (Repl& gtp_) : gtp (gtp_) {
-  gtp.Register ("gogui_analyze_commands", this, &Analyze::CAnalyze);
+Analyze::Analyze () : Repl () {
+  Register ("gogui_analyze_commands", this, &Analyze::CAnalyze);
 }
 
-Repl& Analyze::GetRepl() {
-  return gtp;
-}
-
-
-void Analyze::RegisterGfxCommand (const string& name,
-                                  const string& params,
-                                  Callback command)
+void Analyze::RegisterGfx (const string& name,
+                           const string& params,
+                           Callback command)
 {
   string full_name = params == "" ? name : name + " " + params;
   analyze_list
     << "gfx/" << full_name << "/" << full_name << endl;
-  if (!gtp.IsCommand (name)) {
-    gtp.Register (name, command);
+  if (!IsCommand (name)) {
+    Register (name, command);
   }
 }
 
