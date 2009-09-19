@@ -169,15 +169,12 @@ public:
   
   MctsParams (Gtp::Gogui::Analyze& gogui_analyze) {
     explore_rate                   = 1.0;
-    genmove_playout_count          = 10000;
     mature_update_count_threshold  = 100.0;
     min_visit                      = 2500;
     resign_mean                    = -0.95;
 
     gogui_analyze.RegisterParam ("MCTS.params", "explore_rate",
                                  &explore_rate);
-    gogui_analyze.RegisterParam ("MCTS.params", "playout_count",
-                                 &genmove_playout_count);
     gogui_analyze.RegisterParam ("MCTS.params", "#_updates_to_promote",
                                  &mature_update_count_threshold);
     gogui_analyze.RegisterParam ("MCTS.params", "print_min_visit",
@@ -189,7 +186,6 @@ private:
   friend class Mcts;
 
   float explore_rate;
-  uint  genmove_playout_count;
   float mature_update_count_threshold;
   float resign_mean;
   float min_visit;
@@ -210,7 +206,7 @@ public:
                                       &Mcts::CShowNewPlayout);
   }
 
-  Vertex Genmove () {
+  void Reset () {
     Player act_player = full_board.board().act_player();
     // prepare pool and root of the tree
     node_pool.Reset();
@@ -224,23 +220,34 @@ public:
         alloc_child (act_player, v);
       }
     });
+  }
 
-    // do playouts 
-    rep (ii, params.genmove_playout_count) {
+  void DoNPlayouts (uint n) {
+    rep (ii, n) {
       DoOnePlayout ();
     }
+  }
 
+  string ToString () {
+    act_node.ResetToRoot();
+    return tree_to_string (act_node, params.min_visit);
+  }
+
+  Vertex BestMove () {
     // Find best move from the root and print tree.
     act_node.ResetToRoot();
     MctsNode* best_node = most_explored_root_node ();
-    cerr << tree_to_string (act_node, params.min_visit) << endl;
 
     // Return the best move or resign.
+    Player act_player = full_board.board().act_player();
+
     return
       (act_player.subjective_score (best_node->stat.mean()) < params.resign_mean) ? 
       Vertex::resign () :
       best_node->v;
   }
+
+private:
 
   void DoOnePlayout (){
     // Prepare simulation board and tree iterator.
@@ -284,8 +291,6 @@ public:
     update_history (play_board.playout_winner().to_score());
   }
   
-private:
-
   void do_tree_move () {
     Vertex v = mcts_child_move();
     act_node.Descend (v);
@@ -389,10 +394,12 @@ private:
 
 class Genmove {
 public:
-  Genmove (Gtp::Repl& gtp, FullBoard& full_board_, Mcts& mcts_)
+  Genmove (Gtp::Gogui::Analyze& gtp, FullBoard& full_board_, Mcts& mcts_)
     : mcts(mcts_), full_board(full_board_)
   {
-    gtp.RegisterCommand ("genmove", this, &Genmove::CGenmove);
+    playout_count = 10000;
+    gtp.GetRepl().RegisterCommand ("genmove", this, &Genmove::CGenmove);
+    gtp.RegisterParam ("genmove.params", "playout_count", &playout_count);
   }
 
 private:
@@ -402,7 +409,11 @@ private:
 
     full_board.set_act_player(player);
 
-    Vertex v = mcts.Genmove ();
+    mcts.Reset ();
+    mcts.DoNPlayouts (playout_count);
+    cerr << mcts.ToString () << endl;
+
+    Vertex v = mcts.BestMove ();
 
     if (v != Vertex::resign ()) {
       bool ok = full_board.try_play (player, v);
@@ -412,7 +423,8 @@ private:
       io.Out () << "resign";
     }
   }
-
+private:
   Mcts& mcts;
   FullBoard& full_board;
+  float playout_count;
 };
