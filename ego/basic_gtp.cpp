@@ -28,12 +28,12 @@
 #include "testing.h"
 
 BasicGtp::BasicGtp (Gtp::Repl& gtp, FullBoard& board_) : board (board_) { 
-  gtp.RegisterCommand ("boardsize",    this, &BasicGtp::CBoardsize);
-  gtp.RegisterCommand ("clear_board",  this, &BasicGtp::CClear_board);
-  gtp.RegisterCommand ("komi",         this, &BasicGtp::CKomi);
-  gtp.RegisterCommand ("play",         this, &BasicGtp::CPlay);
-  gtp.RegisterCommand ("undo",         this, &BasicGtp::CUndo);
-  gtp.RegisterCommand ("showboard",    this, &BasicGtp::CShowboard);
+  gtp.Register ("boardsize",    this, &BasicGtp::CBoardsize);
+  gtp.Register ("clear_board",  this, &BasicGtp::CClear_board);
+  gtp.Register ("komi",         this, &BasicGtp::CKomi);
+  gtp.Register ("play",         this, &BasicGtp::CPlay);
+  gtp.Register ("undo",         this, &BasicGtp::CUndo);
+  gtp.Register ("showboard",    this, &BasicGtp::CShowboard);
 }
 
 

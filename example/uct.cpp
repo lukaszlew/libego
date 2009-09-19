@@ -106,12 +106,12 @@ private:
 
 class PlayoutGfx {
 public:
-  PlayoutGfx (Gtp::Gogui::Analyze& gogui_analyze, const string& prefix) {
+  PlayoutGfx (Gtp::ReplWithGogui& gtp, const string& prefix) {
     const string cmd_name = prefix + "show";
-    gogui_analyze.RegisterGfxCommand (cmd_name, "",     this, &PlayoutGfx::CShow);
-    gogui_analyze.RegisterGfxCommand (cmd_name, "6", this, &PlayoutGfx::CShow);
-    gogui_analyze.RegisterGfxCommand (cmd_name, "more", this, &PlayoutGfx::CShow);
-    gogui_analyze.RegisterGfxCommand (cmd_name, "less", this, &PlayoutGfx::CShow);
+    gtp.RegisterGfx (cmd_name, "",     this, &PlayoutGfx::CShow);
+    gtp.RegisterGfx (cmd_name, "6",    this, &PlayoutGfx::CShow);
+    gtp.RegisterGfx (cmd_name, "more", this, &PlayoutGfx::CShow);
+    gtp.RegisterGfx (cmd_name, "less", this, &PlayoutGfx::CShow);
     show_move_count = 6;
   }
 
@@ -167,17 +167,17 @@ private:
 class MctsParams {
 public:
   
-  MctsParams (Gtp::Gogui::Analyze& gogui_analyze) {
+  MctsParams (Gtp::ReplWithGogui& gtp) {
     explore_rate                   = 1.0;
     mature_update_count_threshold  = 100.0;
     min_visit                      = 2500;
     resign_mean                    = -0.95;
 
-    gogui_analyze.RegisterParam ("MCTS.params", "explore_rate",
+    gtp.RegisterParam ("MCTS.params", "explore_rate",
                                  &explore_rate);
-    gogui_analyze.RegisterParam ("MCTS.params", "#_updates_to_promote",
+    gtp.RegisterParam ("MCTS.params", "#_updates_to_promote",
                                  &mature_update_count_threshold);
-    gogui_analyze.RegisterParam ("MCTS.params", "print_min_visit",
+    gtp.RegisterParam ("MCTS.params", "print_min_visit",
                                  &min_visit);
   }
 
@@ -196,14 +196,13 @@ private:
 class Mcts {
 public:
   
-  Mcts (Gtp::Gogui::Analyze& gogui_analyze, FullBoard& full_board_)
+  Mcts (Gtp::ReplWithGogui& gtp, FullBoard& full_board_)
     : full_board (full_board_),
       policy (global_random),
-      params (gogui_analyze),
-      playout_gfx(gogui_analyze, "MCTS.")
+      params (gtp),
+      playout_gfx(gtp, "MCTS.")
   {
-    gogui_analyze.RegisterGfxCommand ("MCTS.show_new_playout", "", this,
-                                      &Mcts::CShowNewPlayout);
+    gtp.RegisterGfx ("MCTS.show_new_playout", "", this, &Mcts::CShowNewPlayout);
   }
 
   void Reset () {
@@ -394,11 +393,11 @@ private:
 
 class Genmove {
 public:
-  Genmove (Gtp::Gogui::Analyze& gtp, FullBoard& full_board_, Mcts& mcts_)
+  Genmove (Gtp::ReplWithGogui& gtp, FullBoard& full_board_, Mcts& mcts_)
     : mcts(mcts_), full_board(full_board_)
   {
     playout_count = 10000;
-    gtp.GetRepl().RegisterCommand ("genmove", this, &Genmove::CGenmove);
+    gtp.Register ("genmove", this, &Genmove::CGenmove);
     gtp.RegisterParam ("genmove.params", "playout_count", &playout_count);
   }
 

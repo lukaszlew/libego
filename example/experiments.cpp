@@ -62,7 +62,7 @@ public:
   SimplePolicy policy;
 
 public:
-  AllAsFirst (Gtp::Gogui::Analyze& gogui, FullBoard& board_)
+  AllAsFirst (Gtp::ReplWithGogui& gtp, FullBoard& board_)
     : board (&board_), policy(global_random)
   { 
     playout_no       = 50000;
@@ -71,16 +71,14 @@ public:
     prior            = 1.0;
     progress_dots    = false;
 
-    gogui.RegisterGfxCommand ("AAF.move_value", "black", 
-                              this, &AllAsFirst::CMoveValue);
-    gogui.RegisterGfxCommand ("AAF.move_value", "white", 
-                              this, &AllAsFirst::CMoveValue);
+    gtp.RegisterGfx ("AAF.move_value", "black", this, &AllAsFirst::CMoveValue);
+    gtp.RegisterGfx ("AAF.move_value", "white", this, &AllAsFirst::CMoveValue);
 
-    gogui.RegisterParam ("AAF.params", "prior",            &prior);
-    gogui.RegisterParam ("AAF.params", "aaf_fraction",     &aaf_fraction);
-    gogui.RegisterParam ("AAF.params", "influence_scale",  &influence_scale);
-    gogui.RegisterParam ("AAF.params", "playout_number",   &playout_no);
-    gogui.RegisterParam ("AAF.params", "20_progress_dots", &progress_dots);
+    gtp.RegisterParam ("AAF.params", "prior",            &prior);
+    gtp.RegisterParam ("AAF.params", "aaf_fraction",     &aaf_fraction);
+    gtp.RegisterParam ("AAF.params", "influence_scale",  &influence_scale);
+    gtp.RegisterParam ("AAF.params", "playout_number",   &playout_no);
+    gtp.RegisterParam ("AAF.params", "20_progress_dots", &progress_dots);
   }
     
   void do_playout (const FullBoard* base_board) {

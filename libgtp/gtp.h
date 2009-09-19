@@ -51,7 +51,7 @@ struct Error {
 extern const Error syntax_error;
 
 // quit GTP Run loop.
-class Quit {};
+struct Quit {};
 
 // -----------------------------------------------------------------------------
 // GTP::Callback and some constructors.
@@ -79,10 +79,12 @@ class Repl {
 public:
   Repl ();
 
-  void RegisterCommand (const string& name, Callback command);
+  void Register (const string& name, Callback command);
 
   template <class T>
-  void RegisterCommand (const string& name, T* object, void(T::*member)(Io&));
+  void Register (const string& name, T* object, void(T::*member)(Io&));
+
+  void RegisterStatic (const string& name, const string& response);
 
   void Run (istream&, ostream&);
 
@@ -101,7 +103,7 @@ private:
 };
 
 // -----------------------------------------------------------------------------
-// internal 
+// internal implementation
 
 template <typename T>
 T Io::Read () {
@@ -130,8 +132,8 @@ Callback OfMethod(T* object, void (T::*member) (Io&)) {
 }
 
 template <class T>
-void Repl::RegisterCommand (const string& name, T* object, void(T::*member)(Io&)) {
-  RegisterCommand (name, OfMethod(object, member));
+void Repl::Register (const string& name, T* object, void(T::*member)(Io&)) {
+  Register (name, OfMethod(object, member));
 }
 
 

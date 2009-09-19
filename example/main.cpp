@@ -36,18 +36,17 @@
 #define VERSION unknown
 #endif
 
-Gtp::Repl gtp;
-Gtp::Gogui::Analyze gogui_analyze (gtp);
+Gtp::ReplWithGogui gtp;
 
 FullBoard board;
 SgfTree sgf_tree;
 
 BasicGtp    basic_gtp (gtp, board);
-SgfGtp      sgf_gtp (gtp, sgf_tree, board);
-AllAsFirst  aaf (gogui_analyze, board);
+SgfGtp      sgf_gtp   (gtp, sgf_tree, board);
+AllAsFirst  aaf       (gtp, board);
 
-Mcts        mcts (gogui_analyze, board);
-Genmove     genmove (gogui_analyze, board, mcts);
+Mcts        mcts      (gtp, board);
+Genmove     genmove   (gtp, board, mcts);
 
 int main(int argc, char** argv) {
   // no buffering to work well with gogui
@@ -105,9 +104,9 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  gtp.RegisterCommand("name", Gtp::StaticCommand("Libego"));
-  gtp.RegisterCommand("version", Gtp::StaticCommand(STRING(VERSION)));
-  gtp.RegisterCommand("protocol_version", Gtp::StaticCommand("2"));
+  gtp.RegisterStatic("name", "Libego");
+  gtp.RegisterStatic("version", STRING(VERSION));
+  gtp.RegisterStatic("protocol_version", "2");
 
   gtp.Run (cin, cout);
 

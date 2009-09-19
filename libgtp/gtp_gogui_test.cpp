@@ -29,8 +29,7 @@ struct Fixture {
   stringstream out;
   stringstream expected_out;
 
-  Gtp::Repl gtp;
-  Gtp::Gogui::Analyze analyze;
+  Gtp::ReplWithGogui gtp;
   DummyAnalyzeUser dau;
 
   int i;
@@ -39,21 +38,21 @@ struct Fixture {
   // TODO try custom type with << >> operators
 
   Fixture()
-    : analyze (gtp), i(1), f(1.5), s("one_and_half")
+    : i(1), f(1.5), s("one_and_half")
   {
     out << endl;
     expected_out << endl;
-    analyze.RegisterGfxCommand ("do_gfx",  "all",  &DoGfx);
-    analyze.RegisterGfxCommand ("do_gfx",  "half", &DoGfx);
-    analyze.RegisterGfxCommand ("do_gfx",  "",     &DoGfx);
-    analyze.RegisterGfxCommand ("do_blah",
+    gtp.RegisterGfx ("do_gfx",  "all",  &DoGfx);
+    gtp.RegisterGfx ("do_gfx",  "half", &DoGfx);
+    gtp.RegisterGfx ("do_gfx",  "",     &DoGfx);
+    gtp.RegisterGfx ("do_blah",
                                 "",
                                 &dau,
                                 &DummyAnalyzeUser::DoBlah);
-    analyze.RegisterParam ("test.params",  "int",   &i);
-    analyze.RegisterParam ("test.params",  "float", &f);
-    analyze.RegisterParam ("test.params",  "str",   &s);
-    analyze.RegisterParam ("test.params2", "same_str", &s);
+    gtp.RegisterParam ("test.params",  "int",   &i);
+    gtp.RegisterParam ("test.params",  "float", &f);
+    gtp.RegisterParam ("test.params",  "str",   &s);
+    gtp.RegisterParam ("test.params2", "same_str", &s);
   }
 };
 

@@ -4,31 +4,24 @@
 #define FOREACH BOOST_FOREACH
 
 namespace Gtp {
-namespace Gogui {
 
-Analyze::Analyze (Repl& gtp_) : gtp (gtp_) {
-  gtp.RegisterCommand ("gogui_analyze_commands",
-                       OfMethod (this, &Analyze::CAnalyze));
+ReplWithGogui::ReplWithGogui () : Repl () {
+  Register ("gogui_analyze_commands", this, &ReplWithGogui::CAnalyze);
 }
 
-Repl& Analyze::GetRepl() {
-  return gtp;
-}
-
-
-void Analyze::RegisterGfxCommand (const string& name,
-                                  const string& params,
-                                  Callback command)
+void ReplWithGogui::RegisterGfx (const string& name,
+                           const string& params,
+                           Callback command)
 {
   string full_name = params == "" ? name : name + " " + params;
   analyze_list
     << "gfx/" << full_name << "/" << full_name << endl;
-  if (!gtp.IsCommand (name)) {
-    gtp.RegisterCommand (name, command);
+  if (!IsCommand (name)) {
+    Register (name, command);
   }
 }
 
-void Analyze::CParam (const string& cmd_name, Io& io) {
+void ReplWithGogui::CParam (const string& cmd_name, Io& io) {
   map<string, Callback>& vars = params[cmd_name];
   if (io.IsEmpty ()) {
     // print all vars and their values
@@ -47,9 +40,8 @@ void Analyze::CParam (const string& cmd_name, Io& io) {
   vars[var_name] (io);
 }
 
-void Analyze::CAnalyze (Io& io) {
+void ReplWithGogui::CAnalyze (Io& io) {
   io.Out () << analyze_list.str ();
 }
 
-} // namespace Gogui
 } // namespace Gtp
