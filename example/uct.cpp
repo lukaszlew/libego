@@ -42,7 +42,8 @@ struct NodeData {
     stringstream s;
     s << player.to_string () << " " 
       << v.to_string () << " " 
-      << stat.to_string();
+      << stat.to_string()
+      ;
     return s.str();
   }
 };
@@ -264,7 +265,7 @@ private:
     act_node.ResetToRoot ();
     // descent the MCTS tree
     while(act_node->HaveChildren()) {
-      do_tree_move();
+      DoTreeMove();
       if (play_board.last_move_status != Board::play_ok) {
         // large suicide
         delete_act_node ();
@@ -289,7 +290,7 @@ private:
       });
 
       // Descend one more level.
-      do_tree_move();
+      DoTreeMove();
       assertc (mcts_ac, play_board.last_move_status == Board::play_ok);
     }
 
@@ -300,15 +301,8 @@ private:
     update_history (play_board.playout_winner().to_score());
   }
   
-  void do_tree_move () {
-    Vertex v = mcts_child_move();
-    act_node.Descend (v);
-    Player pl = play_board.act_player ();
-    assertc (mcts_ac, play_board.is_pseudo_legal (pl, v));
-    play_board.play_legal (pl, v);
-  }
-
-  Vertex mcts_child_move() {
+  void DoTreeMove () {
+    // Find UCT child.
     Vertex best_v = Vertex::any();
     float best_urgency = -large_float;
     float explore_coeff = log (act_node->stat.update_count()) * params.explore_rate;
@@ -322,13 +316,19 @@ private:
     }
 
     assertc (tree_ac, best_v != Vertex::any()); // at least pass
-    return best_v;
+    
+    // Update tree itreatror and playout board.
+    act_node.Descend (best_v);
+    Player pl = play_board.act_player ();
+    assertc (mcts_ac, play_board.is_pseudo_legal (pl, best_v));
+    play_board.play_legal (pl, best_v);
   }
 
   void update_history (float score) {
-    rep (hi, act_node.Path().size()) {
-      // black -> 1, white -> -1
-      act_node.Path()[hi]->stat.update (score);
+    // score: black -> 1, white -> -1
+    vector<MctsNode*> path = act_node.Path();
+    rep (ii, path.size()) {
+      path[ii]->stat.update (score);
     }
   }
 
