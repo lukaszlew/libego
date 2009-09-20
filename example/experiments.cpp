@@ -83,9 +83,9 @@ public:
     Board mc_board [1];
     mc_board->load (&base_board->board());
 
-    Playout playout(mc_board);
-    Playout::MoveHistory history;
-    playout.DoLightPlayout (history);
+    LightPlayout playout(mc_board);
+    LightPlayout::MoveHistory history;
+    playout.Run (history);
 
     uint aaf_move_count = uint (float(history.Size())*aaf_fraction);
     float score = mc_board->playout_score ();

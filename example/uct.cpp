@@ -242,12 +242,12 @@ public:
   }
 
   vector<Move> NewPlayout () {
-    Playout::MoveHistory history;
+    LightPlayout::MoveHistory history;
 
     Board playout_board;
     playout_board.load (&full_board.board());
-    Playout playout (&playout_board);
-    playout.DoLightPlayout (history);
+    LightPlayout playout (&playout_board);
+    playout.Run (history);
     
     return history.AsVector ();
   }
@@ -290,7 +290,7 @@ private:
     }
 
     // Finish with regular playout.
-    Playout (&play_board).DoLightPlayout ();
+    LightPlayout (&play_board).Run();
     
     // Update score.
     update_history (play_board.playout_winner().to_score());
