@@ -204,7 +204,8 @@ public:
     Player act_player = full_board.board().act_player();
     // prepare pool and root of the tree
     node_pool.Reset();
-    act_node.SetToRoot(node_pool.Alloc());
+    root = node_pool.Alloc();
+    act_node.SetToRoot(root);
     act_node->player = act_player.other();
     act_node->v = Vertex::any();
 
@@ -223,13 +224,11 @@ public:
   }
 
   string ToString () {
-    act_node.ResetToRoot();
-    return tree_to_string (act_node, params.min_visit);
+    return tree_to_string (root, params.min_visit);
   }
 
   Vertex BestMove () {
     // Find best move from the root and print tree.
-    act_node.ResetToRoot();
     MctsNode* best_node = most_explored_root_node ();
 
     // Return the best move or resign.
@@ -331,7 +330,7 @@ private:
     MctsNode* best = NULL;
     float best_update_count = -1;
 
-    for (MctsNode::ChildrenIterator child(*act_node); child; ++child) {
+    for (MctsNode::ChildrenIterator child(*root); child; ++child) {
       if (child->stat.update_count() > best_update_count) {
         best_update_count = child->stat.update_count();
         best = child;
@@ -367,6 +366,7 @@ private:
 
   // tree
   FastPool<MctsNode, 500000> node_pool;
+  MctsNode* root;
   MctsNode::Iterator act_node;      // TODO sync tree->root with full_board
 
   // params
