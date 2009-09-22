@@ -21,16 +21,6 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <algorithm>
-#include <sstream>
-#include <vector>
-
-#include "fast_tree.h"
-#include "stat.h"
-#include "full_board.h"
-#include "gtp.h"
-#include "gtp_gogui.h"
-
 // -----------------------------------------------------------------------------
 
 struct NodeData {
@@ -105,98 +95,11 @@ private:
 
 // -----------------------------------------------------------------------------
 
-template <class Source>
-class PlayoutGfx {
-public:
-  PlayoutGfx (Gtp::ReplWithGogui& gtp, Source& source_, const string& prefix)
-    : source (source_)
-  {
-    const string cmd_name = prefix + "show";
-    gtp.RegisterGfx (cmd_name, "new",  this, &PlayoutGfx::CShow);
-    gtp.RegisterGfx (cmd_name, "more", this, &PlayoutGfx::CShow);
-    gtp.RegisterGfx (cmd_name, "less", this, &PlayoutGfx::CShow);
-    show_move_count = 6;
-  }
-
-  void CShow (Gtp::Io& io) {
-    int n = io.Read<int> (-1);
-    if (n > 0) {
-      io.CheckEmpty ();
-      show_move_count = n;
-    } else {
-      string sub = io.Read<string> ();
-      io.CheckEmpty ();
-      if (sub == "new") {
-        show_move_count = 6;
-        playout = source.NewPlayout ();
-      } else if (sub == "more") {
-        show_move_count += 1;
-      } else if (sub == "less") {
-        show_move_count -= 1;
-      } else {
-        throw Gtp::syntax_error;
-      }
-    }
-
-    show_move_count = max(show_move_count, 0);
-    show_move_count = min(show_move_count, int(playout.size()));
-
-    Gfx gfx;
-
-    rep(ii, show_move_count) {
-      gfx.add_var_move(playout[ii]);
-    }
-
-    if (show_move_count > 0) {
-      gfx.add_symbol(playout[show_move_count-1].get_vertex(), Gfx::circle);
-    }
-
-    io.Out () << gfx.to_string ();
-  }
-
-private:
-  vector<Move> playout;
-  int show_move_count;
-  Source& source;
-};
-
-// -----------------------------------------------------------------------------
-
-class MctsParams {
-public:
-  
-  MctsParams (Gtp::ReplWithGogui& gtp) {
-    explore_rate                   = 1.0;
-    mature_update_count_threshold  = 100.0;
-    min_visit                      = 2500;
-    resign_mean                    = -0.95;
-
-    gtp.RegisterParam ("MCTS.params", "explore_rate",
-                                 &explore_rate);
-    gtp.RegisterParam ("MCTS.params", "#_updates_to_promote",
-                                 &mature_update_count_threshold);
-    gtp.RegisterParam ("MCTS.params", "print_min_visit",
-                                 &min_visit);
-  }
-
-private:
-
-  friend class Mcts;
-
-  float explore_rate;
-  float mature_update_count_threshold;
-  float resign_mean;
-  float min_visit;
-};
-
-// -----------------------------------------------------------------------------
-
 class Mcts {
 public:
   
-  Mcts (Gtp::ReplWithGogui& gtp, FullBoard& full_board_)
-    : full_board (full_board_),
-      params (gtp)
+  Mcts (FullBoard& full_board_, MctsParams& params_)
+    : full_board (full_board_),  params (params_)
   {
   }
 
@@ -370,47 +273,8 @@ private:
   MctsNode::Iterator act_node;      // TODO sync tree->root with full_board
 
   // params
-  MctsParams params;
+  MctsParams& params;
 
   // presentation
   TreeToString tree_to_string;
-};
-
-// -----------------------------------------------------------------------------
-
-class Genmove {
-public:
-  Genmove (Gtp::ReplWithGogui& gtp, FullBoard& full_board_, Mcts& mcts_)
-    : mcts(mcts_), full_board(full_board_)
-  {
-    playout_count = 10000;
-    gtp.Register ("genmove", this, &Genmove::CGenmove);
-    gtp.RegisterParam ("genmove.params", "playout_count", &playout_count);
-  }
-
-private:
-  void CGenmove (Gtp::Io& io) {
-    Player player = io.Read<Player> ();
-    io.CheckEmpty ();
-
-    full_board.set_act_player(player);
-
-    mcts.Reset ();
-    mcts.DoNPlayouts (playout_count);
-    cerr << mcts.ToString () << endl;
-
-    Vertex v = mcts.BestMove ();
-
-    if (v != Vertex::resign ()) {
-      bool ok = full_board.try_play (player, v);
-      assert(ok);
-      io.Out () << v.to_string();
-    } else {
-      io.Out () << "resign";
-    }
-  }
-private:
-  Mcts& mcts;
-  FullBoard& full_board;
-  float playout_count;
 };

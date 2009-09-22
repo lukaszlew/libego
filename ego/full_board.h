@@ -2,6 +2,7 @@
 #define _FULL_BOARD_H_
 
 #include "board.h"
+#include "fast_stack.h"
 
 class FullBoard : public Board {
 public:

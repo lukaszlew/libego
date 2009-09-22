@@ -21,15 +21,27 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <iostream>
+#include <algorithm>
+#include <cstdio>
+#include <cmath>
 #include <fstream>
+#include <iostream>
+#include <sstream>
+#include <vector>
 
-#include "ego.h"
-#include "benchmark.h"
-#include "uct.cpp"
+// private libraries
+#include <gtp_gogui.h>
+#include <ego.h>
+
+// local hard-include
+#include "fast_tree.h"
+#include "stat.h"
+
+#include "mcts_params.cpp"
+#include "mcts.cpp"
+#include "playout_gfx.cpp"
+#include "genmove.cpp"
 #include "experiments.cpp"
-
-#include "gtp.h"
 
 // TODO automatize through CMake (and add git SHA1)
 #ifndef VERSION
@@ -45,7 +57,8 @@ BasicGtp    basic_gtp (gtp, board);
 SgfGtp      sgf_gtp   (gtp, sgf_tree, board);
 AllAsFirst  aaf       (gtp, board);
 
-Mcts        mcts      (gtp, board);
+MctsParams  mcts_params (gtp);
+Mcts        mcts      (board, mcts_params);
 Genmove     genmove   (gtp, board, mcts);
 
 PlayoutGfx<Mcts> playout_gfx(gtp, mcts, "MCTS.");
