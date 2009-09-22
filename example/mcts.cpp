@@ -101,11 +101,18 @@ private:
 class Mcts {
 public:
   
-  Mcts (FullBoard& full_board_, MctsParams& params_)
+  Mcts (FullBoard& full_board_)
     : full_board (full_board_),
-      root (new MctsNode(NodeData(Player::white(), Vertex::any()))),
-      params (params_)
+      root (new MctsNode(NodeData(Player::white(), Vertex::any())))
   {
+    uct_explore_coeff    = 1.0;
+    mature_update_count  = 100.0;
+    print_update_count   = 500.0;
+    resign_mean          = -0.95;
+  }
+
+  ~Mcts () {
+    delete root; // TODO scoped_ptr
   }
 
   void Reset () {
@@ -129,7 +136,7 @@ public:
   }
 
   string ToString () {
-    return tree_to_string (root, params.print_update_count);
+    return tree_to_string (root, print_update_count);
   }
 
   Vertex BestMove () {
@@ -140,7 +147,7 @@ public:
     Player act_player = full_board.board().act_player();
 
     return
-      (act_player.subjective_score (best_node->stat.mean()) < params.resign_mean) ? 
+      (act_player.subjective_score (best_node->stat.mean()) < resign_mean) ? 
       Vertex::resign () :
       best_node->v;
   }
@@ -183,7 +190,7 @@ private:
     }
     
     // Is leaf is ready to expand ?
-    if (ActNode()->stat.update_count() > params.mature_update_count) {
+    if (ActNode()->stat.update_count() > mature_update_count) {
       Player pl = play_board.act_player();
       assertc (mcts_ac, pl == ActNode()->player.other());
 
@@ -210,7 +217,7 @@ private:
     MctsNode* best_node = NULL;
     float best_urgency = -large_float;
     float explore_coeff
-      = log (ActNode()->stat.update_count()) * params.uct_explore_coeff;
+      = log (ActNode()->stat.update_count()) * uct_explore_coeff;
 
     for(MctsNode::ChildrenIterator ni(*ActNode()); ni; ++ni) {
       float child_urgency = ni->stat.ucb (ni->player, explore_coeff);
@@ -258,6 +265,14 @@ private:
   }
 
 private:
+  friend class MctsGtp;
+
+  // parameters
+  float uct_explore_coeff;
+  float mature_update_count;
+  float print_update_count;
+  float resign_mean;
+
   // base board
   FullBoard& full_board;
   
@@ -268,9 +283,6 @@ private:
   MctsNode* root;
   vector <MctsNode*> trace;
 
-  // params
-  MctsParams& params;
-
-  // presentation
+  // tree printing
   TreeToString tree_to_string;
 };

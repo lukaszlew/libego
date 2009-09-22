@@ -37,10 +37,9 @@
 #include "fast_tree.h"
 #include "stat.h"
 
-#include "mcts_params.cpp"
 #include "mcts.cpp"
+#include "mcts_gtp.cpp"
 #include "playout_gfx.cpp"
-#include "genmove.cpp"
 //#include "experiments.cpp"
 
 // TODO automatize through CMake (and add git SHA1)
@@ -56,9 +55,8 @@ SgfTree sgf_tree;
 BasicGtp    basic_gtp (gtp, board);
 //SgfGtp      sgf_gtp   (gtp, sgf_tree, board);
 
-MctsParams  mcts_params (gtp);
-Mcts        mcts      (board, mcts_params);
-Genmove     genmove   (gtp, board, mcts);
+Mcts    mcts      (board);
+MctsGtp mcts_gtp  (gtp, board, mcts);
 
 PlayoutGfx<Mcts> playout_gfx(gtp, mcts, "MCTS.");
 
