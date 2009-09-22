@@ -18,6 +18,7 @@ public:
     children.push_front (Node(data));
   }
 
+  // TODO better implementation of child removation.
   void RemoveChild (Node* child) {
     ChildrenListIterator it = children.begin();
     while (true) {

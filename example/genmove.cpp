@@ -5,7 +5,7 @@ public:
   {
     playout_count = 10000;
     gtp.Register ("genmove", this, &Genmove::CGenmove);
-    gtp.RegisterParam ("genmove.params", "playout_count", &playout_count);
+    gtp.RegisterParam ("MCTS.params", "# playouts_before_genmove", &playout_count);
   }
 
 private:

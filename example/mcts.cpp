@@ -129,7 +129,7 @@ public:
   }
 
   string ToString () {
-    return tree_to_string (root, params.min_visit);
+    return tree_to_string (root, params.print_update_count);
   }
 
   Vertex BestMove () {
@@ -183,7 +183,7 @@ private:
     }
     
     // Is leaf is ready to expand ?
-    if (ActNode()->stat.update_count() > params.mature_update_count_threshold) {
+    if (ActNode()->stat.update_count() > params.mature_update_count) {
       Player pl = play_board.act_player();
       assertc (mcts_ac, pl == ActNode()->player.other());
 
@@ -209,7 +209,8 @@ private:
     // Find UCT child.
     MctsNode* best_node = NULL;
     float best_urgency = -large_float;
-    float explore_coeff = log (ActNode()->stat.update_count()) * params.explore_rate;
+    float explore_coeff
+      = log (ActNode()->stat.update_count()) * params.uct_explore_coeff;
 
     for(MctsNode::ChildrenIterator ni(*ActNode()); ni; ++ni) {
       float child_urgency = ni->stat.ucb (ni->player, explore_coeff);

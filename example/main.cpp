@@ -41,7 +41,7 @@
 #include "mcts.cpp"
 #include "playout_gfx.cpp"
 #include "genmove.cpp"
-#include "experiments.cpp"
+//#include "experiments.cpp"
 
 // TODO automatize through CMake (and add git SHA1)
 #ifndef VERSION
@@ -54,14 +54,16 @@ FullBoard board;
 SgfTree sgf_tree;
 
 BasicGtp    basic_gtp (gtp, board);
-SgfGtp      sgf_gtp   (gtp, sgf_tree, board);
-AllAsFirst  aaf       (gtp, board);
+//SgfGtp      sgf_gtp   (gtp, sgf_tree, board);
 
 MctsParams  mcts_params (gtp);
 Mcts        mcts      (board, mcts_params);
 Genmove     genmove   (gtp, board, mcts);
 
 PlayoutGfx<Mcts> playout_gfx(gtp, mcts, "MCTS.");
+
+// Uncomment this to enable All-As-First experiment (new GTP commands).
+// AllAsFirst  aaf (gtp, board);
 
 int main(int argc, char** argv) {
   // no buffering to work well with gogui
