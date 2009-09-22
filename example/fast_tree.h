@@ -34,11 +34,11 @@ public:
     return child;
   }
 
-  void RemoveChild (Vertex v) {
-    assertc (tree_ac, children[v] != NULL);
-    this->destroy    (children[v]);
-    this->deallocate (children[v], 1);
-    children[v] = NULL;
+  void RemoveChild (Node* child) {
+    assertc (tree_ac, children[child->v] != NULL);
+    this->destroy    (child);
+    this->deallocate (child, 1);
+    children[child->v] = NULL;
     child_count -= 1;
   }
 
@@ -75,49 +75,6 @@ public:
   private:
     Node& parent_;
     Vertex act_v_;
-  };
-
-  // ------------------------------------------------------------------
-
-  class Iterator {
-  public:
-    void SetToRoot (Node* root) {
-      path.clear();
-      path.push_back(root);
-    }
-  
-    void ResetToRoot () {
-      assertc (tree_ac, path.size() > 0);
-      path.resize(1);
-    }
-
-    void Descend (Vertex v) {
-      assertc (tree_ac, path.size() > 0);
-      path.push_back(path.back()->children[v]);
-      assertc (tree_ac, ActNode () != NULL);
-    }
-  
-    void Ascend () {
-      assertc (tree_ac, path.size() >= 2);
-      path.pop_back ();
-    }
-
-    vector<Node*>& Path () {
-      assertc (tree_ac, path.size() > 0);
-      return path;
-    }
-
-    Node* operator-> () { return ActNode (); }
-    operator Node* ()   { return ActNode (); }
-
-  private:
-    Node* ActNode() {
-      assertc (tree_ac, path.size() > 0);
-      return path.back();
-    }
-
-  private:
-    vector<Node*> path;
   };
 
   // ------------------------------------------------------------------

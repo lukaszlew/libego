@@ -113,12 +113,11 @@ public:
     // prepare pool and root of the tree
     delete root;
     root = new MctsNode(NodeData(act_player.other(), Vertex::any()));
-    act_node.SetToRoot(root);
 
     // add 1 level of tree with superko detection // TODO remove
     empty_v_for_each_and_pass (&full_board.board(), v, {
       if (full_board.is_legal (act_player, v)) {
-        act_node->AddChild (NodeData(act_player, v));
+        root->AddChild (NodeData(act_player, v));
       }
     });
   }
@@ -162,16 +161,17 @@ private:
   void DoOnePlayout (){
     // Prepare simulation board and tree iterator.
     play_board.load (&full_board.board());
-    act_node.ResetToRoot ();
+    trace.clear();
+    trace.push_back(root);
+
     // descent the MCTS tree
-    while(act_node->HaveChildren()) {
+    while(ActNode()->HaveChildren()) {
+      MctsNode* prev_node = ActNode();
       DoTreeMove();
       if (play_board.last_move_status != Board::play_ok) {
         // large suicide
-        assertc (tree_ac, !act_node->HaveChildren ());
-        Vertex v = act_node->v;
-        act_node.Ascend();
-        act_node->RemoveChild (v);
+        assertc (tree_ac, !ActNode()->HaveChildren ());
+        prev_node->RemoveChild (ActNode());
         return;
       }
     }
@@ -183,14 +183,14 @@ private:
     }
     
     // Is leaf is ready to expand ?
-    if (act_node->stat.update_count() > params.mature_update_count_threshold) {
+    if (ActNode()->stat.update_count() > params.mature_update_count_threshold) {
       Player pl = play_board.act_player();
-      assertc (mcts_ac, pl == act_node->player.other());
+      assertc (mcts_ac, pl == ActNode()->player.other());
 
       empty_v_for_each_and_pass (&play_board, v, {
         // big suicides and superko nodes have to be removed from the tree later
         if (play_board.is_pseudo_legal (pl, v))
-          act_node->AddChild (NodeData(pl, v));
+          ActNode()->AddChild (NodeData(pl, v));
       });
 
       // Descend one more level.
@@ -207,32 +207,32 @@ private:
   
   void DoTreeMove () {
     // Find UCT child.
-    Vertex best_v = Vertex::any();
+    MctsNode* best_node = NULL;
     float best_urgency = -large_float;
-    float explore_coeff = log (act_node->stat.update_count()) * params.explore_rate;
+    float explore_coeff = log (ActNode()->stat.update_count()) * params.explore_rate;
 
-    for(MctsNode::ChildrenIterator ni(*act_node); ni; ++ni) {
+    for(MctsNode::ChildrenIterator ni(*ActNode()); ni; ++ni) {
       float child_urgency = ni->stat.ucb (ni->player, explore_coeff);
       if (child_urgency > best_urgency) {
         best_urgency  = child_urgency;
-        best_v = ni->v;
+        best_node = ni;
       }
     }
 
-    assertc (tree_ac, best_v != Vertex::any()); // at least pass
+    assertc (tree_ac, best_node != NULL); // at least pass
     
     // Update tree itreatror and playout board.
-    act_node.Descend (best_v);
+    trace.push_back(best_node);
+
     Player pl = play_board.act_player ();
-    assertc (mcts_ac, play_board.is_pseudo_legal (pl, best_v));
-    play_board.play_legal (pl, best_v);
+    assertc (mcts_ac, play_board.is_pseudo_legal (pl, best_node->v));
+    play_board.play_legal (pl, best_node->v);
   }
 
   void update_history (float score) {
     // score: black -> 1, white -> -1
-    vector<MctsNode*> path = act_node.Path();
-    rep (ii, path.size()) {
-      path[ii]->stat.update (score);
+    rep (ii, trace.size()) {
+      trace[ii]->stat.update (score);
     }
   }
 
@@ -251,6 +251,11 @@ private:
     return best;
   }
 
+  MctsNode* ActNode() {
+    assertc (mcts_ac, trace.size() > 0);
+    return trace.back ();
+  }
+
 private:
   // base board
   FullBoard& full_board;
@@ -260,7 +265,7 @@ private:
 
   // tree
   MctsNode* root;
-  MctsNode::Iterator act_node;      // TODO sync tree->root with full_board
+  vector <MctsNode*> trace;
 
   // params
   MctsParams& params;
