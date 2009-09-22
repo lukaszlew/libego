@@ -1,49 +1,37 @@
 #ifndef _FAST_TREE_
 #define _FAST_TREE_
 
+#include <list>
+
 // -----------------------------------------------------------------------------
 
 // TODO replace default std::allocator with FastPool
 template <class Data, template <class N> class Allocator = std::allocator>
-class Node : public Data, private Allocator<Node<Data, Allocator> > {
+class Node : public Data {
+  typedef std::list<Node, Allocator<Node> > ChildrenList; // TODO vector?
+  typedef typename ChildrenList::iterator ChildrenListIterator;
 public:
 
-  // TODO replace this by placement new in pool or Boost::pool
-  explicit Node (const Data& data) : Data (data) {
-    children.memset(NULL);
-    child_count = 0;
-  }
+  explicit Node (const Data& data) : Data (data) { }
 
-  ~Node () {
-    for (ChildrenIterator child(*this); child; ++child) {
-      if ((Node*)child != NULL) {
-        this->destroy    (child);
-        this->deallocate (child, 1);
-        child_count -= 1;
-      }
-    }
-    assertc (tree_ac, child_count == 0);
-  }
-
-  Node* AddChild (const Data& data) {
-    assertc (tree_ac, children[data.v] == NULL);
-    Node* child = this->allocate (1);
-    this->construct (child, Node(data));
-    children[data.v] = child;
-    child_count += 1;
-    return child;
+  void AddChild (const Data& data) {
+    children.push_front (Node(data));
   }
 
   void RemoveChild (Node* child) {
-    assertc (tree_ac, children[child->v] != NULL);
-    this->destroy    (child);
-    this->deallocate (child, 1);
-    children[child->v] = NULL;
-    child_count -= 1;
+    ChildrenListIterator it = children.begin();
+    while (true) {
+      assertc (mcts_ac, it != children.end());
+      if (&*it == child) {
+        children.erase(it);
+        return;
+      }
+      it++;
+    }
   }
 
   bool HaveChildren () {
-    return child_count > 0;
+    return !children.empty();
   }
 
   // ------------------------------------------------------------------
@@ -51,37 +39,26 @@ public:
   class ChildrenIterator {
   public:
 
-    explicit ChildrenIterator(Node& parent) : parent_(parent), act_v_(0) { 
-      Sync ();
-    }
+    explicit ChildrenIterator(Node& parent_)
+    : parent (parent_), act (parent_.children.begin())
+    { }
 
-    Node* operator-> () { return parent_.children[act_v_]; }
-    operator Node* ()   { return parent_.children[act_v_]; }
+    Node* operator-> () { return &*act; }
+    operator Node* ()   { return &*act; }
 
-    void operator++ () {
-      act_v_.next();
-      Sync ();
-    }
+    void operator++ () { act++; }
 
-    operator bool () { return act_v_.in_range(); }
+    operator bool () { return act != parent.children.end(); }
 
   private:
-    void Sync () {
-      while (act_v_.in_range () && parent_.children[act_v_] == NULL) {
-        act_v_.next();
-      }
-    }
-
-  private:
-    Node& parent_;
-    Vertex act_v_;
+    Node& parent;
+    ChildrenListIterator act;
   };
 
   // ------------------------------------------------------------------
 
 private:
-  FastMap<Vertex, Node*> children;
-  int child_count;
+  ChildrenList children;
 };
 
 // -----------------------------------------------------------------------------
