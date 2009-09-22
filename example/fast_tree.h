@@ -9,7 +9,7 @@ class Node : public Data, private Allocator<Node<Data, Allocator> > {
 public:
 
   // TODO replace this by placement new in pool or Boost::pool
-  Node () {
+  Node (const Data& data) : Data (data) {
     children.memset(NULL);
     child_count = 0;
   }
@@ -25,11 +25,11 @@ public:
     assertc (tree_ac, child_count == 0);
   }
 
-  Node* AddChild (Vertex v) {
-    assertc (tree_ac, children[v] == NULL);
+  Node* AddChild (const Data& data) {
+    assertc (tree_ac, children[data.v] == NULL);
     Node* child = this->allocate (1);
-    this->construct (child, Node());
-    children[v] = child;
+    this->construct (child, Node(data));
+    children[data.v] = child;
     child_count += 1;
     return child;
   }

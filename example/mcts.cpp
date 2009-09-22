@@ -28,6 +28,9 @@ struct NodeData {
   Player player;
   Vertex v;
 
+  NodeData (Player player_, Vertex v_) : player(player_), v(v_) {
+  }
+
   string ToString() {
     stringstream s;
     s << player.to_string () << " " 
@@ -99,7 +102,9 @@ class Mcts {
 public:
   
   Mcts (FullBoard& full_board_, MctsParams& params_)
-    : full_board (full_board_), root (new MctsNode), params (params_)
+    : full_board (full_board_),
+      root (new MctsNode(NodeData(Player::white(), Vertex::any()))),
+      params (params_)
   {
   }
 
@@ -107,15 +112,13 @@ public:
     Player act_player = full_board.board().act_player();
     // prepare pool and root of the tree
     delete root;
-    root = new MctsNode;
+    root = new MctsNode(NodeData(act_player.other(), Vertex::any()));
     act_node.SetToRoot(root);
-    act_node->player = act_player.other();
-    act_node->v = Vertex::any();
 
     // add 1 level of tree with superko detection // TODO remove
     empty_v_for_each_and_pass (&full_board.board(), v, {
       if (full_board.is_legal (act_player, v)) {
-        alloc_child (act_player, v);
+        act_node->AddChild (NodeData(act_player, v));
       }
     });
   }
@@ -165,7 +168,10 @@ private:
       DoTreeMove();
       if (play_board.last_move_status != Board::play_ok) {
         // large suicide
-        delete_act_node ();
+        assertc (tree_ac, !act_node->HaveChildren ());
+        Vertex v = act_node->v;
+        act_node.Ascend();
+        act_node->RemoveChild (v);
         return;
       }
     }
@@ -183,7 +189,8 @@ private:
 
       empty_v_for_each_and_pass (&play_board, v, {
         // big suicides and superko nodes have to be removed from the tree later
-        if (play_board.is_pseudo_legal (pl, v)) alloc_child (pl, v);
+        if (play_board.is_pseudo_legal (pl, v))
+          act_node->AddChild (NodeData(pl, v));
       });
 
       // Descend one more level.
@@ -242,21 +249,6 @@ private:
 
     assertc (tree_ac, best != NULL);
     return best;
-  }
-
-  void delete_act_node () {
-    assertc (tree_ac, !act_node->HaveChildren ());
-    Vertex v = act_node->v;
-    act_node.Ascend();
-    act_node->RemoveChild (v);
-    // TODO free in the pool
-  }
-
-  MctsNode* alloc_child (Player pl, Vertex v) {
-    MctsNode* new_node = act_node->AddChild (v);
-    new_node->player = pl;
-    new_node->v = v;
-    return new_node;
   }
 
 private:
