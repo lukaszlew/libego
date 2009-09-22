@@ -9,7 +9,7 @@ class Node : public Data, private Allocator<Node<Data, Allocator> > {
 public:
 
   // TODO replace this by placement new in pool or Boost::pool
-  Node (const Data& data) : Data (data) {
+  explicit Node (const Data& data) : Data (data) {
     children.memset(NULL);
     child_count = 0;
   }
@@ -51,7 +51,7 @@ public:
   class ChildrenIterator {
   public:
 
-  ChildrenIterator(Node& parent) : parent_(parent), act_v_(0) { 
+    explicit ChildrenIterator(Node& parent) : parent_(parent), act_v_(0) { 
       Sync ();
     }
 
@@ -119,6 +119,8 @@ public:
   private:
     vector<Node*> path;
   };
+
+  // ------------------------------------------------------------------
 
 private:
   FastMap<Vertex, Node*> children;
