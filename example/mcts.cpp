@@ -99,15 +99,15 @@ class Mcts {
 public:
   
   Mcts (FullBoard& full_board_, MctsParams& params_)
-    : full_board (full_board_),  params (params_)
+    : full_board (full_board_), root (new MctsNode), params (params_)
   {
   }
 
   void Reset () {
     Player act_player = full_board.board().act_player();
     // prepare pool and root of the tree
-    node_pool.Reset();
-    root = node_pool.Alloc();
+    delete root;
+    root = new MctsNode;
     act_node.SetToRoot(root);
     act_node->player = act_player.other();
     act_node->v = Vertex::any();
@@ -248,15 +248,14 @@ private:
     assertc (tree_ac, !act_node->HaveChildren ());
     Vertex v = act_node->v;
     act_node.Ascend();
-    act_node->DeattachChild (v);
+    act_node->RemoveChild (v);
     // TODO free in the pool
   }
 
   MctsNode* alloc_child (Player pl, Vertex v) {
-    MctsNode* new_node = node_pool.Alloc ();
+    MctsNode* new_node = act_node->AddChild (v);
     new_node->player = pl;
     new_node->v = v;
-    act_node->AttachChild (v, new_node);
     return new_node;
   }
 
@@ -268,7 +267,6 @@ private:
   Board play_board;
 
   // tree
-  FastPool<MctsNode, 500000> node_pool;
   MctsNode* root;
   MctsNode::Iterator act_node;      // TODO sync tree->root with full_board
 

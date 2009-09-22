@@ -4,11 +4,8 @@
 // -----------------------------------------------------------------------------
 
 // TODO replace default std::allocator with FastPool
-template <class Data, template <class N> class TAllocator = std::allocator>
-class Node : public Data {
-private:
-  typedef TAllocator<Node> Allocator;
-
+template <class Data, template <class N> class Allocator = std::allocator>
+class Node : public Data, private Allocator<Node<Data, Allocator> > {
 public:
 
   // TODO replace this by placement new in pool or Boost::pool
@@ -17,14 +14,30 @@ public:
     child_count = 0;
   }
 
-  void AttachChild (Vertex v, Node* new_child) {
-    assertc (tree_ac, children[v] == NULL);
-    children[v] = new_child;
-    child_count += 1;
+  ~Node () {
+    for (ChildrenIterator child(*this); child; ++child) {
+      if ((Node*)child != NULL) {
+        this->destroy    (child);
+        this->deallocate (child, 1);
+        child_count -= 1;
+      }
+    }
+    assertc (tree_ac, child_count == 0);
   }
 
-  void DeattachChild (Vertex v) {
+  Node* AddChild (Vertex v) {
+    assertc (tree_ac, children[v] == NULL);
+    Node* child = this->allocate (1);
+    this->construct (child, Node());
+    children[v] = child;
+    child_count += 1;
+    return child;
+  }
+
+  void RemoveChild (Vertex v) {
     assertc (tree_ac, children[v] != NULL);
+    this->destroy    (children[v]);
+    this->deallocate (children[v], 1);
     children[v] = NULL;
     child_count -= 1;
   }
