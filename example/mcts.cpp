@@ -24,11 +24,15 @@
 // -----------------------------------------------------------------------------
 
 struct NodeData {
-  Stat stat;                    // stat is initalized during construction
+
   Player player;
   Vertex v;
+  FastMap <Player, bool> has_all_legal_children;
+
+  Stat stat;                    // stat is initalized during construction
 
   NodeData (Player player_, Vertex v_) : player(player_), v(v_) {
+    has_all_legal_children.SetAll (false);
   }
 
   string ToString() {
@@ -115,7 +119,7 @@ public:
     delete act_root; // TODO scoped_ptr
   }
 
-  void DoNPlayouts (uint n) {
+  void DoNPlayouts (uint n) { // TODO first_player
     Reset ();
     rep (ii, n) {
       DoOnePlayout ();
@@ -126,15 +130,12 @@ public:
     return tree_to_string (act_root, print_update_count);
   }
 
-  Vertex BestMove () {
+  Vertex BestMove (Player pl) {
     // Find best move from the act_root and print tree.
-    MctsNode* best_node = most_explored_child (act_root);
-
-    // Return the best move or resign.
-    Player act_player = full_board.board().act_player();
+    MctsNode* best_node = most_explored_child (act_root, pl);
 
     return
-      (act_player.subjective_score (best_node->stat.mean()) < resign_mean) ? 
+      (pl.subjective_score (best_node->stat.mean()) < resign_mean) ? 
       Vertex::resign () :
       best_node->v;
   }
@@ -164,6 +165,8 @@ private:
         act_root->AddChild (NodeData(act_player, v));
       }
     });
+
+    act_root->has_all_legal_children [act_player] = true;
   }
 
   void DoOnePlayout (){
@@ -173,17 +176,17 @@ private:
     trace.push_back(act_root);
 
     // descent the MCTS tree
-    while(ActNode()->HaveChildren()) {
+    while(ActNode()->has_all_legal_children [play_board.act_player()]) {
       MctsNode* prev_node = ActNode();
       DoTreeMove();
-      if (play_board.last_move_status != Board::play_ok) {
-        // large suicide
-        assertc (tree_ac, !ActNode()->HaveChildren ());
+      if (play_board.last_move_status != Board::play_ok) { // large suicide
+        assertc (mcts_ac, !ActNode()->HaveChildren ());
+        assertc (mcts_ac,
+                 ActNode()->stat.update_count() == Stat::prior_update_count);
         prev_node->RemoveChild (ActNode());
         return;
       }
     }
-    // exit from MCTS tree
 
     if (play_board.both_player_pass()) {
       update_history (play_board.tt_winner().to_score());
@@ -194,12 +197,12 @@ private:
     if (ActNode()->stat.update_count() > mature_update_count) {
       Player pl = play_board.act_player();
       assertc (mcts_ac, pl == ActNode()->player.other());
-
       empty_v_for_each_and_pass (&play_board, v, {
         // big suicides and superko nodes have to be removed from the tree later
         if (play_board.is_pseudo_legal (pl, v))
           ActNode()->AddChild (NodeData(pl, v));
       });
+      ActNode()->has_all_legal_children [pl] = true;
 
       // Descend one more level.
       DoTreeMove();
@@ -221,10 +224,10 @@ private:
     const float explore_coeff
       = log (ActNode()->stat.update_count()) * uct_explore_coeff;
 
-    for(MctsNode::ChildrenIterator child(*ActNode());
-        child && child->player == act_player;
-        ++child)
-    {
+    assertc (mcts_ac, ActNode()->has_all_legal_children [act_player]);
+
+    for(MctsNode::ChildrenIterator child(*ActNode()); child; ++child) {
+      if (child->player != act_player) continue;
       float child_urgency = child->stat.ucb (act_player, explore_coeff);
       if (child_urgency > best_urgency) {
         best_urgency = child_urgency;
@@ -232,7 +235,7 @@ private:
       }
     }
 
-    assertc (tree_ac, best_child != NULL); // at least pass
+    assertc (mcts_ac, best_child != NULL); // at least pass
     
     // Update tree itreatror and playout board.
     trace.push_back (best_child);
@@ -248,18 +251,22 @@ private:
     }
   }
 
-  MctsNode* most_explored_child (MctsNode* node) {
+  MctsNode* most_explored_child (MctsNode* node, Player pl) {
     MctsNode* best = NULL;
     float best_update_count = -1;
 
+    assertc (mcts_ac, node->has_all_legal_children [pl]);
+
     for (MctsNode::ChildrenIterator child(*node); child; ++child) {
-      if (child->stat.update_count() > best_update_count) {
+      if (child->player == pl && 
+          child->stat.update_count() > best_update_count)
+      {
         best_update_count = child->stat.update_count();
         best = child;
       }
     }
 
-    assertc (tree_ac, best != NULL);
+    assertc (mcts_ac, best != NULL);
     return best;
   }
 

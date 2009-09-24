@@ -27,6 +27,7 @@ public:
   explicit Player (uint _idx);
 
   bool operator== (Player other) const;
+  bool operator!= (Player other) const;
   
   // TODO iterators?
   bool in_range () const; // TODO do it like check

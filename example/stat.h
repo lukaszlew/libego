@@ -3,11 +3,14 @@
 
 class Stat {
 public:
+
+  static const float prior_update_count = 1.0;
+
   Stat () {
     reset ();
   }
   
-  void reset (float prior_sample_count = 1.0) {
+  void reset (float prior_sample_count = Stat::prior_update_count) {
     sample_count       = prior_sample_count; // TODO 
     sample_sum         = 0.0; // TODO
     square_sample_sum  = 0.0; // TODO

@@ -23,12 +23,12 @@ private:
     Player player = io.Read<Player> ();
     io.CheckEmpty ();
 
-    full_board.set_act_player(player);
+    full_board.set_act_player(player); // TODO move player parameter to DoPlayouts
 
     mcts.DoNPlayouts (playout_count);
     cerr << mcts.ToString () << endl;
 
-    Vertex v = mcts.BestMove ();
+    Vertex v = mcts.BestMove (player);
 
     if (v != Vertex::resign ()) {
       bool ok = full_board.try_play (player, v);

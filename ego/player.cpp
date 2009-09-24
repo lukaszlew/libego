@@ -37,6 +37,10 @@ bool Player::operator== (Player other) const {
   return idx == other.idx; 
 }
 
+bool Player::operator!= (Player other) const { 
+  return idx != other.idx; 
+}
+
 void Player::check () const { 
   assertc (player_ac, (idx & (~1)) == 0);
 }
