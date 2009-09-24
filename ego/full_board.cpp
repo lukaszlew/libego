@@ -28,7 +28,7 @@
 void FullBoard::clear(float komi) {
   // move_no = 0;
   Board::clear(komi);
-  move_history.Clear();
+  move_history.clear();
 }
 
 
@@ -43,19 +43,20 @@ void FullBoard::set_act_player (Player pl) {
 
 
 void FullBoard::load (const FullBoard* save_board) {
-  memcpy(this, save_board, sizeof(FullBoard));
+  memcpy((Board*)this, (Board*)save_board, sizeof(Board));
+  move_history = save_board->move_history;
 }
 
 
 void FullBoard::play_legal (Player player, Vertex v) {
   Board::play_legal(player, v);
   Move m = Board::last_move(); // TODO why can't I inline it?
-  move_history.Push(m);
+  move_history.push_back(m);
 }
 
 
 bool FullBoard::undo () {
-  Move replay [max_game_length];
+  vector<Move> replay;
 
   uint   game_length  = move_no;
   float  old_komi     = komi ();
@@ -64,7 +65,7 @@ bool FullBoard::undo () {
     return false;
 
   rep (mn, game_length-1)
-    replay [mn] = move_history [mn];
+    replay.push_back (move_history [mn]);
 
   clear (old_komi);  // TODO maybe last_player should be preserverd as well
 
