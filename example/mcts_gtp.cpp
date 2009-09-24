@@ -25,7 +25,6 @@ private:
 
     full_board.set_act_player(player);
 
-    mcts.Reset ();
     mcts.DoNPlayouts (playout_count);
     cerr << mcts.ToString () << endl;
 

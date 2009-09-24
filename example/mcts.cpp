@@ -103,7 +103,7 @@ public:
   
   Mcts (FullBoard& full_board_)
     : full_board (full_board_),
-      root (new MctsNode(NodeData(Player::white(), Vertex::any())))
+      act_root (new MctsNode(NodeData(Player::white(), Vertex::any())))
   {
     uct_explore_coeff    = 1.0;
     mature_update_count  = 100.0;
@@ -112,36 +112,23 @@ public:
   }
 
   ~Mcts () {
-    delete root; // TODO scoped_ptr
-  }
-
-  void Reset () {
-    Player act_player = full_board.board().act_player();
-    // prepare pool and root of the tree
-    delete root;
-    root = new MctsNode(NodeData(act_player.other(), Vertex::any()));
-
-    // add 1 level of tree with superko detection // TODO remove
-    empty_v_for_each_and_pass (&full_board.board(), v, {
-      if (full_board.is_legal (act_player, v)) {
-        root->AddChild (NodeData(act_player, v));
-      }
-    });
+    delete act_root; // TODO scoped_ptr
   }
 
   void DoNPlayouts (uint n) {
+    Reset ();
     rep (ii, n) {
       DoOnePlayout ();
     }
   }
 
   string ToString () {
-    return tree_to_string (root, print_update_count);
+    return tree_to_string (act_root, print_update_count);
   }
 
   Vertex BestMove () {
-    // Find best move from the root and print tree.
-    MctsNode* best_node = most_explored_root_node ();
+    // Find best move from the act_root and print tree.
+    MctsNode* best_node = most_explored_child (act_root);
 
     // Return the best move or resign.
     Player act_player = full_board.board().act_player();
@@ -165,11 +152,25 @@ public:
 
 private:
 
+  void Reset () {
+    Player act_player = full_board.board().act_player();
+    // prepare act_root of the tree
+    delete act_root;
+    act_root = new MctsNode(NodeData(act_player.other(), Vertex::any()));
+
+    // add 1 level of tree with superko detection // TODO remove
+    empty_v_for_each_and_pass (&full_board.board(), v, {
+      if (full_board.is_legal (act_player, v)) {
+        act_root->AddChild (NodeData(act_player, v));
+      }
+    });
+  }
+
   void DoOnePlayout (){
     // Prepare simulation board and tree iterator.
     play_board.load (&full_board.board());
     trace.clear();
-    trace.push_back(root);
+    trace.push_back(act_root);
 
     // descent the MCTS tree
     while(ActNode()->HaveChildren()) {
@@ -244,11 +245,11 @@ private:
     }
   }
 
-  MctsNode* most_explored_root_node () {
+  MctsNode* most_explored_child (MctsNode* node) {
     MctsNode* best = NULL;
     float best_update_count = -1;
 
-    for (MctsNode::ChildrenIterator child(*root); child; ++child) {
+    for (MctsNode::ChildrenIterator child(*node); child; ++child) {
       if (child->stat.update_count() > best_update_count) {
         best_update_count = child->stat.update_count();
         best = child;
@@ -280,7 +281,7 @@ private:
   Board play_board;
 
   // tree
-  MctsNode* root;
+  MctsNode* act_root;
   vector <MctsNode*> trace;
 
   // tree printing
