@@ -15,7 +15,7 @@ public:
 
   enum Status { pass_pass, too_long, mercy };
 
-  static const uint default_max_moves = board_area * 2;
+  static const uint default_max_moves = Board::area * 2;
 
   typedef FastStack <Move, default_max_moves> MoveHistory;
 

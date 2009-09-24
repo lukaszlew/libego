@@ -6,9 +6,6 @@
 #include "color.h"
 
 // TODO move these to Board
-const uint  board_area         = board_size * board_size;
-const uint  max_empty_v_cnt    = board_area;
-const uint  max_game_length    = board_area * 4;
 
 class Board {
 public:                         // board interface
@@ -102,6 +99,10 @@ public:                         // board interface
   // Clears the board. (It is faster to load(empty_board))
   void clear (float komi = -0.5);
 
+public:
+
+  static const uint area = board_size * board_size;
+
 private: 
 
   Hash recalc_hash () const;
@@ -166,7 +167,7 @@ public:
   // TODO make iterators / accessors
   FastMap<Vertex, Color>   color_at;
 
-  Vertex                   empty_v [board_area]; // TODO use FastSet (empty_pos)
+  Vertex                   empty_v [area]; // TODO use FastSet (empty_pos)
   uint                     empty_v_cnt;
   uint                     move_no;
 

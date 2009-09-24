@@ -4,6 +4,8 @@
 #include "board.h"
 #include "fast_stack.h"
 
+const uint max_game_length = Board::area * 4;
+
 class FullBoard : public Board {
 public:
   void clear(float komi = -0.5);
@@ -30,7 +32,7 @@ private:
   void play_legal (Player player, Vertex v);
   bool is_hash_repeated ();
 
-  FastStack<Move, max_game_length>  move_history;
+  FastStack<Move, max_game_length> move_history;
 };
 
 #endif

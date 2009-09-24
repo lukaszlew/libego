@@ -489,7 +489,7 @@ int Board::tt_score() const {
   player_for_each(pl) score[pl] = 0;
 
   player_for_each(pl) {
-    FastStack<Vertex, board_area> queue;
+    FastStack<Vertex, area> queue;
     FastMap<Vertex, bool> visited;
 
     vertex_for_each_all(v) {
@@ -576,7 +576,7 @@ void Board::check_empty_v () const {
 
   vertex_for_each_all (v) noticed[v] = false;
 
-  assert (empty_v_cnt <= board_area);
+  assert (empty_v_cnt <= area);
 
   empty_v_for_each (this, v, {
       assert (noticed [v] == false);
