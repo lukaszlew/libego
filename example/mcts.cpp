@@ -215,27 +215,30 @@ private:
   
   void DoTreeMove () {
     // Find UCT child.
-    MctsNode* best_node = NULL;
+    Player act_player = play_board.act_player ();
+    MctsNode* best_child = NULL;
     float best_urgency = -large_float;
-    float explore_coeff
+    const float explore_coeff
       = log (ActNode()->stat.update_count()) * uct_explore_coeff;
 
-    for(MctsNode::ChildrenIterator ni(*ActNode()); ni; ++ni) {
-      float child_urgency = ni->stat.ucb (ni->player, explore_coeff);
+    for(MctsNode::ChildrenIterator child(*ActNode());
+        child && child->player == act_player;
+        ++child)
+    {
+      float child_urgency = child->stat.ucb (act_player, explore_coeff);
       if (child_urgency > best_urgency) {
-        best_urgency  = child_urgency;
-        best_node = ni;
+        best_urgency = child_urgency;
+        best_child   = child;
       }
     }
 
-    assertc (tree_ac, best_node != NULL); // at least pass
+    assertc (tree_ac, best_child != NULL); // at least pass
     
     // Update tree itreatror and playout board.
-    trace.push_back(best_node);
+    trace.push_back (best_child);
 
-    Player pl = play_board.act_player ();
-    assertc (mcts_ac, play_board.is_pseudo_legal (pl, best_node->v));
-    play_board.play_legal (pl, best_node->v);
+    assertc (mcts_ac, play_board.is_pseudo_legal (act_player, best_child->v));
+    play_board.play_legal (act_player, best_child->v);
   }
 
   void update_history (float score) {
