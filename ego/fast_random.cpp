@@ -25,6 +25,10 @@
 #include "testing.h"
 #include "cstdio"
 
+#ifdef __MINGW32__
+#include <time.h>
+#endif
+
 const int FastRandom::cnt = (uint(1)<<31) - 1;
 
 //tr1::minstd_rand0 mt; // this is eqivalent when #include <tr1/random>

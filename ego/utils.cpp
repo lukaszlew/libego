@@ -22,7 +22,7 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 // TODO move such stuff to porting.h (or somwhere)
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__MINGW32__)
 #include <windows.h>
 #else 
 #include <sys/resource.h>
@@ -52,11 +52,11 @@ float process_user_time () {
     float(usage->ru_utime.tv_sec) +
     float(usage->ru_utime.tv_usec) / 1000000.0;
 
-#elif _MSC_VER
+#elif defined(_MSC_VER) || defined(__MINGW32__)
 
-  FILETIME start, exit, kernel, user;
-  if (GetProcessTimes(GetCurrentProcess(), &start, &exit, &kernel, &user)) {
-    __int64 userMicro = (*((__int64*) &user)) / 10U;
+  union { FILETIME t; __int64 i64; } start, exit, kernel, user;
+  if (GetProcessTimes(GetCurrentProcess(), &start.t, &exit.t, &kernel.t, &user.t)) {
+    __int64 userMicro = user.i64 / 10U; //(*((__int64*) &user.t)) / 10U;
     return (float)((double)userMicro / 1000000.0f);
   } else {
     return 0;
