@@ -58,7 +58,7 @@ public:
     out.str("");
     out.clear();
     depth = 0;
-    RecPrint (&node); 
+    RecPrint (node); 
     return out.str ();
   }
 
@@ -76,17 +76,17 @@ private:
     Player player_;
   };
 
-  void RecPrint (const MctsNode* node) {
+  void RecPrint (const MctsNode& node) {
     rep (d, depth) out << "  ";
-    out << node->ToString () << endl;
+    out << node.ToString () << endl;
 
     vector <const MctsNode*> child_tab;
-    FOREACH (const MctsNode& child, node->Children())  child_tab.push_back(&child);
-    sort (child_tab.begin(), child_tab.end(), CompareNodeMean (node->player));
+    FOREACH (const MctsNode& child, node.Children())  child_tab.push_back(&child);
+    sort (child_tab.begin(), child_tab.end(), CompareNodeMean (node.player));
 
     depth += 1;
     FOREACH (const MctsNode* child, child_tab) {
-      if (child->stat.update_count() >= min_visit) RecPrint (child);
+      if (child->stat.update_count() >= min_visit) RecPrint (*child);
     }
     depth -= 1;
   }
@@ -129,12 +129,12 @@ public:
 
   Vertex BestMove (Player pl) {
     // Find best move from the act_root and print tree.
-    MctsNode* best_node = most_explored_child (act_root, pl);
+    MctsNode& best_node = most_explored_child (act_root, pl);
 
     return
-      (pl.subjective_score (best_node->stat.mean()) < resign_mean) ? 
+      (pl.subjective_score (best_node.stat.mean()) < resign_mean) ? 
       Vertex::resign () :
-      best_node->v;
+      best_node.v;
   }
 
   vector<Move> NewPlayout () {
@@ -253,7 +253,7 @@ private:
     }
   }
 
-  MctsNode* most_explored_child (MctsNode* node, Player pl) {
+  MctsNode& most_explored_child (MctsNode* node, Player pl) {
     MctsNode* best = NULL;
     float best_update_count = -1;
 
@@ -267,7 +267,7 @@ private:
     }
 
     assertc (mcts_ac, best != NULL);
-    return best;
+    return *best;
   }
 
   MctsNode* ActNode() {
