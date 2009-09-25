@@ -55,7 +55,7 @@ public:
 
   Vertex BestMove (Player pl) {
     // Find best move from the act_root and print tree.
-    const MctsNode& best_node = most_explored_child (*act_root, pl);
+    const MctsNode& best_node = act_root->MostExploredChild (pl);
 
     return
       (pl.subjective_score (best_node.stat.mean()) < resign_mean) ? 
@@ -177,23 +177,6 @@ private:
     rep (ii, trace.size()) {
       trace[ii]->stat.update (score);
     }
-  }
-
-  const MctsNode& most_explored_child (const MctsNode& node, Player pl) {
-    const MctsNode* best = NULL;
-    float best_update_count = -1;
-
-    assertc (mcts_ac, node.has_all_legal_children [pl]);
-
-    FOREACH (const MctsNode& child, node.Children()) {
-      if (child.player == pl && child.stat.update_count() > best_update_count) {
-        best_update_count = child.stat.update_count();
-        best = &child;
-      }
-    }
-
-    assertc (mcts_ac, best != NULL);
-    return *best;
   }
 
   MctsNode& ActNode() {

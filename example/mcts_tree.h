@@ -3,7 +3,7 @@
 
 #include <list>
 
-const bool mcts_tree_ac = false;
+const bool mcts_tree_ac = true;
 
 // -----------------------------------------------------------------------------
 
@@ -61,6 +61,23 @@ public:
   FastMap <Player, bool> has_all_legal_children;
 
   Stat stat;                    // stat is initalized during construction
+
+  const MctsNode& MostExploredChild (Player pl) {
+    const MctsNode* best = NULL;
+    float best_update_count = -1;
+
+    assertc (mcts_tree_ac, has_all_legal_children [pl]);
+
+    FOREACH (const MctsNode& child, Children()) {
+      if (child.player == pl && child.stat.update_count() > best_update_count) {
+        best_update_count = child.stat.update_count();
+        best = &child;
+      }
+    }
+
+    assertc (mcts_tree_ac, best != NULL);
+    return *best;
+  }
 
 private:
   ChildrenList children;
