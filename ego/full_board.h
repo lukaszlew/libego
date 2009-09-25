@@ -26,6 +26,8 @@ public:
 
   void load (const FullBoard* save_board);
 
+  const vector<Move>& MoveHistory () const; // TODO rename all to CamelCase
+
 private:
   void play_legal (Player player, Vertex v);
   bool is_hash_repeated ();

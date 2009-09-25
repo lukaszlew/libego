@@ -30,7 +30,8 @@ public:
   
   Mcts (FullBoard& full_board_)
     : full_board (full_board_),
-      act_root (new MctsNode(Player::white(), Vertex::any()))
+      root (Player::white(), Vertex::any()),
+      act_root (NULL)
   {
     uct_explore_coeff    = 1.0;
     mature_update_count  = 100.0;
@@ -39,7 +40,7 @@ public:
   }
 
   ~Mcts () {
-    delete act_root; // TODO scoped_ptr
+    if (act_root) delete act_root; // TODO scoped_ptr
   }
 
   void DoNPlayouts (uint n) { // TODO first_player
@@ -54,6 +55,7 @@ public:
   }
 
   Vertex BestMove (Player pl) {
+    // TODO sync here wit full_Board as well
     // Find best move from the act_root and print tree.
     const MctsNode& best_node = act_root->MostExploredChild (pl);
 
@@ -80,8 +82,9 @@ private:
   void Reset () {
     Player act_player = full_board.board().act_player();
     // prepare act_root of the tree
-    delete act_root;
+    if (act_root) delete act_root;
     act_root = new MctsNode(act_player.other(), Vertex::any());
+    act_root_path = full_board.MoveHistory ();
 
     // add 1 level of tree with superko detection // TODO remove
     empty_v_for_each_and_pass (&full_board.board(), v, {
@@ -200,6 +203,8 @@ private:
   Board play_board;
 
   // tree
+  MctsNode root;
   MctsNode* act_root;
+  vector <Move> act_root_path;
   vector <MctsNode*> trace;
 };

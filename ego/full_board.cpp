@@ -130,3 +130,7 @@ bool FullBoard::try_play (Player player, Vertex v) {
 const Board& FullBoard::board() const {
   return *this;
 }
+
+const vector<Move>& FullBoard::MoveHistory () const {
+  return move_history;
+}
