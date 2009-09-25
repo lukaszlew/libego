@@ -62,9 +62,6 @@ const bool chain_next_v_ac    = all_tests;
 const bool chains_ac          = all_tests;
 const bool playout_ac         = all_tests;
 const bool aaf_ac             = all_tests;
-const bool mcts_ac            = all_tests;
-const bool tree_ac            = all_tests;
 const bool pool_ac            = all_tests;
-const bool gtp_ac             = all_tests;
 
 #endif

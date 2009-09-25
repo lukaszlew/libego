@@ -3,6 +3,8 @@
 
 #include <list>
 
+const bool tree_ac = false;
+
 // -----------------------------------------------------------------------------
 
 // TODO replace default std::allocator with FastPool
@@ -22,7 +24,7 @@ public:
   void RemoveChild (Node* child) {
     ChildrenListIterator it = children.begin();
     while (true) {
-      assertc (mcts_ac, it != children.end());
+      assertc (tree_ac, it != children.end());
       if (&*it == child) {
         children.erase(it);
         return;

@@ -21,6 +21,8 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+const bool mcts_ac = true;
+
 // -----------------------------------------------------------------------------
 
 struct NodeData {
@@ -141,6 +143,7 @@ public:
   }
 
   vector<Move> NewPlayout () {
+    // TODO replace it with MCTS playout.
     LightPlayout::MoveHistory history;
 
     Board playout_board;
@@ -177,15 +180,7 @@ private:
 
     // descent the MCTS tree
     while(ActNode()->has_all_legal_children [play_board.act_player()]) {
-      MctsNode* prev_node = ActNode();
-      DoTreeMove();
-      if (play_board.last_move_status != Board::play_ok) { // large suicide
-        assertc (mcts_ac, !ActNode()->HaveChildren ());
-        assertc (mcts_ac,
-                 ActNode()->stat.update_count() == Stat::prior_update_count);
-        prev_node->RemoveChild (ActNode());
-        return;
-      }
+      if (!DoTreeMove (play_board.act_player ())) return;
     }
 
     if (play_board.both_player_pass()) {
@@ -205,8 +200,7 @@ private:
       ActNode()->has_all_legal_children [pl] = true;
 
       // Descend one more level.
-      DoTreeMove();
-      assertc (mcts_ac, play_board.last_move_status == Board::play_ok);
+      if (!DoTreeMove (pl)) return;
     }
 
     // Finish with regular playout.
@@ -216,9 +210,8 @@ private:
     update_history (play_board.playout_winner().to_score());
   }
   
-  void DoTreeMove () {
+  bool DoTreeMove (Player act_player) {
     // Find UCT child.
-    Player act_player = play_board.act_player ();
     MctsNode* best_child = NULL;
     float best_urgency = -large_float;
     const float explore_coeff
@@ -236,12 +229,22 @@ private:
     }
 
     assertc (mcts_ac, best_child != NULL); // at least pass
-    
-    // Update tree itreatror and playout board.
-    trace.push_back (best_child);
-
     assertc (mcts_ac, play_board.is_pseudo_legal (act_player, best_child->v));
+
+    // Try to play it on the board
     play_board.play_legal (act_player, best_child->v);
+    if (play_board.last_move_status != Board::play_ok) { // large suicide
+      assertc (mcts_ac, !best_child->HaveChildren ());
+      assertc (mcts_ac,
+               best_child->stat.update_count() == Stat::prior_update_count);
+      // Remove in case of large suicide.
+      ActNode()->RemoveChild (best_child);
+      return false;
+    }
+
+    // Update tree itreatror.
+    trace.push_back (best_child);
+    return true;
   }
 
   void update_history (float score) {
