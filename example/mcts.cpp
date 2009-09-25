@@ -81,19 +81,14 @@ private:
     out << node->ToString () << endl;
 
     vector <MctsNode*> child_tab;
-    for(MctsNode::ChildrenIterator child(*node); child; ++child)
-      child_tab.push_back(child);
+    FOREACH (MctsNode& child, node->Children())  child_tab.push_back(&child);
+    sort (child_tab.begin(), child_tab.end(), CompareNodeMean (node->player));
 
-    sort (child_tab.begin(), child_tab.end(), CompareNodeMean(node->player));
-
-    while (child_tab.size() > 0) {
-      MctsNode* act_child = child_tab.front();
-      child_tab.erase(child_tab.begin());
-      if (act_child->stat.update_count() < min_visit) continue;
-      depth += 1;
-      RecPrint (act_child);
-      depth -= 1;
+    depth += 1;
+    FOREACH (MctsNode* child, child_tab) {
+      if (child->stat.update_count() >= min_visit) RecPrint (child);
     }
+    depth -= 1;
   }
 
 private:
@@ -192,15 +187,10 @@ private:
     if (ActNode()->stat.update_count() > mature_update_count) {
       Player pl = play_board.act_player();
       assertc (mcts_ac, pl == ActNode()->player.other());
-      empty_v_for_each_and_pass (&play_board, v, {
-        // big suicides and superko nodes have to be removed from the tree later
-        if (play_board.is_pseudo_legal (pl, v))
-          ActNode()->AddChild (NodeData(pl, v));
-      });
-      ActNode()->has_all_legal_children [pl] = true;
 
-      // Descend one more level.
-      if (!DoTreeMove (pl)) return;
+      AddAllLegalChildren (pl);
+
+      if (!DoTreeMove (pl)) return; // Descend one more level.
     }
 
     // Finish with regular playout.
@@ -219,12 +209,12 @@ private:
 
     assertc (mcts_ac, ActNode()->has_all_legal_children [act_player]);
 
-    for(MctsNode::ChildrenIterator child(*ActNode()); child; ++child) {
-      if (child->player != act_player) continue;
-      float child_urgency = child->stat.ucb (act_player, explore_coeff);
+    FOREACH (MctsNode& child, ActNode()->Children()) {
+      if (child.player != act_player) continue;
+      float child_urgency = child.stat.ucb (act_player, explore_coeff);
       if (child_urgency > best_urgency) {
         best_urgency = child_urgency;
-        best_child   = child;
+        best_child   = &child;
       }
     }
 
@@ -247,6 +237,15 @@ private:
     return true;
   }
 
+  void AddAllLegalChildren (Player pl) {
+    empty_v_for_each_and_pass (&play_board, v, {
+      // big suicides and superko nodes have to be removed from the tree later
+      if (play_board.is_pseudo_legal (pl, v))
+        ActNode()->AddChild (NodeData(pl, v));
+    });
+    ActNode()->has_all_legal_children [pl] = true;
+  }
+
   void update_history (float score) {
     // score: black -> 1, white -> -1
     rep (ii, trace.size()) {
@@ -260,12 +259,10 @@ private:
 
     assertc (mcts_ac, node->has_all_legal_children [pl]);
 
-    for (MctsNode::ChildrenIterator child(*node); child; ++child) {
-      if (child->player == pl && 
-          child->stat.update_count() > best_update_count)
-      {
-        best_update_count = child->stat.update_count();
-        best = child;
+    FOREACH (MctsNode& child, node->Children()) {
+      if (child.player == pl && child.stat.update_count() > best_update_count) {
+        best_update_count = child.stat.update_count();
+        best = &child;
       }
     }
 

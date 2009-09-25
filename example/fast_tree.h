@@ -10,9 +10,9 @@ const bool tree_ac = false;
 // TODO replace default std::allocator with FastPool
 template <class Data, template <class N> class Allocator = std::allocator>
 class Node : public Data {
+public:
   typedef std::list<Node, Allocator<Node> > ChildrenList; // TODO vector?
   typedef typename ChildrenList::iterator ChildrenListIterator;
-public:
 
   explicit Node (const Data& data) : Data (data) { }
 
@@ -37,28 +37,9 @@ public:
     return !children.empty();
   }
 
-  // ------------------------------------------------------------------
-
-  class ChildrenIterator {
-  public:
-
-    explicit ChildrenIterator(Node& parent_)
-    : parent (parent_), act (parent_.children.begin())
-    { }
-
-    Node* operator-> () { return &*act; }
-    operator Node* ()   { return &*act; }
-
-    void operator++ () { act++; }
-
-    operator bool () { return act != parent.children.end(); }
-
-  private:
-    Node& parent;
-    ChildrenListIterator act;
-  };
-
-  // ------------------------------------------------------------------
+  ChildrenList& Children () {
+    return children;
+  }
 
 private:
   ChildrenList children;

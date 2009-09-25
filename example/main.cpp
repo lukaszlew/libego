@@ -22,6 +22,7 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <algorithm>
+#include <boost/foreach.hpp>
 #include <cstdio>
 #include <cmath>
 #include <fstream>
@@ -32,6 +33,8 @@
 // private libraries
 #include <gtp_gogui.h>
 #include <ego.h>
+
+#define FOREACH BOOST_FOREACH
 
 // local hard-include
 #include "fast_tree.h"
