@@ -25,54 +25,6 @@ const bool mcts_ac = true;
 
 // -----------------------------------------------------------------------------
 
-class TreeToString {
-public:
-  string operator () (const MctsNode& node, float min_visit_) { 
-    min_visit = min_visit_;
-    out.str("");
-    out.clear();
-    depth = 0;
-    RecPrint (node); 
-    return out.str ();
-  }
-
-private:
-
-  struct CompareNodeMean { 
-    CompareNodeMean(Player player) : player_(player) {}
-    bool operator()(const MctsNode* a, const MctsNode* b) {
-      if (player_ == Player::black ()) {
-        return a->stat.mean() < b->stat.mean();
-      } else {
-        return a->stat.mean() > b->stat.mean();
-      }
-    }
-    Player player_;
-  };
-
-  void RecPrint (const MctsNode& node) {
-    rep (d, depth) out << "  ";
-    out << node.ToString () << endl;
-
-    vector <const MctsNode*> child_tab;
-    FOREACH (const MctsNode& child, node.Children())  child_tab.push_back(&child);
-    sort (child_tab.begin(), child_tab.end(), CompareNodeMean (node.player));
-
-    depth += 1;
-    FOREACH (const MctsNode* child, child_tab) {
-      if (child->stat.update_count() >= min_visit) RecPrint (*child);
-    }
-    depth -= 1;
-  }
-
-private:
-  ostringstream out;
-  uint depth;
-  float min_visit;
-};
-
-// -----------------------------------------------------------------------------
-
 class Mcts {
 public:
   
@@ -98,7 +50,7 @@ public:
   }
 
   string ToString () {
-    return tree_to_string (*act_root, print_update_count);
+    return TreeToString() (*act_root, print_update_count);
   }
 
   Vertex BestMove (Player pl) {
@@ -267,7 +219,4 @@ private:
   // tree
   MctsNode* act_root;
   vector <MctsNode*> trace;
-
-  // tree printing
-  TreeToString tree_to_string;
 };

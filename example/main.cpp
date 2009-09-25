@@ -38,11 +38,13 @@
 
 // local hard-include
 #include "stat.h"
-#include "fast_tree.h"
 
+#include "mcts_tree.h"
 #include "mcts.cpp"
 #include "mcts_gtp.cpp"
+
 #include "playout_gfx.cpp"
+
 //#include "experiments.cpp"
 
 // TODO automatize through CMake (and add git SHA1)
