@@ -22,36 +22,36 @@ public:
     square_sample_sum  += sample * sample;
   }
 
-  float update_count () {
+  float update_count () const {
     return sample_count;
   }
 
-  float mean () { 
+  float mean () const { 
     return sample_sum / sample_count; 
   }
 
-  float variance () {
+  float variance () const {
     // VX = E(X^2) - EX ^ 2
     float m = mean ();
     return square_sample_sum / sample_count - m * m;
   }
 
-  float std_dev () { 
+  float std_dev () const { 
     return sqrt (variance ());
   }
 
-  float std_err () {
+  float std_err () const {
     // TODO assert sample_count
     return sqrt (variance () / sample_count);
   } 
 
-  float ucb (Player pl, float explore_coeff) {
+  float ucb (Player pl, float explore_coeff) const {
     return 
       (pl == Player::black () ? mean() : -mean()) +
       sqrt (explore_coeff / update_count());
   }
 
-  string to_string (float minimal_update_count = 0.0) {
+  string to_string (float minimal_update_count = 0.0) const {
     if (sample_count < minimal_update_count) return "           ";
 
     ostringstream out;

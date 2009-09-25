@@ -37,7 +37,7 @@ struct NodeData {
     has_all_legal_children.SetAll (false);
   }
 
-  string ToString() {
+  string ToString() const {
     stringstream s;
     s << player.to_string () << " " 
       << v.to_string () << " " 
@@ -53,12 +53,12 @@ typedef Node<NodeData> MctsNode;
 
 class TreeToString {
 public:
-  string operator () (MctsNode* node, float min_visit_) { 
+  string operator () (const MctsNode& node, float min_visit_) { 
     min_visit = min_visit_;
     out.str("");
     out.clear();
     depth = 0;
-    RecPrint (node); 
+    RecPrint (&node); 
     return out.str ();
   }
 
@@ -66,7 +66,7 @@ private:
 
   struct CompareNodeMean { 
     CompareNodeMean(Player player) : player_(player) {}
-    bool operator()(MctsNode* a, MctsNode* b) {
+    bool operator()(const MctsNode* a, const MctsNode* b) {
       if (player_ == Player::black ()) {
         return a->stat.mean() < b->stat.mean();
       } else {
@@ -76,16 +76,16 @@ private:
     Player player_;
   };
 
-  void RecPrint (MctsNode* node) {
+  void RecPrint (const MctsNode* node) {
     rep (d, depth) out << "  ";
     out << node->ToString () << endl;
 
-    vector <MctsNode*> child_tab;
-    FOREACH (MctsNode& child, node->Children())  child_tab.push_back(&child);
+    vector <const MctsNode*> child_tab;
+    FOREACH (const MctsNode& child, node->Children())  child_tab.push_back(&child);
     sort (child_tab.begin(), child_tab.end(), CompareNodeMean (node->player));
 
     depth += 1;
-    FOREACH (MctsNode* child, child_tab) {
+    FOREACH (const MctsNode* child, child_tab) {
       if (child->stat.update_count() >= min_visit) RecPrint (child);
     }
     depth -= 1;
@@ -124,7 +124,7 @@ public:
   }
 
   string ToString () {
-    return tree_to_string (act_root, print_update_count);
+    return tree_to_string (*act_root, print_update_count);
   }
 
   Vertex BestMove (Player pl) {

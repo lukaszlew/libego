@@ -41,6 +41,10 @@ public:
     return children;
   }
 
+  const ChildrenList& Children () const {
+    return children;
+  }
+
 private:
   ChildrenList children;
 };
