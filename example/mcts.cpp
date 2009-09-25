@@ -145,40 +145,23 @@ private:
   }
   
   bool DoTreeMove (Player act_player) {
-    // Find UCT child.
-    MctsNode* best_child = NULL;
-    float best_urgency = -large_float;
-    const float explore_coeff
-      = log (ActNode().stat.update_count()) * uct_explore_coeff;
+    MctsNode& uct_child = ActNode().FindUctChild (act_player, uct_explore_coeff);
 
-    assertc (mcts_ac, ActNode().has_all_legal_children [act_player]);
-
-    FOREACH (MctsNode& child, ActNode().Children()) {
-      if (child.player != act_player) continue;
-      float child_urgency = child.stat.ucb (act_player, explore_coeff);
-      if (child_urgency > best_urgency) {
-        best_urgency = child_urgency;
-        best_child   = &child;
-      }
-    }
-
-    assertc (mcts_ac, best_child != NULL); // at least pass
-    assertc (mcts_ac, play_board.is_pseudo_legal (act_player, best_child->v));
+    assertc (mcts_ac, play_board.is_pseudo_legal (act_player, uct_child.v));
 
     // Try to play it on the board
-    play_board.play_legal (act_player, best_child->v);
+    play_board.play_legal (act_player, uct_child.v);
     if (play_board.last_move_status != Board::play_ok) { // large suicide
       assertc (mcts_ac, play_board.last_move_status == Board::play_suicide);
-      assertc (mcts_ac, !best_child->HaveChildren ());
-      assertc (mcts_ac,
-               best_child->stat.update_count() == Stat::prior_update_count);
+      assertc (mcts_ac, !uct_child.HaveChildren ());
+      assertc (mcts_ac, uct_child.stat.update_count() == Stat::prior_update_count);
       // Remove in case of large suicide.
-      ActNode().RemoveChild (best_child);
+      ActNode().RemoveChild (&uct_child);
       return false;
     }
 
     // Update tree itreatror.
-    trace.push_back (best_child);
+    trace.push_back (&uct_child);
     return true;
   }
 

@@ -88,6 +88,26 @@ public:
     has_all_legal_children [pl] = true;
   }
 
+  MctsNode& FindUctChild (Player pl, float uct_explore_coeff) {
+    MctsNode* best_child = NULL;
+    float best_urgency = -large_float;
+    const float explore_coeff = log (stat.update_count()) * uct_explore_coeff;
+
+    assertc (mcts_tree_ac, has_all_legal_children [pl]);
+
+    FOREACH (MctsNode& child, Children()) {
+      if (child.player != pl) continue;
+      float child_urgency = child.stat.ucb (pl, explore_coeff);
+      if (child_urgency > best_urgency) {
+        best_urgency = child_urgency;
+        best_child   = &child;
+      }
+    }
+
+    assertc (mcts_tree_ac, best_child != NULL); // at least pass
+    return *best_child;
+  }
+
 private:
   ChildrenList children;
 };
