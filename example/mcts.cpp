@@ -25,32 +25,6 @@ const bool mcts_ac = true;
 
 // -----------------------------------------------------------------------------
 
-struct NodeData {
-
-  Player player;
-  Vertex v;
-  FastMap <Player, bool> has_all_legal_children;
-
-  Stat stat;                    // stat is initalized during construction
-
-  NodeData (Player player_, Vertex v_) : player(player_), v(v_) {
-    has_all_legal_children.SetAll (false);
-  }
-
-  string ToString() const {
-    stringstream s;
-    s << player.to_string () << " " 
-      << v.to_string () << " " 
-      << stat.to_string()
-      ;
-    return s.str();
-  }
-};
-
-typedef Node<NodeData> MctsNode;
-
-// -----------------------------------------------------------------------------
-
 class TreeToString {
 public:
   string operator () (const MctsNode& node, float min_visit_) { 
@@ -104,7 +78,7 @@ public:
   
   Mcts (FullBoard& full_board_)
     : full_board (full_board_),
-      act_root (new MctsNode(NodeData(Player::white(), Vertex::any())))
+      act_root (new MctsNode(Player::white(), Vertex::any()))
   {
     uct_explore_coeff    = 1.0;
     mature_update_count  = 100.0;
@@ -155,12 +129,12 @@ private:
     Player act_player = full_board.board().act_player();
     // prepare act_root of the tree
     delete act_root;
-    act_root = new MctsNode(NodeData(act_player.other(), Vertex::any()));
+    act_root = new MctsNode(act_player.other(), Vertex::any());
 
     // add 1 level of tree with superko detection // TODO remove
     empty_v_for_each_and_pass (&full_board.board(), v, {
       if (full_board.is_legal (act_player, v)) {
-        act_root->AddChild (NodeData(act_player, v));
+        act_root->AddChild (MctsNode(act_player, v));
       }
     });
 
@@ -241,7 +215,7 @@ private:
     empty_v_for_each_and_pass (&play_board, v, {
       // big suicides and superko nodes have to be removed from the tree later
       if (play_board.is_pseudo_legal (pl, v))
-        ActNode().AddChild (NodeData(pl, v));
+        ActNode().AddChild (MctsNode(pl, v));
     });
     ActNode().has_all_legal_children [pl] = true;
   }

@@ -37,8 +37,8 @@
 #define FOREACH BOOST_FOREACH
 
 // local hard-include
-#include "fast_tree.h"
 #include "stat.h"
+#include "fast_tree.h"
 
 #include "mcts.cpp"
 #include "mcts_gtp.cpp"
