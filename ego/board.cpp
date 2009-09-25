@@ -76,7 +76,7 @@ uint Board::NbrCounter::player_cnt_is_max (Player pl) const {
     player_cnt_is_max_mask [pl.get_idx ()];
 }
 
-void Board::NbrCounter::check () {
+void Board::NbrCounter::check () const {
   if (!nbr_cnt_ac) return;
   assert (empty_cnt () <= max);
   assert (player_cnt (Player::black ()) <= max);
@@ -239,7 +239,7 @@ Hash Board::hash () const {
   return hash_;
 }
 
-bool Board::is_pseudo_legal (Player player, Vertex v) {
+bool Board::is_pseudo_legal (Player player, Vertex v) const {
   check ();
   return
     v == Vertex::pass () ||
@@ -249,7 +249,7 @@ bool Board::is_pseudo_legal (Player player, Vertex v) {
 }
 
 
-bool Board::is_eyelike (Player player, Vertex v) {
+bool Board::is_eyelike (Player player, Vertex v) const {
   assertc (board_ac, color_at [v] == Color::empty ());
   if (! nbr_cnt[v].player_cnt_is_max (player)) return false;
 
@@ -289,12 +289,12 @@ void Board::play_legal (Player player, Vertex v) { // TODO test with move
 }
 
 
-bool Board::eye_is_ko (Player player, Vertex v) {
+bool Board::eye_is_ko (Player player, Vertex v) const {
   return (v == ko_v_) & (player == last_player_.other ());
 }
 
 
-bool Board::eye_is_suicide (Vertex v) {
+bool Board::eye_is_suicide (Vertex v) const {
   uint all_nbr_live = true;
   vertex_for_each_4_nbr (v, nbr_v, all_nbr_live &= (--chain_at(nbr_v).lib_cnt != 0));
   vertex_for_each_4_nbr (v, nbr_v, chain_at(nbr_v).lib_cnt += 1);
@@ -478,7 +478,7 @@ Move Board::last_move() const {
   return Move(last_player(), last_play());
 }
 
-bool Board::both_player_pass () {
+bool Board::both_player_pass () const {
   return
     (last_play_ [Player::black ()] == Vertex::pass ()) &
     (last_play_ [Player::white ()] == Vertex::pass ());
@@ -546,7 +546,7 @@ Player Board::playout_winner () const {
 }
 
 
-int Board::vertex_score (Vertex v) {
+int Board::vertex_score (Vertex v) const {
   //     FastMap<Color, int> Coloro_score;
   //     Coloro_score [Color::black ()] = 1;
   //     Coloro_score [Color::white ()] = -1;
@@ -602,7 +602,11 @@ Board::Chain& Board::chain_at (Vertex v) {
   return chain_[chain_id_[v]];
 }
 
-uint Board::last_capture_size () {
+const Board::Chain& Board::chain_at (Vertex v) const {
+  return chain_[chain_id_[v]];
+}
+
+uint Board::last_capture_size () const {
   return empty_v_cnt + 1 - last_empty_v_cnt;
 }
 
@@ -682,7 +686,7 @@ void Board::check () const {
 }
 
 
-void Board::check_no_more_legal (Player player) { // at the end of the playout
+void Board::check_no_more_legal (Player player) const { // at the end of the playout
   unused (player);
 
   if (!board_ac) return;

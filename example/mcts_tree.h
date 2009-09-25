@@ -79,6 +79,15 @@ public:
     return *best;
   }
 
+  void AddAllPseudoLegalChildren (Player pl, const Board& board) {
+    empty_v_for_each_and_pass (&board, v, {
+      // big suicides and superko nodes have to be removed from the tree later
+      if (board.is_pseudo_legal (pl, v))
+        AddChild (MctsNode(pl, v));
+    });
+    has_all_legal_children [pl] = true;
+  }
+
 private:
   ChildrenList children;
 };

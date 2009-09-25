@@ -79,6 +79,21 @@ public:
 
 private:
 
+//   void Synchronize () {
+//     act_root = &root;
+//     act_root_path = full_board.MoveHistory ();
+//     FOREACH (Move m, act_root_path) {
+//       MctsNode* new_node = act_root->FindChild (jest ruch m);
+//       if (new_node) {
+//         act_root = new_node;
+//       } else {
+//         act_root = act_root->AddChild (m->get_player(), m->get_vertex());
+//       }
+//     }
+
+//     // rekursywne upgrade do has_all_legal_children
+//   }
+
   void Reset () {
     Player act_player = full_board.board().act_player();
     // prepare act_root of the tree
@@ -117,7 +132,7 @@ private:
       Player pl = play_board.act_player();
       assertc (mcts_ac, pl == ActNode().player.other());
 
-      AddAllLegalChildren (pl);
+      ActNode().AddAllPseudoLegalChildren (pl, play_board);
 
       if (!DoTreeMove (pl)) return; // Descend one more level.
     }
@@ -153,6 +168,7 @@ private:
     // Try to play it on the board
     play_board.play_legal (act_player, best_child->v);
     if (play_board.last_move_status != Board::play_ok) { // large suicide
+      assertc (mcts_ac, play_board.last_move_status == Board::play_suicide);
       assertc (mcts_ac, !best_child->HaveChildren ());
       assertc (mcts_ac,
                best_child->stat.update_count() == Stat::prior_update_count);
@@ -164,15 +180,6 @@ private:
     // Update tree itreatror.
     trace.push_back (best_child);
     return true;
-  }
-
-  void AddAllLegalChildren (Player pl) {
-    empty_v_for_each_and_pass (&play_board, v, {
-      // big suicides and superko nodes have to be removed from the tree later
-      if (play_board.is_pseudo_legal (pl, v))
-        ActNode().AddChild (MctsNode(pl, v));
-    });
-    ActNode().has_all_legal_children [pl] = true;
   }
 
   void update_history (float score) {

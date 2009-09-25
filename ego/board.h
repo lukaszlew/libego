@@ -32,10 +32,10 @@ public:                         // board interface
   void load (const Board* save_board);
 
   // Returns false for simple ko and single stone suicide.
-  bool is_pseudo_legal (Player player, Vertex v);
+  bool is_pseudo_legal (Player player, Vertex v) const;
 
   // Returns true iff v is uncut eye of the player.
-  bool is_eyelike (Player player, Vertex v);
+  bool is_eyelike (Player player, Vertex v) const;
 
   // Plays a move. Accepts passes, suicides and ko moves.
   void play_legal (Player player, Vertex v);
@@ -53,7 +53,7 @@ public:                         // board interface
   Vertex last_play () const;
 
   // Returns true if both players pass.
-  bool both_player_pass ();
+  bool both_player_pass () const;
 
   // Difference in (number of stones + number of eyes) of each player + komi.
   // See tt_score.
@@ -68,7 +68,7 @@ public:                         // board interface
 
   // Returns 1 (-1) if v is occupied by or is an eye of Black(White).
   // Returns 0 for other empty vertices.
-  int vertex_score (Vertex v);
+  int vertex_score (Vertex v) const;
 
   // Difference in (number of stones) of each player + komi. Used with
   // mercy heuristic.
@@ -92,7 +92,7 @@ public:                         // board interface
   // debugging helper
   void print_cerr (Vertex v = Vertex::pass ()) const;
 
-  uint last_capture_size ();
+  uint last_capture_size () const;
 
   Move last_move () const;
 
@@ -107,8 +107,8 @@ private:
 
   Hash recalc_hash () const;
 
-  bool eye_is_ko (Player player, Vertex v);
-  bool eye_is_suicide (Vertex v);
+  bool eye_is_ko (Player player, Vertex v) const;
+  bool eye_is_suicide (Vertex v) const;
 
   void basic_play (Player player, Vertex v);
   void play_not_eye (Player player, Vertex v);
@@ -129,7 +129,7 @@ private:
   void check_chain_at () const;
   void check_chain_next_v () const;
   void check () const;
-  void check_no_more_legal (Player player);
+  void check_no_more_legal (Player player) const;
 
   class NbrCounter {
   public:
@@ -141,7 +141,7 @@ private:
     uint empty_cnt  () const;
     uint player_cnt (Player pl) const;
     uint player_cnt_is_max (Player pl) const;
-    void check ();
+    void check () const;
     void check (const FastMap<Color, uint>& nbr_color_cnt) const;
 
     static const uint max;    // maximal number of neighbours
@@ -158,10 +158,11 @@ private:
   };
 
   struct Chain {
-    uint lib_cnt;
+    mutable uint lib_cnt;
   };
 
   Chain& chain_at (Vertex v);
+  const Chain& chain_at (Vertex v) const;
 
 public:
   // TODO make iterators / accessors
