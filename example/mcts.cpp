@@ -129,7 +129,7 @@ public:
 
   Vertex BestMove (Player pl) {
     // Find best move from the act_root and print tree.
-    MctsNode& best_node = most_explored_child (act_root, pl);
+    const MctsNode& best_node = most_explored_child (*act_root, pl);
 
     return
       (pl.subjective_score (best_node.stat.mean()) < resign_mean) ? 
@@ -174,7 +174,7 @@ private:
     trace.push_back(act_root);
 
     // descent the MCTS tree
-    while(ActNode()->has_all_legal_children [play_board.act_player()]) {
+    while(ActNode().has_all_legal_children [play_board.act_player()]) {
       if (!DoTreeMove (play_board.act_player ())) return;
     }
 
@@ -184,9 +184,9 @@ private:
     }
     
     // Is leaf is ready to expand ?
-    if (ActNode()->stat.update_count() > mature_update_count) {
+    if (ActNode().stat.update_count() > mature_update_count) {
       Player pl = play_board.act_player();
-      assertc (mcts_ac, pl == ActNode()->player.other());
+      assertc (mcts_ac, pl == ActNode().player.other());
 
       AddAllLegalChildren (pl);
 
@@ -205,11 +205,11 @@ private:
     MctsNode* best_child = NULL;
     float best_urgency = -large_float;
     const float explore_coeff
-      = log (ActNode()->stat.update_count()) * uct_explore_coeff;
+      = log (ActNode().stat.update_count()) * uct_explore_coeff;
 
-    assertc (mcts_ac, ActNode()->has_all_legal_children [act_player]);
+    assertc (mcts_ac, ActNode().has_all_legal_children [act_player]);
 
-    FOREACH (MctsNode& child, ActNode()->Children()) {
+    FOREACH (MctsNode& child, ActNode().Children()) {
       if (child.player != act_player) continue;
       float child_urgency = child.stat.ucb (act_player, explore_coeff);
       if (child_urgency > best_urgency) {
@@ -228,7 +228,7 @@ private:
       assertc (mcts_ac,
                best_child->stat.update_count() == Stat::prior_update_count);
       // Remove in case of large suicide.
-      ActNode()->RemoveChild (best_child);
+      ActNode().RemoveChild (best_child);
       return false;
     }
 
@@ -241,9 +241,9 @@ private:
     empty_v_for_each_and_pass (&play_board, v, {
       // big suicides and superko nodes have to be removed from the tree later
       if (play_board.is_pseudo_legal (pl, v))
-        ActNode()->AddChild (NodeData(pl, v));
+        ActNode().AddChild (NodeData(pl, v));
     });
-    ActNode()->has_all_legal_children [pl] = true;
+    ActNode().has_all_legal_children [pl] = true;
   }
 
   void update_history (float score) {
@@ -253,13 +253,13 @@ private:
     }
   }
 
-  MctsNode& most_explored_child (MctsNode* node, Player pl) {
-    MctsNode* best = NULL;
+  const MctsNode& most_explored_child (const MctsNode& node, Player pl) {
+    const MctsNode* best = NULL;
     float best_update_count = -1;
 
-    assertc (mcts_ac, node->has_all_legal_children [pl]);
+    assertc (mcts_ac, node.has_all_legal_children [pl]);
 
-    FOREACH (MctsNode& child, node->Children()) {
+    FOREACH (const MctsNode& child, node.Children()) {
       if (child.player == pl && child.stat.update_count() > best_update_count) {
         best_update_count = child.stat.update_count();
         best = &child;
@@ -270,9 +270,9 @@ private:
     return *best;
   }
 
-  MctsNode* ActNode() {
+  MctsNode& ActNode() {
     assertc (mcts_ac, trace.size() > 0);
-    return trace.back ();
+    return *trace.back ();
   }
 
 private:
