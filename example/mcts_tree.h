@@ -20,15 +20,15 @@ public:
   }
 
   // TODO better implementation of child removation.
-  void RemoveChild (MctsNode* child) {
-    ChildrenList::iterator it = children.begin();
+  void RemoveChild (MctsNode* child_ptr) {
+    ChildrenList::iterator child = children.begin();
     while (true) {
-      assertc (mcts_tree_ac, it != children.end());
-      if (&*it == child) {
-        children.erase(it);
+      assertc (mcts_tree_ac, child != children.end());
+      if (&*child == child_ptr) {
+        children.erase(child);
         return;
       }
-      it++;
+      child++;
     }
   }
 

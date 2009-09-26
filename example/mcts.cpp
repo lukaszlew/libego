@@ -113,11 +113,11 @@ private:
 
     // descent the MCTS tree
     while(ActNode().has_all_legal_children [play_board.act_player()]) {
-      if (!DoTreeMove (play_board.act_player ())) return;
+      if (!DoTreeMove ()) return;
     }
 
     if (play_board.both_player_pass()) {
-      update_history (play_board.tt_winner().to_score());
+      UpdateTree (play_board.tt_winner().to_score());
       return;
     }
     
@@ -128,23 +128,25 @@ private:
 
       ActNode().AddAllPseudoLegalChildren (pl, play_board);
 
-      if (!DoTreeMove (pl)) return; // Descend one more level.
+      if (!DoTreeMove ()) return; // Descend one more level.
     }
+    // TODO check for pass x 2 here as well
 
     // Finish with regular playout.
     LightPlayout (&play_board).Run();
     
     // Update score.
-    update_history (play_board.playout_winner().to_score());
+    UpdateTree (play_board.playout_winner().to_score());
   }
   
-  bool DoTreeMove (Player act_player) {
-    MctsNode& uct_child = ActNode().FindUctChild (act_player, uct_explore_coeff);
+  bool DoTreeMove () {
+    Player pl = play_board.act_player ();
+    MctsNode& uct_child = ActNode().FindUctChild (pl, uct_explore_coeff);
 
-    assertc (mcts_ac, play_board.is_pseudo_legal (act_player, uct_child.v));
+    assertc (mcts_ac, play_board.is_pseudo_legal (pl, uct_child.v));
 
     // Try to play it on the board
-    play_board.play_legal (act_player, uct_child.v);
+    play_board.play_legal (pl, uct_child.v);
     if (play_board.last_move_status != Board::play_ok) { // large suicide
       assertc (mcts_ac, play_board.last_move_status == Board::play_suicide);
       assertc (mcts_ac, !uct_child.HaveChildren ());
@@ -159,10 +161,9 @@ private:
     return true;
   }
 
-  void update_history (float score) {
-    // score: black -> 1, white -> -1
-    rep (ii, trace.size()) {
-      trace[ii]->stat.update (score);
+  void UpdateTree (float score) { // score: black -> 1, white -> -1
+    FOREACH (MctsNode* node, trace) {
+      node->stat.update (score);
     }
   }
 
