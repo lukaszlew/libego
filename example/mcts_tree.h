@@ -10,7 +10,6 @@ const bool mcts_tree_ac = true;
 class MctsNode {
 public:
   typedef std::list<MctsNode> ChildrenList; // TODO vector, allocator?
-  typedef ChildrenList::iterator ChildrenListIterator;
 
   explicit MctsNode (Player player_, Vertex v_) : player(player_), v(v_) {
     has_all_legal_children.SetAll (false);
@@ -22,7 +21,7 @@ public:
 
   // TODO better implementation of child removation.
   void RemoveChild (MctsNode* child) {
-    ChildrenListIterator it = children.begin();
+    ChildrenList::iterator it = children.begin();
     while (true) {
       assertc (mcts_tree_ac, it != children.end());
       if (&*it == child) {
@@ -86,6 +85,19 @@ public:
         AddChild (MctsNode(pl, v));
     });
     has_all_legal_children [pl] = true;
+  }
+
+  void RemoveIllegalChildren (Player pl, const FullBoard& full_board) {
+    assertc (mcts_tree_ac, has_all_legal_children [pl]);
+
+    ChildrenList::iterator child = children.begin();
+    while (child != children.end()) {
+      if (child->player == pl && !full_board.is_legal (pl, child->v)) {
+        children.erase (child++);
+      } else {
+        ++child;
+      }
+    }
   }
 
   MctsNode& FindUctChild (Player pl, float uct_explore_coeff) {

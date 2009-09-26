@@ -101,14 +101,8 @@ private:
     act_root = new MctsNode(act_player.other(), Vertex::any());
     act_root_path = full_board.MoveHistory ();
 
-    // add 1 level of tree with superko detection // TODO remove
-    empty_v_for_each_and_pass (&full_board.board(), v, {
-      if (full_board.is_legal (act_player, v)) {
-        act_root->AddChild (MctsNode(act_player, v));
-      }
-    });
-
-    act_root->has_all_legal_children [act_player] = true;
+    act_root->AddAllPseudoLegalChildren (act_player, full_board.board());
+    act_root->RemoveIllegalChildren (act_player, full_board);
   }
 
   void DoOnePlayout (){
