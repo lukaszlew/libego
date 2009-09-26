@@ -31,7 +31,7 @@ public:
   Mcts (FullBoard& full_board_)
     : full_board (full_board_),
       root (Player::white(), Vertex::any()),
-      act_root (NULL)
+      act_root (&root)
   {
     uct_explore_coeff    = 1.0;
     mature_update_count  = 100.0;
@@ -39,24 +39,20 @@ public:
     resign_mean          = -0.95;
   }
 
-  ~Mcts () {
-    if (act_root) delete act_root; // TODO scoped_ptr
-  }
-
   void DoNPlayouts (uint n) { // TODO first_player
-    Reset ();
+    Synchronize ();
     rep (ii, n) {
       DoOnePlayout ();
     }
   }
 
   string ToString () {
+    Synchronize ();
     return act_root->RecToString (print_update_count);
   }
 
   Vertex BestMove (Player pl) {
-    // TODO sync here wit full_Board as well
-    // Find best move from the act_root and print tree.
+    Synchronize ();
     const MctsNode& best_node = act_root->MostExploredChild (pl);
 
     return
@@ -95,19 +91,12 @@ private:
       act_root = act_root->FindChild (pl, v);
       assertc (mcts_ac, act_root != NULL);
     }
-
-    act_root->RemoveIllegalChildren (full_board.act_player(), full_board);
-  }
-
-  void Reset () {
-    Player act_player = full_board.board().act_player();
-    // prepare act_root of the tree
-    if (act_root) delete act_root;
-    act_root = new MctsNode(act_player.other(), Vertex::any());
-    act_root_path = full_board.MoveHistory ();
-
-    act_root->AddAllPseudoLegalChildren (act_player, full_board.board());
-    act_root->RemoveIllegalChildren (act_player, full_board);
+    
+    Player pl = full_board.act_player();
+    if (!act_root->has_all_legal_children[pl]) {
+      act_root->AddAllPseudoLegalChildren (pl, full_board);
+    }
+    act_root->RemoveIllegalChildren (pl, full_board);
   }
 
   void DoOnePlayout (){
