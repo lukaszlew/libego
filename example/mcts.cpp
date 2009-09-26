@@ -51,7 +51,7 @@ public:
   }
 
   string ToString () {
-    return TreeToString() (*act_root, print_update_count);
+    return act_root->RecToString (print_update_count);
   }
 
   Vertex BestMove (Player pl) {

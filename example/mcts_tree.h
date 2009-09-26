@@ -55,6 +55,44 @@ public:
     return s.str();
   }
 
+  // TODO replace this by boost lambda
+  struct CompareNodeMean { 
+    CompareNodeMean(Player player) : player_(player) {}
+    bool operator()(const MctsNode* a, const MctsNode* b) {
+      if (player_ == Player::black ()) {
+        return a->stat.mean() < b->stat.mean();
+      } else {
+        return a->stat.mean() > b->stat.mean();
+      }
+    }
+    Player player_;
+  };
+
+  void RecPrint (ostream& out, uint depth, float min_visit) const {
+    rep (d, depth) out << "  ";
+    out << ToString () << endl;
+
+    vector <const MctsNode*> child_tab;
+    FOREACH (const MctsNode& child, Children()) {
+      child_tab.push_back(&child);
+    }
+
+    sort (child_tab.begin(), child_tab.end(), CompareNodeMean (player));
+
+    FOREACH (const MctsNode* child, child_tab) {
+      if (child->stat.update_count() >= min_visit) {
+        child->RecPrint (out, depth + 1, min_visit);
+      }
+    }
+  }
+
+  string RecToString (float min_visit) const { 
+    ostringstream out;
+    RecPrint (out, 0, min_visit); 
+    return out.str ();
+  }
+
+
   Player player;
   Vertex v;
   FastMap <Player, bool> has_all_legal_children;
@@ -126,51 +164,4 @@ private:
 
 // -----------------------------------------------------------------------------
 
-class TreeToString {
-public:
-  string operator () (const MctsNode& node, float min_visit_) { 
-    min_visit = min_visit_;
-    out.str("");
-    out.clear();
-    depth = 0;
-    RecPrint (node); 
-    return out.str ();
-  }
-
-private:
-
-  struct CompareNodeMean { 
-    CompareNodeMean(Player player) : player_(player) {}
-    bool operator()(const MctsNode* a, const MctsNode* b) {
-      if (player_ == Player::black ()) {
-        return a->stat.mean() < b->stat.mean();
-      } else {
-        return a->stat.mean() > b->stat.mean();
-      }
-    }
-    Player player_;
-  };
-
-  void RecPrint (const MctsNode& node) {
-    rep (d, depth) out << "  ";
-    out << node.ToString () << endl;
-
-    vector <const MctsNode*> child_tab;
-    FOREACH (const MctsNode& child, node.Children())  child_tab.push_back(&child);
-    sort (child_tab.begin(), child_tab.end(), CompareNodeMean (node.player));
-
-    depth += 1;
-    FOREACH (const MctsNode* child, child_tab) {
-      if (child->stat.update_count() >= min_visit) RecPrint (*child);
-    }
-    depth -= 1;
-  }
-
-private:
-  ostringstream out;
-  uint depth;
-  float min_visit;
-};
-
-// -----------------------------------------------------------------------------
 #endif
