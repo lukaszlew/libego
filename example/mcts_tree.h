@@ -97,7 +97,7 @@ string MctsNode::ToString() const {
 
 namespace {
   bool SubjectiveCmp (const MctsNode* a, const MctsNode* b) {
-    return a->SubjectiveMean () < b->SubjectiveMean ();
+    return a->SubjectiveMean () > b->SubjectiveMean ();
   }
 }
 
