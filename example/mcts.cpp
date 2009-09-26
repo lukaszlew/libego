@@ -25,85 +25,18 @@ const bool mcts_ac = true;
 
 // -----------------------------------------------------------------------------
 
-class Mcts {
+class MctsPlayout {
 public:
-  
-  Mcts (FullBoard& full_board_)
-    : full_board (full_board_),
-      root (Player::white(), Vertex::any()),
-      act_root (&root)
-  {
+  MctsPlayout () {
     uct_explore_coeff    = 1.0;
     mature_update_count  = 100.0;
-    resign_mean          = -0.95;
   }
 
-  void DoNPlayouts (uint n) { // TODO first_player
-    Synchronize ();
-    rep (ii, n) {
-      DoOnePlayout ();
-    }
-  }
-
-  string ToString (uint min_updates) {
-    Synchronize ();
-    return act_root->RecToString (min_updates);
-  }
-
-  Vertex BestMove (Player pl) {
-    Synchronize ();
-    const MctsNode& best_node = act_root->MostExploredChild (pl);
-
-    return
-      (best_node.SubjectiveMean () < resign_mean) ? 
-      Vertex::resign () :
-      best_node.v;
-  }
-
-  vector<Move> NewPlayout () {
-    // TODO replace it with MCTS playout.
-    LightPlayout::MoveHistory history;
-
-    Board playout_board;
-    playout_board.load (&full_board.board());
-    LightPlayout playout (&playout_board);
-    playout.Run (history);
-    
-    return history.AsVector ();
-  }
-
-private:
-
-  void Synchronize () {
-    Board sync_board;
-    act_root = &root;
-    act_root_path = full_board.MoveHistory ();
-    FOREACH (Move m, act_root_path) {
-      Player pl = m.get_player();
-      Vertex v  = m.get_vertex();
-      if (!act_root->has_all_legal_children[pl]) {
-        // TODO make invariant about haveChildren and has_all_legal_children
-        act_root->AddAllPseudoLegalChildren (pl, sync_board);
-      }
-      act_root = act_root->FindChild (pl, v);
-      assertc (mcts_ac, act_root != NULL);
-
-      sync_board.play_legal (pl, v);
-      assertc (mcts_ac, sync_board.last_move_status == Board::play_ok);
-    }
-    
-    Player pl = full_board.act_player();
-    if (!act_root->has_all_legal_children[pl]) {
-      act_root->AddAllPseudoLegalChildren (pl, full_board);
-    }
-    act_root->RemoveIllegalChildren (pl, full_board);
-  }
-
-  void DoOnePlayout (){
+  void DoOnePlayout (MctsNode& playout_root, const Board& board) {
     // Prepare simulation board and tree iterator.
-    play_board.load (&full_board.board());
+    play_board.load (&board);
     trace.clear();
-    trace.push_back(act_root);
+    trace.push_back (&playout_root);
 
     // descent the MCTS tree
     while(ActNode().has_all_legal_children [play_board.act_player()]) {
@@ -132,7 +65,9 @@ private:
     // Update score.
     UpdateTree (play_board.playout_winner().to_score());
   }
-  
+
+private:
+
   bool DoTreeMove () {
     Player pl = play_board.act_player ();
     MctsNode& uct_child = ActNode().FindUctChild (pl, uct_explore_coeff);
@@ -172,18 +107,99 @@ private:
   // parameters
   float uct_explore_coeff;
   float mature_update_count;
+  
+  // playout
+  Board play_board;
+  vector <MctsNode*> trace;
+};
+
+// -----------------------------------------------------------------------------
+
+class Mcts {
+public:
+  
+  Mcts (FullBoard& full_board_)
+    : full_board (full_board_),
+      root (Player::white(), Vertex::any()),
+      act_root (&root)
+  {
+    resign_mean          = -0.95;
+  }
+
+  void DoNPlayouts (uint n) { // TODO first_player
+    Synchronize ();
+    rep (ii, n) {
+      playout.DoOnePlayout (*act_root, full_board.board());
+    }
+  }
+
+  string ToString (uint min_updates) {
+    Synchronize ();
+    return act_root->RecToString (min_updates);
+  }
+
+  Vertex BestMove (Player pl) {
+    Synchronize ();
+    const MctsNode& best_node = act_root->MostExploredChild (pl);
+
+    return
+      (best_node.SubjectiveMean () < resign_mean) ? 
+      Vertex::resign () :
+      best_node.v;
+  }
+
+  vector<Move> NewPlayout () {
+    // TODO replace it with MCTS playout.
+    LightPlayout::MoveHistory history;
+
+    Board playout_board;
+    playout_board.load (&full_board.board());
+    LightPlayout playout (&playout_board);
+    playout.Run (history);
+    
+    return history.AsVector ();
+  }
+
+private:
+
+  void Synchronize () {
+    Board sync_board;
+    act_root = &root;
+    FOREACH (Move m, full_board.MoveHistory ()) {
+      Player pl = m.get_player();
+      Vertex v  = m.get_vertex();
+      if (!act_root->has_all_legal_children[pl]) {
+        // TODO make invariant about haveChildren and has_all_legal_children
+        act_root->AddAllPseudoLegalChildren (pl, sync_board);
+      }
+      act_root = act_root->FindChild (pl, v);
+      assertc (mcts_ac, act_root != NULL);
+
+      sync_board.play_legal (pl, v);
+      assertc (mcts_ac, sync_board.last_move_status == Board::play_ok);
+    }
+    
+    Player pl = full_board.act_player();
+    if (!act_root->has_all_legal_children[pl]) {
+      act_root->AddAllPseudoLegalChildren (pl, full_board);
+    }
+    act_root->RemoveIllegalChildren (pl, full_board);
+  }
+
+private:
+  friend class MctsGtp;
+
+  // parameters
   float print_update_count;
   float resign_mean;
 
   // base board
   FullBoard& full_board;
   
-  // playout
-  Board play_board;
-
   // tree
   MctsNode root;
   MctsNode* act_root;
-  vector <Move> act_root_path;
-  vector <MctsNode*> trace;
+  
+  // playout
+  MctsPlayout playout;
 };

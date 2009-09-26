@@ -22,9 +22,9 @@ public:
     gtp.RegisterParam ("MCTS.params", "Playouts_before_genmove",
                        &playout_count);
     gtp.RegisterParam ("MCTS.params", "UCT_explore_coeff",
-                       &mcts.uct_explore_coeff);
+                       &mcts.playout.uct_explore_coeff);
     gtp.RegisterParam ("MCTS.params", "Min_updates_to_have_children",
-                       &mcts.mature_update_count);
+                       &mcts.playout.mature_update_count);
     gtp.RegisterParam ("MCTS.params", "Min_updates_to_print",
                        &min_updates_to_print);
     gtp.RegisterParam ("MCTS.params", "E(score)_to_resign",
