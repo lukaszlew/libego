@@ -4,7 +4,20 @@ public:
     : mcts(mcts_), full_board(full_board_)
   {
     playout_count = 10000;
+    min_updates_to_print = 1000;
+
     gtp.Register ("genmove", this, &MctsGtp::CGenmove);
+
+    gtp.RegisterGfx ("MCTS.DoPlayouts",      "1", this, &MctsGtp::CDoPlayouts);
+    gtp.RegisterGfx ("MCTS.DoPlayouts",   "1000", this, &MctsGtp::CDoPlayouts);
+    gtp.RegisterGfx ("MCTS.DoPlayouts",  "10000", this, &MctsGtp::CDoPlayouts);
+    gtp.RegisterGfx ("MCTS.DoPlayouts", "100000", this, &MctsGtp::CDoPlayouts);
+
+    gtp.RegisterGfx ("MCTS.ShowTree",   "0", this, &MctsGtp::CShowTree);
+    gtp.RegisterGfx ("MCTS.ShowTree",  "10", this, &MctsGtp::CShowTree);
+    gtp.RegisterGfx ("MCTS.ShowTree", "100", this, &MctsGtp::CShowTree);
+    gtp.RegisterGfx ("MCTS.ShowTree", "500", this, &MctsGtp::CShowTree);
+
 
     gtp.RegisterParam ("MCTS.params", "Playouts_before_genmove",
                        &playout_count);
@@ -13,7 +26,7 @@ public:
     gtp.RegisterParam ("MCTS.params", "Min_updates_to_have_children",
                        &mcts.mature_update_count);
     gtp.RegisterParam ("MCTS.params", "Min_updates_to_print",
-                       &mcts.print_update_count);
+                       &min_updates_to_print);
     gtp.RegisterParam ("MCTS.params", "E(score)_to_resign",
                        &mcts.resign_mean);
   }
@@ -26,7 +39,7 @@ private:
     full_board.set_act_player(player); // TODO move player parameter to DoPlayouts
 
     mcts.DoNPlayouts (playout_count);
-    cerr << mcts.ToString () << endl;
+    cerr << mcts.ToString (min_updates_to_print) << endl;
 
     Vertex v = mcts.BestMove (player);
 
@@ -38,8 +51,23 @@ private:
       io.Out () << "resign";
     }
   }
+
+  void CDoPlayouts (Gtp::Io& io) {
+    uint n = io.Read <uint> (playout_count);
+    io.CheckEmpty();
+    mcts.DoNPlayouts (n);
+  }
+
+  void CShowTree (Gtp::Io& io) {
+    uint min_updates = io.Read <uint> (min_updates_to_print);
+    io.CheckEmpty();
+    io.Out() << mcts.ToString (min_updates);
+  }
+
 private:
   Mcts& mcts;
   FullBoard& full_board;
+
   float playout_count;
+  float min_updates_to_print;
 };

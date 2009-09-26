@@ -35,7 +35,6 @@ public:
   {
     uct_explore_coeff    = 1.0;
     mature_update_count  = 100.0;
-    print_update_count   = 500.0;
     resign_mean          = -0.95;
   }
 
@@ -46,9 +45,9 @@ public:
     }
   }
 
-  string ToString () {
+  string ToString (uint min_updates) {
     Synchronize ();
-    return act_root->RecToString (print_update_count);
+    return act_root->RecToString (min_updates);
   }
 
   Vertex BestMove (Player pl) {
