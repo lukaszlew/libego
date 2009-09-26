@@ -81,14 +81,15 @@ private:
     FOREACH (Move m, act_root_path) {
       Player pl = m.get_player();
       Vertex v  = m.get_vertex();
-      sync_board.play_legal (pl, v);
-      assertc (mcts_ac, sync_board.last_move_status == Board::play_ok);
       if (!act_root->has_all_legal_children[pl]) {
         // TODO make invariant about haveChildren and has_all_legal_children
         act_root->AddAllPseudoLegalChildren (pl, sync_board);
       }
       act_root = act_root->FindChild (pl, v);
       assertc (mcts_ac, act_root != NULL);
+
+      sync_board.play_legal (pl, v);
+      assertc (mcts_ac, sync_board.last_move_status == Board::play_ok);
     }
     
     Player pl = full_board.act_player();
