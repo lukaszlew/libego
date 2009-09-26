@@ -79,20 +79,25 @@ public:
 
 private:
 
-//   void Synchronize () {
-//     act_root = &root;
-//     act_root_path = full_board.MoveHistory ();
-//     FOREACH (Move m, act_root_path) {
-//       MctsNode* new_node = act_root->FindChild (jest ruch m);
-//       if (new_node) {
-//         act_root = new_node;
-//       } else {
-//         act_root = act_root->AddChild (m->get_player(), m->get_vertex());
-//       }
-//     }
+  void Synchronize () {
+    Board sync_board;
+    act_root = &root;
+    act_root_path = full_board.MoveHistory ();
+    FOREACH (Move m, act_root_path) {
+      Player pl = m.get_player();
+      Vertex v  = m.get_vertex();
+      sync_board.play_legal (pl, v);
+      assertc (mcts_ac, sync_board.last_move_status == Board::play_ok);
+      if (!act_root->has_all_legal_children[pl]) {
+        // TODO make invariant about haveChildren and has_all_legal_children
+        act_root->AddAllPseudoLegalChildren (pl, sync_board);
+      }
+      act_root = act_root->FindChild (pl, v);
+      assertc (mcts_ac, act_root != NULL);
+    }
 
-//     // rekursywne upgrade do has_all_legal_children
-//   }
+    act_root->RemoveIllegalChildren (full_board.act_player(), full_board);
+  }
 
   void Reset () {
     Player act_player = full_board.board().act_player();

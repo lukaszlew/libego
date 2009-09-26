@@ -32,6 +32,15 @@ public:
     }
   }
 
+  MctsNode* FindChild (Player pl, Vertex v) {
+    FOREACH (MctsNode& child, Children ()) {
+      if (child.player == pl && child.v == v) {
+        return &child;
+      }
+    }
+    return NULL;
+  }
+
   bool HaveChildren () {
     return !children.empty();
   }
@@ -55,7 +64,7 @@ public:
     return s.str();
   }
 
-  // TODO replace this by boost lambda
+  // TODO replace this by subjective stat.mean
   struct CompareNodeMean { 
     CompareNodeMean(Player player) : player_(player) {}
     bool operator()(const MctsNode* a, const MctsNode* b) {
@@ -117,6 +126,7 @@ public:
   }
 
   void AddAllPseudoLegalChildren (Player pl, const Board& board) {
+    assertc (mcts_tree_ac, has_all_legal_children [pl] == false);
     empty_v_for_each_and_pass (&board, v, {
       // big suicides and superko nodes have to be removed from the tree later
       if (board.is_pseudo_legal (pl, v))
