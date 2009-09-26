@@ -21,7 +21,7 @@ public:
 
   string to_string () const;
 
-  template <typename T> T subjective_score (const T& score);
+  template <typename T> T subjective_score (const T& score) const;
 
   explicit Player ();
   explicit Player (uint _idx);
@@ -52,7 +52,7 @@ ostream& operator<< (ostream& out, Player& pl);
 // -----------------------------------------------------------------------------
 // internal
 
-template <typename T> T Player::subjective_score (const T& score) {
+template <typename T> T Player::subjective_score (const T& score) const {
   T tab[2];
   tab[0] = score;
   tab[1] = - score;

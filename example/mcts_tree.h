@@ -13,7 +13,6 @@ public:
 
   explicit MctsNode (Player player_, Vertex v_);
 
-  // Tree topology methods.
   // Printing.
 
   string ToString() const;
@@ -37,6 +36,10 @@ public:
   const MctsNode& MostExploredChild (Player pl);
 
   MctsNode& FindUctChild (Player pl, float uct_explore_coeff);
+
+  // Other.
+  
+  float SubjectiveMean() const;
 
 public:
   Player player;
@@ -93,18 +96,9 @@ string MctsNode::ToString() const {
 }
 
 namespace {
-// TODO replace this by subjective stat.mean
-struct CompareNodeMean { 
-CompareNodeMean(Player player) : player_(player) {}
-  bool operator()(const MctsNode* a, const MctsNode* b) {
-    if (player_ == Player::black ()) {
-      return a->stat.mean() < b->stat.mean();
-    } else {
-      return a->stat.mean() > b->stat.mean();
-    }
+  bool SubjectiveCmp (const MctsNode* a, const MctsNode* b) {
+    return a->SubjectiveMean () < b->SubjectiveMean ();
   }
-  Player player_;
-};
 }
 
 void MctsNode::RecPrint (ostream& out, uint depth, float min_visit) const {
@@ -116,7 +110,7 @@ void MctsNode::RecPrint (ostream& out, uint depth, float min_visit) const {
     child_tab.push_back(&child);
   }
 
-  sort (child_tab.begin(), child_tab.end(), CompareNodeMean (player));
+  sort (child_tab.begin(), child_tab.end(), SubjectiveCmp);
 
   FOREACH (const MctsNode* child, child_tab) {
     if (child->stat.update_count() >= min_visit) {
@@ -189,6 +183,10 @@ MctsNode& MctsNode::FindUctChild (Player pl, float uct_explore_coeff) {
 
   assertc (mcts_tree_ac, best_child != NULL); // at least pass
   return *best_child;
+}
+
+float MctsNode::SubjectiveMean () const {
+  return player.subjective_score (stat.mean ());
 }
 
 #endif

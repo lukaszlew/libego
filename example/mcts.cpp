@@ -55,7 +55,7 @@ public:
     const MctsNode& best_node = act_root->MostExploredChild (pl);
 
     return
-      (pl.subjective_score (best_node.stat.mean()) < resign_mean) ? 
+      (best_node.SubjectiveMean () < resign_mean) ? 
       Vertex::resign () :
       best_node.v;
   }
