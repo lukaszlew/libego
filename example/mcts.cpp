@@ -119,32 +119,30 @@ class Mcts {
 public:
   
   Mcts (FullBoard& full_board_)
-    : full_board (full_board_),
-      root (Player::white(), Vertex::any()),
-      act_root (&root)
+  : full_board (full_board_), root (Player::white(), Vertex::any())
   {
-    resign_mean          = -0.95;
+    resign_mean = -0.95;
   }
 
   void DoNPlayouts (uint n) { // TODO first_player
-    Synchronize ();
+    MctsNode& act_root = FindRoot ();
     rep (ii, n) {
-      playout.DoOnePlayout (*act_root, full_board.board());
+      playout.DoOnePlayout (act_root, full_board.board());
     }
   }
 
   string ToString (uint min_updates) {
-    Synchronize ();
-    return act_root->RecToString (min_updates);
+    MctsNode& act_root = FindRoot ();
+    return act_root.RecToString (min_updates);
   }
 
   Vertex BestMove (Player pl) {
-    Synchronize ();
-    const MctsNode& best_node = act_root->MostExploredChild (pl);
+    MctsNode& act_root = FindRoot ();
+    const MctsNode& best_node = act_root.MostExploredChild (pl);
 
     return
-      (best_node.SubjectiveMean () < resign_mean) ? 
-      Vertex::resign () :
+      best_node.SubjectiveMean() < resign_mean ?
+      Vertex::resign() :
       best_node.v;
   }
 
@@ -162,9 +160,9 @@ public:
 
 private:
 
-  void Synchronize () {
+  MctsNode& FindRoot () {
     Board sync_board;
-    act_root = &root;
+    MctsNode* act_root = &root;
     FOREACH (Move m, full_board.MoveHistory ()) {
       Player pl = m.get_player();
       Vertex v  = m.get_vertex();
@@ -184,6 +182,8 @@ private:
       act_root->AddAllPseudoLegalChildren (pl, full_board);
     }
     act_root->RemoveIllegalChildren (pl, full_board);
+
+    return *act_root;
   }
 
 private:
@@ -198,7 +198,6 @@ private:
   
   // tree
   MctsNode root;
-  MctsNode* act_root;
   
   // playout
   MctsPlayout playout;
