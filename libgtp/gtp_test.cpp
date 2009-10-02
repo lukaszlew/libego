@@ -72,6 +72,7 @@ BOOST_AUTO_TEST_CASE (BuiltInCommands) {
     << "known_command help" << endl
     << "known_command hlp" << endl
     << "quit # bye bye" << endl
+    << "this won't be executed" << endl
     ;
 
   stringstream expected_help_msg;

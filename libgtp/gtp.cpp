@@ -5,7 +5,7 @@
 
 namespace Gtp {
 
-Io::Io (istream& arg_line) : in (arg_line) {
+Io::Io (istream& arg_line) : in (arg_line), success(false), quit_gtp (false) {
 }
 
 void Io::ThrowSyntaxError () {
@@ -97,8 +97,8 @@ void Repl::Run (istream& in, ostream& out) {
       callbacks [cmd_name] (io); // callback call
       Report (out, true, io.out.str());
     }
-    catch (Error e) { Report (out, false, io.out.str()); }
-    catch (Quit)    { Report (out, true,  io.out.str()); break; }
+    catch (Error e) { Report (out, io.success, io.out.str()); }
+    if (io.quit_gtp) return;
   }
 }
 
@@ -124,7 +124,9 @@ void Repl::CKnownCommand (Io& io) {
 void Repl::CQuit (Io& io) {
   io.CheckEmpty();
   io.out << "bye";
-  throw Quit();
+  io.success  = true;
+  io.quit_gtp = true;
+  throw Error();
 }
 
 bool Repl::IsCommand (const string& name) {

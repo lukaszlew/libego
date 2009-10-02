@@ -38,15 +38,15 @@ public:
 private:
   Io (istream& arg_line);
   friend class Repl;
+
+  bool success;
+  bool quit_gtp;
 };
 
 // Exceptions that can be throwed by a command and will be catched by Repl:
 
 // GTP command failure with message
 struct Error {};
-
-// quit GTP Run loop.
-struct Quit {};
 
 // -----------------------------------------------------------------------------
 // GTP::Callback and some constructors.
