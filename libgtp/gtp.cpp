@@ -8,10 +8,16 @@ namespace Gtp {
 Io::Io (istream& arg_line) : in (arg_line) {
 }
 
+void Io::ThrowSyntaxError () {
+  out.str ("");
+  out << "syntax error";
+  throw Error();
+}
+
 void Io::CheckEmpty() {
   string s;
   in >> s;
-  if (in) throw syntax_error;
+  if (in) ThrowSyntaxError();
   in.clear();
 }
 
@@ -24,8 +30,6 @@ bool Io::IsEmpty() {
   in.clear();
   return !ok;
 }
-
-const Error syntax_error("syntax error");
 
 // -----------------------------------------------------------------------------
 
@@ -88,13 +92,13 @@ void Repl::Run (istream& in, ostream& out) {
       continue;
     }
 
+    Io io(line_stream);
     try {
-      Io io(line_stream);
       callbacks [cmd_name] (io); // callback call
       Report (out, true, io.out.str());
     }
-    catch (Error e) { Report (out, false, e.msg); }
-    catch (Quit)    { Report (out, true, "bye"); break; }
+    catch (Error e) { Report (out, false, io.out.str()); }
+    catch (Quit)    { Report (out, true,  io.out.str()); break; }
   }
 }
 
@@ -119,6 +123,7 @@ void Repl::CKnownCommand (Io& io) {
 
 void Repl::CQuit (Io& io) {
   io.CheckEmpty();
+  io.out << "bye";
   throw Quit();
 }
 

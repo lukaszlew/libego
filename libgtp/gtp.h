@@ -20,6 +20,9 @@ public:
   istream& in;
   ostringstream out;
 
+  // Prints "syntax error" to out and return directly to Repl through exception.
+  void ThrowSyntaxError ();
+
   // Reads and returns type T, throws syntax_error otherwise.
   template <typename T> T Read ();
 
@@ -40,12 +43,7 @@ private:
 // Exceptions that can be throwed by a command and will be catched by Repl:
 
 // GTP command failure with message
-struct Error {
-  Error (const string& msg_) : msg(msg_) {}
-  string msg;
-};
-
-extern const Error syntax_error;
+struct Error {};
 
 // quit GTP Run loop.
 struct Quit {};
@@ -109,18 +107,21 @@ T Io::Read () {
   in >> t;
   if (in.fail()) {
     in.clear();
-    throw syntax_error;
+    ThrowSyntaxError ();
   }
   return t;
 }
 
 template <typename T>
 T Io::Read (const T& default_value) {
-  try {
-    return Read <T> ();
-  } catch (Error) {
+  in.clear();
+  T t;
+  in >> t;
+  if (in.fail()) {
+    in.clear();
     return default_value;
   }
+  return t;
 }
 
 template <class T>

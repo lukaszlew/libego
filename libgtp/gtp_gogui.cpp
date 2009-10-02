@@ -10,8 +10,8 @@ ReplWithGogui::ReplWithGogui () : Repl () {
 }
 
 void ReplWithGogui::RegisterGfx (const string& name,
-                           const string& params,
-                           Callback command)
+                                 const string& params,
+                                 Callback command)
 {
   string full_name = params == "" ? name : name + " " + params;
   analyze_list
@@ -31,13 +31,14 @@ void ReplWithGogui::CParam (const string& cmd_name, Io& io) {
       v.second (io);
       io.out << endl;
     }
-    return;
+  } else {
+    string var_name = io.Read<string> ();
+    if (vars.find (var_name) == vars.end ()) {
+      io.out << "unknown variable: \"" << var_name << "\"";
+      throw Error ();
+    }
+    vars[var_name] (io);
   }
-  string var_name = io.Read<string> ();
-  if (vars.find (var_name) == vars.end ()) {
-    throw Error ("unknown variable: \"" + var_name + "\"");
-  }
-  vars[var_name] (io);
 }
 
 void ReplWithGogui::CAnalyze (Io& io) {
