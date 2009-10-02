@@ -17,8 +17,8 @@ using namespace std;
 class Io {
 public:
 
-  istream& In  ();
-  ostream& Out ();
+  istream& in;
+  ostringstream out;
 
   // Reads and returns type T, throws syntax_error otherwise.
   template <typename T> T Read ();
@@ -26,18 +26,15 @@ public:
   // Reads and returns type T, returns default value in case of syntax error.
   template <typename T> T Read (const T& default_value);
 
-  // Returns true is all that's left in In() is whitespace.
+  // Returns true is all that's left in in is whitespace.
   bool IsEmpty ();
 
-  // Throws syntax_error if a non-whitespace is still in In()
+  // Throws syntax_error if a non-whitespace is still in in
   void CheckEmpty ();
 
 private:
-  Io (istringstream& arg_line);
+  Io (istream& arg_line);
   friend class Repl;
-private:
-  istringstream& in;
-  ostringstream out;
 };
 
 // Exceptions that can be throwed by a command and will be catched by Repl:
@@ -141,7 +138,7 @@ namespace {
   template <typename T>
   void GetSetCallback (T* var, Io& io) {
     if (io.IsEmpty()) {
-      io.Out () << *var;
+      io.out << *var;
       return;
     }
     // TODO handle quoted strings

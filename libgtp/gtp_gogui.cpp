@@ -27,9 +27,9 @@ void ReplWithGogui::CParam (const string& cmd_name, Io& io) {
     // print all vars and their values
     pair<string, Callback> v;
     FOREACH(v, vars) {
-      io.Out() << "[string] " << v.first << " ";
+      io.out << "[string] " << v.first << " ";
       v.second (io);
-      io.Out() << endl;
+      io.out << endl;
     }
     return;
   }
@@ -41,7 +41,7 @@ void ReplWithGogui::CParam (const string& cmd_name, Io& io) {
 }
 
 void ReplWithGogui::CAnalyze (Io& io) {
-  io.Out () << analyze_list.str ();
+  io.out << analyze_list.str ();
 }
 
 } // namespace Gtp

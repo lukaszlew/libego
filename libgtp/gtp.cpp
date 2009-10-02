@@ -7,7 +7,7 @@
 
 namespace Gtp {
 
-Io::Io (istringstream& arg_line) : in (arg_line) {
+Io::Io (istream& arg_line) : in (arg_line) {
 }
 
 void Io::CheckEmpty() {
@@ -27,14 +27,6 @@ bool Io::IsEmpty() {
   return !ok;
 }
 
-istream& Io::In () {
-  return in;
-}
-
-ostream& Io::Out () {
-  return out;
-}
-
 const Error syntax_error("syntax error");
 
 // -----------------------------------------------------------------------------
@@ -43,7 +35,7 @@ const Error syntax_error("syntax error");
 
 void StaticAux(const string& ret, Io& io) {
   io.CheckEmpty ();
-  io.Out() << ret;
+  io.out << ret;
 }
 
 Callback StaticCommand (const string& ret) {
@@ -118,12 +110,12 @@ void Repl::CListCommands (Io& io) {
   io.CheckEmpty();
   pair<string, Callback> p;
   FOREACH(p, callbacks) {
-    io.Out() << p.first << endl;
+    io.out << p.first << endl;
   }
 }
 
 void Repl::CKnownCommand (Io& io) {
-  io.Out() << boolalpha << IsCommand(io.Read<string> ());
+  io.out << boolalpha << IsCommand(io.Read<string> ());
   io.CheckEmpty();
 }
 

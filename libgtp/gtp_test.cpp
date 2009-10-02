@@ -15,7 +15,7 @@ using std::string;
 
 // A simple command.
 void CAdd (Gtp::Io& io) {
-  io.Out() << io.Read<int>() + io.Read<int>(11);
+  io.out << io.Read<int>() + io.Read<int>(11);
   io.CheckEmpty ();
 }
 
@@ -29,9 +29,9 @@ public:
 private:
   void CEcho (Gtp::Io& io) {
     std::string s;
-    std::getline(io.In(), s);
+    std::getline(io.in, s);
     boost::trim(s);
-    io.Out () << s;
+    io.out << s;
   }
 };
 
