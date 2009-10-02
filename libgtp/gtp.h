@@ -20,6 +20,9 @@ public:
   istream& in;
   ostringstream out;
 
+  // Repl Will print "? message" on the output
+  void SetError (const string& message);
+
   // Prints "syntax error" to out and return directly to Repl through exception.
   void ThrowSyntaxError ();
 
@@ -36,17 +39,14 @@ public:
   void CheckEmpty ();
 
 private:
-  Io (istream& arg_line);
   friend class Repl;
+  Io (istream& arg_line);
+  void Report (ostream& out) const;
 
   bool success;
   bool quit_gtp;
 };
 
-// Exceptions that can be throwed by a command and will be catched by Repl:
-
-// GTP command failure with message
-struct Error {};
 
 // -----------------------------------------------------------------------------
 // GTP::Callback and some constructors.
@@ -86,13 +86,16 @@ public:
   bool IsCommand (const string& name);
 
 private:
+  // Exception that can be throwed by a command and will be catched by Repl::Run
+  struct Return {};
+
+  friend class Io;
+
   // commands built-in into interpreter (registered during interpreter construction)
   void CListCommands (Io&);
   void CKnownCommand (Io&);
   void CQuit (Io&);
   
-  void Report (ostream& out, bool success, const string& name);
-
 private:
   map <string, Callback> callbacks;
 };

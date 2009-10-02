@@ -5,13 +5,17 @@
 
 namespace Gtp {
 
-Io::Io (istream& arg_line) : in (arg_line), success(false), quit_gtp (false) {
+Io::Io (istream& arg_line) : in (arg_line), success(true), quit_gtp (false) { 
+}
+
+void Io::SetError (const string& message) {
+  out.str (message);
+  success = false;
 }
 
 void Io::ThrowSyntaxError () {
-  out.str ("");
-  out << "syntax error";
-  throw Error();
+  SetError ("syntax error");
+  throw Repl::Return();
 }
 
 void Io::CheckEmpty() {
@@ -29,6 +33,12 @@ bool Io::IsEmpty() {
   in.seekg(pos);
   in.clear();
   return !ok;
+}
+
+void Io::Report (ostream& gtp_out) const {
+  gtp_out << (success ? "=" : "?") << " "
+          << boost::trim_right_copy(out.str()) // remove bad endl in msg
+          << endl << endl;
 }
 
 // -----------------------------------------------------------------------------
@@ -87,25 +97,18 @@ void Repl::Run (istream& in, ostream& out) {
     string cmd_name;
     if (!(line_stream >> cmd_name)) continue; // empty line
 
-    if (!IsCommand (cmd_name)) {
-      Report (out, false, "unknown command: \"" + cmd_name + "\"");
-      continue;
+    Io io(line_stream);
+
+    if (IsCommand (cmd_name)) {
+      // Callback call with optional fast return.
+      try { callbacks [cmd_name] (io); } catch (Return) { }
+    } else {
+      io.SetError ("unknown command: \"" + cmd_name + "\"");
     }
 
-    Io io(line_stream);
-    try {
-      callbacks [cmd_name] (io); // callback call
-      Report (out, true, io.out.str());
-    }
-    catch (Error e) { Report (out, io.success, io.out.str()); }
+    io.Report (out);
     if (io.quit_gtp) return;
   }
-}
-
-void Repl::Report (ostream& out, bool success, const string& msg) {
-  out << (success ? "=" : "?") << " "
-      << boost::trim_right_copy(msg) // remove bad endl in msg
-      << endl << endl;
 }
 
 void Repl::CListCommands (Io& io) {
@@ -124,9 +127,7 @@ void Repl::CKnownCommand (Io& io) {
 void Repl::CQuit (Io& io) {
   io.CheckEmpty();
   io.out << "bye";
-  io.success  = true;
   io.quit_gtp = true;
-  throw Error();
 }
 
 bool Repl::IsCommand (const string& name) {

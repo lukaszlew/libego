@@ -34,8 +34,8 @@ void ReplWithGogui::CParam (const string& cmd_name, Io& io) {
   } else {
     string var_name = io.Read<string> ();
     if (vars.find (var_name) == vars.end ()) {
-      io.out << "unknown variable: \"" << var_name << "\"";
-      throw Error ();
+      io.SetError ("unknown variable: \"" + var_name + "\"");
+      return;
     }
     vars[var_name] (io);
   }
