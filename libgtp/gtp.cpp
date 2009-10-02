@@ -3,8 +3,6 @@
 #include <boost/lambda/lambda.hpp>
 #include "gtp.h"
 
-#define FOREACH BOOST_FOREACH
-
 namespace Gtp {
 
 Io::Io (istream& arg_line) : in (arg_line) {
@@ -62,7 +60,7 @@ void Repl::RegisterStatic (const string& name, const string& response) {
 
 void Preprocess (string* line) {
   ostringstream ret;
-  FOREACH (char c, *line) {
+  BOOST_FOREACH (char c, *line) {
     if (c == 9) ret << '\32';
     else if (c > 0   && c <= 9)  continue;
     else if (c >= 11 && c <= 31) continue;
@@ -109,7 +107,7 @@ void Repl::Report (ostream& out, bool success, const string& msg) {
 void Repl::CListCommands (Io& io) {
   io.CheckEmpty();
   pair<string, Callback> p;
-  FOREACH(p, callbacks) {
+  BOOST_FOREACH(p, callbacks) {
     io.out << p.first << endl;
   }
 }
