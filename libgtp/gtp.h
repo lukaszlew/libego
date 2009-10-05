@@ -24,9 +24,6 @@ public:
   // Repl Will print "? message" on the output
   void SetError (const string& message);
 
-  // Prints "syntax error" to out and return directly to Repl through exception.
-  void ThrowSyntaxError ();
-
   // Reads and returns type T, throws syntax_error otherwise.
   template <typename T> T Read ();
 
@@ -46,6 +43,7 @@ private:
   void PrepareIn ();
   void Report (ostream& out) const;
 
+private:
   const string& params;
   bool success;
   bool quit_gtp;
@@ -104,7 +102,8 @@ T Io::Read () {
   in >> t;
   if (in.fail()) {
     in.clear();
-    ThrowSyntaxError ();
+    SetError ("syntax error");
+    throw Repl::Return();
   }
   return t;
 }
