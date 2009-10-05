@@ -124,6 +124,10 @@ public:
     resign_mean = -0.95;
   }
 
+  void Reset () {
+    root.Reset ();
+  }
+
   void DoNPlayouts (uint n) { // TODO first_player
     MctsNode& act_root = FindRoot ();
     rep (ii, n) {

@@ -6,7 +6,8 @@ public:
     playout_count = 10000;
     min_updates_to_print = 1000;
 
-    gtp.Register ("genmove", this, &MctsGtp::CGenmove);
+    gtp.Register ("clear_board", this, &MctsGtp::CClear);
+    gtp.Register ("genmove",     this, &MctsGtp::CGenmove);
 
     gtp.RegisterGfx ("MCTS.DoPlayouts",      "1", this, &MctsGtp::CDoPlayouts);
     gtp.RegisterGfx ("MCTS.DoPlayouts",   "1000", this, &MctsGtp::CDoPlayouts);
@@ -32,6 +33,12 @@ public:
   }
 
 private:
+
+  void CClear (Gtp::Io& io) {
+    io.CheckEmpty ();
+    mcts.Reset ();
+  }
+
   void CGenmove (Gtp::Io& io) {
     Player player = io.Read<Player> ();
     io.CheckEmpty ();

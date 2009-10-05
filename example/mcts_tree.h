@@ -11,7 +11,11 @@ class MctsNode {
 public:
   typedef std::list<MctsNode> ChildrenList; // TODO vector, allocator?
 
+  // Initialization.
+
   explicit MctsNode (Player player_, Vertex v_);
+
+  void Reset ();
 
   // Printing.
 
@@ -57,7 +61,7 @@ private:
 // -----------------------------------------------------------------------------
 
 MctsNode::MctsNode (Player player_, Vertex v_) : player(player_), v(v_) {
-  has_all_legal_children.SetAll (false);
+  Reset ();
 }
 
 void MctsNode::AddChild (const MctsNode& node) {
@@ -163,6 +167,12 @@ void MctsNode::RemoveIllegalChildren (Player pl, const FullBoard& full_board) {
       ++child;
     }
   }
+}
+
+void MctsNode::Reset () {
+  has_all_legal_children.SetAll (false);
+  children.clear ();
+  stat.reset();
 }
 
 MctsNode& MctsNode::FindUctChild (Player pl, float uct_explore_coeff) {
