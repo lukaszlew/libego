@@ -5,7 +5,7 @@
 
 namespace Gtp {
 
-Io::Io (istream& arg_line) : in (arg_line), success(true), quit_gtp (false) { 
+Io::Io (const string& params) : in (params), success(true), quit_gtp (false) { 
 }
 
 void Io::SetError (const string& message) {
@@ -97,7 +97,11 @@ void Repl::Run (istream& in, ostream& out) {
     string cmd_name;
     if (!(line_stream >> cmd_name)) continue; // empty line
 
-    Io io(line_stream);
+    string params;
+    char c;
+    while (line_stream.get(c)) params += c;
+
+    Io io(params);
 
     if (IsCommand (cmd_name)) {
       // Callback call with optional fast return.

@@ -17,7 +17,7 @@ using namespace std;
 class Io {
 public:
 
-  istream& in;
+  istringstream in;
   ostringstream out;
 
   // Repl Will print "? message" on the output
@@ -40,7 +40,7 @@ public:
 
 private:
   friend class Repl;
-  Io (istream& arg_line);
+  Io (const string& params);
   void Report (ostream& out) const;
 
   bool success;
