@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE (BuiltInCommands) {
   expected_out
     << expected_help_msg.str()
     << expected_help_msg.str()
-    << "? syntax error" << endl << endl
+    << "? too many parameters" << endl << endl
     << "= true" << endl << endl
     << "= false" << endl << endl
     << "= bye" << endl << endl
@@ -126,10 +126,10 @@ BOOST_AUTO_TEST_CASE (RegisteredCommands) {
     << "= GTP was never so simple" << endl << endl
     << "= print twice" << endl << "print twice" << endl << endl
     << "= 3" << endl << endl
-    << "? syntax error" << endl << endl
+    << "? too many parameters" << endl << endl
     << "= 22" << endl << endl
     << "= Santa Claus !" << endl << endl
-    << "? syntax error" << endl << endl
+    << "? too many parameters" << endl << endl
     << "= Merry" << endl << endl
     << "? unknown command: \"who\"" << endl << endl
     ;
@@ -156,8 +156,8 @@ BOOST_AUTO_TEST_CASE (GetSetCommands) {
     << "= " << endl << endl
     << "= " << endl << endl
     << "= " << endl << endl
-    << "? syntax error" << endl << endl
-    << "? syntax error" << endl << endl
+    << "? too many parameters" << endl << endl
+    << "? too many parameters" << endl << endl
     ;
   gtp.Run(in, out);
   BOOST_CHECK_EQUAL (out.str(), expected_out.str());

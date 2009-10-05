@@ -14,15 +14,13 @@ void Io::SetError (const string& message) {
   success = false;
 }
 
-void Io::ThrowSyntaxError () {
-  SetError ("syntax error");
-  throw Repl::Return();
-}
-
 void Io::CheckEmpty() {
   string s;
   in >> s;
-  if (in) ThrowSyntaxError();
+  if (in) {
+    SetError ("too many parameters");
+    throw Repl::Return();
+  }
   in.clear();
 }
 
