@@ -42,19 +42,19 @@ private:
 
 template <class T>
 void ReplWithGogui::RegisterGfx (const string& name,
-                           const string& params,
-                           T* object,
-                           void(T::*member)(Io&))
+                                 const string& params,
+                                 T* object,
+                                 void(T::*member)(Io&))
 {
-  RegisterGfx (name, params, OfMethod(object, member));
+  RegisterGfx (name, params, boost::bind(member, object, _1));
 }
 
 template <typename T>
 void ReplWithGogui::RegisterParam (const string& cmd_name,
-                             const string& param_name,
-                             T* param)
+                                   const string& param_name,
+                                   T* param)
 {
-  params [cmd_name] [param_name] = GetSetCommand (param);
+  params [cmd_name] [param_name] = GetSetCallback (param);
   if (IsCommand (cmd_name)) return;
   analyze_list << "param/" << cmd_name << "/" << cmd_name << endl; // NOTE: factor out
   Register (cmd_name, boost::bind (&ReplWithGogui::CParam, this, cmd_name, _1));

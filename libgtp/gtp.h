@@ -51,29 +51,12 @@ private:
 
 
 // -----------------------------------------------------------------------------
-// GTP::Callback and some constructors.
-
-// A callback for a GTP command.
-typedef boost::function< void(Io&) > Callback;
-
-// Creates GTP callback out of object pointer and a method.
-// Example: OfMethod<MyClass> (this, &MyClass::MyMethod)
-template <class T>
-Callback OfMethod (T* object, void(T::*member)(Io&));
-
-// Creates a GTP callback that always returns the same string.
-Callback StaticCommand (const string& ret);
-
-// Creates a GTP callback that without arguments in its io prints value of var,
-// with one argument sets value of var using Io::Read<T>.
-template <typename T>
-Callback GetSetCommand (T* var);
-
-// -----------------------------------------------------------------------------
 // GTP read-eval-print-loop (repl)
 
 class Repl {
 public:
+  typedef boost::function< void(Io&) > Callback;
+
   Repl ();
 
   void Register (const string& name, Callback command);
@@ -102,8 +85,15 @@ private:
   map <string, Callback> callbacks;
 };
 
+// Creates a callback that:
+//  - without arguments prints value of given variable
+//  - with one argument sets the given variable to this value using Io::Read<T>.
+template <typename T>
+Repl::Callback GetSetCallback (T* var);
+
+
 // -----------------------------------------------------------------------------
-// internal implementation
+// implementation
 
 template <typename T>
 T Io::Read () {
@@ -130,13 +120,8 @@ T Io::Read (const T& default_value) {
 }
 
 template <class T>
-Callback OfMethod(T* object, void (T::*member) (Io&)) {
-  return boost::bind(member, object, _1);
-}
-
-template <class T>
 void Repl::Register (const string& name, T* object, void(T::*member)(Io&)) {
-  Register (name, OfMethod(object, member));
+  Register (name, boost::bind(member, object, _1));
 }
 
 
@@ -155,7 +140,7 @@ namespace {
 }
 
 template <typename T>
-Callback GetSetCommand (T* var) {
+Repl::Callback GetSetCallback (T* var) {
   return bind(GetSetCallback<T>, var, _1);
 }
 

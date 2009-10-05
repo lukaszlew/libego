@@ -54,7 +54,7 @@ void StaticAux(const string& ret, Io& io) {
   io.out << ret;
 }
 
-Callback StaticCommand (const string& ret) {
+Repl::Callback StaticCommand (const string& ret) {
   return boost::bind(StaticAux, ret, _1);
 }
 

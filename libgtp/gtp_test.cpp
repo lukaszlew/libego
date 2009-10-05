@@ -23,7 +23,7 @@ void CAdd (Gtp::Io& io) {
 class DummyGtpUser {
 public:
   DummyGtpUser (Gtp::Repl& gtp) {
-    gtp.Register ("echo", Gtp::OfMethod(this, &DummyGtpUser::CEcho));
+    gtp.Register ("echo",  this, &DummyGtpUser::CEcho);
     gtp.Register ("echo2", this, &DummyGtpUser::CEcho); // same as above
   }
 private:
@@ -52,11 +52,11 @@ struct Fixture {
   : gtp_user (gtp), f (1.5), i(-1), s("GTP rulez")
   {
     gtp.Register ("+", CAdd);
-    gtp.Register ("whoami", Gtp::StaticCommand("Santa !"));
-    gtp.Register ("whoareyou", Gtp::StaticCommand("Merry"));
-    gtp.Register ("var_f", Gtp::GetSetCommand (&f));
-    gtp.Register ("var_i", Gtp::GetSetCommand (&i));
-    gtp.Register ("var_s", Gtp::GetSetCommand (&s));
+    gtp.RegisterStatic ("whoami",    "Santa !");
+    gtp.RegisterStatic ("whoareyou", "Merry");
+    gtp.Register ("var_f", Gtp::GetSetCallback (&f));
+    gtp.Register ("var_i", Gtp::GetSetCallback (&i));
+    gtp.Register ("var_s", Gtp::GetSetCallback (&s));
   }
 };
 
