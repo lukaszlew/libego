@@ -46,9 +46,9 @@ private:
     if (v != Vertex::resign ()) {
       bool ok = full_board.try_play (player, v);
       assert(ok);
-      io.Out () << v.to_string();
+      io.out << v.to_string();
     } else {
-      io.Out () << "resign";
+      io.out << "resign";
     }
   }
 
@@ -61,7 +61,7 @@ private:
   void CShowTree (Gtp::Io& io) {
     uint min_updates = io.Read <uint> (min_updates_to_print);
     io.CheckEmpty();
-    io.Out() << mcts.ToString (min_updates);
+    io.out << mcts.ToString (min_updates);
   }
 
 private:

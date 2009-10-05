@@ -40,7 +40,8 @@ BasicGtp::BasicGtp (Gtp::Repl& gtp, FullBoard& board_) : board (board_) {
 void BasicGtp::CBoardsize (Gtp::Io& io) {
   int new_board_size = io.Read<int> ();
   if (new_board_size != int (board_size)) { 
-    throw Gtp::Error ("unacceptable size"); 
+    io.SetError ("unacceptable size");
+    return;
   }
   io.CheckEmpty();
 }
@@ -62,18 +63,20 @@ void BasicGtp::CPlay (Gtp::Io& io) {
   io.CheckEmpty ();
 
   if (v != Vertex::resign () && board.try_play (pl, v) == false) {
-    throw Gtp::Error ("illegal move");
+    io.SetError ("illegal move");
+    return;
   }
 }
 
 void BasicGtp::CUndo (Gtp::Io& io) {
   io.CheckEmpty ();
   if (board.undo () == false) {
-    throw Gtp::Error ("too many undo");
+    io.SetError ("too many undo");
+    return;
   }
 }
     
 void BasicGtp::CShowboard (Gtp::Io& io) {
   io.CheckEmpty ();
-  io.Out() << endl << board.board().to_string();
+  io.out << endl << board.board().to_string();
 }

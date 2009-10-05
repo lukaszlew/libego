@@ -10,8 +10,8 @@ ReplWithGogui::ReplWithGogui () : Repl () {
 }
 
 void ReplWithGogui::RegisterGfx (const string& name,
-                           const string& params,
-                           Callback command)
+                                 const string& params,
+                                 Callback command)
 {
   string full_name = params == "" ? name : name + " " + params;
   analyze_list
@@ -27,21 +27,22 @@ void ReplWithGogui::CParam (const string& cmd_name, Io& io) {
     // print all vars and their values
     pair<string, Callback> v;
     FOREACH(v, vars) {
-      io.Out() << "[string] " << v.first << " ";
+      io.out << "[string] " << v.first << " ";
       v.second (io);
-      io.Out() << endl;
+      io.out << endl;
     }
-    return;
+  } else {
+    string var_name = io.Read<string> ();
+    if (vars.find (var_name) == vars.end ()) {
+      io.SetError ("unknown variable: \"" + var_name + "\"");
+      return;
+    }
+    vars[var_name] (io);
   }
-  string var_name = io.Read<string> ();
-  if (vars.find (var_name) == vars.end ()) {
-    throw Error ("unknown variable: \"" + var_name + "\"");
-  }
-  vars[var_name] (io);
 }
 
 void ReplWithGogui::CAnalyze (Io& io) {
-  io.Out () << analyze_list.str ();
+  io.out << analyze_list.str ();
 }
 
 } // namespace Gtp

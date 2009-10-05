@@ -27,7 +27,8 @@ public:
       } else if (sub == "less") {
         show_move_count -= 1;
       } else {
-        throw Gtp::syntax_error;
+        io.SetError("syntax error");
+        return;
       }
     }
 
@@ -44,7 +45,7 @@ public:
       gfx.add_symbol(playout[show_move_count-1].get_vertex(), Gfx::circle);
     }
 
-    io.Out () << gfx.to_string ();
+    io.out << gfx.to_string ();
   }
 
 private:

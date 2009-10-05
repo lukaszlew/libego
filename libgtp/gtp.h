@@ -1,11 +1,12 @@
 #ifndef _GTP_H_
 #define _GTP_H_
 
-#include <sstream>
-#include <map>
-#include <string>
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
+#include <list>
+#include <map>
+#include <sstream>
+#include <string>
 
 namespace Gtp {
 
@@ -17,8 +18,14 @@ using namespace std;
 class Io {
 public:
 
-  istream& In  ();
-  ostream& Out ();
+  istringstream in;
+  ostringstream out;
+
+  // Repl Will print "? message" on the output
+  void SetError (const string& message);
+
+  // Prints "syntax error" to out and return directly to Repl through exception.
+  void ThrowSyntaxError ();
 
   // Reads and returns type T, throws syntax_error otherwise.
   template <typename T> T Read ();
@@ -26,57 +33,32 @@ public:
   // Reads and returns type T, returns default value in case of syntax error.
   template <typename T> T Read (const T& default_value);
 
-  // Returns true is all that's left in In() is whitespace.
+  // Returns true is all that's left in in is whitespace.
   bool IsEmpty ();
 
-  // Throws syntax_error if a non-whitespace is still in In()
+  // Throws syntax_error if a non-whitespace is still in in
   void CheckEmpty ();
 
 private:
-  Io (istringstream& arg_line);
   friend class Repl;
-private:
-  istringstream& in;
-  ostringstream out;
+
+  Io (const string& params);
+  void PrepareIn ();
+  void Report (ostream& out) const;
+
+  const string& params;
+  bool success;
+  bool quit_gtp;
 };
 
-// Exceptions that can be throwed by a command and will be catched by Repl:
-
-// GTP command failure with message
-struct Error {
-  Error (const string& msg_) : msg(msg_) {}
-  string msg;
-};
-
-extern const Error syntax_error;
-
-// quit GTP Run loop.
-struct Quit {};
-
-// -----------------------------------------------------------------------------
-// GTP::Callback and some constructors.
-
-// A callback for a GTP command.
-typedef boost::function< void(Io&) > Callback;
-
-// Creates GTP callback out of object pointer and a method.
-// Example: OfMethod<MyClass> (this, &MyClass::MyMethod)
-template <class T>
-Callback OfMethod (T* object, void(T::*member)(Io&));
-
-// Creates a GTP callback that always returns the same string.
-Callback StaticCommand (const string& ret);
-
-// Creates a GTP callback that without arguments in its io prints value of var,
-// with one argument sets value of var using Io::Read<T>.
-template <typename T>
-Callback GetSetCommand (T* var);
 
 // -----------------------------------------------------------------------------
 // GTP read-eval-print-loop (repl)
 
 class Repl {
 public:
+  typedef boost::function< void(Io&) > Callback;
+
   Repl ();
 
   void Register (const string& name, Callback command);
@@ -91,19 +73,29 @@ public:
   bool IsCommand (const string& name);
 
 private:
+  // Exception that can be throwed by a command and will be catched by Repl::Run
+  struct Return {};
+
+  friend class Io;
+
   // commands built-in into interpreter (registered during interpreter construction)
   void CListCommands (Io&);
   void CKnownCommand (Io&);
   void CQuit (Io&);
   
-  void Report (ostream& out, bool success, const string& name);
-
 private:
-  map <string, Callback> callbacks;
+  map <string, list<Callback> > callbacks;
 };
 
+// Creates a callback that:
+//  - without arguments prints value of given variable
+//  - with one argument sets the given variable to this value using Io::Read<T>.
+template <typename T>
+Repl::Callback GetSetCallback (T* var);
+
+
 // -----------------------------------------------------------------------------
-// internal implementation
+// implementation
 
 template <typename T>
 T Io::Read () {
@@ -112,28 +104,26 @@ T Io::Read () {
   in >> t;
   if (in.fail()) {
     in.clear();
-    throw syntax_error;
+    ThrowSyntaxError ();
   }
   return t;
 }
 
 template <typename T>
 T Io::Read (const T& default_value) {
-  try {
-    return Read <T> ();
-  } catch (Error) {
+  in.clear();
+  T t;
+  in >> t;
+  if (in.fail()) {
+    in.clear();
     return default_value;
   }
-}
-
-template <class T>
-Callback OfMethod(T* object, void (T::*member) (Io&)) {
-  return boost::bind(member, object, _1);
+  return t;
 }
 
 template <class T>
 void Repl::Register (const string& name, T* object, void(T::*member)(Io&)) {
-  Register (name, OfMethod(object, member));
+  Register (name, boost::bind(member, object, _1));
 }
 
 
@@ -141,7 +131,7 @@ namespace {
   template <typename T>
   void GetSetCallback (T* var, Io& io) {
     if (io.IsEmpty()) {
-      io.Out () << *var;
+      io.out << *var;
       return;
     }
     // TODO handle quoted strings
@@ -152,7 +142,7 @@ namespace {
 }
 
 template <typename T>
-Callback GetSetCommand (T* var) {
+Repl::Callback GetSetCallback (T* var) {
   return bind(GetSetCallback<T>, var, _1);
 }
 

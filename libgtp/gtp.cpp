@@ -1,19 +1,28 @@
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/foreach.hpp>
 #include <boost/lambda/lambda.hpp>
+#include <iostream>
 #include "gtp.h"
-
-#define FOREACH BOOST_FOREACH
 
 namespace Gtp {
 
-Io::Io (istringstream& arg_line) : in (arg_line) {
+Io::Io (const string& params_) : params (params_), success(true), quit_gtp (false) { 
+}
+
+void Io::SetError (const string& message) {
+  out.str (message);
+  success = false;
+}
+
+void Io::ThrowSyntaxError () {
+  SetError ("syntax error");
+  throw Repl::Return();
 }
 
 void Io::CheckEmpty() {
   string s;
   in >> s;
-  if (in) throw syntax_error;
+  if (in) ThrowSyntaxError();
   in.clear();
 }
 
@@ -27,15 +36,16 @@ bool Io::IsEmpty() {
   return !ok;
 }
 
-istream& Io::In () {
-  return in;
+void Io::PrepareIn () {
+  in.clear();
+  in.str (params);
 }
 
-ostream& Io::Out () {
-  return out;
+void Io::Report (ostream& gtp_out) const {
+  gtp_out << (success ? "=" : "?") << " "
+          << boost::trim_right_copy(out.str()) // remove bad endl in msg
+          << endl << endl;
 }
-
-const Error syntax_error("syntax error");
 
 // -----------------------------------------------------------------------------
 
@@ -43,10 +53,10 @@ const Error syntax_error("syntax error");
 
 void StaticAux(const string& ret, Io& io) {
   io.CheckEmpty ();
-  io.Out() << ret;
+  io.out << ret;
 }
 
-Callback StaticCommand (const string& ret) {
+Repl::Callback StaticCommand (const string& ret) {
   return boost::bind(StaticAux, ret, _1);
 }
 
@@ -60,8 +70,7 @@ Repl::Repl () {
 }
 
 void Repl::Register (const string& name, Callback callback) {
-  assert(!IsCommand(name));
-  callbacks[name] = callback;
+  callbacks[name].push_back (callback);
 }
 
 void Repl::RegisterStatic (const string& name, const string& response) {
@@ -70,7 +79,7 @@ void Repl::RegisterStatic (const string& name, const string& response) {
 
 void Preprocess (string* line) {
   ostringstream ret;
-  FOREACH (char c, *line) {
+  BOOST_FOREACH (char c, *line) {
     if (c == 9) ret << '\32';
     else if (c > 0   && c <= 9)  continue;
     else if (c >= 11 && c <= 31) continue;
@@ -81,55 +90,63 @@ void Preprocess (string* line) {
   *line = ret.str ();
 }
 
-void Repl::Run (istream& in, ostream& out) {
-  in.clear();
+bool ParseLine (istream& in, string* command, string* params) {
   while (true) {
     string line;
-    if (!getline (in, line)) break;
+    if (!getline (in, line)) return false;
     Preprocess(&line);
     istringstream line_stream (line);
 
     // TODO handle numbered commands
-    string cmd_name;
-    if (!(line_stream >> cmd_name)) continue; // empty line
+    if (!(line_stream >> *command)) continue; // empty line
 
-    if (!IsCommand (cmd_name)) {
-      Report (out, false, "unknown command: \"" + cmd_name + "\"");
-      continue;
-    }
-
-    try {
-      Io io(line_stream);
-      callbacks [cmd_name] (io); // callback call
-      Report (out, true, io.out.str());
-    }
-    catch (Error e) { Report (out, false, e.msg); }
-    catch (Quit)    { Report (out, true, "bye"); break; }
+    char c;
+    while (line_stream.get(c)) *params += c;
+    return true;
   }
 }
 
-void Repl::Report (ostream& out, bool success, const string& msg) {
-  out << (success ? "=" : "?") << " "
-      << boost::trim_right_copy(msg) // remove bad endl in msg
-      << endl << endl;
+void Repl::Run (istream& in, ostream& out) {
+  in.clear();
+  while (true) {
+    string command, params;
+
+    if (!ParseLine (in, &command, &params)) break;
+
+    Io io(params);
+
+    if (IsCommand (command)) {
+      // Callback call with optional fast return.
+      BOOST_FOREACH (Callback& cmd, callbacks [command]) {
+        io.PrepareIn();
+        try { cmd (io); } catch (Return) { }
+      }
+    } else {
+      io.SetError ("unknown command: \"" + command + "\"");
+    }
+
+    io.Report (out);
+    if (io.quit_gtp) return;
+  }
 }
 
 void Repl::CListCommands (Io& io) {
   io.CheckEmpty();
-  pair<string, Callback> p;
-  FOREACH(p, callbacks) {
-    io.Out() << p.first << endl;
+  pair<string, list<Callback> > p;
+  BOOST_FOREACH(p, callbacks) {
+    io.out << p.first << endl;
   }
 }
 
 void Repl::CKnownCommand (Io& io) {
-  io.Out() << boolalpha << IsCommand(io.Read<string> ());
+  io.out << boolalpha << IsCommand(io.Read<string> ());
   io.CheckEmpty();
 }
 
 void Repl::CQuit (Io& io) {
   io.CheckEmpty();
-  throw Quit();
+  io.out << "bye";
+  io.quit_gtp = true;
 }
 
 bool Repl::IsCommand (const string& name) {

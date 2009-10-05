@@ -42,7 +42,8 @@ void SgfGtp::CLoad (Gtp::Io& io) {
   io.CheckEmpty();
 
   if (!sgf_tree.load_from_file(file_name)) {
-    throw Gtp::Error ("file not found or invalid SGF: " + file_name);
+    io.SetError ("file not found or invalid SGF: " + file_name);
+    return;
   }
 }
 
@@ -50,18 +51,21 @@ void SgfGtp::CSave (Gtp::Io& io) {
   string file_name = io.Read<string> ();
   io.CheckEmpty();
   if (!sgf_tree.save_to_file(file_name)) {
-    throw Gtp::Error ("file cound not be created: " + file_name);
+    io.SetError ("file cound not be created: " + file_name);
+    return;
   }
 }
 
 void SgfGtp::CGtpExec (Gtp::Io& io) {
   io.CheckEmpty();
   if (!sgf_tree.is_loaded ()) {
-    throw Gtp::Error ("SGF file not loaded");
+    io.SetError ("SGF file not loaded");
+    return;
   }
 
   if (sgf_tree.properties ().get_board_size () != board_size) {
-    throw Gtp::Error ("invalid board size");
+    io.SetError ("invalid board size");
+    return;
   }
 
   FullBoard save_board;
@@ -74,7 +78,7 @@ void SgfGtp::CGtpExec (Gtp::Io& io) {
 
   base_board.load (&save_board);
 
-  io.Out() << response.str ();
+  io.out << response.str ();
 }
 
 // It goes through a whole sgf and executes GTP commends embedded in SGF comments.
