@@ -1,11 +1,12 @@
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/foreach.hpp>
 #include <boost/lambda/lambda.hpp>
+#include <iostream>
 #include "gtp.h"
 
 namespace Gtp {
 
-Io::Io (const string& params) : in (params), success(true), quit_gtp (false) { 
+Io::Io (const string& params_) : params (params_), success(true), quit_gtp (false) { 
 }
 
 void Io::SetError (const string& message) {
@@ -36,7 +37,8 @@ bool Io::IsEmpty() {
 }
 
 void Io::PrepareIn () {
-  in.seekg (0);
+  in.clear();
+  in.str (params);
 }
 
 void Io::Report (ostream& gtp_out) const {
@@ -68,8 +70,7 @@ Repl::Repl () {
 }
 
 void Repl::Register (const string& name, Callback callback) {
-  assert(!IsCommand(name));
-  callbacks[name] = callback;
+  callbacks[name].push_back (callback);
 }
 
 void Repl::RegisterStatic (const string& name, const string& response) {
@@ -116,8 +117,10 @@ void Repl::Run (istream& in, ostream& out) {
 
     if (IsCommand (command)) {
       // Callback call with optional fast return.
-      io.PrepareIn();
-      try { callbacks [command] (io); } catch (Return) { }
+      BOOST_FOREACH (Callback& cmd, callbacks [command]) {
+        io.PrepareIn();
+        try { cmd (io); } catch (Return) { }
+      }
     } else {
       io.SetError ("unknown command: \"" + command + "\"");
     }
@@ -129,7 +132,7 @@ void Repl::Run (istream& in, ostream& out) {
 
 void Repl::CListCommands (Io& io) {
   io.CheckEmpty();
-  pair<string, Callback> p;
+  pair<string, list<Callback> > p;
   BOOST_FOREACH(p, callbacks) {
     io.out << p.first << endl;
   }

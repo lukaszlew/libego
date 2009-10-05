@@ -1,9 +1,9 @@
-#include <sstream>
-#include <iostream>
-#include <boost/algorithm/string/trim.hpp>
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK // IMPROVE: why do I need this?
+#include <boost/algorithm/string/trim.hpp>
 #include <boost/test/unit_test.hpp>
+#include <iostream>
+#include <sstream>
 
 #include "gtp.h"
 
@@ -24,14 +24,16 @@ class DummyGtpUser {
 public:
   DummyGtpUser (Gtp::Repl& gtp) {
     gtp.Register ("echo",  this, &DummyGtpUser::CEcho);
-    gtp.Register ("echo2", this, &DummyGtpUser::CEcho); // same as above
+    gtp.Register ("echo2", this, &DummyGtpUser::CEcho);
+    gtp.Register ("echo2", this, &DummyGtpUser::CEcho);
   }
+
 private:
   void CEcho (Gtp::Io& io) {
     std::string s;
     std::getline(io.in, s);
     boost::trim(s);
-    io.out << s;
+    io.out << s << endl;
   }
 };
 
@@ -52,7 +54,8 @@ struct Fixture {
   : gtp_user (gtp), f (1.5), i(-1), s("GTP rulez")
   {
     gtp.Register ("+", CAdd);
-    gtp.RegisterStatic ("whoami",    "Santa !");
+    gtp.RegisterStatic ("whoami",    "Santa ");
+    gtp.RegisterStatic ("whoami",    "Claus ! ");
     gtp.RegisterStatic ("whoareyou", "Merry");
     gtp.Register ("var_f", Gtp::GetSetCallback (&f));
     gtp.Register ("var_i", Gtp::GetSetCallback (&i));
@@ -109,7 +112,7 @@ BOOST_AUTO_TEST_CASE (BuiltInCommands) {
 BOOST_AUTO_TEST_CASE (RegisteredCommands) {
   in
     << "echo  GTP was never so simple  " << endl
-    << "echo2 command registered with a helper works too" << endl
+    << "echo2 print twice " << endl
     << "+  1  2  " << endl
     << "  +  1  2 3 " << endl
     << "  +  11" << endl
@@ -121,11 +124,11 @@ BOOST_AUTO_TEST_CASE (RegisteredCommands) {
     ;
   expected_out
     << "= GTP was never so simple" << endl << endl
-    << "= command registered with a helper works too" << endl << endl
+    << "= print twice" << endl << "print twice" << endl << endl
     << "= 3" << endl << endl
     << "? syntax error" << endl << endl
     << "= 22" << endl << endl
-    << "= Santa !" << endl << endl
+    << "= Santa Claus !" << endl << endl
     << "? syntax error" << endl << endl
     << "= Merry" << endl << endl
     << "? unknown command: \"who\"" << endl << endl

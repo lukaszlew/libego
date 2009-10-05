@@ -1,11 +1,12 @@
 #ifndef _GTP_H_
 #define _GTP_H_
 
-#include <sstream>
-#include <map>
-#include <string>
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
+#include <list>
+#include <map>
+#include <sstream>
+#include <string>
 
 namespace Gtp {
 
@@ -45,6 +46,7 @@ private:
   void PrepareIn ();
   void Report (ostream& out) const;
 
+  const string& params;
   bool success;
   bool quit_gtp;
 };
@@ -82,7 +84,7 @@ private:
   void CQuit (Io&);
   
 private:
-  map <string, Callback> callbacks;
+  map <string, list<Callback> > callbacks;
 };
 
 // Creates a callback that:
