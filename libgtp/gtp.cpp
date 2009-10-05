@@ -35,6 +35,10 @@ bool Io::IsEmpty() {
   return !ok;
 }
 
+void Io::PrepareIn () {
+  in.seekg (0);
+}
+
 void Io::Report (ostream& gtp_out) const {
   gtp_out << (success ? "=" : "?") << " "
           << boost::trim_right_copy(out.str()) // remove bad endl in msg
@@ -85,29 +89,37 @@ void Preprocess (string* line) {
   *line = ret.str ();
 }
 
-void Repl::Run (istream& in, ostream& out) {
-  in.clear();
+bool ParseLine (istream& in, string* command, string* params) {
   while (true) {
     string line;
-    if (!getline (in, line)) break;
+    if (!getline (in, line)) return false;
     Preprocess(&line);
     istringstream line_stream (line);
 
     // TODO handle numbered commands
-    string cmd_name;
-    if (!(line_stream >> cmd_name)) continue; // empty line
+    if (!(line_stream >> *command)) continue; // empty line
 
-    string params;
     char c;
-    while (line_stream.get(c)) params += c;
+    while (line_stream.get(c)) *params += c;
+    return true;
+  }
+}
+
+void Repl::Run (istream& in, ostream& out) {
+  in.clear();
+  while (true) {
+    string command, params;
+
+    if (!ParseLine (in, &command, &params)) break;
 
     Io io(params);
 
-    if (IsCommand (cmd_name)) {
+    if (IsCommand (command)) {
       // Callback call with optional fast return.
-      try { callbacks [cmd_name] (io); } catch (Return) { }
+      io.PrepareIn();
+      try { callbacks [command] (io); } catch (Return) { }
     } else {
-      io.SetError ("unknown command: \"" + cmd_name + "\"");
+      io.SetError ("unknown command: \"" + command + "\"");
     }
 
     io.Report (out);

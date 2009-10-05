@@ -40,7 +40,9 @@ public:
 
 private:
   friend class Repl;
+
   Io (const string& params);
+  void PrepareIn ();
   void Report (ostream& out) const;
 
   bool success;
