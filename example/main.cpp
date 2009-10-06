@@ -112,7 +112,7 @@ int main(int argc, char** argv) {
 
       ifstream in (argv[ii]);
       if (in) {
-        gtp.Run (in, cout);
+        gtp.Run (in, cerr);
         in.close ();
         continue;
       } else {
