@@ -1,5 +1,5 @@
-include_directories (${libego_SOURCE_DIR}/ego)
-link_directories    (${libego_BINARY_DIR}/ego)
+include_directories (${libego_SOURCE_DIR}/libego)
+link_directories    (${libego_BINARY_DIR}/libego)
 
 include_directories (${libego_SOURCE_DIR}/libgtp)
 link_directories    (${libego_BINARY_DIR}/libgtp)

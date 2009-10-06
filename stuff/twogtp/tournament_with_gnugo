@@ -1,2 +1,0 @@
-twogtp -black ../ego_opt  -white "gnugo --mode gtp --chinese-rules --level 10" -auto -size 9 -komi 6.5 -alternate -games 2 -sgffile "gnu-ego${1}"
-twogtp -analyze "ego-gnu${1}.dat"
