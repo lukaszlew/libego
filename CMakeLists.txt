@@ -9,6 +9,13 @@ include (EnsureOutOfSourceBuild)
 include (AddBoostCxxTest)
 include (CheckCXXCompilerFlag)
 
+# Default installation directories. 
+
+set (INSTALL_TARGETS_DEFAULT_ARGS 
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib)
+
 # Ensure the build type is chosen
 
 if(NOT CMAKE_BUILD_TYPE OR NOT CMAKE_BUILD_TYPE MATCHES "Debug|Release")
