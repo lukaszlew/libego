@@ -1,4 +1,0 @@
-BUILD_TYPE=Debug &&
-mkdir -p ${BUILD_TYPE} &&
-cd ${BUILD_TYPE} &&
-cmake -D CMAKE_BUILD_TYPE=${BUILD_TYPE} -D CMAKE_INSTALL_PREFIX=.. $@ ..

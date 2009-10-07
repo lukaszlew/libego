@@ -1,0 +1,28 @@
+#!/bin/sh
+
+# First arg should be Release or Debug    
+# TODO test for that.
+
+if test -n "$1"; then
+  BUILD_TYPE="$1"
+else
+  BUILD_TYPE="Release"
+fi
+
+# Set install prefix to current directory, unless second argument is given. 
+
+if test -n "$2"; then
+  INSTALL_PREFIX="$2"
+else
+  INSTALL_PREFIX=`pwd`
+fi
+
+# Make build directory and do cmake, make, make install.
+
+mkdir -p build/${BUILD_TYPE} &&
+cd build/${BUILD_TYPE} &&
+
+cmake -D CMAKE_BUILD_TYPE=${BUILD_TYPE} -D CMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} ../../ &&
+make -j4 &&
+make install
+
