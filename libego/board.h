@@ -97,7 +97,7 @@ public:                         // board interface
   Move last_move () const;
 
   // Clears the board. (It is faster to load(empty_board))
-  void clear (float komi = -0.5);
+  void clear ();
 
 public:
 

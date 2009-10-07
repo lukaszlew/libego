@@ -162,8 +162,7 @@ void Board::print_cerr (Vertex v) const {
 }
 
 
-void Board::clear (float komi) {
-  set_komi (komi); // white wins the draws on default komi
+void Board::clear () {
   empty_v_cnt = 0;
   player_for_each (pl) {
     player_v_cnt [pl] = 0;

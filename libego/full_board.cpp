@@ -25,9 +25,9 @@
 #include "testing.h"
 
 
-void FullBoard::clear(float komi) {
+void FullBoard::clear() {
   // move_no = 0;
-  Board::clear(komi);
+  Board::clear();
   move_history.clear();
 }
 
@@ -59,7 +59,6 @@ bool FullBoard::undo () {
   vector<Move> replay;
 
   uint   game_length  = move_no;
-  float  old_komi     = komi ();
 
   if (game_length == 0)
     return false;
@@ -67,7 +66,7 @@ bool FullBoard::undo () {
   rep (mn, game_length-1)
     replay.push_back (move_history [mn]);
 
-  clear (old_komi);  // TODO maybe last_player should be preserverd as well
+  clear ();  // TODO maybe last_player should be preserverd as well
 
   rep (mn, game_length-1)
     play_legal (replay [mn].get_player (), replay [mn].get_vertex ());

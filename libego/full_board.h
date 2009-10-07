@@ -6,7 +6,7 @@
 
 class FullBoard : public Board {
 public:
-  void clear(float komi = -0.5);
+  void clear();
 
   // Implemented by calling try_play. Slow.
   bool is_legal (Player pl, Vertex v) const;
