@@ -17,8 +17,10 @@ usage () {
 if test $# -ge 1; then 
   if test "$1" = "Release"; then
     BUILD_TYPE="Release"
+    shift
   elif test "$1" = "Debug"; then
     BUILD_TYPE="Debug"
+    shift
   else
     echo "Bad build type: \"$1\""
     usage
@@ -26,13 +28,14 @@ if test $# -ge 1; then
   fi
 fi
 
-if test $# -ge 2; then
-  INSTALL_PREFIX="$(readlink -f $2)"
+if test $# -ge 1; then
+  INSTALL_PREFIX="$(readlink -f $1)"
   if test -z ${INSTALL_PREFIX}; then
-    echo "Wrong path: \"$2\""
+    echo "Wrong install-prefix: \"$1\""
     usage
     exit 1
   fi
+  shift
 fi
 
 # Do the actual work.
@@ -47,6 +50,7 @@ cd "build/${BUILD_TYPE}"
 
 cmake -D "CMAKE_BUILD_TYPE=${BUILD_TYPE}" \
       -D "CMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}" \
-      "${SCRIPT_DIR}/source" &&
+      "${SCRIPT_DIR}/source" \
+      $@ &&
 
 make -j4 install
