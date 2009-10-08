@@ -1,28 +1,52 @@
 #!/bin/sh
 
-# First arg should be Release or Debug    
-# TODO test for that.
+# Defaults.
 
-if test -n "$1"; then
-  BUILD_TYPE="$1"
-else
-  BUILD_TYPE="Release"
+SCRIPT_NAME="$(basename "$0")"
+SCRIPT_DIR="$(readlink -f $(dirname "$0"))"
+
+BUILD_TYPE="Release"
+INSTALL_PREFIX="${SCRIPT_DIR}"
+
+# Parse options.
+
+usage () {
+  echo "Usage: ${SCRIPT_NAME} [Release | Debug] [install-prefix]"
+}
+
+if test $# -ge 1; then 
+  if test "$1" = "Release"; then
+    BUILD_TYPE="Release"
+  elif test "$1" = "Debug"; then
+    BUILD_TYPE="Debug"
+  else
+    echo "Bad build type: \"$1\""
+    usage
+    exit 1
+  fi
 fi
 
-# Set install prefix to current directory, unless second argument is given. 
-
-if test -n "$2"; then
-  INSTALL_PREFIX="$2"
-else
-  INSTALL_PREFIX=`pwd`
+if test $# -ge 2; then
+  INSTALL_PREFIX="$(readlink -f $2)"
+  if test -z ${INSTALL_PREFIX}; then
+    echo "Wrong path: \"$2\""
+    usage
+    exit 1
+  fi
 fi
 
-# Make build directory and do cmake, make, make install.
+# Do the actual work.
 
-mkdir -p build/${BUILD_TYPE} &&
-cd build/${BUILD_TYPE} &&
+echo "Build type: $BUILD_TYPE"
+echo "Install prefix: $INSTALL_PREFIX"
+echo
 
-cmake -D CMAKE_BUILD_TYPE=${BUILD_TYPE} -D CMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} ../../ &&
-make -j4 &&
-make install
+cd "${SCRIPT_DIR}" 
+mkdir -p "build/${BUILD_TYPE}"
+cd "build/${BUILD_TYPE}"
 
+cmake -D "CMAKE_BUILD_TYPE=${BUILD_TYPE}" \
+      -D "CMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}" \
+      "${SCRIPT_DIR}/source" &&
+
+make -j4 install
