@@ -45,7 +45,7 @@
 
 #include "playout_gfx.cpp"
 
-//#include "experiments.cpp"
+#include "experiments.cpp"
 
 // TODO automatize through CMake (and add git SHA1)
 #ifndef VERSION

@@ -35,17 +35,17 @@ public:
     show_move_count = max(show_move_count, 0);
     show_move_count = min(show_move_count, int(playout.size()));
 
-    Gfx gfx;
+    Gtp::GoguiGfx gfx;
 
     rep(ii, show_move_count) {
-      gfx.add_var_move(playout[ii]);
+      gfx.AddVariationMove (playout[ii].to_string());
     }
 
     if (show_move_count > 0) {
-      gfx.add_symbol(playout[show_move_count-1].get_vertex(), Gfx::circle);
+      gfx.SetSymbol(playout[show_move_count-1].get_vertex().to_string(), Gtp::GoguiGfx::circle);
     }
 
-    io.out << gfx.to_string ();
+    gfx.Report(io);
   }
 
 private:

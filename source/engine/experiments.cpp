@@ -101,17 +101,17 @@ public:
     }
     if (progress_dots) cerr << endl;
 
-    Gfx gfx;
+    Gtp::GoguiGfx gfx;
 
     vertex_for_each_all (v) {
-      gfx.set_influence(v,
-                        aaf_stats.norm_mean_given_move (Move(player, v)) /
-                        influence_scale
-                        );
-      if (board->board().color_at [v] != Color::empty ()) {
-        gfx.set_influence(v, 0.0);
+      if (board->board().color_at [v] == Color::empty ()) {
+        gfx.SetInfluence(v.to_string (),
+                         aaf_stats.norm_mean_given_move (Move(player, v)) /
+                         influence_scale
+                         );
       }
     }
-    io.Out () << gfx.to_string();
+
+    gfx.Report (io);
   }
 };
