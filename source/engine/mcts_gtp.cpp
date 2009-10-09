@@ -1,10 +1,11 @@
 class MctsGtp {
 public:
   MctsGtp (Gtp::ReplWithGogui& gtp, FullBoard& full_board_, Mcts& mcts_)
-    : mcts(mcts_), full_board(full_board_)
+    : mcts(mcts_), full_board(full_board_), playout_gfx (gtp, mcts_, "MCTS.ShowLastPlayout")
   {
     playout_count = 10000;
-    min_updates_to_print = 1000;
+    show_tree_min_updates = 1000;
+    show_tree_max_children = 4;
 
     gtp.Register ("clear_board", this, &MctsGtp::CClear);
     gtp.Register ("genmove",     this, &MctsGtp::CGenmove);
@@ -26,8 +27,12 @@ public:
                        &mcts.playout.uct_explore_coeff);
     gtp.RegisterParam ("MCTS.params", "Min_updates_to_have_children",
                        &mcts.playout.mature_update_count);
-    gtp.RegisterParam ("MCTS.params", "Min_updates_to_print",
-                       &min_updates_to_print);
+
+    gtp.RegisterParam ("MCTS.params", "show_tree_min_updates",
+                       &show_tree_min_updates);
+    gtp.RegisterParam ("MCTS.params", "show_tree_max_children",
+                       &show_tree_max_children);
+
     gtp.RegisterParam ("MCTS.params", "E(score)_to_resign",
                        &mcts.resign_mean);
   }
@@ -46,7 +51,7 @@ private:
     full_board.set_act_player(player); // TODO move player parameter to DoPlayouts
 
     mcts.DoNPlayouts (playout_count);
-    cerr << mcts.ToString (min_updates_to_print) << endl;
+    cerr << mcts.ToString (show_tree_min_updates, show_tree_max_children) << endl;
 
     Vertex v = mcts.BestMove (player);
 
@@ -66,9 +71,10 @@ private:
   }
 
   void CShowTree (Gtp::Io& io) {
-    uint min_updates = io.Read <uint> (min_updates_to_print);
+    uint min_updates  = io.Read <uint> (show_tree_min_updates);
+    uint max_children = io.Read <uint> (show_tree_max_children);
     io.CheckEmpty();
-    io.out << mcts.ToString (min_updates);
+    io.out << mcts.ToString (min_updates, max_children);
   }
 
 private:
@@ -76,5 +82,8 @@ private:
   FullBoard& full_board;
 
   float playout_count;
-  float min_updates_to_print;
+  float show_tree_min_updates;
+  float show_tree_max_children;
+
+  PlayoutGfx<Mcts> playout_gfx;
 };

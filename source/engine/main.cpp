@@ -38,12 +38,12 @@
 
 // local hard-include
 #include "stat.h"
+#include "playout_gfx.cpp"
 
 #include "mcts_tree.h"
 #include "mcts.cpp"
 #include "mcts_gtp.cpp"
 
-#include "playout_gfx.cpp"
 
 #include "experiments.cpp"
 
@@ -62,8 +62,6 @@ BasicGtp    basic_gtp (gtp, board);
 
 Mcts    mcts      (board);
 MctsGtp mcts_gtp  (gtp, board, mcts);
-
-PlayoutGfx<Mcts> playout_gfx(gtp, mcts, "MCTS.");
 
 // Uncomment this to enable All-As-First experiment (new GTP commands).
 // AllAsFirst  aaf (gtp, board);

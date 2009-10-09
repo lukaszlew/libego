@@ -21,7 +21,7 @@ public:
 
   string ToString() const;
 
-  string RecToString (float min_visit) const; 
+  string RecToString (float min_visit, uint max_children) const; 
 
   // Children operations.
 
@@ -53,7 +53,7 @@ public:
   Stat stat;
 
 private:
-  void RecPrint (ostream& out, uint depth, float min_visit) const;
+  void RecPrint (ostream& out, uint depth, float min_visit, uint max_children) const;
 
   ChildrenList children;
 };
@@ -105,7 +105,7 @@ namespace {
   }
 }
 
-void MctsNode::RecPrint (ostream& out, uint depth, float min_visit) const {
+void MctsNode::RecPrint (ostream& out, uint depth, float min_visit, uint max_children) const {
   rep (d, depth) out << "  ";
   out << ToString () << endl;
 
@@ -115,17 +115,18 @@ void MctsNode::RecPrint (ostream& out, uint depth, float min_visit) const {
   }
 
   sort (child_tab.begin(), child_tab.end(), SubjectiveCmp);
+  if (child_tab.size () > max_children) child_tab.resize(max_children);
 
   FOREACH (const MctsNode* child, child_tab) {
     if (child->stat.update_count() >= min_visit) {
-      child->RecPrint (out, depth + 1, min_visit);
+      child->RecPrint (out, depth + 1, min_visit, max(1u, max_children - 1));
     }
   }
 }
 
-string MctsNode::RecToString (float min_visit) const { 
+string MctsNode::RecToString (float min_visit, uint max_children) const { 
   ostringstream out;
-  RecPrint (out, 0, min_visit); 
+  RecPrint (out, 0, min_visit, max_children); 
   return out.str ();
 }
 

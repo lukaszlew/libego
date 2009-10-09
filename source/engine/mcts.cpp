@@ -37,6 +37,7 @@ public:
     play_board.load (&board);
     trace.clear();
     trace.push_back (&playout_root);
+    move_history.Clear ();
 
     // descent the MCTS tree
     while(ActNode().has_all_legal_children [play_board.act_player()]) {
@@ -60,10 +61,14 @@ public:
     // TODO check for pass x 2 here as well
 
     // Finish with regular playout.
-    LightPlayout (&play_board).Run();
+    LightPlayout (&play_board).Run (move_history);
     
     // Update score.
     UpdateTree (play_board.playout_winner().to_score());
+  }
+
+  vector<Move> LastPlayout () {
+    return move_history.AsVector ();
   }
 
 private:
@@ -87,6 +92,7 @@ private:
 
     // Update tree itreatror.
     trace.push_back (&uct_child);
+    move_history.Push (play_board.last_move ());
     return true;
   }
 
@@ -111,6 +117,7 @@ private:
   // playout
   Board play_board;
   vector <MctsNode*> trace;
+  LightPlayout::MoveHistory move_history;
 };
 
 // -----------------------------------------------------------------------------
@@ -135,9 +142,9 @@ public:
     }
   }
 
-  string ToString (uint min_updates) {
+  string ToString (uint min_updates, uint max_children) {
     MctsNode& act_root = FindRoot ();
-    return act_root.RecToString (min_updates);
+    return act_root.RecToString (min_updates, max_children);
   }
 
   Vertex BestMove (Player pl) {
@@ -150,16 +157,8 @@ public:
       best_node.v;
   }
 
-  vector<Move> NewPlayout () {
-    // TODO replace it with MCTS playout.
-    LightPlayout::MoveHistory history;
-
-    Board playout_board;
-    playout_board.load (&full_board.board());
-    LightPlayout playout (&playout_board);
-    playout.Run (history);
-    
-    return history.AsVector ();
+  vector<Move> LastPlayout () {
+    return playout.LastPlayout ();
   }
 
 private:
