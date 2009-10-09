@@ -1,9 +1,53 @@
 #include "boost/foreach.hpp"
+
 #include "gtp_gogui.h"
 
-#define FOREACH BOOST_FOREACH
-
 namespace Gtp {
+
+GoguiGfx::GoguiGfx () {
+}
+
+void GoguiGfx::SetInfluence (const string& vertex, float influence) {
+  if (influence != 0.0) {
+    ostringstream s;
+    s << influence;
+    gfx_output ["INFLUENCE"] += vertex + " " + s.str() + " ";
+  }
+}
+
+void GoguiGfx::SetLabel (const string& vertex, const string& label) {
+  if (label != "") {
+    gfx_output ["LABEL"] += vertex + " \"" + label + "\" ";
+  }
+}
+
+void GoguiGfx::SetSymbol (const string& vertex, GoguiGfx::Symbol s) {
+  string key;
+  switch (s) {
+  case circle:   key = "CIRCLE"; break;
+  case triangle: key = "TRIANGLE"; break;
+  case square:   key = "SQUARE"; break;
+  default: assert (false);
+  }
+  gfx_output [key] += vertex + " ";
+}
+
+void GoguiGfx::AddVariationMove (const string& player_and_vertex) {
+  gfx_output ["VAR"] += player_and_vertex + " ";
+}
+
+void GoguiGfx::SetStatusBar (const string& status) {
+  gfx_output ["STATUS"] += status + " ";
+}
+
+void GoguiGfx::Report (Io& io)  {
+  typedef pair <const string, string> P;
+  BOOST_FOREACH (P& p, gfx_output) {
+    io.out << p.first << " " << p.second << endl;
+  }
+}
+
+// -----------------------------------------------------------------------------
 
 ReplWithGogui::ReplWithGogui () : Repl () {
   Register ("gogui_analyze_commands", this, &ReplWithGogui::CAnalyze);
@@ -26,7 +70,7 @@ void ReplWithGogui::CParam (const string& cmd_name, Io& io) {
   if (io.IsEmpty ()) {
     // print all vars and their values
     pair<string, Callback> v;
-    FOREACH(v, vars) {
+    BOOST_FOREACH(v, vars) {
       io.out << "[string] " << v.first << " ";
       v.second (io);
       io.out << endl;

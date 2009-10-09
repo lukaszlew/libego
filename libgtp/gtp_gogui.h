@@ -13,6 +13,28 @@ using namespace std;
 
 // -----------------------------------------------------------------------------
 
+class GoguiGfx {
+public:
+  GoguiGfx();
+
+  enum Symbol { circle, triangle, square };
+
+  void SetInfluence (const string& vertex, float influence);
+  void SetLabel     (const string& vertex, const string& label);
+  void SetSymbol    (const string& vertex, Symbol s);
+
+  void AddVariationMove (const string& player_and_vertex);
+
+  void SetStatusBar (const string& status);
+
+  void Report (Io& io);
+
+private:
+  map <string, string> gfx_output;
+};
+
+// -----------------------------------------------------------------------------
+
 class ReplWithGogui : public Repl {
 public:
   ReplWithGogui ();
