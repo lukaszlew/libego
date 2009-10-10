@@ -41,7 +41,17 @@ public:
 
   const MctsNode& MostExploredChild (Player pl);
 
-  MctsNode& FindUctChild (Player pl, float uct_explore_coeff);
+  float Value (Player pl,
+               float explore_coeff,
+               float bias_s,
+               float bias_r,
+               bool use_rave);
+
+  MctsNode& FindUctChild (Player pl,
+                          float uct_explore_coeff,
+                          float bias_s,
+                          float bias_r,
+                          bool use_rave);
 
   // Other.
   
@@ -192,7 +202,28 @@ void MctsNode::Reset () {
   rave_stat.reset ();
 }
 
-MctsNode& MctsNode::FindUctChild (Player pl, float uct_explore_coeff) {
+
+float MctsNode::Value (Player pl,
+                       float explore_coeff,
+                       float bias_s,
+                       float bias_r,
+                       bool use_rave)
+{
+  unused (bias_s);
+  unused (bias_r);
+  unused (use_rave);
+  return
+    (pl == Player::black () ? stat.mean() : -stat.mean()) +
+    sqrt (explore_coeff / stat.update_count());
+}
+
+
+MctsNode& MctsNode::FindUctChild (Player pl,
+                                  float uct_explore_coeff,
+                                  float bias_s,
+                                  float bias_r,
+                                  bool use_rave)
+{
   MctsNode* best_child = NULL;
   float best_urgency = -large_float;
   const float explore_coeff = log (stat.update_count()) * uct_explore_coeff;
@@ -201,7 +232,9 @@ MctsNode& MctsNode::FindUctChild (Player pl, float uct_explore_coeff) {
 
   FOREACH (MctsNode& child, children) {
     if (child.player != pl) continue;
-    float child_urgency = child.stat.ucb (pl, explore_coeff);
+    float child_urgency = child.Value (pl, explore_coeff,
+                                       bias_s, bias_r,
+                                       use_rave);
     if (child_urgency > best_urgency) {
       best_urgency = child_urgency;
       best_child   = &child;

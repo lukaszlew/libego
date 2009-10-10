@@ -28,9 +28,13 @@ const bool mcts_ac = true;
 class MctsPlayout {
 public:
   MctsPlayout () {
-    uct_explore_coeff    = 1.0;
+    uct_explore_coeff = 1.0;
+    bias_stat = 0.0;
+    bias_rave = 0.0001;
+
     mature_update_count  = 100.0;
     update_rave = true;
+    use_rave = true;
   }
 
   void DoOnePlayout (MctsNode& playout_root, const Board& board) {
@@ -76,7 +80,11 @@ private:
 
   bool DoTreeMove () {
     Player pl = play_board.act_player ();
-    MctsNode& uct_child = ActNode().FindUctChild (pl, uct_explore_coeff);
+    MctsNode& uct_child = ActNode().FindUctChild (pl,
+                                                  uct_explore_coeff,
+                                                  bias_stat,
+                                                  bias_rave,
+                                                  use_rave);
 
     assertc (mcts_ac, play_board.is_pseudo_legal (pl, uct_child.v));
 
@@ -149,8 +157,13 @@ private:
 
   // parameters
   float uct_explore_coeff;
+  float bias_stat;
+  float bias_rave;
+
   float mature_update_count;
+
   bool  update_rave;
+  bool  use_rave;
   
   // playout
   Board play_board;

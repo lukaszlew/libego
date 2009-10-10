@@ -23,10 +23,17 @@ public:
     gtp.RegisterGfx ("MCTS.ShowTree", "1000", this, &MctsGtp::CShowTree);
 
 
-    gtp.RegisterParam ("MCTS.params", "Playouts_before_genmove",
+    gtp.RegisterParam ("MCTS.params", "playouts_before_genmove",
                        &playout_count);
-    gtp.RegisterParam ("MCTS.params", "UCT_explore_coeff",
+    gtp.RegisterParam ("MCTS.params", "uct_explore_coeff",
                        &mcts.playout.uct_explore_coeff);
+
+    gtp.RegisterParam ("MCTS.params", "bias_stat",
+                       &mcts.playout.bias_stat);
+
+    gtp.RegisterParam ("MCTS.params", "bias_rave",
+                       &mcts.playout.bias_rave);
+
     gtp.RegisterParam ("MCTS.params", "Min_updates_to_have_children",
                        &mcts.playout.mature_update_count);
 
@@ -40,6 +47,9 @@ public:
 
     gtp.RegisterParam ("MCTS.params", "update_rave",
                        &mcts.playout.update_rave);
+
+    gtp.RegisterParam ("MCTS.params", "use_rave",
+                       &mcts.playout.use_rave);
   }
 
 private:

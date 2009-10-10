@@ -45,12 +45,6 @@ public:
     return sqrt (variance () / sample_count);
   } 
 
-  float ucb (Player pl, float explore_coeff) const {
-    return 
-      (pl == Player::black () ? mean() : -mean()) +
-      sqrt (explore_coeff / update_count());
-  }
-
   string to_string (float minimal_update_count = 0.0) const {
     if (sample_count < minimal_update_count) return "           ";
 
