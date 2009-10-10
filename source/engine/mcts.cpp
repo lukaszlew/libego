@@ -45,7 +45,7 @@ public:
     }
 
     if (play_board.both_player_pass()) {
-      UpdateTree (play_board.tt_winner().to_score());
+      UpdateTrace (play_board.tt_winner().to_score());
       return;
     }
     
@@ -64,7 +64,7 @@ public:
     LightPlayout (&play_board).Run (move_history);
     
     // Update score.
-    UpdateTree (play_board.playout_winner().to_score());
+    UpdateTrace (play_board.playout_winner().to_score());
   }
 
   vector<Move> LastPlayout () {
@@ -96,9 +96,44 @@ private:
     return true;
   }
 
-  void UpdateTree (float score) { // score: black -> 1, white -> -1
+  void UpdateTrace (float score) {  // score: black -> 1, white -> -1
+    UpdateTraceRegular (score);
+    UpdateTraceRave (score);    // TODO bool to turn it off/on
+  }
+
+  void UpdateTraceRegular (float score) {
     FOREACH (MctsNode* node, trace) {
       node->stat.update (score);
+    }
+  }
+
+  void UpdateTraceRave (float score) {
+    // TODO configure rave blocking through options
+
+    FastMap <Move, bool> do_update; // TODO weight of update
+    FastMap <Move, bool> do_update_set_to;
+
+    uint last_ii  = move_history.Size () * 7 / 8; // TODO fraction as a parameter
+
+    rep (act_ii, trace.size()) {
+      // Mark moves that should be updated.
+      do_update.SetAll (false);
+      do_update_set_to.SetAll (true);
+
+      // TODO this is the slow part, extract it an change to weighting.
+      reps (jj, act_ii, last_ii) {
+        Move m = move_history [jj];
+        do_update [m] = do_update_set_to [m];
+        do_update_set_to [m] = false;
+        do_update_set_to [m.other_player()] = false;
+      }
+
+      // Do the update.
+      FOREACH (MctsNode& child, trace[act_ii]->Children()) {
+        if (do_update [child.GetMove()]) {
+          child.rave_stat.update (score);
+        }
+      }
     }
   }
 
@@ -116,8 +151,8 @@ private:
   
   // playout
   Board play_board;
-  vector <MctsNode*> trace;
-  LightPlayout::MoveHistory move_history;
+  vector <MctsNode*> trace;               // nodes in the path
+  LightPlayout::MoveHistory move_history; // edges in the path
 };
 
 // -----------------------------------------------------------------------------

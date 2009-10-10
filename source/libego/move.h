@@ -16,6 +16,8 @@ public:
   Player get_player ();
   Vertex get_vertex ();
 
+  Move other_player ();
+
   string to_string ();
 
   bool operator!= (Move other) const;

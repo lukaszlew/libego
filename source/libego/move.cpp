@@ -40,6 +40,10 @@ Move::Move (int idx_) {
   idx = idx_;
 }
 
+Move Move::other_player () {
+  return Move (idx ^ (1 << Vertex::bits_used));
+};
+
 Player Move::get_player () { 
   return Player (idx >> Vertex::bits_used);
 }

@@ -24,6 +24,8 @@ public:
   string RecToString (float min_visit, uint max_children) const; 
 
   // Children operations.
+  
+  ChildrenList& Children ();
 
   void AddChild (const MctsNode& node);
 
@@ -46,11 +48,15 @@ public:
   float SubjectiveMean() const;
 
 public:
+
+  Move GetMove () const;
+
   Player player;
   Vertex v;
   FastMap <Player, bool> has_all_legal_children;
 
   Stat stat;
+  Stat rave_stat;
 
 private:
   void RecPrint (ostream& out, uint depth, float min_visit, uint max_children) const;
@@ -62,6 +68,14 @@ private:
 
 MctsNode::MctsNode (Player player_, Vertex v_) : player(player_), v(v_) {
   Reset ();
+}
+
+MctsNode::ChildrenList& MctsNode::Children () {
+  return children;
+}
+
+Move MctsNode::GetMove () const {
+  return Move(player, v);
 }
 
 void MctsNode::AddChild (const MctsNode& node) {
@@ -94,7 +108,8 @@ string MctsNode::ToString() const {
   stringstream s;
   s << player.to_string () << " " 
     << v.to_string () << " " 
-    << stat.to_string()
+    << stat.to_string() << " "
+    << rave_stat.to_string()
     ;
   return s.str();
 }
@@ -173,7 +188,8 @@ void MctsNode::RemoveIllegalChildren (Player pl, const FullBoard& full_board) {
 void MctsNode::Reset () {
   has_all_legal_children.SetAll (false);
   children.clear ();
-  stat.reset();
+  stat.reset ();
+  rave_stat.reset ();
 }
 
 MctsNode& MctsNode::FindUctChild (Player pl, float uct_explore_coeff) {
