@@ -25,16 +25,59 @@ const bool mcts_ac = true;
 
 // -----------------------------------------------------------------------------
 
-class MctsPlayout {
+class MctsBestChildFinder {
 public:
-  MctsPlayout () {
+  MctsBestChildFinder () {
     uct_explore_coeff = 1.0;
     bias_stat = 0.0;
     bias_rave = 0.0001;
+    use_rave = true;
+  }
 
+  MctsNode& Find (Player pl, MctsNode& node) {
+    MctsNode* best_child = NULL;
+    float best_urgency = -large_float;
+    const float explore_coeff = log (node.stat.update_count()) * uct_explore_coeff;
+
+    assertc (mcts_tree_ac, node.has_all_legal_children [pl]);
+
+    FOREACH (MctsNode& child, node.Children()) {
+      if (child.player != pl) continue;
+      float child_urgency = NodeValue (child, pl, explore_coeff);
+      if (child_urgency > best_urgency) {
+        best_urgency = child_urgency;
+        best_child   = &child;
+      }
+    }
+
+    assertc (mcts_tree_ac, best_child != NULL); // at least pass
+    return *best_child;
+  }
+
+private:
+
+  float NodeValue (MctsNode& node, Player pl, float explore_coeff) {
+    return
+      (pl == Player::black () ? node.stat.mean() : -node.stat.mean()) +
+      sqrt (explore_coeff / node.stat.update_count());
+  }
+
+private:
+  friend class MctsGtp;
+
+  float uct_explore_coeff;
+  float bias_stat;
+  float bias_rave;
+  bool  use_rave;
+};
+
+// -----------------------------------------------------------------------------
+
+class MctsPlayout {
+public:
+  MctsPlayout () {
     mature_update_count  = 100.0;
     update_rave = true;
-    use_rave = true;
   }
 
   void DoOnePlayout (MctsNode& playout_root, const Board& board) {
@@ -80,11 +123,7 @@ private:
 
   bool DoTreeMove () {
     Player pl = play_board.act_player ();
-    MctsNode& uct_child = ActNode().FindUctChild (pl,
-                                                  uct_explore_coeff,
-                                                  bias_stat,
-                                                  bias_rave,
-                                                  use_rave);
+    MctsNode& uct_child = best_child_finder.Find (pl, ActNode());
 
     assertc (mcts_ac, play_board.is_pseudo_legal (pl, uct_child.v));
 
@@ -154,19 +193,14 @@ private:
 
 private:
   friend class MctsGtp;
-
   // parameters
-  float uct_explore_coeff;
-  float bias_stat;
-  float bias_rave;
-
   float mature_update_count;
 
   bool  update_rave;
-  bool  use_rave;
   
   // playout
   Board play_board;
+  MctsBestChildFinder best_child_finder;
   vector <MctsNode*> trace;               // nodes in the path
   LightPlayout::MoveHistory move_history; // edges in the path
 };

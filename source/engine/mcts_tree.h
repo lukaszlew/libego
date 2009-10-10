@@ -41,18 +41,6 @@ public:
 
   const MctsNode& MostExploredChild (Player pl);
 
-  float Value (Player pl,
-               float explore_coeff,
-               float bias_s,
-               float bias_r,
-               bool use_rave);
-
-  MctsNode& FindUctChild (Player pl,
-                          float uct_explore_coeff,
-                          float bias_s,
-                          float bias_r,
-                          bool use_rave);
-
   // Other.
   
   float SubjectiveMean() const;
@@ -200,49 +188,6 @@ void MctsNode::Reset () {
   children.clear ();
   stat.reset ();
   rave_stat.reset ();
-}
-
-
-float MctsNode::Value (Player pl,
-                       float explore_coeff,
-                       float bias_s,
-                       float bias_r,
-                       bool use_rave)
-{
-  unused (bias_s);
-  unused (bias_r);
-  unused (use_rave);
-  return
-    (pl == Player::black () ? stat.mean() : -stat.mean()) +
-    sqrt (explore_coeff / stat.update_count());
-}
-
-
-MctsNode& MctsNode::FindUctChild (Player pl,
-                                  float uct_explore_coeff,
-                                  float bias_s,
-                                  float bias_r,
-                                  bool use_rave)
-{
-  MctsNode* best_child = NULL;
-  float best_urgency = -large_float;
-  const float explore_coeff = log (stat.update_count()) * uct_explore_coeff;
-
-  assertc (mcts_tree_ac, has_all_legal_children [pl]);
-
-  FOREACH (MctsNode& child, children) {
-    if (child.player != pl) continue;
-    float child_urgency = child.Value (pl, explore_coeff,
-                                       bias_s, bias_r,
-                                       use_rave);
-    if (child_urgency > best_urgency) {
-      best_urgency = child_urgency;
-      best_child   = &child;
-    }
-  }
-
-  assertc (mcts_tree_ac, best_child != NULL); // at least pass
-  return *best_child;
 }
 
 float MctsNode::SubjectiveMean () const {
