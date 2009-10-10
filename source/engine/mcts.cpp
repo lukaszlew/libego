@@ -30,6 +30,7 @@ public:
   MctsPlayout () {
     uct_explore_coeff    = 1.0;
     mature_update_count  = 100.0;
+    update_rave = true;
   }
 
   void DoOnePlayout (MctsNode& playout_root, const Board& board) {
@@ -98,7 +99,7 @@ private:
 
   void UpdateTrace (float score) {  // score: black -> 1, white -> -1
     UpdateTraceRegular (score);
-    UpdateTraceRave (score);    // TODO bool to turn it off/on
+    if (update_rave) UpdateTraceRave (score);
   }
 
   void UpdateTraceRegular (float score) {
@@ -110,17 +111,18 @@ private:
   void UpdateTraceRave (float score) {
     // TODO configure rave blocking through options
 
-    FastMap <Move, bool> do_update; // TODO weight of update
+    FastMap <Move, bool> do_update;
     FastMap <Move, bool> do_update_set_to;
 
-    uint last_ii  = move_history.Size () * 7 / 8; // TODO fraction as a parameter
+    uint last_ii  = move_history.Size () * 7 / 8;
 
     rep (act_ii, trace.size()) {
       // Mark moves that should be updated.
       do_update.SetAll (false);
       do_update_set_to.SetAll (true);
 
-      // TODO this is the slow part, extract it an change to weighting.
+      // TODO this is the slow and too-fixed part
+      // TODO Change it to weighting with flexible masking.
       reps (jj, act_ii, last_ii) {
         Move m = move_history [jj];
         do_update [m] = do_update_set_to [m];
@@ -148,6 +150,7 @@ private:
   // parameters
   float uct_explore_coeff;
   float mature_update_count;
+  bool  update_rave;
   
   // playout
   Board play_board;

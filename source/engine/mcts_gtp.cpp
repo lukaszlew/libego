@@ -11,14 +11,16 @@ public:
     gtp.Register ("genmove",     this, &MctsGtp::CGenmove);
 
     gtp.RegisterGfx ("MCTS.DoPlayouts",      "1", this, &MctsGtp::CDoPlayouts);
+    gtp.RegisterGfx ("MCTS.DoPlayouts",     "10", this, &MctsGtp::CDoPlayouts);
+    gtp.RegisterGfx ("MCTS.DoPlayouts",    "100", this, &MctsGtp::CDoPlayouts);
     gtp.RegisterGfx ("MCTS.DoPlayouts",   "1000", this, &MctsGtp::CDoPlayouts);
     gtp.RegisterGfx ("MCTS.DoPlayouts",  "10000", this, &MctsGtp::CDoPlayouts);
     gtp.RegisterGfx ("MCTS.DoPlayouts", "100000", this, &MctsGtp::CDoPlayouts);
 
-    gtp.RegisterGfx ("MCTS.ShowTree",   "0", this, &MctsGtp::CShowTree);
-    gtp.RegisterGfx ("MCTS.ShowTree",  "10", this, &MctsGtp::CShowTree);
-    gtp.RegisterGfx ("MCTS.ShowTree", "100", this, &MctsGtp::CShowTree);
-    gtp.RegisterGfx ("MCTS.ShowTree", "500", this, &MctsGtp::CShowTree);
+    gtp.RegisterGfx ("MCTS.ShowTree",    "0", this, &MctsGtp::CShowTree);
+    gtp.RegisterGfx ("MCTS.ShowTree",   "10", this, &MctsGtp::CShowTree);
+    gtp.RegisterGfx ("MCTS.ShowTree",  "100", this, &MctsGtp::CShowTree);
+    gtp.RegisterGfx ("MCTS.ShowTree", "1000", this, &MctsGtp::CShowTree);
 
 
     gtp.RegisterParam ("MCTS.params", "Playouts_before_genmove",
@@ -35,6 +37,9 @@ public:
 
     gtp.RegisterParam ("MCTS.params", "E(score)_to_resign",
                        &mcts.resign_mean);
+
+    gtp.RegisterParam ("MCTS.params", "update_rave",
+                       &mcts.playout.update_rave);
   }
 
 private:
@@ -75,6 +80,7 @@ private:
     uint max_children = io.Read <uint> (show_tree_max_children);
     io.CheckEmpty();
     io.out << mcts.ToString (min_updates, max_children);
+    // TODO show PV
   }
 
 private:
