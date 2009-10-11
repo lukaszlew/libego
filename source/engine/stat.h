@@ -45,19 +45,44 @@ public:
     return sqrt (variance () / sample_count);
   } 
 
-  static float Mix (const Stat& s1, float b1, const Stat& s2, float b2) {
-    float n_1    = s1.update_count ();
-    float mean_1 = s1.mean();
-    float var_1  = s1.variance();
-    float prec_1 = 1 / (var_1 / n_1 + b1);
-
-    float n_2    = s2.update_count ();
-    float mean_2 = s2.mean();
-    float var_2  = s2.variance();
-    float prec_2 = 1 / (var_2 / n_2 + b2);
-
-    return (mean_1 * prec_1 + mean_2 * prec_2) / (prec_1 + prec_2);
+  float precision (float bias = 0.0) {
+    return 1.0 / (variance() + bias);
   }
+
+  static float Mix (const Stat& stat1, float b1, const Stat& stat2, float b2) {
+    // Equivalent to (but only one division):
+    //
+    // float m1 = s1.mean();
+    // float p1 = s1.precision (b1);
+    //
+    // float m2 = s2.mean();
+    // float p2 = s2.precision (b2);
+    //
+    // return (p1*m1 + p2*m2) / (p1 + p2);
+
+    float n1 = stat1.sample_count;
+    float n2 = stat2.sample_count;
+
+    float s1 = stat1.sample_sum;
+    float s2 = stat2.sample_sum;
+
+    float v1 = stat1.square_sample_sum;
+    float v2 = stat2.square_sample_sum;
+
+    float nn1 = n1 * n1;
+    float nn2 = n2 * n2;
+
+    float x1 = (v1 + b1*nn1) * n1  -  s1 * s1;
+    float x2 = (v2 + b2*nn2) * n2  -  s2 * s2;
+
+    float t1 = nn1 * x2;
+    float t2 = nn2 * x1;
+
+    return
+      (t1*s1 + t2*s2) /
+      (t1*n1 + t2*n2);
+  }
+
 
   string to_string (float minimal_update_count = 0.0) const {
     if (sample_count < minimal_update_count) return "           ";
