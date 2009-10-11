@@ -60,17 +60,7 @@ private:
     float value;
 
     if (use_rave) {
-      float n_s    = node.stat.update_count ();
-      float mean_s = node.stat.mean();
-      float var_s  = node.stat.variance();
-      float prec_s = 1 / (var_s / n_s + bias_stat);
-
-      float n_r    = node.rave_stat.update_count ();
-      float mean_r = node.rave_stat.mean();
-      float var_r  = node.rave_stat.variance();
-      float prec_r = 1 / (var_r / n_r + bias_rave);
-
-      value = (mean_s * prec_s + mean_r * prec_r) / (prec_s + prec_r);
+      value = Stat::Mix (node.stat, bias_stat, node.rave_stat, bias_rave);
     } else {
       value = node.stat.mean ();
     }
