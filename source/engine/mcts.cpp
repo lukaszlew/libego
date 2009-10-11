@@ -29,8 +29,8 @@ class MctsBestChildFinder {
 public:
   MctsBestChildFinder () {
     uct_explore_coeff = 1.0;
-    bias_stat = 0.0;
-    bias_rave = 0.0001;
+    bias_stat = 0.0000001;
+    bias_rave = 0.001;
     use_rave = true;
   }
 
@@ -43,7 +43,7 @@ public:
 
     FOREACH (MctsNode& child, node.Children()) {
       if (child.player != pl) continue;
-      float child_urgency = NodeValue (child, pl, explore_coeff);
+      float child_urgency = NodeSubjectiveValue (child, pl, explore_coeff);
       if (child_urgency > best_urgency) {
         best_urgency = child_urgency;
         best_child   = &child;
@@ -56,9 +56,27 @@ public:
 
 private:
 
-  float NodeValue (MctsNode& node, Player pl, float explore_coeff) {
+  float NodeSubjectiveValue (MctsNode& node, Player pl, float explore_coeff) {
+    float value;
+
+    if (use_rave) {
+      float n_s    = node.stat.update_count ();
+      float mean_s = node.stat.mean();
+      float var_s  = node.stat.variance();
+      float prec_s = 1 / (var_s / n_s + bias_stat);
+
+      float n_r    = node.rave_stat.update_count ();
+      float mean_r = node.rave_stat.mean();
+      float var_r  = node.rave_stat.variance();
+      float prec_r = 1 / (var_r / n_r + bias_rave);
+
+      value = (mean_s * prec_s + mean_r * prec_r) / (prec_s + prec_r);
+    } else {
+      value = node.stat.mean ();
+    }
+
     return
-      (pl == Player::black () ? node.stat.mean() : -node.stat.mean()) +
+      pl.subjective_score (value) +
       sqrt (explore_coeff / node.stat.update_count());
   }
 
