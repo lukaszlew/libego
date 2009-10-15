@@ -1,6 +1,8 @@
 #ifndef _STAT_H_
 #define _STAT_H_
 
+const bool stat_ac = false;
+
 class Stat {
 public:
 
@@ -45,20 +47,18 @@ public:
     return sqrt (variance () / sample_count);
   } 
 
-  float precision (float bias = 0.0) {
-    return 1.0 / (variance() + bias);
+  float precision (float bias = 0.0) const {
+    return 1.0 / (variance() / update_count () + bias);
   }
 
+  static float SlowMix (const Stat& stat1, float b1, const Stat& stat2, float b2) {
+    return
+      (stat1.precision(b1) * stat1.mean() + stat2.precision(b2) * stat2.mean()) /
+      (stat1.precision(b1) + stat2.precision(b2));
+  }
+
+  // Optimized SlowMix
   static float Mix (const Stat& stat1, float b1, const Stat& stat2, float b2) {
-    // Equivalent to (but only one division):
-    //
-    // float m1 = s1.mean();
-    // float p1 = s1.precision (b1);
-    //
-    // float m2 = s2.mean();
-    // float p2 = s2.precision (b2);
-    //
-    // return (p1*m1 + p2*m2) / (p1 + p2);
 
     float n1 = stat1.sample_count;
     float n2 = stat2.sample_count;
@@ -78,9 +78,10 @@ public:
     float t1 = nn1 * x2;
     float t2 = nn2 * x1;
 
-    return
-      (t1*s1 + t2*s2) /
-      (t1*n1 + t2*n2);
+    float mix = (t1*s1 + t2*s2) / (t1*n1 + t2*n2);
+
+    assertc (stat_ac, fabs(mix - SlowMix(stat1, b1, stat2 ,b2)) < 0.00001);
+    return mix;
   }
 
 
