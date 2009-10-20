@@ -1,7 +1,9 @@
 class MctsGtp {
 public:
-  MctsGtp (Gtp::ReplWithGogui& gtp, FullBoard& full_board_, Mcts& mcts_)
-    : mcts(mcts_), full_board(full_board_), playout_gfx (gtp, mcts_, "MCTS.ShowLastPlayout")
+  MctsGtp (Gtp::ReplWithGogui& gtp, MctsEngine& mcts_engine)
+  : mcts(mcts_engine.mcts),
+    full_board(mcts_engine.full_board),
+    playout_gfx (gtp, mcts_engine.mcts, "MCTS.ShowLastPlayout")
   {
     playout_count = 10000;
     show_tree_min_updates = 1000;

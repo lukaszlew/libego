@@ -298,3 +298,15 @@ private:
   // playout
   MctsPlayout playout;
 };
+
+// -----------------------------------------------------------------------------
+
+class MctsEngine {
+public:
+
+  MctsEngine () : mcts (full_board) {
+  }
+
+  FullBoard full_board;
+  Mcts mcts;
+};

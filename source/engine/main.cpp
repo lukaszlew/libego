@@ -55,13 +55,14 @@
 Gtp::ReplWithGogui gtp;
 
 FullBoard board;
-SgfTree sgf_tree;
 
-BasicGtp    basic_gtp (gtp, board);
+//SgfTree sgf_tree;
 //SgfGtp      sgf_gtp   (gtp, sgf_tree, board);
 
-Mcts    mcts      (board);
-MctsGtp mcts_gtp  (gtp, board, mcts);
+MctsEngine mcts_engine;
+
+BasicGtp basic_gtp (gtp, mcts_engine.full_board);
+MctsGtp mcts_gtp   (gtp, mcts_engine);
 
 // Uncomment this to enable All-As-First experiment (new GTP commands).
 // AllAsFirst  aaf (gtp, board);
