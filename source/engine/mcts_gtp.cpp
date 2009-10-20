@@ -1,11 +1,11 @@
 class MctsGtp {
 public:
   MctsGtp (Gtp::ReplWithGogui& gtp, MctsEngine& mcts_engine)
-  : mcts(mcts_engine.mcts),
+  : mcts_engine (mcts_engine),
+    mcts (mcts_engine.mcts),
     full_board(mcts_engine.full_board),
     playout_gfx (gtp, mcts_engine.mcts, "MCTS.ShowLastPlayout")
   {
-    playout_count = 10000;
     show_tree_min_updates = 1000;
     show_tree_max_children = 4;
 
@@ -46,7 +46,7 @@ public:
 
 
     gtp.RegisterParam ("MCTS.params", "playouts_before_genmove",
-                       &playout_count);
+                       &mcts_engine.playout_count);
 
     gtp.RegisterParam ("MCTS.params", "Min_updates_to_have_children",
                        &mcts.playout.mature_update_count);
@@ -69,24 +69,13 @@ private:
     Player player = io.Read<Player> ();
     io.CheckEmpty ();
 
-    full_board.set_act_player(player); // TODO move player parameter to DoPlayouts
+    Vertex v = mcts_engine.Genmove (player);
 
-    mcts.DoNPlayouts (playout_count);
-    cerr << mcts.ToString (show_tree_min_updates, show_tree_max_children) << endl;
-
-    Vertex v = mcts.BestMove (player);
-
-    if (v != Vertex::resign ()) {
-      bool ok = full_board.try_play (player, v);
-      assert(ok);
-      io.out << v.to_string();
-    } else {
-      io.out << "resign";
-    }
+    io.out << v.to_string();
   }
 
   void CDoPlayouts (Gtp::Io& io) {
-    uint n = io.Read <uint> (playout_count);
+    uint n = io.Read <uint> (mcts_engine.playout_count);
     io.CheckEmpty();
     mcts.DoNPlayouts (n);
   }
@@ -100,10 +89,10 @@ private:
   }
 
 private:
+  MctsEngine& mcts_engine;
   Mcts& mcts;
   FullBoard& full_board;
 
-  float playout_count;
   float show_tree_min_updates;
   float show_tree_max_children;
 

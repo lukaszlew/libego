@@ -304,9 +304,26 @@ private:
 class MctsEngine {
 public:
 
-  MctsEngine () : mcts (full_board) {
+  MctsEngine () : playout_count (10000), mcts (full_board) {
   }
 
+  Vertex Genmove (Player player) {
+    full_board.set_act_player(player); // TODO move player parameter to DoPlayouts
+    mcts.DoNPlayouts (playout_count);
+
+    //cerr << mcts.ToString (show_tree_min_updates, show_tree_max_children) << endl;
+
+    Vertex v = mcts.BestMove (player);
+
+    if (v != Vertex::resign ()) {
+      bool ok = full_board.try_play (player, v);
+      assert(ok);
+    }
+
+    return v;
+  }
+
+  float playout_count;
   FullBoard full_board;
   Mcts mcts;
 };
