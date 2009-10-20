@@ -276,6 +276,25 @@ public:
     }
   }
 
+  Gtp::GoguiGfx LastPlayoutGfx (uint move_count) {
+    vector<Move> last_playout = playout.LastPlayout ();
+
+    move_count = max(move_count, 0u);
+    move_count = min(move_count, last_playout.size());
+
+    Gtp::GoguiGfx gfx;
+
+    rep(ii, move_count) {
+      gfx.AddVariationMove (last_playout[ii].to_string());
+    }
+
+    if (move_count > 0) {
+      gfx.SetSymbol (last_playout[move_count-1].get_vertex().to_string(),
+                     Gtp::GoguiGfx::circle);
+    }
+
+    return gfx;
+  }
 
   Vertex BestMove (Player pl) {
     MctsNode& act_root = FindRoot ();
@@ -285,10 +304,6 @@ public:
       best_node.SubjectiveMean() < resign_mean ?
       Vertex::resign() :
       best_node.v;
-  }
-
-  vector<Move> LastPlayout () {
-    return playout.LastPlayout ();
   }
 
 private:

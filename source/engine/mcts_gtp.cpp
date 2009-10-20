@@ -1,8 +1,7 @@
 class MctsGtp {
 public:
   MctsGtp (Gtp::ReplWithGogui& gtp, MctsEngine& mcts_engine)
-  : mcts_engine (mcts_engine),
-    playout_gfx (gtp, mcts_engine, "MCTS.ShowLastPlayout")
+  : mcts_engine (mcts_engine)
   {
     RegisterCommands (gtp);
     RegisterParams (gtp);
@@ -30,6 +29,12 @@ private:
     gtp.RegisterGfx ("MCTS.ShowTree",   "10 4", this, &MctsGtp::CShowTree);
     gtp.RegisterGfx ("MCTS.ShowTree",  "100 4", this, &MctsGtp::CShowTree);
     gtp.RegisterGfx ("MCTS.ShowTree", "1000 4", this, &MctsGtp::CShowTree);
+
+    gtp.RegisterGfx ("MCTS.LastPlayout", "4",  this, &MctsGtp::CLastPlayout);
+    gtp.RegisterGfx ("MCTS.LastPlayout", "8",  this, &MctsGtp::CLastPlayout);
+    gtp.RegisterGfx ("MCTS.LastPlayout", "12", this, &MctsGtp::CLastPlayout);
+    gtp.RegisterGfx ("MCTS.LastPlayout", "16", this, &MctsGtp::CLastPlayout);
+    gtp.RegisterGfx ("MCTS.LastPlayout", "20", this, &MctsGtp::CLastPlayout);
   }
 
   void RegisterParams (Gtp::ReplWithGogui& gtp) {
@@ -116,8 +121,12 @@ private:
     io.out << mcts_engine.TreeAsciiArt (min_updates, max_children);
   }
 
+  void CLastPlayout (Gtp::Io& io) {
+    int n = io.Read<int> ();
+    io.CheckEmpty ();
+    mcts_engine.LastPlayoutGfx(n).Report (io);
+  }
+
 private:
   MctsEngine& mcts_engine;
-
-  PlayoutGfx<MctsEngine> playout_gfx;
 };

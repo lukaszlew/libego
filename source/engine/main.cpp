@@ -38,7 +38,6 @@
 
 // local hard-include
 #include "stat.h"
-#include "playout_gfx.cpp"
 
 #include "mcts_tree.h"
 #include "mcts.cpp"
