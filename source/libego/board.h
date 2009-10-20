@@ -55,7 +55,7 @@ public:                         // board interface
   // Returns true if both players pass.
   bool both_player_pass () const;
 
-  // Difference in (number of stones + number of eyes) of each player + komi.
+  // Difference in (number of stones + number of eyes) of each player - komi.
   // See tt_score.
   int playout_score () const;
 
@@ -70,14 +70,14 @@ public:                         // board interface
   // Returns 0 for other empty vertices.
   int vertex_score (Vertex v) const;
 
-  // Difference in (number of stones) of each player + komi. Used with
+  // Difference in (number of stones) of each player - komi. Used with
   // mercy heuristic.
   int approx_score () const;
 
   // Winner according to approx_score.
   Player approx_winner () const;
 
-  // Gets, sets the komi value. Positive means adventage for black.
+  // Gets, sets the komi value. Positive means adventage for white.
   float komi () const;
   void set_komi (float fkomi);
 
@@ -180,7 +180,7 @@ public:
   } last_move_status;
 
 private:
-  int komi_;
+  int komi_inverse_;
 
   static const Zobrist zobrist[1];
 

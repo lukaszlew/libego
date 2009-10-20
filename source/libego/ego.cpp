@@ -41,5 +41,4 @@
 #include "benchmark.cpp"
 
 #include "sgf.cpp"
-#include "basic_gtp.cpp"
 #include "sgf_gtp.cpp"

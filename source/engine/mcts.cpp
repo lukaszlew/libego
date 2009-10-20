@@ -307,6 +307,27 @@ public:
   MctsEngine () : playout_count (10000), mcts (full_board) {
   }
 
+  bool SetBoardSize (uint board_size) {
+    return board_size == ::board_size;
+  }
+
+  void SetKomi (float komi) {
+    full_board.set_komi (komi);
+  }
+
+  void ClearBoard () {
+    full_board.clear ();
+    mcts.Reset ();
+  }
+
+  bool Play (Player pl, Vertex v) {
+    return full_board.try_play (pl, v);
+  }
+
+  bool Undo () {
+    return full_board.undo ();
+  }
+
   Vertex Genmove (Player player) {
     full_board.set_act_player(player); // TODO move player parameter to DoPlayouts
     mcts.DoNPlayouts (playout_count);
@@ -322,6 +343,12 @@ public:
 
     return v;
   }
+
+  string BoardAsciiArt () {
+    return full_board.to_string();
+  }
+
+public:
 
   float playout_count;
   FullBoard full_board;

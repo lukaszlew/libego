@@ -222,12 +222,12 @@ void Board::load (const Board* save_board) {
 }
 
 void Board::set_komi (float fkomi) {
-  komi_ = int (ceil (fkomi));
+  komi_inverse_ = int (ceil (-fkomi));
 }
 
 
 float Board::komi () const {
-  return float(komi_) - 0.5;
+  return -float(komi_inverse_) + 0.5;
 }
 
 Vertex Board::ko_v () const {
@@ -511,7 +511,7 @@ int Board::tt_score() const {
       });
     }
   }
-  return komi_ + score[Player::black ()] - score[Player::white ()];
+  return komi_inverse_ + score[Player::black ()] - score[Player::white ()];
 }
 
 Player Board::tt_winner() const {
@@ -519,7 +519,7 @@ Player Board::tt_winner() const {
 }
 
 int Board::approx_score () const {
-  return komi_ + player_v_cnt[Player::black ()] -  player_v_cnt[Player::white ()];
+  return komi_inverse_ + player_v_cnt[Player::black ()] -  player_v_cnt[Player::white ()];
 }
 
 
