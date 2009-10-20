@@ -304,7 +304,8 @@ private:
 class MctsEngine {
 public:
 
-  MctsEngine () : playout_count (10000), mcts (full_board) {
+  MctsEngine () : mcts (full_board) {
+    playout_count = 10000;
   }
 
   bool SetBoardSize (uint board_size) {
@@ -348,9 +349,14 @@ public:
     return full_board.to_string();
   }
 
+  string TreeAsciiArt (float min_updates, float max_children) {
+    return mcts.ToString (min_updates, max_children);
+  }
+
 public:
 
   float playout_count;
+
   FullBoard full_board;
   Mcts mcts;
 };
