@@ -2,7 +2,7 @@ class MctsGtp {
 public:
   MctsGtp (Gtp::ReplWithGogui& gtp, MctsEngine& mcts_engine)
   : mcts_engine (mcts_engine),
-    playout_gfx (gtp, mcts_engine.mcts, "MCTS.ShowLastPlayout")
+    playout_gfx (gtp, mcts_engine, "MCTS.ShowLastPlayout")
   {
     RegisterCommands (gtp);
     RegisterParams (gtp);
@@ -34,20 +34,20 @@ private:
 
   void RegisterParams (Gtp::ReplWithGogui& gtp) {
     gtp.RegisterParam ("MCTS.params", "uct_explore_coeff",
-                       &mcts_engine.mcts.playout.best_child_finder.uct_explore_coeff);
+                       &mcts_engine.playout.best_child_finder.uct_explore_coeff);
     gtp.RegisterParam ("MCTS.params", "bias_stat",
-                       &mcts_engine.mcts.playout.best_child_finder.bias_stat);
+                       &mcts_engine.playout.best_child_finder.bias_stat);
     gtp.RegisterParam ("MCTS.params", "bias_rave",
-                       &mcts_engine.mcts.playout.best_child_finder.bias_rave);
+                       &mcts_engine.playout.best_child_finder.bias_rave);
     gtp.RegisterParam ("MCTS.params", "use_rave",
-                       &mcts_engine.mcts.playout.best_child_finder.use_rave);
+                       &mcts_engine.playout.best_child_finder.use_rave);
     gtp.RegisterParam ("MCTS.params", "Min_updates_to_have_children",
-                       &mcts_engine.mcts.playout.mature_update_count);
+                       &mcts_engine.playout.mature_update_count);
     gtp.RegisterParam ("MCTS.params", "update_rave",
-                       &mcts_engine.mcts.playout.update_rave);
+                       &mcts_engine.playout.update_rave);
 
     gtp.RegisterParam ("MCTS.params", "E(score)_to_resign",
-                       &mcts_engine.mcts.resign_mean);
+                       &mcts_engine.resign_mean);
 
     gtp.RegisterParam ("MCTS.params", "playouts_before_genmove",
                        &mcts_engine.playout_count);
@@ -106,7 +106,7 @@ private:
   void CDoPlayouts (Gtp::Io& io) {
     uint n = io.Read <uint> (mcts_engine.playout_count);
     io.CheckEmpty();
-    mcts_engine.mcts.DoNPlayouts (n);
+    mcts_engine.DoNPlayouts (n);
   }
 
   void CShowTree (Gtp::Io& io) {
@@ -119,5 +119,5 @@ private:
 private:
   MctsEngine& mcts_engine;
 
-  PlayoutGfx<Mcts> playout_gfx;
+  PlayoutGfx<MctsEngine> playout_gfx;
 };
