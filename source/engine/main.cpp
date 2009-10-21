@@ -40,8 +40,9 @@
 #include "stat.h"
 
 #include "mcts_tree.h"
-#include "mcts.cpp"
-#include "mcts_gtp.cpp"
+#include "mcts_playout.h"
+#include "mcts_engine.h"
+#include "mcts_gtp.h"
 
 
 #include "experiments.cpp"
