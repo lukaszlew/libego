@@ -119,17 +119,7 @@ private:
     Board sync_board;
     MctsNode* act_root = &root;
     BOOST_FOREACH (Move m, full_board.MoveHistory ()) {
-      Player pl = m.get_player();
-      Vertex v  = m.get_vertex();
-      if (!act_root->has_all_legal_children[pl]) {
-        // TODO make invariant about haveChildren and has_all_legal_children
-        act_root->AddAllPseudoLegalChildren (pl, sync_board);
-      }
-      act_root = act_root->FindChild (pl, v);
-      assertc (mcts_ac, act_root != NULL);
-
-      sync_board.play_legal (pl, v);
-      assertc (mcts_ac, sync_board.last_move_status == Board::play_ok);
+      act_root = act_root->AddFindChild (m, sync_board);
     }
     
     Player pl = full_board.act_player();

@@ -37,7 +37,7 @@ public:
 
   // Child finding.
 
-  MctsNode* FindChild (Player pl, Vertex v);
+  MctsNode* AddFindChild (Move m, Board& board);
 
   const MctsNode& MostExploredChild (Player pl);
 
@@ -93,13 +93,21 @@ void MctsNode::RemoveChild (MctsNode* child_ptr) {
   }
 }
 
-MctsNode* MctsNode::FindChild (Player pl, Vertex v) {
+MctsNode* MctsNode::AddFindChild (Move m, Board& board) {
+  // TODO make invariant about haveChildren and has_all_legal_children
+  Player pl = m.get_player();
+  Vertex v  = m.get_vertex();
+  if (!has_all_legal_children[pl]) {
+    AddAllPseudoLegalChildren (pl, board);
+  }
   BOOST_FOREACH (MctsNode& child, children) {
     if (child.player == pl && child.v == v) {
+      board.play_legal (pl, v);
+      assertc (mcts_tree_ac, board.last_move_status == Board::play_ok);
       return &child;
     }
   }
-  return NULL;
+  assert (false);
 }
 
 string MctsNode::ToString() const {
