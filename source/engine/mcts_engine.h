@@ -118,7 +118,7 @@ private:
   MctsNode& FindRoot () {
     Board sync_board;
     MctsNode* act_root = &root;
-    FOREACH (Move m, full_board.MoveHistory ()) {
+    BOOST_FOREACH (Move m, full_board.MoveHistory ()) {
       Player pl = m.get_player();
       Vertex v  = m.get_vertex();
       if (!act_root->has_all_legal_children[pl]) {

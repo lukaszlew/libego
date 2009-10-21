@@ -41,7 +41,7 @@ public:
 
     assertc (mcts_tree_ac, node.has_all_legal_children [pl]);
 
-    FOREACH (MctsNode& child, node.Children()) {
+    BOOST_FOREACH (MctsNode& child, node.Children()) {
       if (child.player != pl) continue;
       float child_urgency = NodeSubjectiveValue (child, pl, explore_coeff);
       if (child_urgency > best_urgency) {
@@ -158,7 +158,7 @@ private:
   }
 
   void UpdateTraceRegular (float score) {
-    FOREACH (MctsNode* node, trace) {
+    BOOST_FOREACH (MctsNode* node, trace) {
       node->stat.update (score);
     }
   }
@@ -186,7 +186,7 @@ private:
       }
 
       // Do the update.
-      FOREACH (MctsNode& child, trace[act_ii]->Children()) {
+      BOOST_FOREACH (MctsNode& child, trace[act_ii]->Children()) {
         if (do_update [child.GetMove()]) {
           child.rave_stat.update (score);
         }

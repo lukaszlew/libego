@@ -94,7 +94,7 @@ void MctsNode::RemoveChild (MctsNode* child_ptr) {
 }
 
 MctsNode* MctsNode::FindChild (Player pl, Vertex v) {
-  FOREACH (MctsNode& child, children) {
+  BOOST_FOREACH (MctsNode& child, children) {
     if (child.player == pl && child.v == v) {
       return &child;
     }
@@ -123,14 +123,14 @@ void MctsNode::RecPrint (ostream& out, uint depth, float min_visit, uint max_chi
   out << ToString () << endl;
 
   vector <const MctsNode*> child_tab;
-  FOREACH (const MctsNode& child, children) {
+  BOOST_FOREACH (const MctsNode& child, children) {
     child_tab.push_back(&child);
   }
 
   sort (child_tab.begin(), child_tab.end(), SubjectiveCmp);
   if (child_tab.size () > max_children) child_tab.resize(max_children);
 
-  FOREACH (const MctsNode* child, child_tab) {
+  BOOST_FOREACH (const MctsNode* child, child_tab) {
     if (child->stat.update_count() >= min_visit) {
       child->RecPrint (out, depth + 1, min_visit, max(1u, max_children - 1));
     }
@@ -149,7 +149,7 @@ const MctsNode& MctsNode::MostExploredChild (Player pl) {
 
   assertc (mcts_tree_ac, has_all_legal_children [pl]);
 
-  FOREACH (const MctsNode& child, children) {
+  BOOST_FOREACH (const MctsNode& child, children) {
     if (child.player == pl && child.stat.update_count() > best_update_count) {
       best_update_count = child.stat.update_count();
       best = &child;

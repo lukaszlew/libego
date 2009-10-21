@@ -34,8 +34,6 @@
 #include <gtp_gogui.h>
 #include <ego.h>
 
-#define FOREACH BOOST_FOREACH
-
 // local hard-include
 #include "stat.h"
 
