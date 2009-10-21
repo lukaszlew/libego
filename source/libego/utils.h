@@ -53,6 +53,13 @@ bool string_to(const string &s, T* i) {
   return (myStream >> *i);
 }
 
+template <typename T>
+string ToString(const T& val) {
+  ostringstream s;
+  s << val;
+  return s.str();
+}
+
 // performance macros
 
 #ifdef _MSC_VER

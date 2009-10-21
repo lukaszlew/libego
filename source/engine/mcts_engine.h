@@ -21,7 +21,6 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-
 class MctsEngine {
 public:
   
@@ -29,6 +28,7 @@ public:
     resign_mean = -0.95;
     playout_count = 10000;
     reset_tree_on_genmove = false;
+    logger.is_active = true;
   }
 
   bool SetBoardSize (uint board_size) {
@@ -36,31 +36,38 @@ public:
   }
 
   void SetKomi (float komi) {
+    float old_komi = full_board.komi ();
     full_board.set_komi (komi);
-    LogLine (SS() << "komi " << komi);
+    if (komi != old_komi) {
+      logger.LogLine("komi "+ToString(komi));
+    }
   }
 
   void ClearBoard () {
     full_board.clear ();
     root.Reset ();
-    LogLine ("clear_board");
+    logger.NewLog ();
+    logger.LogLine ("clear_board");
+    logger.LogLine ("komi " + ToString (full_board.komi()));
   }
 
   bool Play (Player pl, Vertex v) {
     bool ok = full_board.try_play (pl, v);
-    if (ok) LogLine (SS() << "play " << pl.to_string() << " " << v.to_string());
+    if (ok) {
+      logger.LogLine ("play " + pl.to_string() + " " + v.to_string());
+    }
     return ok;
   }
 
   bool Undo () {
     bool ok = full_board.undo ();
-    if (ok) LogLine ("undo");
+    if (ok) logger.LogLine ("undo");
     return ok;
   }
 
   Vertex Genmove (Player player) {
-    LogLine (SS() << "global_random_seed");
-    LogLine (SS() << "#? [" << global_random.get_seed () << "]");
+    logger.LogLine ("global_random_seed");
+    logger.LogLine ("#? [" + ToString (global_random.get_seed ()) + "]");
     if (reset_tree_on_genmove) root.Reset ();
     full_board.set_act_player(player); // TODO move player parameter to DoPlayouts
     DoNPlayouts (playout_count);
@@ -73,9 +80,9 @@ public:
       bool ok = full_board.try_play (player, v);
       assert(ok);
     }
-    LogLine (SS() << "reg_genmove " << player.to_string());
-    LogLine (SS() << "#? [" << v.to_string() << "]");
-    LogLine (SS() << "play " << player.to_string() << " " << v.to_string());
+    logger.LogLine ("reg_genmove " + player.to_string());
+    logger.LogLine ("#? [" + v.to_string() + "]");
+    logger.LogLine ("play " + player.to_string() + " " + v.to_string());
     return v;
   }
 
@@ -141,14 +148,6 @@ private:
     return *act_root;
   }
 
-  void LogLine (const string& str) {
-    if (log_filename == "") return;
-    ofstream log (log_filename.c_str(), ios_base::app); // TODO append
-    if (!log) return;
-    log << str << endl;
-    log.close ();
-  }
-
 private:
   friend class MctsGtp;
 
@@ -157,10 +156,12 @@ private:
   float resign_mean;
   float playout_count;
   bool reset_tree_on_genmove;
-  string log_filename;
 
   // base board
   FullBoard full_board;
+
+  // logging
+  Logger logger;
   
   // tree
   MctsNode root;

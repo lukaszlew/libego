@@ -36,6 +36,7 @@
 
 // local hard-include
 #include "stat.h"
+#include "logger.h"
 
 #include "mcts_tree.h"
 #include "mcts_playout.h"
