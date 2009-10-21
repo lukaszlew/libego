@@ -28,7 +28,6 @@ public:
     resign_mean = -0.95;
     playout_count = 10000;
     reset_tree_on_genmove = false;
-    logger.is_active = true;
   }
 
   bool SetBoardSize (uint board_size) {
@@ -40,6 +39,7 @@ public:
     full_board.set_komi (komi);
     if (komi != old_komi) {
       logger.LogLine("komi "+ToString(komi));
+      logger.LogLine ("");
     }
   }
 
@@ -49,19 +49,24 @@ public:
     logger.NewLog ();
     logger.LogLine ("clear_board");
     logger.LogLine ("komi " + ToString (full_board.komi()));
+    logger.LogLine ("");
   }
 
   bool Play (Player pl, Vertex v) {
     bool ok = full_board.try_play (pl, v);
     if (ok) {
       logger.LogLine ("play " + pl.to_string() + " " + v.to_string());
+      logger.LogLine ("");
     }
     return ok;
   }
 
   bool Undo () {
     bool ok = full_board.undo ();
-    if (ok) logger.LogLine ("undo");
+    if (ok) {
+      logger.LogLine ("undo");
+      logger.LogLine ("");
+    }
     return ok;
   }
 
@@ -83,6 +88,7 @@ public:
     logger.LogLine ("reg_genmove " + player.to_string());
     logger.LogLine ("#? [" + v.to_string() + "]");
     logger.LogLine ("play " + player.to_string() + " " + v.to_string());
+    logger.LogLine ("");
     return v;
   }
 

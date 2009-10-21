@@ -60,6 +60,8 @@ private:
                        &mcts_engine.reset_tree_on_genmove);
     gtp.RegisterParam ("MCTS.params", "logger.is_active",
                        &mcts_engine.logger.is_active);
+    gtp.RegisterParam ("MCTS.params", "logger.log_directory",
+                       &mcts_engine.logger.log_directory);
   }
 
   void Cclear_board (Gtp::Io& io) {
