@@ -123,9 +123,7 @@ private:
     }
     
     Player pl = full_board.act_player();
-    if (!act_root->has_all_legal_children[pl]) {
-      act_root->AddAllPseudoLegalChildren (pl, full_board);
-    }
+    act_root->EnsureAllPseudoLegalChildren (pl, full_board);
     act_root->RemoveIllegalChildren (pl, full_board);
 
     return *act_root;

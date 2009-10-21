@@ -110,7 +110,7 @@ public:
       Player pl = play_board.act_player();
       assertc (mcts_ac, pl == ActNode().player.other());
 
-      ActNode().AddAllPseudoLegalChildren (pl, play_board);
+      ActNode().EnsureAllPseudoLegalChildren (pl, play_board);
 
       if (!DoTreeMove ()) return; // Descend one more level.
     }

@@ -31,7 +31,7 @@ public:
 
   void RemoveChild (MctsNode* child_ptr);
 
-  void AddAllPseudoLegalChildren (Player pl, const Board& board);
+  void EnsureAllPseudoLegalChildren (Player pl, const Board& board);
 
   void RemoveIllegalChildren (Player pl, const FullBoard& full_board);
 
@@ -97,9 +97,7 @@ MctsNode* MctsNode::AddFindChild (Move m, Board& board) {
   // TODO make invariant about haveChildren and has_all_legal_children
   Player pl = m.get_player();
   Vertex v  = m.get_vertex();
-  if (!has_all_legal_children[pl]) {
-    AddAllPseudoLegalChildren (pl, board);
-  }
+  EnsureAllPseudoLegalChildren (pl, board);
   BOOST_FOREACH (MctsNode& child, children) {
     if (child.player == pl && child.v == v) {
       board.play_legal (pl, v);
@@ -168,8 +166,8 @@ const MctsNode& MctsNode::MostExploredChild (Player pl) {
   return *best;
 }
 
-void MctsNode::AddAllPseudoLegalChildren (Player pl, const Board& board) {
-  assertc (mcts_tree_ac, has_all_legal_children [pl] == false);
+void MctsNode::EnsureAllPseudoLegalChildren (Player pl, const Board& board) {
+  if (has_all_legal_children [pl]) return;
   empty_v_for_each_and_pass (&board, v, {
       // big suicides and superko nodes have to be removed from the tree later
       if (board.is_pseudo_legal (pl, v))
