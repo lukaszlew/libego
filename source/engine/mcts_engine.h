@@ -37,22 +37,30 @@ public:
 
   void SetKomi (float komi) {
     full_board.set_komi (komi);
+    LogLine (SS() << "komi " << komi);
   }
 
   void ClearBoard () {
     full_board.clear ();
     root.Reset ();
+    LogLine ("clear_board");
   }
 
   bool Play (Player pl, Vertex v) {
-    return full_board.try_play (pl, v);
+    bool ok = full_board.try_play (pl, v);
+    if (ok) LogLine (SS() << "play " << pl.to_string() << " " << v.to_string());
+    return ok;
   }
 
   bool Undo () {
-    return full_board.undo ();
+    bool ok = full_board.undo ();
+    if (ok) LogLine ("undo");
+    return ok;
   }
 
   Vertex Genmove (Player player) {
+    LogLine (SS() << "global_random_seed");
+    LogLine (SS() << "#? [" << global_random.get_seed () << "]");
     if (reset_tree_on_genmove) root.Reset ();
     full_board.set_act_player(player); // TODO move player parameter to DoPlayouts
     DoNPlayouts (playout_count);
@@ -65,7 +73,9 @@ public:
       bool ok = full_board.try_play (player, v);
       assert(ok);
     }
-
+    LogLine (SS() << "reg_genmove " << player.to_string());
+    LogLine (SS() << "#? [" << v.to_string() << "]");
+    LogLine (SS() << "play " << player.to_string() << " " << v.to_string());
     return v;
   }
 
@@ -105,6 +115,8 @@ public:
     return gfx;
   }
 
+private:
+
   Vertex BestMove (Player pl) {
     MctsNode& act_root = FindRoot ();
     const MctsNode& best_node = act_root.MostExploredChild (pl);
@@ -114,8 +126,6 @@ public:
       Vertex::resign() :
       best_node.v;
   }
-
-private:
 
   MctsNode& FindRoot () {
     Board sync_board;
@@ -131,6 +141,14 @@ private:
     return *act_root;
   }
 
+  void LogLine (const string& str) {
+    if (log_filename == "") return;
+    ofstream log (log_filename.c_str(), ios_base::app); // TODO append
+    if (!log) return;
+    log << str << endl;
+    log.close ();
+  }
+
 private:
   friend class MctsGtp;
 
@@ -139,6 +157,7 @@ private:
   float resign_mean;
   float playout_count;
   bool reset_tree_on_genmove;
+  string log_filename;
 
   // base board
   FullBoard full_board;

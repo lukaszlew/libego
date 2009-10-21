@@ -58,6 +58,8 @@ private:
                        &mcts_engine.playout_count);
     gtp.RegisterParam ("MCTS.params", "reset_tree_on_genmove",
                        &mcts_engine.reset_tree_on_genmove);
+    gtp.RegisterParam ("MCTS.params", "log_filename",
+                       &mcts_engine.log_filename);
   }
 
   void Cclear_board (Gtp::Io& io) {
