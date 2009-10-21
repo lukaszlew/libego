@@ -28,6 +28,7 @@ public:
   MctsEngine () : root (Player::white(), Vertex::any()) {
     resign_mean = -0.95;
     playout_count = 10000;
+    reset_tree_on_genmove = false;
   }
 
   bool SetBoardSize (uint board_size) {
@@ -52,6 +53,7 @@ public:
   }
 
   Vertex Genmove (Player player) {
+    if (reset_tree_on_genmove) root.Reset ();
     full_board.set_act_player(player); // TODO move player parameter to DoPlayouts
     DoNPlayouts (playout_count);
 
@@ -136,6 +138,7 @@ private:
   float print_update_count;
   float resign_mean;
   float playout_count;
+  bool reset_tree_on_genmove;
 
   // base board
   FullBoard full_board;

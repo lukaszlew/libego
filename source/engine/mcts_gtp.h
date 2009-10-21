@@ -56,6 +56,8 @@ private:
 
     gtp.RegisterParam ("MCTS.params", "playouts_before_genmove",
                        &mcts_engine.playout_count);
+    gtp.RegisterParam ("MCTS.params", "reset_tree_on_genmove",
+                       &mcts_engine.reset_tree_on_genmove);
   }
 
   void Cclear_board (Gtp::Io& io) {
