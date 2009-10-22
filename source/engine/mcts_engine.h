@@ -73,8 +73,7 @@ public:
   }
 
   Vertex Genmove (Player player) {
-    logger.LogLine ("random_seed");
-    logger.LogLine ("#? [" + ToString (random.get_seed ()) + "]");
+    logger.LogLine ("random_seed     #? [" + ToString (random.get_seed ()) + "]");
     if (reset_tree_on_genmove) root.Reset ();
     full_board.set_act_player(player); // TODO move player parameter to DoPlayouts
     DoNPlayouts (genmove_playouts);
@@ -87,8 +86,8 @@ public:
       bool ok = full_board.try_play (player, v);
       assert(ok);
     }
-    logger.LogLine ("reg_genmove " + player.to_string());
-    logger.LogLine ("#? [" + v.to_string() + "]");
+    logger.LogLine ("reg_genmove " + player.to_string() +
+                    "   #? [" + v.to_string() + "]");
     logger.LogLine ("play " + player.to_string() + " " + v.to_string());
     logger.LogLine ("");
     return v;
