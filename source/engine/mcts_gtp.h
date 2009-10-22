@@ -38,32 +38,24 @@ private:
   }
 
   void RegisterParams (Gtp::ReplWithGogui& gtp) {
-    gtp.RegisterParam ("Mcts.Search.Params", "uct_explore_coeff",
-                       &mcts_engine.playout.best_child_finder.uct_explore_coeff);
-    gtp.RegisterParam ("Mcts.Search.Params", "bias_stat",
-                       &mcts_engine.playout.best_child_finder.bias_stat);
-    gtp.RegisterParam ("Mcts.Search.Params", "bias_rave",
-                       &mcts_engine.playout.best_child_finder.bias_rave);
-    gtp.RegisterParam ("Mcts.Search.Params", "use_rave",
-                       &mcts_engine.playout.best_child_finder.use_rave);
-    gtp.RegisterParam ("Mcts.Search.Params", "update_rave",
-                       &mcts_engine.playout.update_rave);
-    gtp.RegisterParam ("Mcts.Search.Params", "mature_update_count",
-                       &mcts_engine.playout.mature_update_count);
+    string cmd_search  = "Mcts.Params.Search";
+    string cmd_genmove = "Mcts.Params.Genmove";
+    string cmd_logger  = "Mcts.Params.Logger";
 
-    gtp.RegisterParam ("Mcts.Genmove.Params", "resign_mean",
-                       &mcts_engine.resign_mean);
-    gtp.RegisterParam ("Mcts.Genmove.Params", "playouts",
-                       &mcts_engine.genmove_playouts);
-    gtp.RegisterParam ("Mcts.Genmove.Params", "reset_tree",
-                       &mcts_engine.reset_tree_on_genmove);
-    gtp.RegisterParam ("Mcts.Genmove.Params", "seed",
-                       &mcts_engine.random.seed);
+    gtp.RegisterParam (cmd_search, "explore_coeff", &mcts_engine.playout.best_child_finder.uct_explore_coeff);
+    gtp.RegisterParam (cmd_search, "bias_stat",     &mcts_engine.playout.best_child_finder.bias_stat);
+    gtp.RegisterParam (cmd_search, "bias_rave",     &mcts_engine.playout.best_child_finder.bias_rave);
+    gtp.RegisterParam (cmd_search, "use_rave",      &mcts_engine.playout.best_child_finder.use_rave);
+    gtp.RegisterParam (cmd_search, "update_rave",   &mcts_engine.playout.update_rave);
+    gtp.RegisterParam (cmd_search, "mature_at",     &mcts_engine.playout.mature_update_count);
 
-    gtp.RegisterParam ("Mcts.Logger.Params", "is_active",
-                       &mcts_engine.logger.is_active);
-    gtp.RegisterParam ("Mcts.Logger.Params", "log_directory",
-                       &mcts_engine.logger.log_directory);
+    gtp.RegisterParam (cmd_genmove, "resign_mean",  &mcts_engine.resign_mean);
+    gtp.RegisterParam (cmd_genmove, "playouts",     &mcts_engine.genmove_playouts);
+    gtp.RegisterParam (cmd_genmove, "reset_tree",   &mcts_engine.reset_tree_on_genmove);
+    gtp.RegisterParam (cmd_genmove, "seed",         &mcts_engine.random.seed);
+
+    gtp.RegisterParam (cmd_logger, "is_active",     &mcts_engine.logger.is_active);
+    gtp.RegisterParam (cmd_logger, "log_directory", &mcts_engine.logger.log_directory);
   }
 
   void Cclear_board (Gtp::Io& io) {
