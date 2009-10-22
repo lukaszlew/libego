@@ -28,7 +28,7 @@ public:
   : root (Player::white(), Vertex::any()), random (123), playout(random)
   {
     resign_mean = -0.95;
-    playout_count = 10000;
+    genmove_playouts = 10000;
     reset_tree_on_genmove = false;
   }
 
@@ -77,7 +77,7 @@ public:
     logger.LogLine ("#? [" + ToString (random.get_seed ()) + "]");
     if (reset_tree_on_genmove) root.Reset ();
     full_board.set_act_player(player); // TODO move player parameter to DoPlayouts
-    DoNPlayouts (playout_count);
+    DoNPlayouts (genmove_playouts);
 
     //cerr << mcts.ToString (show_tree_min_updates, show_tree_max_children) << endl;
 
@@ -162,7 +162,7 @@ private:
   // parameters
   float print_update_count;
   float resign_mean;
-  float playout_count;
+  float genmove_playouts;
   bool reset_tree_on_genmove;
 
   // base board
