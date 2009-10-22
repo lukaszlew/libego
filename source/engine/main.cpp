@@ -51,65 +51,47 @@
 #define VERSION unknown
 #endif
 
-Gtp::ReplWithGogui gtp;
-
-//SgfTree sgf_tree;
-//SgfGtp sgf_gtp (gtp, sgf_tree, board);
-
-MctsEngine mcts_engine;
-MctsGtp mcts_gtp (gtp, mcts_engine);
-
-// Uncomment this to enable All-As-First experiment (new GTP commands).
-// AllAsFirst  aaf (gtp, board);
+void Cbenchmark (Gtp::Io& io) {
+  uint n = io.Read<uint> (100000);
+  io.CheckEmpty ();
+  io.out << Benchmark::run (n);
+}
 
 int main(int argc, char** argv) {
   // no buffering to work well with gogui
   setbuf (stdout, NULL);
   setbuf (stderr, NULL);
 
-  reps (ii, 1, argc) {
-    string arg = argv[ii];
-
-    if (arg == "--benchmark" || arg == "-b") {
-      int playout_cnt = 200;
-      if (ii+1 < argc) {
-        if (string_to<int>(argv[ii+1], &playout_cnt)) {
-          ii += 1;
-        }
-      }
-      playout_cnt *= 1000;
-      cout << "Benchmarking, please wait ..." << flush;
-      cout << Benchmark::run (playout_cnt) << endl;
-      return 0;
-    }
-    
-    if (arg == "--run-gtp-file" || arg == "-r") {
-      if (ii+1 == argc) {
-        cerr << "Fatal: no config file given" << endl;
-        return 1;
-      }
-      ii += 1;
-      string config = argv[ii];
-
-      ifstream in (argv[ii]);
-      if (in) {
-        gtp.Run (in, cerr);
-        in.close ();
-        continue;
-      } else {
-        return false;
-      }
-    }
-
-    cerr << "Fatal: unknown option: " << arg << endl;
-    return 1;
-  }
+  Gtp::ReplWithGogui gtp;
 
   gtp.RegisterStatic("name", "Libego");
   gtp.RegisterStatic("version", STRING(VERSION));
   gtp.RegisterStatic("protocol_version", "2");
+  gtp.Register ("benchmark", Cbenchmark);
 
-  gtp.Run (cin, cout);
+  MctsEngine mcts_engine;
+  MctsGtp mcts_gtp (gtp, mcts_engine);
+
+  reps (ii, 1, argc) {
+    string arg = argv[ii];
+    if (arg == "-") {
+      gtp.Run (cin, cout);
+      continue;
+    }
+
+    ifstream in (arg.c_str());
+    if (in) {
+      gtp.Run (in, cerr);
+      in.close ();
+    } else {
+      cerr << "Fatal: GTP file not found :\"" << arg << "\" " << arg << endl;
+      return 1;
+    }
+  }
+
+  if (argc == 1) {
+    gtp.Run (cin, cout);
+  }
 
   return 0;
 }
