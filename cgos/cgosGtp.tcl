@@ -240,6 +240,7 @@ proc openPlayer {name password invoke} {
     global inout
     global progpid
     global use_time
+    global use_game_info
 
     set inout [open "|$invoke" r+]
         
@@ -281,6 +282,20 @@ proc openPlayer {name password invoke} {
         log  "Engine uses  time control commands"
     } else {
         log  "Engine does NOT use time control commands"
+    }
+
+    # determine if engine supports gtp game info commands
+    # ---------------------------------------------------
+    set use_game_info 0
+
+    if {[info exists known(cgos-game_info)] && [info exists known(cgos-game_over)]} {
+        set use_game_info 1
+    }
+
+    if {$use_game_info} {
+        log  "Engine uses cgos-game_info and cgos-game_over commands."
+    } else {
+        log  "Engine does not implement cgos-game_info or cgos-game_over command."
     }
 }
 
@@ -480,6 +495,10 @@ while {1} {
 			set msg [eCmd $inout "time_settings $tme 0 0"]
 		    }
 
+		    if {$use_game_info} {
+			set msg [eCmd $inout "cgos-game_info $gid $black $white"]
+		    }
+
 		    # catch up game if needed
 		    # -----------------------
 		    set ctm B 
@@ -513,6 +532,12 @@ while {1} {
 		}
 
 		gameover {
+		    lassign $s ignore dte res
+
+		    if {$use_game_info} {
+			set msg [eCmd $inout "cgos-game_over $res"]
+		    }
+
                     # does user wants to exit?
                     if { $sentinel != "" } {
                         if {[file exists $sentinel]} {
@@ -524,7 +549,6 @@ while {1} {
                         }
                     }
 
-		    lassign $s res dte err
                     set switchedPlayers [switchPlayer $first]
                     if { $switchedPlayers == 1 } {
                         break
