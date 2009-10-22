@@ -39,6 +39,3 @@
 
 #include "playout.cpp"
 #include "benchmark.cpp"
-
-#include "sgf.cpp"
-#include "sgf_gtp.cpp"

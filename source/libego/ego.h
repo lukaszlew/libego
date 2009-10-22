@@ -17,11 +17,9 @@
 
 #include "hash.h"
 #include "board.h"
+#include "full_board.h"
 
 #include "playout.h"
 #include "benchmark.h"
-
-#include "sgf.h"
-#include "sgf_gtp.h"
 
 #endif
