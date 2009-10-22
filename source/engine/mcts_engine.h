@@ -113,7 +113,7 @@ public:
     vector<Move> last_playout = playout.LastPlayout ();
 
     move_count = max(move_count, 0u);
-    move_count = min(move_count, last_playout.size());
+    move_count = min(move_count, uint(last_playout.size()));
 
     Gtp::GoguiGfx gfx;
 
