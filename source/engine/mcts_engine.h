@@ -24,7 +24,9 @@
 class MctsEngine {
 public:
   
-  MctsEngine () : root (Player::white(), Vertex::any()) {
+  MctsEngine ()
+  : root (Player::white(), Vertex::any()), random (123), playout(random)
+  {
     resign_mean = -0.95;
     playout_count = 10000;
     reset_tree_on_genmove = false;
@@ -71,8 +73,8 @@ public:
   }
 
   Vertex Genmove (Player player) {
-    logger.LogLine ("global_random_seed");
-    logger.LogLine ("#? [" + ToString (global_random.get_seed ()) + "]");
+    logger.LogLine ("random_seed");
+    logger.LogLine ("#? [" + ToString (random.get_seed ()) + "]");
     if (reset_tree_on_genmove) root.Reset ();
     full_board.set_act_player(player); // TODO move player parameter to DoPlayouts
     DoNPlayouts (playout_count);
@@ -173,5 +175,6 @@ private:
   MctsNode root;
   
   // playout
+  FastRandom random;
   MctsPlayout playout;
 };

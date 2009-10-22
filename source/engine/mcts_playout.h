@@ -83,7 +83,7 @@ private:
 
 class MctsPlayout {
 public:
-  MctsPlayout () {
+  MctsPlayout (FastRandom& random_) : random (random_) {
     mature_update_count  = 100.0;
     update_rave = true;
   }
@@ -117,7 +117,7 @@ public:
     // TODO check for pass x 2 here as well
 
     // Finish with regular playout.
-    LightPlayout (&play_board).Run (move_history);
+    LightPlayout (&play_board, random).Run (move_history);
     
     // Update score.
     UpdateTrace (play_board.playout_winner().to_score());
@@ -209,6 +209,7 @@ private:
   // playout
   Board play_board;
   MctsBestChildFinder best_child_finder;
+  FastRandom& random;
   vector <MctsNode*> trace;               // nodes in the path
   LightPlayout::MoveHistory move_history; // edges in the path
 };
