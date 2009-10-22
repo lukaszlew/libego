@@ -49,6 +49,7 @@ public:
 
 class AllAsFirst {
 public:
+  FastRandom  random;
   FullBoard*  board;
   AafStats    aaf_stats;
   uint        playout_no;
@@ -58,7 +59,8 @@ public:
   bool        progress_dots;
 
 public:
-  AllAsFirst (Gtp::ReplWithGogui& gtp, FullBoard& board_) : board (&board_)
+  AllAsFirst (Gtp::ReplWithGogui& gtp, FullBoard& board_)
+  : random (123), board (&board_)
   { 
     playout_no       = 50000;
     aaf_fraction     = 0.5;
@@ -80,7 +82,7 @@ public:
     Board mc_board [1];
     mc_board->load (&base_board->board());
 
-    LightPlayout playout(mc_board);
+    LightPlayout playout(mc_board, random);
     LightPlayout::MoveHistory history;
     playout.Run (history);
 

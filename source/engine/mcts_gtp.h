@@ -62,6 +62,10 @@ private:
                        &mcts_engine.logger.is_active);
     gtp.RegisterParam ("MCTS.params", "logger.log_directory",
                        &mcts_engine.logger.log_directory);
+
+    gtp.RegisterParam ("MCTS.params", "random.seed",
+                       &mcts_engine.random.seed);
+
   }
 
   void Cclear_board (Gtp::Io& io) {

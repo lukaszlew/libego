@@ -95,5 +95,3 @@ void FastRandom::test2 (uint k, uint n) {
   rep (ii, k)  printf ("%d\n", bucket [ii]);
   delete[] bucket;
 }
-
-FastRandom global_random(time(NULL));

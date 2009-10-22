@@ -70,19 +70,6 @@ int main(int argc, char** argv) {
   reps (ii, 1, argc) {
     string arg = argv[ii];
 
-    if (arg == "--seed") {
-      uint new_seed;
-      if (ii+1 < argc &&
-          string_to<uint>(argv[ii+1], &new_seed)) {
-          ii += 1;
-          global_random.set_seed(new_seed);
-          continue;
-      } else {
-        cerr << "Fatal: no seed value given" << endl;
-        return 1;
-      }
-    }
-
     if (arg == "--benchmark" || arg == "-b") {
       int playout_cnt = 200;
       if (ii+1 < argc) {

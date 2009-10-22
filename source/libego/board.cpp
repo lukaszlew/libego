@@ -695,4 +695,4 @@ void Board::check_no_more_legal (Player player) const { // at the end of the pla
       assert (is_eyelike (player, v) || is_pseudo_legal (player, v) == false);
 }
 
-const Zobrist Board::zobrist[1] = { Zobrist (global_random) };
+const Zobrist Board::zobrist[1] = { Zobrist () };

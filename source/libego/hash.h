@@ -27,7 +27,7 @@ public:
 
   FastMap<Move, Hash> hashes;
 
-  Zobrist (FastRandom& fr);
+  Zobrist ();
 
   Hash of_move (Move m) const;
 

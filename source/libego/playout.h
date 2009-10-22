@@ -22,7 +22,7 @@ public:
 public:
 
   LightPlayout (Board* board_,
-                FastRandom& random_ = global_random,
+                FastRandom& random_,
                 uint max_moves_ = default_max_moves);
 
   // Look at Run() implementation in playout.cpp

@@ -4,10 +4,6 @@
 #include "utils.h"
 
 class FastRandom {             // Park - Miller "minimal standard"
-
-  static const int cnt;
-  uint seed;
-
 public:
 
   FastRandom (uint seed_);
@@ -21,8 +17,9 @@ public:
   
   void test ();
   void test2 (uint k, uint n);
-};
 
-extern FastRandom global_random;
+  static const int cnt;
+  uint seed;
+};
 
 #endif

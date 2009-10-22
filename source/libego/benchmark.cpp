@@ -33,7 +33,9 @@ namespace Benchmark {
 
   void do_playouts (uint playout_cnt, FastMap<Player, uint>* win_cnt) {
     static Board playout_board;
-    LightPlayout playout(&playout_board);
+    static FastRandom random (123);
+
+    LightPlayout playout(&playout_board, random);
 
     rep (ii, playout_cnt) {
       playout_board.load (&empty_board);
