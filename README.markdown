@@ -18,19 +18,22 @@ Checkout the source:
 
 Construct library and examples with your favorite compiler:
 
-    export CXX=g++-4.2  # optional
+    export CXX=g++-4.2  # set your favorite compiler, optional
     ./cmakeall          # do all the work
 
 Light playout benchmark:
 
-    ./bin/engine -b
-    ./bin/engine -b 1000
+    echo "benchmark" | ./bin/engine
+    echo "benchmark 1000000" | ./bin/engine
 
 Run exemplary GTP engine:
 
     ./bin/engine
+    ./bin/engine config.gtp -
 
-You can connect it to GoGui.
+The second command will first execute GTP commands from config.gtp.
+And then take commands from stdin.
+You can connect engine to GoGui usigng both of above commands.
 
 Thanks
 ------
