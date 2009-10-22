@@ -1,3 +1,5 @@
+include (SetStrongCxxFlags)
+
 find_package (Boost COMPONENTS date_time filesystem REQUIRED)
 include_directories (${Boost_INCLUDE_DIRS})
 link_directories    (${Boost_LIBRARY_DIRS})

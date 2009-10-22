@@ -1,3 +1,16 @@
+include (SetStrongCxxFlags)
+
+# Ensure BOARDSIZE is correct.
+
+if(NOT DEFINED BOARDSIZE OR NOT BOARDSIZE MATCHES [0-9]+)
+  set (BOARDSIZE 9)
+endif()
+
+add_definitions(-DBOARDSIZE=${BOARDSIZE})
+message("BOARDSIZE = ${BOARDSIZE}")
+
+# Targets
+
 find_package (Boost COMPONENTS date_time REQUIRED)
 
 include_directories (${libego_SOURCE_DIR}/libgtp)
