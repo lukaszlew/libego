@@ -66,6 +66,15 @@ public:
 
   void RegisterStatic (const string& name, const string& response);
 
+  enum Status {
+    Success,
+    Failure,
+    Quit,
+    NoOp
+  };
+
+  Status RunOneCommand (const string& line, string* report);
+
   void Run (istream&, ostream&);
 
   bool IsCommand (const string& name);

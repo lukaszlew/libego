@@ -94,33 +94,45 @@ void ParseLine (const string& line, int* id, string* command, string* rest) {
   getline (ss, *rest);
 }
 
+Repl::Status Repl::RunOneCommand (const string& line, string* report) {
+  int id;
+  string command, params;
+
+  ParseLine (line, &id, &command, &params);
+
+  Io io(params);
+
+  if (command == "") return NoOp;
+  if (IsCommand (command)) {
+    // Callback call with optional fast return.
+    BOOST_FOREACH (Callback& cmd, callbacks [command]) {
+      io.PrepareIn();
+      try { cmd (io); } catch (Return) { }
+    }
+  } else {
+    io.SetError ("unknown command: \"" + command + "\"");
+  }
+
+  *report = io.Report();
+  if (io.quit_gtp) return Quit;
+  if (io.success)  return Success;
+  return Failure;
+}
+
 void Repl::Run (istream& in, ostream& out) {
   in.clear();
   while (true) {
-    int id;
-    string line, command, params;
-
+    string line, report;
     if (!getline (in, line)) break;
-    ParseLine (line, &id, &command, &params);
-    Io io(params);
 
-    if (command == "") {
-      continue;
-    } else if (IsCommand (command)) {
-      // Callback call with optional fast return.
-      BOOST_FOREACH (Callback& cmd, callbacks [command]) {
-        io.PrepareIn();
-        try { cmd (io); } catch (Return) { }
-      }
-    } else {
-      io.SetError ("unknown command: \"" + command + "\"");
-    }
+    Status status = RunOneCommand (line, &report);
+    if (status == NoOp) continue;
 
-    out << (io.success ? "=" : "?") << " "
-        << io.Report ()
+    out << (status == Failure ? "?" : "=") << " "
+        << report
         << endl << endl;
 
-    if (io.quit_gtp) return;
+    if (status == Quit) break;
   }
 }
 
