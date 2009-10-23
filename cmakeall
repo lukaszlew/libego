@@ -1,0 +1,56 @@
+#!/bin/sh
+
+# Defaults.
+
+SCRIPT_NAME="$(basename "$0")"
+SCRIPT_DIR="$(readlink -f $(dirname "$0"))"
+
+BUILD_TYPE="Release"
+INSTALL_PREFIX="${SCRIPT_DIR}"
+
+# Parse options.
+
+usage () {
+  echo "Usage: ${SCRIPT_NAME} [Release | Debug] [install-prefix]"
+}
+
+if test $# -ge 1; then 
+  if test "$1" = "Release"; then
+    BUILD_TYPE="Release"
+    shift
+  elif test "$1" = "Debug"; then
+    BUILD_TYPE="Debug"
+    shift
+  else
+    echo "Bad build type: \"$1\""
+    usage
+    exit 1
+  fi
+fi
+
+if test $# -ge 1; then
+  INSTALL_PREFIX="$(readlink -f $1)"
+  if test -z ${INSTALL_PREFIX}; then
+    echo "Wrong install-prefix: \"$1\""
+    usage
+    exit 1
+  fi
+  shift
+fi
+
+# Do the actual work.
+
+echo "Build type: $BUILD_TYPE"
+echo "Install prefix: $INSTALL_PREFIX"
+echo
+
+cd "${SCRIPT_DIR}" 
+mkdir -p "build/${BUILD_TYPE}"
+cd "build/${BUILD_TYPE}"
+
+cmake -D "CMAKE_BUILD_TYPE=${BUILD_TYPE}" \
+      -D "CMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}" \
+      "${SCRIPT_DIR}/source" \
+      $@ &&
+
+make -j4 all install

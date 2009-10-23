@@ -1,2 +1,4 @@
-Release
-Debug
+build/*
+bin/*
+log/*
+lib/*

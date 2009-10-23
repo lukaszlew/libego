@@ -5,5 +5,7 @@ set (CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 
 include (EnsureOutOfSourceBuild)
 include (AddBoostCxxTest)
+include (SetDefaultInstallationDirs)
 
-add_subdirectory (libgtp) # Replace ... with your subdirectory.
+add_subdirectory (libgtp)
+add_subdirectory (example)
