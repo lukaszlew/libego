@@ -73,22 +73,23 @@ int main(int argc, char** argv) {
   MctsGtp mcts_gtp (gtp, mcts_engine);
 
   reps (ii, 1, argc) {
-    string arg = argv[ii];
-    if (arg == "-") {
-      gtp.Run (cin, cout);
-      continue;
-    }
-
-    ifstream in (arg.c_str());
-    if (in) {
-      gtp.Run (in, cerr);
-      in.close ();
-    } else {
-      cerr << "? Warning: GTP file not found :\"" << arg << "\"." << endl;
+    string response;
+    switch (gtp.RunOneCommand (argv[ii], &response)) {
+    case Gtp::Repl::Success:
+      cerr << response << endl;
+      break;
+    case Gtp::Repl::Failure:
+      cerr << "Command: \"" << argv[ii] << "\" failed." << endl;
+      return 1;
+    case Gtp::Repl::NoOp:
+      break;
+    case Gtp::Repl::Quit:
+      cerr << response << endl;
+      return 0;
     }
   }
 
-  if (argc == 1) {
+  if (argc == 1 || string(argv[argc-1]) == "gtp") {
     gtp.Run (cin, cout);
   }
 

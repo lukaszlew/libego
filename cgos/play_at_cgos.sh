@@ -35,8 +35,8 @@ LOG_FILE="${LOGIN_DIR}/${DATE}.log"
 # CGOS configuration setup
 
 ENGINE_BIN="${THIS_DIR}/../bin/engine"
-CONFIG_1="${THIS_DIR}/../scripts/config.gtp"
-CONFIG_2="${THIS_DIR}/../scripts/config_cgos.gtp"
+CONFIG_1="gtpfile ${THIS_DIR}/../scripts/config.gtp"
+CONFIG_2="gtpfile ${THIS_DIR}/../scripts/config_cgos.gtp"
 CGOS_CONFIG_FILE="${LOGIN_DIR}/cgos.cfg"
 CGOS_CONFIG="
 %section server
@@ -46,7 +46,7 @@ CGOS_CONFIG="
 %section player
      name      ${LOGIN}
      password  ${PASSWORD}
-     invoke    ${ENGINE_BIN} ${CONFIG_1} ${CONFIG_2} -
+     invoke    ${ENGINE_BIN} \"${CONFIG_1}\" \"${CONFIG_2}\" gtp
      priority  10
 "
 
