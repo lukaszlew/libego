@@ -89,6 +89,7 @@ private:
   void CListCommands (Io&);
   void CKnownCommand (Io&);
   void CQuit (Io&);
+  void CGtpFile (Io&);
   
 private:
   map <string, list<Callback> > callbacks;

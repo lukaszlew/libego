@@ -2,6 +2,7 @@
 #include <boost/foreach.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <iostream>
+#include <fstream>
 #include "gtp.h"
 
 namespace Gtp {
@@ -63,6 +64,7 @@ Repl::Repl () {
   Register ("help",          this, &Repl::CListCommands);
   Register ("known_command", this, &Repl::CKnownCommand);
   Register ("quit",          this, &Repl::CQuit);
+  Register ("gtpfile",       this, &Repl::CGtpFile);
 }
 
 void Repl::Register (const string& name, Callback callback) {
@@ -85,6 +87,7 @@ void ParseLine (const string& line, int* id, string* command, string* rest) {
   }
   *id = -1;
   *command = "";
+  *rest = "";
   ss >> *id;
   if (!ss) {
     ss.clear ();
@@ -102,7 +105,9 @@ Repl::Status Repl::RunOneCommand (const string& line, string* report) {
 
   Io io(params);
 
+  *report = "";
   if (command == "") return NoOp;
+
   if (IsCommand (command)) {
     // Callback call with optional fast return.
     BOOST_FOREACH (Callback& cmd, callbacks [command]) {
@@ -153,6 +158,17 @@ void Repl::CQuit (Io& io) {
   io.CheckEmpty();
   io.out << "bye";
   io.quit_gtp = true;
+}
+
+void Repl::CGtpFile (Io& io) {
+  string file = io.Read<string> ();
+  io.CheckEmpty();
+  ifstream in (file.c_str());
+  if (!in) {
+    io.SetError ("No such file: \"" + file + "\"");
+    return;
+  }
+  Run (in, cerr);
 }
 
 bool Repl::IsCommand (const string& name) {

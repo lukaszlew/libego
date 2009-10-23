@@ -84,6 +84,7 @@ BOOST_AUTO_TEST_CASE (BuiltInCommands) {
     << "+" << endl
     << "echo" << endl
     << "echo2" << endl
+    << "gtpfile" << endl
     << "help" << endl
     << "known_command" << endl
     << "list_commands" << endl
@@ -164,6 +165,20 @@ BOOST_AUTO_TEST_CASE (GetSetCommands) {
   BOOST_CHECK_EQUAL (f, 123.25);
   BOOST_CHECK_EQUAL (i, 321);
   BOOST_CHECK_EQUAL (s, "no_spaces");
+}
+
+BOOST_AUTO_TEST_CASE (RunSingleCommand) {
+  string response;
+  BOOST_CHECK_EQUAL (gtp.RunOneCommand ("echo \t out there ", &response),
+                     Gtp::Repl::Success);
+  BOOST_CHECK_EQUAL (response, "out there");
+  BOOST_CHECK_EQUAL (gtp.RunOneCommand ("please", &response),
+                     Gtp::Repl::Failure);
+  BOOST_CHECK_EQUAL (response, "unknown command: \"please\"");
+  BOOST_CHECK_EQUAL (gtp.RunOneCommand ("quit", &response), Gtp::Repl::Quit);
+  BOOST_CHECK_EQUAL (response, "bye");
+  BOOST_CHECK_EQUAL (gtp.RunOneCommand ("123 \t ", &response), Gtp::Repl::NoOp);
+  BOOST_CHECK_EQUAL (response, "");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
