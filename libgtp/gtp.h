@@ -41,7 +41,7 @@ private:
 
   Io (const string& params);
   void PrepareIn ();
-  void Report (ostream& out) const;
+  string Report () const;
 
 private:
   const string& params;

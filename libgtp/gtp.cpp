@@ -39,10 +39,8 @@ void Io::PrepareIn () {
   in.str (params);
 }
 
-void Io::Report (ostream& gtp_out) const {
-  gtp_out << (success ? "=" : "?") << " "
-          << boost::trim_right_copy(out.str()) // remove bad endl in msg
-          << endl << endl;
+string Io::Report () const {
+  return boost::trim_right_copy (out.str()); // remove bad endl in msg
 }
 
 // -----------------------------------------------------------------------------
@@ -118,7 +116,10 @@ void Repl::Run (istream& in, ostream& out) {
       io.SetError ("unknown command: \"" + command + "\"");
     }
 
-    io.Report (out);
+    out << (io.success ? "=" : "?") << " "
+        << io.Report ()
+        << endl << endl;
+
     if (io.quit_gtp) return;
   }
 }
