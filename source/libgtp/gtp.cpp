@@ -2,6 +2,7 @@
 #include <boost/foreach.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <iostream>
+#include <fstream>
 #include "gtp.h"
 
 namespace Gtp {
@@ -39,10 +40,8 @@ void Io::PrepareIn () {
   in.str (params);
 }
 
-void Io::Report (ostream& gtp_out) const {
-  gtp_out << (success ? "=" : "?") << " "
-          << boost::trim_right_copy(out.str()) // remove bad endl in msg
-          << endl << endl;
+string Io::Report () const {
+  return boost::trim_right_copy (out.str()); // remove bad endl in msg
 }
 
 // -----------------------------------------------------------------------------
@@ -65,6 +64,7 @@ Repl::Repl () {
   Register ("help",          this, &Repl::CListCommands);
   Register ("known_command", this, &Repl::CKnownCommand);
   Register ("quit",          this, &Repl::CQuit);
+  Register ("gtpfile",       this, &Repl::CGtpFile);
 }
 
 void Repl::Register (const string& name, Callback callback) {
@@ -75,56 +75,69 @@ void Repl::RegisterStatic (const string& name, const string& response) {
   Register (name, StaticCommand(response));
 }
 
-void Preprocess (string* line) {
-  ostringstream ret;
-  BOOST_FOREACH (char c, *line) {
-    if (c == 9) ret << '\32';
-    else if (c > 0   && c <= 9)  continue;
-    else if (c >= 11 && c <= 31) continue;
-    else if (c == 127) continue;
+void ParseLine (const string& line, int* id, string* command, string* rest) {
+  stringstream ss;
+  BOOST_FOREACH (char c, line) {
+    if (false) {}
+    else if (c == '\t') ss << ' ';
+    else if (c == '\n') assert (false);
+    else if (c <= 31 || c == 127) continue;
     else if (c == '#') break;  // remove comments
-    else ret << c;
+    else ss << c;
   }
-  *line = ret.str ();
+  *id = -1;
+  *command = "";
+  *rest = "";
+  ss >> *id;
+  if (!ss) {
+    ss.clear ();
+    ss.seekg (ios_base::beg);
+  }
+  ss >> *command;
+  getline (ss, *rest);
 }
 
-bool ParseLine (istream& in, string* command, string* params) {
-  while (true) {
-    string line;
-    if (!getline (in, line)) return false;
-    Preprocess(&line);
-    istringstream line_stream (line);
+Repl::Status Repl::RunOneCommand (const string& line, string* report) {
+  int id;
+  string command, params;
 
-    // TODO handle numbered commands
-    if (!(line_stream >> *command)) continue; // empty line
+  ParseLine (line, &id, &command, &params);
 
-    char c;
-    while (line_stream.get(c)) *params += c;
-    return true;
+  Io io(params);
+
+  *report = "";
+  if (command == "") return NoOp;
+
+  if (IsCommand (command)) {
+    // Callback call with optional fast return.
+    BOOST_FOREACH (Callback& cmd, callbacks [command]) {
+      io.PrepareIn();
+      try { cmd (io); } catch (Return) { }
+    }
+  } else {
+    io.SetError ("unknown command: \"" + command + "\"");
   }
+
+  *report = io.Report();
+  if (io.quit_gtp) return Quit;
+  if (io.success)  return Success;
+  return Failure;
 }
 
 void Repl::Run (istream& in, ostream& out) {
   in.clear();
   while (true) {
-    string command, params;
+    string line, report;
+    if (!getline (in, line)) break;
 
-    if (!ParseLine (in, &command, &params)) break;
+    Status status = RunOneCommand (line, &report);
+    if (status == NoOp) continue;
 
-    Io io(params);
+    out << (status == Failure ? "?" : "=") << " "
+        << report
+        << endl << endl;
 
-    if (IsCommand (command)) {
-      // Callback call with optional fast return.
-      BOOST_FOREACH (Callback& cmd, callbacks [command]) {
-        io.PrepareIn();
-        try { cmd (io); } catch (Return) { }
-      }
-    } else {
-      io.SetError ("unknown command: \"" + command + "\"");
-    }
-
-    io.Report (out);
-    if (io.quit_gtp) return;
+    if (status == Quit) break;
   }
 }
 
@@ -145,6 +158,17 @@ void Repl::CQuit (Io& io) {
   io.CheckEmpty();
   io.out << "bye";
   io.quit_gtp = true;
+}
+
+void Repl::CGtpFile (Io& io) {
+  string file = io.Read<string> ();
+  io.CheckEmpty();
+  ifstream in (file.c_str());
+  if (!in) {
+    io.SetError ("No such file: \"" + file + "\"");
+    return;
+  }
+  Run (in, cerr);
 }
 
 bool Repl::IsCommand (const string& name) {

@@ -70,6 +70,7 @@ BOOST_AUTO_TEST_CASE (ListCommands) {
     << "do_blah" << endl
     << "do_gfx" << endl
     << "gogui_analyze_commands" << endl
+    << "gtpfile" << endl
     << "help" << endl
     << "known_command" << endl
     << "list_commands" << endl
