@@ -75,45 +75,40 @@ void Repl::RegisterStatic (const string& name, const string& response) {
   Register (name, StaticCommand(response));
 }
 
-void Preprocess (string* line) {
-  ostringstream ret;
-  BOOST_FOREACH (char c, *line) {
-    if (c == 9) ret << '\32';
-    else if (c > 0   && c <= 9)  continue;
-    else if (c >= 11 && c <= 31) continue;
-    else if (c == 127) continue;
+void ParseLine (const string& line, int* id, string* command, string* rest) {
+  stringstream ss;
+  BOOST_FOREACH (char c, line) {
+    if (false) {}
+    else if (c == '\t') ss << ' ';
+    else if (c == '\n') assert (false);
+    else if (c <= 31 || c == 127) continue;
     else if (c == '#') break;  // remove comments
-    else ret << c;
+    else ss << c;
   }
-  *line = ret.str ();
-}
-
-bool ParseLine (istream& in, string* command, string* params) {
-  while (true) {
-    string line;
-    if (!getline (in, line)) return false;
-    Preprocess(&line);
-    istringstream line_stream (line);
-
-    // TODO handle numbered commands
-    if (!(line_stream >> *command)) continue; // empty line
-
-    char c;
-    while (line_stream.get(c)) *params += c;
-    return true;
+  *id = -1;
+  *command = "";
+  ss >> *id;
+  if (!ss) {
+    ss.clear ();
+    ss.seekg (ios_base::beg);
   }
+  ss >> *command;
+  getline (ss, *rest);
 }
 
 void Repl::Run (istream& in, ostream& out) {
   in.clear();
   while (true) {
-    string command, params;
+    int id;
+    string line, command, params;
 
-    if (!ParseLine (in, &command, &params)) break;
-
+    if (!getline (in, line)) break;
+    ParseLine (line, &id, &command, &params);
     Io io(params);
 
-    if (IsCommand (command)) {
+    if (command == "") {
+      continue;
+    } else if (IsCommand (command)) {
       // Callback call with optional fast return.
       BOOST_FOREACH (Callback& cmd, callbacks [command]) {
         io.PrepareIn();
