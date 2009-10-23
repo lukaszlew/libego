@@ -53,4 +53,4 @@ cmake -D "CMAKE_BUILD_TYPE=${BUILD_TYPE}" \
       "${SCRIPT_DIR}/source" \
       $@ &&
 
-make -j4 install
+make -j4 all install
