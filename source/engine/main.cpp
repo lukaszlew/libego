@@ -84,8 +84,7 @@ int main(int argc, char** argv) {
       gtp.Run (in, cerr);
       in.close ();
     } else {
-      cerr << "Fatal: GTP file not found :\"" << arg << "\" " << arg << endl;
-      return 1;
+      cerr << "? Warning: GTP file not found :\"" << arg << "\"." << endl;
     }
   }
 
