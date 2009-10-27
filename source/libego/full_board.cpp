@@ -102,7 +102,7 @@ bool FullBoard::try_play (Player player, Vertex v) {
 
   v.check_is_on_board ();
 
-  if (color_at [v] != Color::empty ())
+  if (color_at [v] != Color::Empty ())
     return false;
 
   if (is_pseudo_legal (player,v) == false)

@@ -87,7 +87,7 @@ void SgfGtp::CGtpExec (Gtp::Io& io) {
 void SgfGtp::exec_embedded_gtp_rec (SgfNode* current_node, ostream& response) {
   // update position
   list <Vertex> vertex_list;
-  vertex_list = current_node->properties.get_vertices_to_play (Color::empty ());
+  vertex_list = current_node->properties.get_vertices_to_play (Color::Empty ());
   if (vertex_list.empty () == false) {
     response << "sgf.gtp.exec: AE property in SGF not implemented" << endl;
     return;

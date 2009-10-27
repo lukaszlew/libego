@@ -97,12 +97,12 @@ list <Vertex> SgfNodeProperties::get_vertices_to_play (Color color) {
     }                                                                 \
   }
       
-  if (color == Color::empty ()) {
+  if (color == Color::Empty ()) {
     add_moves ("AE");
-  } else if (color == Color::black ()) {
+  } else if (color == Color::Black ()) {
     add_moves ("B");
     add_moves ("AB");
-  } else if (color == Color::white ()) {
+  } else if (color == Color::White ()) {
     add_moves ("W");
     add_moves ("AW");
   } else {
@@ -115,7 +115,7 @@ list <Vertex> SgfNodeProperties::get_vertices_to_play (Color color) {
 }
 
 list <Vertex> SgfNodeProperties::get_vertices_to_clear () {
-  return get_vertices_to_play (Color::empty ());
+  return get_vertices_to_play (Color::Empty ());
 }
 
 list <Vertex> SgfNodeProperties::get_vertices_to_play (Player pl) { 

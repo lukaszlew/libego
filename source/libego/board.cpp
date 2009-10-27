@@ -87,11 +87,11 @@ void Board::NbrCounter::check(const NatMap<Color, uint>& nbr_color_cnt) const {
   if (!nbr_cnt_ac) return;
 
   uint expected_nbr_cnt =        // definition of nbr_cnt[v]
-    + ((nbr_color_cnt [Color::black ()] + nbr_color_cnt [Color::off_board ()])
+    + ((nbr_color_cnt [Color::Black ()] + nbr_color_cnt [Color::OffBoard ()])
        << f_shift[0])
-    + ((nbr_color_cnt [Color::white ()] + nbr_color_cnt [Color::off_board ()])
+    + ((nbr_color_cnt [Color::White ()] + nbr_color_cnt [Color::OffBoard ()])
        << f_shift[1])
-    + ((nbr_color_cnt [Color::empty ()])
+    + ((nbr_color_cnt [Color::Empty ()])
        << f_shift[2]);
   assert (bitfield == expected_nbr_cnt);
 }
@@ -135,7 +135,7 @@ string Board::to_string (Vertex mark_v) const {
     os (row.row_to_string ());
     coord_for_each (col) {
       Vertex v = Vertex (row, col);
-      char ch = color_at [v].to_char ();
+      char ch = color_at [v].ToShowboardChar ();
       if      (v == mark_v)        o_left  (ch);
       else if (v == mark_v.E ())   o_right (ch);
       else                         os (ch);
@@ -173,14 +173,14 @@ void Board::clear () {
   last_move_status = play_ok;
   ko_v_        = Vertex::any ();
   vertex_for_each_all (v) {
-    color_at      [v] = Color::off_board ();
+    color_at      [v] = Color::OffBoard ();
     nbr_cnt       [v] = NbrCounter::Empty();
     chain_next_v  [v] = v;
     chain_id_     [v] = v;      // TODO is it needed, is it used?
     chain_[v].lib_cnt = NbrCounter::max; // TODO off_boards?
 
     if (v.is_on_board ()) {
-      color_at   [v]              = Color::empty ();
+      color_at   [v]              = Color::Empty ();
       empty_pos  [v]              = empty_v_cnt;
       empty_v    [empty_v_cnt++]  = v;
 
@@ -204,8 +204,8 @@ Hash Board::recalc_hash () const {
   new_hash.set_zero ();
 
   vertex_for_each_all (v) {
-    if (color_at [v].is_player ()) {
-      new_hash ^= zobrist->of_pl_v (color_at [v].to_player (), v);
+    if (color_at [v].IsPlayer ()) {
+      new_hash ^= zobrist->of_pl_v (color_at [v].ToPlayer (), v);
     }
   }
 
@@ -249,7 +249,7 @@ bool Board::is_pseudo_legal (Player player, Vertex v) const {
 
 
 bool Board::is_eyelike (Player player, Vertex v) const {
-  assertc (board_ac, color_at [v] == Color::empty ());
+  assertc (board_ac, color_at [v] == Color::Empty ());
   if (! nbr_cnt[v].player_cnt_is_max (player)) return false;
 
   NatMap<Color, int> diag_color_cnt; // TODO
@@ -261,8 +261,8 @@ bool Board::is_eyelike (Player player, Vertex v) const {
     });
 
   return
-    diag_color_cnt [Color (player.Other())] +
-    (diag_color_cnt [Color::off_board ()] > 0) < 2;
+    diag_color_cnt [Color::OfPlayer (player.Other())] +
+    (diag_color_cnt [Color::OffBoard ()] > 0) < 2;
 }
 
 flatten all_inline
@@ -275,7 +275,7 @@ void Board::play_legal (Player player, Vertex v) { // TODO test with move
   }
 
   v.check_is_on_board ();
-  assertc (board_ac, color_at[v] == Color::empty ());
+  assertc (board_ac, color_at[v] == Color::Empty ());
 
   if (nbr_cnt[v].player_cnt_is_max (player.Other())) {
     play_eye_legal (player, v);
@@ -305,11 +305,11 @@ all_inline
 void Board::update_neighbour (Player player, Vertex v, Vertex nbr_v) {
   nbr_cnt [nbr_v].player_inc (player);
 
-  if (!color_at [nbr_v].is_player ()) return;
+  if (!color_at [nbr_v].IsPlayer ()) return;
 
   chain_at(nbr_v).lib_cnt -= 1;
 
-  if (color_at [nbr_v] != Color (player)) { // same color of groups
+  if (color_at [nbr_v] != Color::OfPlayer (player)) { // same color of groups
     if (chain_at(nbr_v).lib_cnt == 0)
       remove_chain (nbr_v);
   } else {
@@ -328,7 +328,7 @@ all_inline
 void Board::play_not_eye (Player player, Vertex v) {
   check ();
   v.check_is_on_board ();
-  assertc (board_ac, color_at[v] == Color::empty ());
+  assertc (board_ac, color_at[v] == Color::Empty ());
 
   basic_play (player, v);
 
@@ -404,7 +404,7 @@ void Board::remove_chain (Vertex v) {
   old_color = color_at[v];
   act_v = v;
 
-  assertc (board_ac, old_color.is_player ());
+  assertc (board_ac, old_color.IsPlayer ());
 
   do {
     remove_stone (act_v);
@@ -415,7 +415,7 @@ void Board::remove_chain (Vertex v) {
 
   do {
     vertex_for_each_4_nbr (act_v, nbr_v, {
-        nbr_cnt [nbr_v].player_dec (old_color.to_player());
+        nbr_cnt [nbr_v].player_dec (old_color.ToPlayer());
         chain_at(nbr_v).lib_cnt += 1;
       });
 
@@ -430,7 +430,7 @@ void Board::remove_chain (Vertex v) {
 void Board::place_stone (Player pl, Vertex v) {
   hash_ ^= zobrist->of_pl_v (pl, v);
   player_v_cnt[pl]++;
-  color_at[v] = Color (pl);
+  color_at[v] = Color::OfPlayer (pl);
 
   empty_v_cnt--;
   empty_pos [empty_v [empty_v_cnt]] = empty_pos [v];
@@ -444,9 +444,9 @@ void Board::place_stone (Player pl, Vertex v) {
 
 
 void Board::remove_stone (Vertex v) {
-  hash_ ^= zobrist->of_pl_v (color_at [v].to_player (), v);
-  player_v_cnt [color_at[v].to_player ()]--;
-  color_at [v] = Color::empty ();
+  hash_ ^= zobrist->of_pl_v (color_at [v].ToPlayer (), v);
+  player_v_cnt [color_at[v].ToPlayer ()]--;
+  color_at [v] = Color::Empty ();
 
   empty_pos [v] = empty_v_cnt;
   empty_v [empty_v_cnt++] = v;
@@ -493,7 +493,7 @@ int Board::tt_score() const {
 
     vertex_for_each_all(v) {
       visited[v] = false;
-      if (color_at[v] == Color(pl)) {
+      if (color_at[v] == Color::OfPlayer (pl)) {
         queue.Push(v);
         visited[v] = true;
       }
@@ -504,7 +504,7 @@ int Board::tt_score() const {
       assertc (board_ac, visited[v]);
       score[pl] += 1;
       vertex_for_each_4_nbr(v, nbr, {
-        if (!visited[nbr] && color_at[nbr] == Color::empty()) {
+        if (!visited[nbr] && color_at[nbr] == Color::Empty()) {
           queue.Push(nbr);
           visited[nbr] = true;
         }
@@ -547,12 +547,12 @@ Player Board::playout_winner () const {
 
 int Board::vertex_score (Vertex v) const {
   //     NatMap<Color, int> Coloro_score;
-  //     Coloro_score [Color::black ()] = 1;
-  //     Coloro_score [Color::white ()] = -1;
-  //     Coloro_score [Color::empty ()] =
+  //     Coloro_score [Color::Black ()] = 1;
+  //     Coloro_score [Color::White ()] = -1;
+  //     Coloro_score [Color::Empty ()] =
   //       (nbr_cnt[v].player_cnt_is_max (Player::Black ())) -
   //       (nbr_cnt[v].player_cnt_is_max (Player::White ()));
-  //     Coloro_score [Color::off_board ()] = 0;
+  //     Coloro_score [Color::OffBoard ()] = 0;
   //     return Coloro_score [color_at [v]];
   switch (color_at [v].GetRaw ()) {
   case Color::black_idx: return 1;
@@ -586,12 +586,12 @@ void Board::check_empty_v () const {
     exp_player_v_cnt [pl] = 0;
 
   vertex_for_each_all (v) {
-    assert ((color_at[v] == Color::empty ()) == noticed[v]);
-    if (color_at[v] == Color::empty ()) {
+    assert ((color_at[v] == Color::Empty ()) == noticed[v]);
+    if (color_at[v] == Color::Empty ()) {
       assert (empty_pos[v] < empty_v_cnt);
       assert (empty_v [empty_pos[v]] == v);
     }
-    if (color_at [v].is_player ()) exp_player_v_cnt [color_at[v].to_player ()]++;
+    if (color_at [v].IsPlayer ()) exp_player_v_cnt [color_at[v].ToPlayer ()]++;
   }
 
   for (Player pl; pl.Next ();)
@@ -621,7 +621,7 @@ void Board::check_color_at () const {
   if (!board_color_at_ac) return;
 
   vertex_for_each_all (v) {
-    assert ((color_at[v] != Color::off_board()) == (v.is_on_board ()));
+    assert ((color_at[v] != Color::OffBoard()) == (v.is_on_board ()));
   }
 }
 
@@ -631,7 +631,7 @@ void Board::check_nbr_cnt () const {
 
   vertex_for_each_all (v) {
     NatMap<Color, uint> nbr_color_cnt;
-    if (color_at[v] == Color::off_board()) continue; // TODO is that right?
+    if (color_at[v] == Color::OffBoard()) continue; // TODO is that right?
 
     color_for_each (col) {
       nbr_color_cnt [col] = 0;
@@ -651,7 +651,7 @@ void Board::check_chain_at () const {
   vertex_for_each_all (v) {
     // whether same color neighbours have same root and liberties
     // TODO what about off_board and empty?
-    if (color_at [v].is_player ()) {
+    if (color_at [v].IsPlayer ()) {
 
       assert (chain_[chain_id_[v]].lib_cnt != 0);
 
@@ -668,7 +668,7 @@ void Board::check_chain_next_v () const {
   if (!chain_next_v_ac) return;
   vertex_for_each_all (v) {
     chain_next_v[v].check ();
-    if (!color_at [v].is_player ())
+    if (!color_at [v].IsPlayer ())
       assert (chain_next_v [v] == v);
   }
 }
@@ -692,7 +692,7 @@ void Board::check_no_more_legal (Player player) const { // at the end of the pla
   if (!board_ac) return;
 
   vertex_for_each_all (v)
-    if (color_at[v] == Color::empty ())
+    if (color_at[v] == Color::Empty ())
       assert (is_eyelike (player, v) || is_pseudo_legal (player, v) == false);
 }
 

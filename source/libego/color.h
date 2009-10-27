@@ -1,56 +1,44 @@
+//
+// Copyright 2006 and onwards, Lukasz Lew
+//
+
 #ifndef COLOR_H_
 #define COLOR_H_
 
 #include "player.h"
 
-class Color {
+class Color : public Nat<4> {
 public:
+  // Constructors.
+  explicit Color();
 
-  static Color black ();
-  static Color white ();
-  static Color empty ();
-  static Color off_board  ();
-  static Color wrong_char ();
+  static Color Black();
+  static Color White();
+  static Color Empty();
+  static Color OffBoard();
+  static Color OfRaw (uint raw);
+  static Color OfPlayer (Player pl);
 
-  explicit Color (Player pl);
+  // Utilities.
 
-  bool is_player     () const;
-  bool is_not_player () const;
-
-  Player to_player () const;
-
-  char to_char () const;
-
-  bool operator== (Color other) const;
-  bool operator!= (Color other) const;
-
-  bool in_range () const;
-  void next ();
-
-  explicit Color (); // TODO test - remove it
-  explicit Color (uint idx_); // TODO test - remove it
-  explicit Color (char c);
+  bool IsPlayer() const;
+  bool IsNotPlayer () const;
+  Player ToPlayer () const;
+  char ToShowboardChar () const;
 
   const static uint black_idx = 0;
   const static uint white_idx = 1;
   const static uint empty_idx = 2;
   const static uint off_board_idx  = 3;
   const static uint wrong_char_idx = 40;
-  const static uint kBound = 4;
-  uint GetRaw () const;
 
 private:
-
-  void check () const;
-
-  uint idx;
-
+  explicit Color (uint raw);
 };
 
 
 // TODO test it for performance
-#define color_for_each(col) \
-  for (Color col = Color::black (); col.in_range (); col.next ())
+#define color_for_each(col) for (Color col; col.Next();)
 
 
 #endif

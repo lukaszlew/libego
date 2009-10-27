@@ -5,14 +5,12 @@
 #ifndef PLAYER_H_
 #define PLAYER_H_
 
-#include "utils.h"
-
 class Player : public Nat<2> { // TODO check is check always checked in constructors
 public:
+
   // Constructors.
 
   explicit Player ();
-
   static Player Black ();
   static Player White ();
   static Player OfRaw (uint raw);
@@ -20,18 +18,14 @@ public:
 
   // Utilities.
 
-  // Returns the other player.
   Player Other() const;
-  
   int ToScore () const;   // ToScore (Black()) == 1, ToScore (White()) == -1
-
   string ToGtpString () const;
 
   template <typename T>
   T SubjectiveScore (const T& score) const;
 
  private:
-
   explicit Player (uint raw);
 };
 
