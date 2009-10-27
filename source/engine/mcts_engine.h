@@ -25,7 +25,7 @@ class MctsEngine {
 public:
   
   MctsEngine ()
-  : root (Player::white(), Vertex::any()), random (123), playout(random)
+  : root (Player::White(), Vertex::any()), random (123), playout(random)
   {
     resign_mean = -0.95;
     genmove_playouts = 10000;

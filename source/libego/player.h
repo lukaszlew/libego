@@ -7,8 +7,8 @@ class Player : public Nat<2> { // TODO check is check always checked in construc
 public:
   explicit Player ();
 
-  static Player black ();
-  static Player white ();
+  static Player Black ();
+  static Player White ();
 
   const static uint black_idx = 0;
   const static uint white_idx = 1;

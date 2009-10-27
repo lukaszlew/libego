@@ -46,11 +46,11 @@ string Player::to_string () const {
 }
 
 
-Player Player::black () { 
+Player Player::Black () { 
   return Player (black_idx); 
 }
 
-Player Player::white () { 
+Player Player::White () { 
   return Player (white_idx); 
 }
 
@@ -61,12 +61,12 @@ istream& operator>> (istream& in, Player& pl) {
   in >> s;
   if (s == "b" || s == "B" ||
       s == "Black" || s == "BLACK "|| s == "black" || s == "#") { 
-    pl = Player::black (); 
+    pl = Player::Black (); 
     return in; 
   }
   if (s == "w" || s == "W" || 
       s == "White" || s == "WHITE "|| s == "white" || s == "O") {
-    pl = Player::white ();
+    pl = Player::White ();
     return in; 
   }
   in.setstate (ios_base::badbit);

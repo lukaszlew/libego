@@ -79,8 +79,8 @@ uint Board::NbrCounter::player_cnt_is_max (Player pl) const {
 void Board::NbrCounter::check () const {
   if (!nbr_cnt_ac) return;
   assert (empty_cnt () <= max);
-  assert (player_cnt (Player::black ()) <= max);
-  assert (player_cnt (Player::white ()) <= max);
+  assert (player_cnt (Player::Black ()) <= max);
+  assert (player_cnt (Player::White ()) <= max);
 }
 
 void Board::NbrCounter::check(const NatMap<Color, uint>& nbr_color_cnt) const {
@@ -169,7 +169,7 @@ void Board::clear () {
     last_play_ [pl]   = Vertex::any ();
   }
   move_no      = 0;
-  last_player_ = Player::white (); // act player is other
+  last_player_ = Player::White (); // act player is other
   last_move_status = play_ok;
   ko_v_        = Vertex::any ();
   vertex_for_each_all (v) {
@@ -479,8 +479,8 @@ Move Board::last_move() const {
 
 bool Board::both_player_pass () const {
   return
-    (last_play_ [Player::black ()] == Vertex::pass ()) &
-    (last_play_ [Player::white ()] == Vertex::pass ());
+    (last_play_ [Player::Black ()] == Vertex::pass ()) &
+    (last_play_ [Player::White ()] == Vertex::pass ());
 }
 
 int Board::tt_score() const {
@@ -511,7 +511,7 @@ int Board::tt_score() const {
       });
     }
   }
-  return komi_inverse_ + score[Player::black ()] - score[Player::white ()];
+  return komi_inverse_ + score[Player::Black ()] - score[Player::White ()];
 }
 
 Player Board::tt_winner() const {
@@ -519,7 +519,7 @@ Player Board::tt_winner() const {
 }
 
 int Board::approx_score () const {
-  return komi_inverse_ + player_v_cnt[Player::black ()] -  player_v_cnt[Player::white ()];
+  return komi_inverse_ + player_v_cnt[Player::Black ()] -  player_v_cnt[Player::White ()];
 }
 
 
@@ -527,8 +527,8 @@ int Board::playout_score () const {
   int eye_score = 0;
 
   empty_v_for_each (this, v, {
-      eye_score += nbr_cnt[v].player_cnt_is_max (Player::black ());
-      eye_score -= nbr_cnt[v].player_cnt_is_max (Player::white ());
+      eye_score += nbr_cnt[v].player_cnt_is_max (Player::Black ());
+      eye_score -= nbr_cnt[v].player_cnt_is_max (Player::White ());
     });
 
   return approx_score () + eye_score;
@@ -550,8 +550,8 @@ int Board::vertex_score (Vertex v) const {
   //     Coloro_score [Color::black ()] = 1;
   //     Coloro_score [Color::white ()] = -1;
   //     Coloro_score [Color::empty ()] =
-  //       (nbr_cnt[v].player_cnt_is_max (Player::black ())) -
-  //       (nbr_cnt[v].player_cnt_is_max (Player::white ()));
+  //       (nbr_cnt[v].player_cnt_is_max (Player::Black ())) -
+  //       (nbr_cnt[v].player_cnt_is_max (Player::White ()));
   //     Coloro_score [Color::off_board ()] = 0;
   //     return Coloro_score [color_at [v]];
   switch (color_at [v].GetRaw ()) {
@@ -559,8 +559,8 @@ int Board::vertex_score (Vertex v) const {
   case Color::white_idx: return -1;
   case Color::empty_idx:
     return
-      (nbr_cnt[v].player_cnt_is_max (Player::black ())) -
-      (nbr_cnt[v].player_cnt_is_max (Player::white ()));
+      (nbr_cnt[v].player_cnt_is_max (Player::Black ())) -
+      (nbr_cnt[v].player_cnt_is_max (Player::White ()));
   case Color::off_board_idx: return 0;
   default: assert (false);
   }

@@ -73,7 +73,7 @@ namespace Benchmark {
         << playout_cnt << " playouts in " << seconds_total << " seconds" << endl
         << float (playout_cnt) / seconds_total / 1000.0 << " kpps" << endl
         << 1000000.0 / cc_per_playout  << " kpps/GHz (clock independent)" << endl
-        << win_cnt [Player::black ()] << "/" << win_cnt [Player::white ()]
+        << win_cnt [Player::Black ()] << "/" << win_cnt [Player::White ()]
         << " (black wins / white wins)" << endl;
 
     return ret.str();
