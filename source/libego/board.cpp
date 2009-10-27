@@ -164,7 +164,7 @@ void Board::print_cerr (Vertex v) const {
 
 void Board::clear () {
   empty_v_cnt = 0;
-  player_for_each (pl) {
+  for (Player pl; pl.Next ();) {
     player_v_cnt [pl] = 0;
     last_play_ [pl]   = Vertex::any ();
   }
@@ -485,9 +485,9 @@ bool Board::both_player_pass () const {
 
 int Board::tt_score() const {
   NatMap<Player, int> score;
-  player_for_each(pl) score[pl] = 0;
+  for (Player pl; pl.Next ();) score[pl] = 0;
 
-  player_for_each(pl) {
+  for (Player pl; pl.Next ();) {
     FastStack<Vertex, area> queue;
     NatMap<Vertex, bool> visited;
 
@@ -582,7 +582,8 @@ void Board::check_empty_v () const {
       noticed [v] = true;
     });
 
-  player_for_each (pl) exp_player_v_cnt [pl] = 0;
+  for (Player pl; pl.Next ();)
+    exp_player_v_cnt [pl] = 0;
 
   vertex_for_each_all (v) {
     assert ((color_at[v] == Color::empty ()) == noticed[v]);
@@ -593,7 +594,7 @@ void Board::check_empty_v () const {
     if (color_at [v].is_player ()) exp_player_v_cnt [color_at[v].to_player ()]++;
   }
 
-  player_for_each (pl)
+  for (Player pl; pl.Next ();)
     assert (exp_player_v_cnt [pl] == player_v_cnt [pl]);
 }
 

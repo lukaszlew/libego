@@ -26,12 +26,12 @@ public:
   void next ();
   bool in_range () const;
 
-  const static uint kBound = Player::white_idx << Vertex::bits_used | Vertex::kBound;
+  const static uint kBound = 1 << Vertex::bits_used | Vertex::kBound; // 1 == Player::White().GetRaw()
   const static uint no_move_idx = 1;
 
   uint GetRaw ();
 
-  bool TryInc () {
+  bool Next () {
     if (idx+1 < kBound) {
       idx += 1;
       return true;

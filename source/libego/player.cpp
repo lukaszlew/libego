@@ -39,19 +39,18 @@ int Player::ToScore () const {
 }
 
 string Player::ToGtpString () const {
-  if (GetRaw() == black_idx)
-    return "B";
-  else
-    return "W";
+  NatMap <Player, string> gtp_string;
+  gtp_string [Black()] = "B";
+  gtp_string [White()] = "W";
+  return gtp_string [*this];
 }
 
-
 Player Player::Black () { 
-  return Player (black_idx); 
+  return Player (0); 
 }
 
 Player Player::White () { 
-  return Player (white_idx); 
+  return Player (1); 
 }
 
 

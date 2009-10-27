@@ -12,16 +12,12 @@ public:
 
   Player Other() const;
   
-  // Black -> 1, White -> -1
-  int ToScore () const;
+  int ToScore () const;   // ToScore (Black()) == 1, ToScore (White()) == -1
 
   string ToGtpString () const;
 
   template <typename T>
   T SubjectiveScore (const T& score) const;
-
-  const static uint black_idx = 0;
-  const static uint white_idx = 1;
 
   explicit Player (uint _idx); // TODO private
 };
@@ -32,7 +28,6 @@ ostream& operator<< (ostream& out, Player& pl);
 
 // faster than non-loop
 
-#define player_for_each(pl) for (Player pl; pl.TryInc ();)
 
 // -----------------------------------------------------------------------------
 // internal

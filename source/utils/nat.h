@@ -14,7 +14,7 @@ class Nat {
   Nat () : raw (-1) {
   }
 
-  bool TryInc () {
+  bool Next () {
     if (raw+1 < kBound) {
       raw += 1;
       return true;
@@ -68,7 +68,7 @@ class NatMap {
   }
 
   void SetAll (const Elt& elt) {
-    for (Nat e; e.TryInc();) {
+    for (Nat e; e.Next();) {
       (*this)[e] = elt;
     }
   }
