@@ -10,17 +10,18 @@ public:
   static Player Black ();
   static Player White ();
 
-  const static uint black_idx = 0;
-  const static uint white_idx = 1;
-
   Player Other() const;
   
   // Black -> 1, White -> -1
-  int to_score () const;
+  int ToScore () const;
 
-  string to_string () const;
+  string ToGtpString () const;
 
-  template <typename T> T subjective_score (const T& score) const;
+  template <typename T>
+  T SubjectiveScore (const T& score) const;
+
+  const static uint black_idx = 0;
+  const static uint white_idx = 1;
 
   explicit Player (uint _idx); // TODO private
 };
@@ -36,7 +37,8 @@ ostream& operator<< (ostream& out, Player& pl);
 // -----------------------------------------------------------------------------
 // internal
 
-template <typename T> T Player::subjective_score (const T& score) const {
+template <typename T>
+T Player::SubjectiveScore (const T& score) const {
   T tab[2];
   tab[0] = score;
   tab[1] = - score;

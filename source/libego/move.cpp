@@ -53,7 +53,7 @@ Vertex Move::get_vertex () {
 }
 
 string Move::to_string () {
-  return get_player ().to_string () + " " + get_vertex ().to_string ();
+  return get_player ().ToGtpString () + " " + get_vertex ().to_string ();
 }
 
 uint Move::GetRaw () { return idx; }

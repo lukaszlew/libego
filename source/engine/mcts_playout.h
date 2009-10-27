@@ -66,7 +66,7 @@ private:
     }
 
     return
-      pl.subjective_score (value) +
+      pl.SubjectiveScore (value) +
       sqrt (explore_coeff / node.stat.update_count());
   }
 
@@ -101,7 +101,7 @@ public:
     }
 
     if (play_board.both_player_pass()) {
-      UpdateTrace (play_board.tt_winner().to_score());
+      UpdateTrace (play_board.tt_winner().ToScore());
       return;
     }
     
@@ -120,7 +120,7 @@ public:
     LightPlayout (&play_board, random).Run (move_history);
     
     // Update score.
-    UpdateTrace (play_board.playout_winner().to_score());
+    UpdateTrace (play_board.playout_winner().ToScore());
   }
 
   vector<Move> LastPlayout () {

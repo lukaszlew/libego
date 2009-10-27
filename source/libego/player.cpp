@@ -34,11 +34,11 @@ Player Player::Other() const {
   return Player(GetRaw() ^ 1);
 }
   
-int Player::to_score () const {
+int Player::ToScore () const {
   return 1 - int(GetRaw() + GetRaw()) ;
 }
 
-string Player::to_string () const {
+string Player::ToGtpString () const {
   if (GetRaw() == black_idx)
     return "B";
   else
@@ -74,6 +74,6 @@ istream& operator>> (istream& in, Player& pl) {
 }
 
 ostream& operator<< (ostream& out, Player& pl) { 
-  out << pl.to_string ();
+  out << pl.ToGtpString ();
   return out; 
 }

@@ -57,7 +57,7 @@ public:
   bool Play (Player pl, Vertex v) {
     bool ok = full_board.try_play (pl, v);
     if (ok) {
-      logger.LogLine ("play " + pl.to_string() + " " + v.to_string());
+      logger.LogLine ("play " + pl.ToGtpString() + " " + v.to_string());
       logger.LogLine ("");
     }
     return ok;
@@ -86,9 +86,9 @@ public:
       bool ok = full_board.try_play (player, v);
       assert(ok);
     }
-    logger.LogLine ("reg_genmove " + player.to_string() +
+    logger.LogLine ("reg_genmove " + player.ToGtpString() +
                     "   #? [" + v.to_string() + "]");
-    logger.LogLine ("play " + player.to_string() + " " + v.to_string());
+    logger.LogLine ("play " + player.ToGtpString() + " " + v.to_string());
     logger.LogLine ("");
     return v;
   }
