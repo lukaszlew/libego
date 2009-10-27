@@ -68,13 +68,7 @@ public:
 
   uint GetRaw () const;
 
-  const static uint dNS = (board_size + 2);
-  const static uint dWE = 1;
-
   const static uint bits_used = 9;     // on 19x19 kBound == 441 < 512 == 1 << 9;
-  const static uint pass_idx = 0;
-  const static uint any_idx  = 1; // TODO any
-  const static uint resign_idx = 2;
 
   const static uint kBound = (board_size + 2) * (board_size + 2);
 

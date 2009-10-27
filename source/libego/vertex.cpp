@@ -26,6 +26,11 @@
 
 namespace {
   const string col_tab = "ABCDEFGHJKLMNOPQRSTUVWXYZ";
+  const static uint pass_idx = 0; // TODO make it big
+  const static uint any_idx  = 1; // TODO any
+  const static uint resign_idx = 2;
+  const static uint dNS = (board_size + 2);
+  const static uint dWE = 1;
 }
 
 bool CoordIsOk (int idx) {
@@ -146,9 +151,9 @@ string Vertex::to_string () const {
   }
 }
 
-Vertex Vertex::pass   () { return Vertex (Vertex::pass_idx); }
-Vertex Vertex::any    () { return Vertex (Vertex::any_idx); }
-Vertex Vertex::resign () { return Vertex (Vertex::resign_idx); }
+Vertex Vertex::pass   () { return Vertex (pass_idx); }
+Vertex Vertex::any    () { return Vertex (any_idx); }
+Vertex Vertex::resign () { return Vertex (resign_idx); }
 
 Vertex Vertex::of_sgf_coords (string s) {
   if (s == "") return pass ();
