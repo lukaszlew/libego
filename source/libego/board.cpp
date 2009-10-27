@@ -121,6 +121,7 @@ const uint Board::NbrCounter::player_inc_tab [Player::kBound] = {
 string Board::to_string (Vertex mark_v) const {
   ostringstream out;
 
+#define coord_for_each(rc) for (int rc = 0; rc < int(board_size); rc += 1)
 #define os(n)      out << " " << n
 #define o_left(n)  out << "(" << n
 #define o_right(n) out << ")" << n
@@ -149,6 +150,7 @@ string Board::to_string (Vertex mark_v) const {
   coord_for_each (col) os (CoordColToString (col));
   out << endl;
 
+#undef coord_for_each
 #undef os
 #undef o_left
 #undef o_right

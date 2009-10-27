@@ -59,8 +59,6 @@ private:
 
 // -----------------------------------------------------------------------------
 
-#define coord_for_each(rc) for (int rc = 0; rc < int(board_size); rc += 1)
-
 
 // TODO of_gtp_string
 istream& operator>> (istream& in, Vertex& v);
