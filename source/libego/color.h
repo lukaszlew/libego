@@ -1,5 +1,5 @@
-#ifndef _COLOR_H_
-#define _COLOR_H_
+#ifndef COLOR_H_
+#define COLOR_H_
 
 #include "player.h"
 

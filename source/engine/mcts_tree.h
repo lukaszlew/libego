@@ -1,5 +1,5 @@
-#ifndef _MCTS_TREE_
-#define _MCTS_TREE_
+#ifndef MCTS_TREE_
+#define MCTS_TREE_
 
 #include <list>
 

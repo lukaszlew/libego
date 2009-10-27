@@ -1,5 +1,5 @@
-#ifndef _FAST_TIMER_H_
-#define _FAST_TIMER_H_
+#ifndef FAST_TIMER_H_
+#define FAST_TIMER_H_
 
 #include "utils.h"
 

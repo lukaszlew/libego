@@ -1,5 +1,5 @@
-#ifndef _GTP_H_
-#define _GTP_H_
+#ifndef GTP_H_
+#define GTP_H_
 
 #include <boost/bind.hpp>
 #include <boost/function.hpp>

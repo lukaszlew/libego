@@ -1,5 +1,5 @@
-#ifndef _GTP_GOGUI_H_
-#define _GTP_GOGUI_H_
+#ifndef GTP_GOGUI_H_
+#define GTP_GOGUI_H_
 
 #include <string>
 #include <map>

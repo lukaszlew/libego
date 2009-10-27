@@ -1,5 +1,5 @@
-#ifndef _EGO_H_
-#define _EGO_H_
+#ifndef EGO_H_
+#define EGO_H_
 
 #include "testing.h"
 #include "utils.h"

@@ -1,5 +1,5 @@
-#ifndef _STAT_H_
-#define _STAT_H_
+#ifndef STAT_H_
+#define STAT_H_
 
 const bool stat_ac = false;
 

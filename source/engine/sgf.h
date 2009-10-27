@@ -1,5 +1,5 @@
-#ifndef _SGF_H_
-#define _SGF_H_
+#ifndef SGF_H_
+#define SGF_H_
 
 #include <map>
 #include <list>

@@ -1,5 +1,5 @@
-#ifndef _FULL_BOARD_H_
-#define _FULL_BOARD_H_
+#ifndef FULL_BOARD_H_
+#define FULL_BOARD_H_
 
 #include <vector>
 #include "board.h"

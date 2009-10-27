@@ -1,5 +1,5 @@
-#ifndef _PLAYOUT_H_
-#define _PLAYOUT_H_
+#ifndef PLAYOUT_H_
+#define PLAYOUT_H_
 
 #include "utils.h"
 #include "board.h"

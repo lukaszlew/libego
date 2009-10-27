@@ -1,5 +1,5 @@
-#ifndef _FAST_STACK_H_
-#define _FAST_STACK_H_
+#ifndef FAST_STACK_H_
+#define FAST_STACK_H_
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  *                                                                           *

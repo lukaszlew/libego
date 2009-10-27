@@ -1,5 +1,5 @@
-#ifndef _BENCHMARK_H_
-#define _BENCHMARK_H_
+#ifndef BENCHMARK_H_
+#define BENCHMARK_H_
 
 #include <string>
 

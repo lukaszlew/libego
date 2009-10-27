@@ -1,5 +1,5 @@
-#ifndef _FAST_RANDOM_
-#define _FAST_RANDOM_
+#ifndef FAST_RANDOM_
+#define FAST_RANDOM_
 
 #include "utils.h"
 

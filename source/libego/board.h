@@ -1,5 +1,5 @@
-#ifndef _BOARD_H_
-#define _BOARD_H_
+#ifndef BOARD_H_
+#define BOARD_H_
 
 #include "utils.h"
 #include "hash.h"

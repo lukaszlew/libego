@@ -1,5 +1,5 @@
-#ifndef _SGF_GTP_H_
-#define _SGF_GTP_H_
+#ifndef SGF_GTP_H_
+#define SGF_GTP_H_
 
 #include "full_board.h"
 #include "sgf.h"

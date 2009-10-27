@@ -1,5 +1,5 @@
-#ifndef _MOVE_H_
-#define _MOVE_H_
+#ifndef MOVE_H_
+#define MOVE_H_
 
 #include <string>
 using namespace std;

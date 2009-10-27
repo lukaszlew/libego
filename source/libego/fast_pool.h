@@ -1,5 +1,5 @@
-#ifndef _FAST_POOL_H_
-#define _FAST_POOL_H_
+#ifndef FAST_POOL_H_
+#define FAST_POOL_H_
 
 #include "fast_stack.h"
 #include "utils.h"
