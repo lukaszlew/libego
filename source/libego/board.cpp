@@ -134,7 +134,7 @@ string Board::to_string (Vertex mark_v) const {
     if (board_size >= 10 && board_size - row < 10) out << " ";
     os (CoordRowToString (row));
     coord_for_each (col) {
-      Vertex v = Vertex (row, col);
+      Vertex v = Vertex::OfCoords (row, col);
       char ch = color_at [v].ToShowboardChar ();
       if      (v == mark_v)        o_left  (ch);
       else if (v == mark_v.E ())   o_right (ch);
@@ -166,12 +166,12 @@ void Board::clear () {
   empty_v_cnt = 0;
   for (Player pl; pl.Next ();) {
     player_v_cnt [pl] = 0;
-    last_play_ [pl]   = Vertex::any ();
+    last_play_ [pl]   = Vertex::Any ();
   }
   move_no      = 0;
   last_player_ = Player::White (); // act player is other
   last_move_status = play_ok;
-  ko_v_        = Vertex::any ();
+  ko_v_        = Vertex::Any ();
   vertex_for_each_all (v) {
     color_at      [v] = Color::OffBoard ();
     nbr_cnt       [v] = NbrCounter::Empty();
@@ -179,13 +179,13 @@ void Board::clear () {
     chain_id_     [v] = v;      // TODO is it needed, is it used?
     chain_[v].lib_cnt = NbrCounter::max; // TODO off_boards?
 
-    if (v.is_on_board ()) {
+    if (v.IsOnBoard ()) {
       color_at   [v]              = Color::Empty ();
       empty_pos  [v]              = empty_v_cnt;
       empty_v    [empty_v_cnt++]  = v;
 
       vertex_for_each_4_nbr (v, nbr_v, {
-        if (!nbr_v.is_on_board ()) {
+        if (!nbr_v.IsOnBoard()) {
           nbr_cnt [v].off_board_inc ();
         }
       });
@@ -241,7 +241,7 @@ Hash Board::hash () const {
 bool Board::is_pseudo_legal (Player player, Vertex v) const {
   check ();
   return
-    v == Vertex::pass () ||
+    v == Vertex::Pass () ||
     !nbr_cnt[v].player_cnt_is_max (player.Other()) ||
     (!eye_is_ko (player, v) &&
      !eye_is_suicide (v));
@@ -257,8 +257,8 @@ bool Board::is_eyelike (Player player, Vertex v) const {
     diag_color_cnt [color] = 0;
 
   vertex_for_each_diag_nbr (v, diag_v, {
-      diag_color_cnt [color_at [diag_v]]++;
-    });
+    diag_color_cnt [color_at [diag_v]]++;
+  });
 
   return
     diag_color_cnt [Color::OfPlayer (player.Other())] +
@@ -269,12 +269,12 @@ flatten all_inline
 void Board::play_legal (Player player, Vertex v) { // TODO test with move
   check ();
 
-  if (v == Vertex::pass ()) {
-    basic_play (player, Vertex::pass ());
+  if (v == Vertex::Pass ()) {
+    basic_play (player, Vertex::Pass ());
     return;
   }
 
-  v.check_is_on_board ();
+  // TODO v.check_is_on_board ();
   assertc (board_ac, color_at[v] == Color::Empty ());
 
   if (nbr_cnt[v].player_cnt_is_max (player.Other())) {
@@ -327,7 +327,7 @@ void Board::update_neighbour (Player player, Vertex v, Vertex nbr_v) {
 all_inline
 void Board::play_not_eye (Player player, Vertex v) {
   check ();
-  v.check_is_on_board ();
+  // TODO v.check_is_on_board ();
   assertc (board_ac, color_at[v] == Color::Empty ());
 
   basic_play (player, v);
@@ -373,7 +373,7 @@ void Board::play_eye_legal (Player player, Vertex v) {
 
 // Warning: has to be called before place_stone, because of hash storing
 void Board::basic_play (Player player, Vertex v) {
-  ko_v_                   = Vertex::any ();
+  ko_v_                   = Vertex::Any ();
   last_empty_v_cnt        = empty_v_cnt;
   last_player_            = player;
   last_play_ [player]     = v;
@@ -479,8 +479,8 @@ Move Board::last_move() const {
 
 bool Board::both_player_pass () const {
   return
-    (last_play_ [Player::Black ()] == Vertex::pass ()) &
-    (last_play_ [Player::White ()] == Vertex::pass ());
+    (last_play_ [Player::Black ()] == Vertex::Pass ()) &
+    (last_play_ [Player::White ()] == Vertex::Pass ());
 }
 
 int Board::tt_score() const {
@@ -622,7 +622,7 @@ void Board::check_color_at () const {
   if (!board_color_at_ac) return;
 
   vertex_for_each_all (v) {
-    assert ((color_at[v] != Color::OffBoard()) == (v.is_on_board ()));
+    assert ((color_at[v] != Color::OffBoard()) == (v.IsOnBoard ()));
   }
 }
 
@@ -668,7 +668,7 @@ void Board::check_chain_at () const {
 void Board::check_chain_next_v () const {
   if (!chain_next_v_ac) return;
   vertex_for_each_all (v) {
-    chain_next_v[v].check ();
+    // TODO chain_next_v[v].check ();
     if (!color_at [v].IsPlayer ())
       assert (chain_next_v [v] == v);
   }

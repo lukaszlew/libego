@@ -56,7 +56,7 @@ void LightPlayout::PlayOneMove () {
     ii += 1;
     ii &= ~(-(ii == board->empty_v_cnt)); // if (ii==board->empty_v_cnt) ii=0;
     if (ii == ii_start) {
-      board->play_legal(act_player, Vertex::pass());
+      board->play_legal(act_player, Vertex::Pass());
       return;
     }
   }

@@ -49,7 +49,7 @@ public:                         // board interface
   // Returns player that played last move.
   Player last_player () const;
 
-  // Returns a last played vertex or Vertex::any()
+  // Returns a last played vertex or Vertex::Any()
   Vertex last_play () const;
 
   // Returns true if both players pass.
@@ -84,13 +84,13 @@ public:                         // board interface
   // Positional hash (just color of stones)
   Hash hash () const;
 
-  // Returns vertex forbidden by simple ko rule or Vertex::any()
+  // Returns vertex forbidden by simple ko rule or Vertex::Any()
   Vertex ko_v () const;
 
-  string to_string (Vertex mark_v = Vertex::any ()) const;
+  string to_string (Vertex mark_v = Vertex::Any ()) const;
 
   // debugging helper
-  void print_cerr (Vertex v = Vertex::pass ()) const;
+  void print_cerr (Vertex v = Vertex::Pass ()) const;
 
   uint last_capture_size () const;
 
@@ -200,7 +200,7 @@ private:
 };
 
 #define empty_v_for_each(board, vv, i) {                                \
-    Vertex vv = Vertex::any ();                                         \
+    Vertex vv = Vertex::Any ();                                         \
     rep (ev_i, (board)->empty_v_cnt) {                                  \
       vv = (board)->empty_v [ev_i];                                     \
       i;                                                                \
@@ -208,7 +208,7 @@ private:
   }
 
 #define empty_v_for_each_and_pass(board, vv, i) {                       \
-    Vertex vv = Vertex::pass ();                                        \
+    Vertex vv = Vertex::Pass ();                                        \
     i;                                                                  \
     rep (ev_i, (board)->empty_v_cnt) {                                  \
       vv = (board)->empty_v [ev_i];                                     \

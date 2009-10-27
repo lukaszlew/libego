@@ -107,7 +107,7 @@ public:
 
     vertex_for_each_all (v) {
       if (board->board().color_at [v] == Color::Empty ()) {
-        gfx.SetInfluence(v.to_string (),
+        gfx.SetInfluence(v.ToGtpString (),
                          aaf_stats.norm_mean_given_move (Move(player, v)) /
                          influence_scale
                          );

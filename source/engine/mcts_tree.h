@@ -110,8 +110,8 @@ MctsNode* MctsNode::AddFindChild (Move m, Board& board) {
 
 string MctsNode::ToString() const {
   stringstream s;
-  s << player.ToGtpString () << " " 
-    << v.to_string () << " " 
+  s << player.ToGtpString() << " " 
+    << v.ToGtpString() << " " 
     << stat.to_string() << " "
     << rave_stat.to_string()
     ;

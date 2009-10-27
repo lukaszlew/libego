@@ -95,12 +95,12 @@ bool FullBoard::is_hash_repeated () {
 
 
 bool FullBoard::try_play (Player player, Vertex v) {
-  if (v == Vertex::pass ()) {
+  if (v == Vertex::Pass ()) {
     play_legal (player, v);
     return true;
   }
 
-  v.check_is_on_board ();
+  // TODO v.check_is_on_board ();
 
   if (color_at [v] != Color::Empty ())
     return false;

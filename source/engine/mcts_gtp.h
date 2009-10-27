@@ -66,7 +66,7 @@ private:
   void Cgenmove (Gtp::Io& io) {
     Player player = io.Read<Player> ();
     io.CheckEmpty ();
-    io.out << mcts_engine.Genmove (player).to_string();
+    io.out << mcts_engine.Genmove (player).ToGtpString();
   }
 
   void Cboardsize (Gtp::Io& io) {

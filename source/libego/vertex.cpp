@@ -55,154 +55,123 @@ string CoordColToString (int idx) {
 }
 
 
-//--------------------------------------------------------------------------------
-
 
 // TODO
 // static_assert (cnt <= (1 << bits_used));
 // static_assert (cnt > (1 << (bits_used-1)));
 
+//--------------------------------------------------------------------------------
 
-Vertex::Vertex () { 
+Vertex::Vertex () : Nat <kBoardAreaWithGuards> () { 
 } // TODO is it needed
 
-Vertex::Vertex (uint _idx) {
-  idx = _idx; 
+Vertex::Vertex (uint raw) : Nat <kBoardAreaWithGuards> (raw) {
 }
 
-// TODO make this constructor a static function
-Vertex::Vertex (int row, int col) {
-  if (vertex_ac) {
-    if (row != -1 || col != -1) { // pass
-      assertc (coord_ac, CoordIsOnBoard (row)); 
-      assertc (coord_ac, CoordIsOnBoard (col)); 
-    }
-  }
-  idx = (row+1) * dNS + (col+1) * dWE;
+Vertex Vertex::Pass() {
+  return Vertex (pass_idx);
 }
 
-uint Vertex::GetRaw () const {
-  return idx;
+Vertex Vertex::Any() {
+  return Vertex (any_idx);
 }
 
-bool Vertex::operator== (Vertex other) const {
-  return idx == other.idx; 
+Vertex Vertex::Resign() {
+  return Vertex (resign_idx);
 }
 
-bool Vertex::operator!= (Vertex other) const {
-  return idx != other.idx; 
+Vertex Vertex::OfRaw (uint raw) {
+  return Vertex (raw);
 }
 
-bool Vertex::in_range () const {
-  return idx < kBound; 
-}
-
-void Vertex::next () {
-  idx++; 
-}
-
-void Vertex::check () const {
-  assertc (vertex_ac, in_range ()); 
-}
-
-int Vertex::get_row () const {
-  return int (idx / dNS - 1); 
-}
-
-int Vertex::get_col () const {
-  return int (idx % dNS - 1); 
-}
-
-// this usualy can be achieved quicker by color_at lookup
-bool Vertex::is_on_board () const {
-  return CoordIsOnBoard (get_row()) & CoordIsOnBoard (get_col());
-}
-
-void Vertex::check_is_on_board () const {
-  assertc (vertex_ac, is_on_board ()); 
-}
-
-Vertex Vertex::N () const { return Vertex (idx - dNS); }
-Vertex Vertex::W () const { return Vertex (idx - dWE); }
-Vertex Vertex::E () const { return Vertex (idx + dWE); }
-Vertex Vertex::S () const { return Vertex (idx + dNS); }
-
-Vertex Vertex::NW () const { return N ().W (); } // TODO can it be faster?
-Vertex Vertex::NE () const { return N ().E (); } // only Go
-Vertex Vertex::SW () const { return S ().W (); } // only Go
-Vertex Vertex::SE () const { return S ().E (); }
-
-string Vertex::to_string () const {
-  int r;
-  int c;
+Vertex Vertex::OfSgfString (const string& s) {
+  if (s == "") return Pass(); // TODO pass ?
+  if (s == "tt" && board_size <= 19) return Pass(); // TODO comment
+  if (s.size() != 2) return Any();
+  int col = s[0] - 'a';
+  int row = s[1] - 'a';
   
-  if (idx == pass_idx) {
-    return "pass";
-  } else if (idx == any_idx) {
-    return "any";
-  } else if (idx == resign_idx) {
-    return "resign";
+  if (CoordIsOnBoard (row) && CoordIsOnBoard (col)) { // TODO move this ...
+    return Vertex::OfCoords (row, col); // ... to this
   } else {
-    r = get_row ();
-    c = get_col ();
-    ostringstream ss;
-    ss << CoordColToString (c) << CoordRowToString (r);
-    return ss.str ();
+    return Any ();
   }
 }
 
-Vertex Vertex::pass   () { return Vertex (pass_idx); }
-Vertex Vertex::any    () { return Vertex (any_idx); }
-Vertex Vertex::resign () { return Vertex (resign_idx); }
-
-Vertex Vertex::of_sgf_coords (string s) {
-  if (s == "") return pass ();
-  if (s == "tt" && board_size <= 19) return pass ();
-  if (s.size () != 2 ) return any ();
-  int col (s[0] - 'a');
-  int row (s[1] - 'a');
-  
-  if (CoordIsOnBoard (row) && CoordIsOnBoard (col)) {
-    return Vertex (row, col);
-  } else {
-    return any ();
-  }
-}
-
-Vertex Vertex::of_gtp_string (string s) {
-  if (s == "pass" || s == "PASS" || s == "Pass") return Vertex::pass ();
-  if (s == "resign" || s == "RESIGN" || s == "Resign") return Vertex::resign ();
+Vertex Vertex::OfGtpString (const string& s) {
+  if (s == "pass" || s == "PASS" || s == "Pass") return Pass();
+  if (s == "resign" || s == "RESIGN" || s == "Resign") return Resign();
 
   istringstream in (s);
   char c;
   uint n;
-  if (!(in >> c >> n)) return Vertex::any ();
+  if (!(in >> c >> n)) return Any();
 
-  int row (board_size - n);
+  int row = board_size - n;
   
-  int col (0);
+  int col = 0;
   while (col < int (col_tab.size ())) {
-    if (col_tab[col] == c || 
-        col_tab[col] -'A' + 'a' == c )
-    {
-      break;
-    }
+    if (col_tab [col] == c || col_tab [col] -'A' + 'a' == c) break;
     col++;
   }
-  
-  if (col == int (col_tab.size ())) return Vertex::any ();
 
-  return Vertex (row, col);
+  if (col == int (col_tab.size ())) return Any();
+  return Vertex::OfCoords (row, col);
+}
+
+Vertex Vertex::OfCoords (int row, int column) {
+  // TODO
+  //   if (vertex_ac) {
+  //     if (row != -1 || col != -1) { // pass
+  //       assertc (coord_ac, CoordIsOnBoard (row)); 
+  //       assertc (coord_ac, CoordIsOnBoard (col)); 
+  //     }
+  //   }
+  return Vertex::OfRaw ((row+1) * dNS + (column+1) * dWE);
+}
+
+int Vertex::GetRow() const {
+  return int (GetRaw() / dNS - 1); 
+}
+
+int Vertex::GetColumn() const {
+  return int (GetRaw() % dNS - 1); 
+}
+
+bool Vertex::IsOnBoard() const {
+  return CoordIsOnBoard (GetRow()) & CoordIsOnBoard (GetColumn());
+}
+
+Vertex Vertex::N() const { return Vertex::OfRaw (GetRaw() - dNS); }
+Vertex Vertex::W() const { return Vertex::OfRaw (GetRaw() - dWE); }
+Vertex Vertex::E() const { return Vertex::OfRaw (GetRaw() + dWE); }
+Vertex Vertex::S() const { return Vertex::OfRaw (GetRaw() + dNS); }
+
+Vertex Vertex::NW() const { return N().W(); }
+Vertex Vertex::NE() const { return N().E(); }
+Vertex Vertex::SW() const { return S().W(); }
+Vertex Vertex::SE() const { return S().E(); }
+
+string Vertex::ToGtpString() const {
+  int r;
+  int c;
+  
+  if (*this == Pass())   return "pass";
+  if (*this == Any())    return "any";
+  if (*this == Resign()) return "resign";
+
+  r = GetRow ();
+  c = GetColumn ();
+  ostringstream ss;
+  ss << CoordColToString (c) << CoordRowToString (r);
+  return ss.str ();
 }
 
 
-// TODO of_gtp_string
 istream& operator>> (istream& in, Vertex& v) {
   string str;
   if (!(in >> str)) return in;
-  v = Vertex::of_gtp_string (str);
-  if (v == Vertex::any()) in.setstate (ios_base::badbit);
+  v = Vertex::OfGtpString (str);
+  if (v == Vertex::Any()) in.setstate (ios_base::badbit);
   return in;
 }
-
-ostream& operator<< (ostream& out, Vertex& v) { out << v.to_string (); return out; }

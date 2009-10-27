@@ -22,60 +22,46 @@ const uint board_size = 9;
 #endif
 
 // -----------------------------------------------------------------------------
+const static uint kBoardAreaWithGuards = (board_size + 2) * (board_size + 2);
 
-class Vertex {
-
+class Vertex : public Nat <kBoardAreaWithGuards> {
 public:
-  static Vertex pass   ();
-  static Vertex any    ();
-  static Vertex resign ();
-  static Vertex of_sgf_coords (string s);
-  static Vertex of_gtp_string (string s);
+  // Constructors.
+  explicit Vertex();
 
-  explicit Vertex (); // TODO is it needed
-  explicit Vertex (uint _idx);
+  static Vertex Pass();
+  static Vertex Any(); // TODO remove it
+  static Vertex Resign();
 
-  // TODO make this constructor a static function
-  Vertex (int r, int c);
+  static Vertex OfRaw (uint raw);
+  static Vertex OfSgfString (const string& s);
+  static Vertex OfGtpString (const string& s);
+  static Vertex OfCoords (int row, int column); // TODO uint
 
-  int get_row () const;
-  int get_col () const;
+  // Utilities.
 
-  // this usualy can be achieved quicker by color_at lookup
-  bool is_on_board () const;
+  int GetRow() const;
+  int GetColumn() const;
 
-  Vertex N () const;
-  Vertex W () const;
-  Vertex E () const;
-  Vertex S () const;
+  // this can be achieved quicker by color_at lookup
+  bool IsOnBoard() const;
 
-  Vertex NW () const;
-  Vertex NE () const;
-  Vertex SW () const;
-  Vertex SE () const;
+  Vertex N() const;
+  Vertex W() const;
+  Vertex E() const;
+  Vertex S() const;
 
-  string to_string () const;
+  Vertex NW() const;
+  Vertex NE() const;
+  Vertex SW() const;
+  Vertex SE() const;
 
-  bool operator== (Vertex other) const;
-  bool operator!= (Vertex other) const;
-
-  bool in_range () const;
-  void next ();
-
-  void check () const;
-
-  void check_is_on_board () const;
-
-  uint GetRaw () const;
+  string ToGtpString() const;
 
   const static uint bits_used = 9;     // on 19x19 kBound == 441 < 512 == 1 << 9;
 
-  const static uint kBound = (board_size + 2) * (board_size + 2);
-
 private:
-
-  uint idx;
-
+  explicit Vertex (uint _idx);
 };
 
 // -----------------------------------------------------------------------------
@@ -85,7 +71,6 @@ private:
 
 // TODO of_gtp_string
 istream& operator>> (istream& in, Vertex& v);
-ostream& operator<< (ostream& out, Vertex& v);
 
 template <typename T>
 string to_string_2d (const NatMap<Vertex, T>& map, int precision = 3) {
@@ -104,9 +89,8 @@ string to_string_2d (const NatMap<Vertex, T>& map, int precision = 3) {
   return out.str ();
 }
 
-#define vertex_for_each_all(vv)                                         \
-  for (Vertex vv = Vertex(0); vv.in_range (); vv.next ()) 
-// TODO 0 works??? // TODO player the same way!
+#define vertex_for_each_all(vv) for (Vertex vv; vv.Next();) 
+
 
 // misses some offboard vertices (for speed) 
 #define vertex_for_each_faster(vv)                                  \
@@ -115,8 +99,8 @@ string to_string_2d (const NatMap<Vertex, T>& map, int precision = 3) {
        vv.next ())
 
 
+// TODO    center_v.check_is_on_board ();
 #define vertex_for_each_4_nbr(center_v, nbr_v, block) { \
-    center_v.check_is_on_board ();                      \
     Vertex nbr_v;                                       \
     nbr_v = center_v.N (); block;                       \
     nbr_v = center_v.W (); block;                       \
@@ -134,8 +118,8 @@ string to_string_2d (const NatMap<Vertex, T>& map, int precision = 3) {
     nbr_v = center_v.S (); block;                       \
   }
 
+// TODO center_v.check_is_on_board ();
 #define vertex_for_each_diag_nbr(center_v, nbr_v, block) {      \
-    center_v.check_is_on_board ();                              \
     Vertex nbr_v;                                               \
     nbr_v = center_v.NW (); block;                              \
     nbr_v = center_v.NE (); block;                              \

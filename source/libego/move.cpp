@@ -25,7 +25,8 @@
 
 void Move::check () {
   Player::OfRaw (idx >> Vertex::bits_used);
-  Vertex (idx & ((1 << Vertex::bits_used) - 1)).check();
+  // TODO
+  //Vertex::OfRaw (idx & ((1 << Vertex::bits_used) - 1)).check();
 }
 
 Move::Move (Player player, Vertex v) { 
@@ -49,11 +50,13 @@ Player Move::get_player () {
 }
 
 Vertex Move::get_vertex () { 
-  return Vertex (idx & ((1 << ::Vertex::bits_used) - 1)) ; 
+  return Vertex::OfRaw (idx & ((1 << ::Vertex::bits_used) - 1)) ; 
 }
 
 string Move::to_string () {
-  return get_player ().ToGtpString () + " " + get_vertex ().to_string ();
+  return
+    get_player().ToGtpString() + " " +
+    get_vertex().ToGtpString();
 }
 
 uint Move::GetRaw () { return idx; }

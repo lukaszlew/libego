@@ -25,7 +25,7 @@ class MctsEngine {
 public:
   
   MctsEngine ()
-  : root (Player::White(), Vertex::any()), random (123), playout(random)
+  : root (Player::White(), Vertex::Any()), random (123), playout(random)
   {
     resign_mean = -0.95;
     genmove_playouts = 10000;
@@ -57,7 +57,7 @@ public:
   bool Play (Player pl, Vertex v) {
     bool ok = full_board.try_play (pl, v);
     if (ok) {
-      logger.LogLine ("play " + pl.ToGtpString() + " " + v.to_string());
+      logger.LogLine ("play " + pl.ToGtpString() + " " + v.ToGtpString());
       logger.LogLine ("");
     }
     return ok;
@@ -82,13 +82,13 @@ public:
 
     Vertex v = BestMove (player);
 
-    if (v != Vertex::resign ()) {
+    if (v != Vertex::Resign ()) {
       bool ok = full_board.try_play (player, v);
       assert(ok);
     }
     logger.LogLine ("reg_genmove " + player.ToGtpString() +
-                    "   #? [" + v.to_string() + "]");
-    logger.LogLine ("play " + player.ToGtpString() + " " + v.to_string());
+                    "   #? [" + v.ToGtpString() + "]");
+    logger.LogLine ("play " + player.ToGtpString() + " " + v.ToGtpString());
     logger.LogLine ("");
     return v;
   }
@@ -122,7 +122,7 @@ public:
     }
 
     if (move_count > 0) {
-      gfx.SetSymbol (last_playout[move_count-1].get_vertex().to_string(),
+      gfx.SetSymbol (last_playout[move_count-1].get_vertex().ToGtpString(),
                      Gtp::GoguiGfx::circle);
     }
 
@@ -137,7 +137,7 @@ private:
 
     return
       best_node.SubjectiveMean() < resign_mean ?
-      Vertex::resign() :
+      Vertex::Resign() :
       best_node.v;
   }
 
