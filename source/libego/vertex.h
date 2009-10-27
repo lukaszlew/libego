@@ -5,13 +5,6 @@
 #ifndef VERTEX_H_
 #define VERTEX_H_
 
-// TODO remove headers
-#include <string>
-#include <iomanip>
-
-#include "utils.h"
-
-
 // TODO move this to config.h
 // TODO this have to be renamed to max_board_size
 #ifdef BOARDSIZE
@@ -71,23 +64,6 @@ private:
 
 // TODO of_gtp_string
 istream& operator>> (istream& in, Vertex& v);
-
-template <typename T>
-string to_string_2d (const NatMap<Vertex, T>& map, int precision = 3) {
-  ostringstream out;
-  out << setiosflags (ios_base::fixed) ;
-  
-  coord_for_each (row) {
-    coord_for_each (col) {
-      Vertex v = Vertex (row, col);
-      out.precision(precision);
-      out.width(precision + 3);
-      out << map [v] << " ";
-    }
-    out << endl;
-  }
-  return out.str ();
-}
 
 // misses some offboard vertices (for speed) 
 #define vertex_for_each_faster(vv)                                  \
