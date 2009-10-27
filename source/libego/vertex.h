@@ -17,23 +17,7 @@ const uint board_size = BOARDSIZE;
 const uint board_size = 9;
 #endif
 
-class Coord {
-public:
-  explicit Coord();
-  explicit Coord(int idx_);
-  bool is_ok () const;
-  void check () const;
-  bool is_on_board () const;
-  string row_to_string () const;
-  string col_to_string () const;
-
-  static const string col_tab;
-  int idx;
-};
-
-
-#define coord_for_each(rc) \
-  for (Coord rc(0); rc.idx < int(board_size); rc = Coord (rc.idx+1))
+#define coord_for_each(rc) for (int rc = 0; rc < int(board_size); rc += 1)
 
 
 class Vertex {
@@ -49,10 +33,10 @@ public:
   explicit Vertex (uint _idx);
 
   // TODO make this constructor a static function
-  Vertex (Coord r, Coord c);
+  Vertex (int r, int c);
 
-  Coord get_row () const;
-  Coord get_col () const;
+  int get_row () const;
+  int get_col () const;
 
   // this usualy can be achieved quicker by color_at lookup
   bool is_on_board () const;

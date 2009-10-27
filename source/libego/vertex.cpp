@@ -24,42 +24,31 @@
 #include "vertex.h"
 #include "testing.h"
 
-Coord::Coord() {
+namespace {
+  const string col_tab = "ABCDEFGHJKLMNOPQRSTUVWXYZ";
 }
 
-Coord::Coord(int idx_) {
-  idx = idx_;
-}
-
-bool Coord::is_ok () const {
+bool CoordIsOk (int idx) {
   return (idx < int (board_size)) & (idx >= -1); 
 }
 
-// TODO enforce invariant
-void Coord::check () const { 
-  assertc (coord_ac, is_ok()); 
-}
-
-bool Coord::is_on_board () const {
+bool CoordIsOnBoard (int idx) {
   return uint (idx) < board_size; 
 }
 
 // TODO to gtp string
-string Coord::row_to_string () const {
-  check ();
+string CoordRowToString (int idx) {
   ostringstream ss;
   ss << board_size - idx;
   return ss.str ();
 }
 
-string Coord::col_to_string () const {
-  check ();
+string CoordColToString (int idx) {
   ostringstream ss;
   ss << col_tab [idx];
   return ss.str ();
 }
 
-const string Coord::col_tab = "ABCDEFGHJKLMNOPQRSTUVWXYZ";
 
 //--------------------------------------------------------------------------------
 
@@ -77,14 +66,14 @@ Vertex::Vertex (uint _idx) {
 }
 
 // TODO make this constructor a static function
-Vertex::Vertex (Coord row, Coord col) {
+Vertex::Vertex (int row, int col) {
   if (vertex_ac) {
-    if (row.idx != -1 || col.idx != -1) { // pass
-      assertc (coord_ac, row.is_on_board ()); 
-      assertc (coord_ac, col.is_on_board ()); 
+    if (row != -1 || col != -1) { // pass
+      assertc (coord_ac, CoordIsOnBoard (row)); 
+      assertc (coord_ac, CoordIsOnBoard (col)); 
     }
   }
-  idx = (row.idx+1) * dNS + (col.idx+1) * dWE;
+  idx = (row+1) * dNS + (col+1) * dWE;
 }
 
 uint Vertex::GetRaw () const {
@@ -111,17 +100,17 @@ void Vertex::check () const {
   assertc (vertex_ac, in_range ()); 
 }
 
-Coord Vertex::get_row () const {
-  return Coord (idx / dNS - 1); 
+int Vertex::get_row () const {
+  return int (idx / dNS - 1); 
 }
 
-Coord Vertex::get_col () const {
-  return Coord (idx % dNS - 1); 
+int Vertex::get_col () const {
+  return int (idx % dNS - 1); 
 }
 
 // this usualy can be achieved quicker by color_at lookup
 bool Vertex::is_on_board () const {
-  return get_row().is_on_board () & get_col().is_on_board ();
+  return CoordIsOnBoard (get_row()) & CoordIsOnBoard (get_col());
 }
 
 void Vertex::check_is_on_board () const {
@@ -139,8 +128,8 @@ Vertex Vertex::SW () const { return S ().W (); } // only Go
 Vertex Vertex::SE () const { return S ().E (); }
 
 string Vertex::to_string () const {
-  Coord r;
-  Coord c;
+  int r;
+  int c;
   
   if (idx == pass_idx) {
     return "pass";
@@ -152,7 +141,7 @@ string Vertex::to_string () const {
     r = get_row ();
     c = get_col ();
     ostringstream ss;
-    ss << c.col_to_string () << r.row_to_string ();
+    ss << CoordColToString (c) << CoordRowToString (r);
     return ss.str ();
   }
 }
@@ -165,10 +154,10 @@ Vertex Vertex::of_sgf_coords (string s) {
   if (s == "") return pass ();
   if (s == "tt" && board_size <= 19) return pass ();
   if (s.size () != 2 ) return any ();
-  Coord col (s[0] - 'a');
-  Coord row (s[1] - 'a');
+  int col (s[0] - 'a');
+  int row (s[1] - 'a');
   
-  if (row.is_on_board () && col.is_on_board ()) {
+  if (CoordIsOnBoard (row) && CoordIsOnBoard (col)) {
     return Vertex (row, col);
   } else {
     return any ();
@@ -184,19 +173,19 @@ Vertex Vertex::of_gtp_string (string s) {
   uint n;
   if (!(in >> c >> n)) return Vertex::any ();
 
-  Coord row (board_size - n);
+  int row (board_size - n);
   
-  Coord col (0);
-  while (col.idx < int (Coord::col_tab.size ())) {
-    if (Coord::col_tab[col.idx] == c || 
-        Coord::col_tab[col.idx] -'A' + 'a' == c )
+  int col (0);
+  while (col < int (col_tab.size ())) {
+    if (col_tab[col] == c || 
+        col_tab[col] -'A' + 'a' == c )
     {
       break;
     }
-    col.idx++;
+    col++;
   }
   
-  if (col.idx == int (Coord::col_tab.size ())) return Vertex::any ();
+  if (col == int (col_tab.size ())) return Vertex::any ();
 
   return Vertex (row, col);
 }

@@ -127,12 +127,12 @@ string Board::to_string (Vertex mark_v) const {
 
   out << " ";
   if (board_size < 10) out << " "; else out << "  ";
-  coord_for_each (col) os (col.col_to_string ());
+  coord_for_each (col) os (CoordColToString (col));
   out << endl;
 
   coord_for_each (row) {
-    if (board_size >= 10 && board_size - row.idx < 10) out << " ";
-    os (row.row_to_string ());
+    if (board_size >= 10 && board_size - row < 10) out << " ";
+    os (CoordRowToString (row));
     coord_for_each (col) {
       Vertex v = Vertex (row, col);
       char ch = color_at [v].ToShowboardChar ();
@@ -140,13 +140,13 @@ string Board::to_string (Vertex mark_v) const {
       else if (v == mark_v.E ())   o_right (ch);
       else                         os (ch);
     }
-    if (board_size >= 10 && board_size - row.idx < 10) out << " ";
-    os (row.row_to_string ());
+    if (board_size >= 10 && board_size - row < 10) out << " ";
+    os (CoordRowToString (row));
     out << endl;
   }
 
   if (board_size < 10) out << "  "; else out << "   ";
-  coord_for_each (col) os (col.col_to_string ());
+  coord_for_each (col) os (CoordColToString (col));
   out << endl;
 
 #undef os
