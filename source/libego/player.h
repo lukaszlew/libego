@@ -13,7 +13,7 @@ public:
   const static uint black_idx = 0;
   const static uint white_idx = 1;
 
-  Player other () const;
+  Player Other() const;
   
   // Black -> 1, White -> -1
   int to_score () const;

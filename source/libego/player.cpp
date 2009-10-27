@@ -30,7 +30,7 @@ Player::Player () : Nat<2> () {
 Player::Player (uint raw) : Nat<2> (raw) { 
 }
 
-Player Player::other () const { 
+Player Player::Other() const { 
   return Player(GetRaw() ^ 1);
 }
   

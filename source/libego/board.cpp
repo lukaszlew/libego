@@ -242,7 +242,7 @@ bool Board::is_pseudo_legal (Player player, Vertex v) const {
   check ();
   return
     v == Vertex::pass () ||
-    !nbr_cnt[v].player_cnt_is_max (player.other ()) ||
+    !nbr_cnt[v].player_cnt_is_max (player.Other()) ||
     (!eye_is_ko (player, v) &&
      !eye_is_suicide (v));
 }
@@ -261,7 +261,7 @@ bool Board::is_eyelike (Player player, Vertex v) const {
     });
 
   return
-    diag_color_cnt [Color (player.other ())] +
+    diag_color_cnt [Color (player.Other())] +
     (diag_color_cnt [Color::off_board ()] > 0) < 2;
 }
 
@@ -277,7 +277,7 @@ void Board::play_legal (Player player, Vertex v) { // TODO test with move
   v.check_is_on_board ();
   assertc (board_ac, color_at[v] == Color::empty ());
 
-  if (nbr_cnt[v].player_cnt_is_max (player.other ())) {
+  if (nbr_cnt[v].player_cnt_is_max (player.Other())) {
     play_eye_legal (player, v);
   } else {
     play_not_eye (player, v);
@@ -289,7 +289,7 @@ void Board::play_legal (Player player, Vertex v) { // TODO test with move
 
 
 bool Board::eye_is_ko (Player player, Vertex v) const {
-  return (v == ko_v_) & (player == last_player_.other ());
+  return (v == ko_v_) & (player == last_player_.Other());
 }
 
 
@@ -458,11 +458,11 @@ void Board::remove_stone (Vertex v) {
 
 // TODO/FIXME last_player should be preserverd in undo function
 Player Board::act_player () const {
-  return last_player_.other ();
+  return last_player_.Other();
 }
 
 void Board::set_act_player (Player pl) {
-  last_player_ = pl.other ();
+  last_player_ = pl.Other();
 }
 
 Player Board::last_player () const {

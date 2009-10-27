@@ -108,7 +108,7 @@ public:
     // Is leaf is ready to expand ?
     if (ActNode().stat.update_count() > mature_update_count) {
       Player pl = play_board.act_player();
-      assertc (mcts_ac, pl == ActNode().player.other());
+      assertc (mcts_ac, pl == ActNode().player.Other());
 
       ActNode().EnsureAllPseudoLegalChildren (pl, play_board);
 
@@ -139,7 +139,7 @@ private:
     play_board.play_legal (pl, uct_child.v);
     if (play_board.last_move_status != Board::play_ok) { // large suicide
       assertc (mcts_ac, play_board.last_move_status == Board::play_suicide);
-      assertc (mcts_ac, !uct_child.has_all_legal_children [pl.other()]);
+      assertc (mcts_ac, !uct_child.has_all_legal_children [pl.Other()]);
       assertc (mcts_ac, uct_child.stat.update_count() == Stat::prior_update_count);
       // Remove in case of large suicide.
       ActNode().RemoveChild (&uct_child);
