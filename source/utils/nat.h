@@ -34,6 +34,10 @@ class Nat {
     return Nat (raw);
   }
 
+  operator bool () {
+    return raw != static_cast<uint> (-1);
+  }
+
   bool operator == (const Nat& other) const {
     return this->raw == other.raw;
   }

@@ -5,10 +5,15 @@
 
 class Player : public Nat<2> { // TODO check is check always checked in constructors
 public:
+  // constructors
+
   explicit Player ();
 
   static Player Black ();
   static Player White ();
+  static Player OfGtpString (std::string s);
+
+  // utilities
 
   Player Other() const;
   
@@ -18,6 +23,8 @@ public:
 
   template <typename T>
   T SubjectiveScore (const T& score) const;
+
+  // TODO
 
   explicit Player (uint _idx); // TODO private
 };

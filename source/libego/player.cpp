@@ -53,22 +53,24 @@ Player Player::White () {
   return Player (1); 
 }
 
+Player Player::OfGtpString (string s) {
+  if (s == "b" || s == "B" || s == "Black" || s == "BLACK "|| s == "black") { 
+    return Player::Black();
+  }
+  if (s == "w" || s == "W" || s == "White" || s == "WHITE "|| s == "white") {
+    return Player::White();
+  }
+  return Player();
+}
 
-// TODO factorize of_string out
 istream& operator>> (istream& in, Player& pl) {
   string s;
   in >> s;
-  if (s == "b" || s == "B" ||
-      s == "Black" || s == "BLACK "|| s == "black" || s == "#") { 
-    pl = Player::Black (); 
-    return in; 
+  if (!in) return in;
+  pl = Player::OfGtpString (s);
+  if (!pl) {
+    in.setstate (ios_base::badbit);
   }
-  if (s == "w" || s == "W" || 
-      s == "White" || s == "WHITE "|| s == "white" || s == "O") {
-    pl = Player::White ();
-    return in; 
-  }
-  in.setstate (ios_base::badbit);
   return in;
 }
 
