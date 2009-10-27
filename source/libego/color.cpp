@@ -5,6 +5,8 @@
 #include "color.h"
 #include "testing.h"
 
+// TODO asserts about not initialized Color
+
 Color::Color () : Nat<4> () {
 }
 
@@ -12,19 +14,19 @@ Color::Color (uint raw) : Nat<4> (raw) {
 }
 
 Color Color::Black() {
-  return Color (black_idx);
+  return Color (0);
 }
 
 Color Color::White() {
-  return Color (white_idx);
+  return Color (1);
 }
 
 Color Color::Empty() {
-  return Color (empty_idx);
+  return Color (2);
 }
 
 Color Color::OffBoard() {
-  return Color (off_board_idx);
+  return Color (3);
 }
 
 Color Color::OfRaw (uint raw) {
@@ -37,25 +39,22 @@ Color Color::OfPlayer (Player pl) {
 
 
 bool Color::IsPlayer () const {
-  return GetRaw() <= white_idx;      // & (~1)) == 0; }
+  return GetRaw() <= 1;         // & (~1)) == 0; }
 } 
 
 bool Color::IsNotPlayer () const {
-  return GetRaw() > white_idx;      // & (~1)) == 0; }
+  return GetRaw() > 1;          // & (~1)) == 0; }
 }
 
 Player Color::ToPlayer () const {
-  // TODO assert
   return Player::OfRaw (GetRaw());
 }
 
 char Color::ToShowboardChar () const { 
-  switch (GetRaw()) {
-  case black_idx:      return '#';
-  case white_idx:      return 'O';
-  case empty_idx:      return '.';
-  case off_board_idx:  return ' ';
-  default : assertc (color_ac, false);
-  }
-  return '?';                 // should not happen
+  NatMap<Color, char> tab;
+  tab [Black()] = '#';
+  tab [White()] = 'O';
+  tab [Empty()] = '.';
+  tab [OffBoard()] = '$';
+  return tab [*this];
 }

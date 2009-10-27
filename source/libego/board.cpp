@@ -253,8 +253,8 @@ bool Board::is_eyelike (Player player, Vertex v) const {
   if (! nbr_cnt[v].player_cnt_is_max (player)) return false;
 
   NatMap<Color, int> diag_color_cnt; // TODO
-  color_for_each (col)
-    diag_color_cnt [col] = 0;
+  for (Color color; color.Next();)
+    diag_color_cnt [color] = 0;
 
   vertex_for_each_diag_nbr (v, diag_v, {
       diag_color_cnt [color_at [diag_v]]++;
@@ -554,14 +554,15 @@ int Board::vertex_score (Vertex v) const {
   //       (nbr_cnt[v].player_cnt_is_max (Player::White ()));
   //     Coloro_score [Color::OffBoard ()] = 0;
   //     return Coloro_score [color_at [v]];
+  // TODO remove magic numbers
   switch (color_at [v].GetRaw ()) {
-  case Color::black_idx: return 1;
-  case Color::white_idx: return -1;
-  case Color::empty_idx:
+  case 0 : return 1;            // Black()
+  case 1 : return -1;           // White()
+  case 2 :                      // Empty()
     return
       (nbr_cnt[v].player_cnt_is_max (Player::Black ())) -
       (nbr_cnt[v].player_cnt_is_max (Player::White ()));
-  case Color::off_board_idx: return 0;
+  case 3 : return 0;            // OffBoard()
   default: assert (false);
   }
 }
@@ -633,9 +634,9 @@ void Board::check_nbr_cnt () const {
     NatMap<Color, uint> nbr_color_cnt;
     if (color_at[v] == Color::OffBoard()) continue; // TODO is that right?
 
-    color_for_each (col) {
-      nbr_color_cnt [col] = 0;
-    }
+    for (Color color; color.Next();)
+      nbr_color_cnt [color] = 0;
+
     vertex_for_each_4_nbr (v, nbr_v, {
         nbr_color_cnt [color_at [nbr_v]]++;
       });
