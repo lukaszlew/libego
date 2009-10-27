@@ -166,8 +166,8 @@ private:
   void UpdateTraceRave (float score) {
     // TODO configure rave blocking through options
 
-    FastMap <Move, bool> do_update;
-    FastMap <Move, bool> do_update_set_to;
+    NatMap <Move, bool> do_update;
+    NatMap <Move, bool> do_update_set_to;
 
     uint last_ii  = move_history.Size () * 7 / 8;
 

@@ -142,7 +142,7 @@ private:
     uint player_cnt (Player pl) const;
     uint player_cnt_is_max (Player pl) const;
     void check () const;
-    void check (const FastMap<Color, uint>& nbr_color_cnt) const;
+    void check (const NatMap<Color, uint>& nbr_color_cnt) const;
 
     static const uint max;    // maximal number of neighbours
 
@@ -166,7 +166,7 @@ private:
 
 public:
   // TODO make iterators / accessors
-  FastMap<Vertex, Color>   color_at;
+  NatMap<Vertex, Color>   color_at;
 
   Vertex                   empty_v [area]; // TODO use FastSet (empty_pos)
   uint                     empty_v_cnt;
@@ -184,16 +184,16 @@ private:
 
   static const Zobrist zobrist[1];
 
-  FastMap<Vertex, NbrCounter>  nbr_cnt; // incremental, for fast eye checking
-  FastMap<Vertex, uint>        empty_pos; // liberty position in empty_v
-  FastMap<Vertex, Vertex>      chain_next_v;
+  NatMap<Vertex, NbrCounter>   nbr_cnt; // incremental, for fast eye checking
+  NatMap<Vertex, uint>         empty_pos; // liberty position in empty_v
+  NatMap<Vertex, Vertex>       chain_next_v;
 
-  FastMap<Vertex, Vertex>      chain_id_;
-  FastMap<Vertex, Chain>       chain_; // indexed by chain_id[v]
+  NatMap<Vertex, Vertex>       chain_id_;
+  NatMap<Vertex, Chain>        chain_; // indexed by chain_id[v]
 
   uint                         last_empty_v_cnt;
-  FastMap<Player, uint>        player_v_cnt;
-  FastMap<Player, Vertex>      last_play_;
+  NatMap<Player, uint>         player_v_cnt;
+  NatMap<Player, Vertex>       last_play_;
   Hash                         hash_;
   Vertex                       ko_v_;             // vertex forbidden by ko
   Player                       last_player_;      // player who made the last play

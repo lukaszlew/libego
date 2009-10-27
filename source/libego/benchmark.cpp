@@ -31,7 +31,7 @@ namespace Benchmark {
 
   static const Board empty_board;
 
-  void do_playouts (uint playout_cnt, FastMap<Player, uint>* win_cnt) {
+  void do_playouts (uint playout_cnt, NatMap<Player, uint>* win_cnt) {
     static Board playout_board;
     static FastRandom random (123);
 
@@ -50,7 +50,7 @@ namespace Benchmark {
   }
 
   string run (uint playout_cnt) {
-    FastMap<Player, uint>  win_cnt;
+    NatMap<Player, uint>  win_cnt;
     FastTimer              fast_timer;
 
     player_for_each (pl) win_cnt [pl] = 0;

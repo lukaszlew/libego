@@ -83,7 +83,7 @@ void Board::NbrCounter::check () const {
   assert (player_cnt (Player::white ()) <= max);
 }
 
-void Board::NbrCounter::check(const FastMap<Color, uint>& nbr_color_cnt) const {
+void Board::NbrCounter::check(const NatMap<Color, uint>& nbr_color_cnt) const {
   if (!nbr_cnt_ac) return;
 
   uint expected_nbr_cnt =        // definition of nbr_cnt[v]
@@ -252,7 +252,7 @@ bool Board::is_eyelike (Player player, Vertex v) const {
   assertc (board_ac, color_at [v] == Color::empty ());
   if (! nbr_cnt[v].player_cnt_is_max (player)) return false;
 
-  FastMap<Color, int> diag_color_cnt; // TODO
+  NatMap<Color, int> diag_color_cnt; // TODO
   color_for_each (col)
     diag_color_cnt [col] = 0;
 
@@ -484,12 +484,12 @@ bool Board::both_player_pass () const {
 }
 
 int Board::tt_score() const {
-  FastMap<Player, int> score;
+  NatMap<Player, int> score;
   player_for_each(pl) score[pl] = 0;
 
   player_for_each(pl) {
     FastStack<Vertex, area> queue;
-    FastMap<Vertex, bool> visited;
+    NatMap<Vertex, bool> visited;
 
     vertex_for_each_all(v) {
       visited[v] = false;
@@ -546,7 +546,7 @@ Player Board::playout_winner () const {
 
 
 int Board::vertex_score (Vertex v) const {
-  //     FastMap<Color, int> Coloro_score;
+  //     NatMap<Color, int> Coloro_score;
   //     Coloro_score [Color::black ()] = 1;
   //     Coloro_score [Color::white ()] = -1;
   //     Coloro_score [Color::empty ()] =
@@ -570,8 +570,8 @@ int Board::vertex_score (Vertex v) const {
 void Board::check_empty_v () const {
   if (!board_empty_v_ac) return;
 
-  FastMap<Vertex, bool> noticed;
-  FastMap<Player, uint> exp_player_v_cnt;
+  NatMap<Vertex, bool> noticed;
+  NatMap<Player, uint> exp_player_v_cnt;
 
   vertex_for_each_all (v) noticed[v] = false;
 
@@ -629,7 +629,7 @@ void Board::check_nbr_cnt () const {
   if (!board_nbr_cnt_ac) return;
 
   vertex_for_each_all (v) {
-    FastMap<Color, uint> nbr_color_cnt;
+    NatMap<Color, uint> nbr_color_cnt;
     if (color_at[v] == Color::off_board()) continue; // TODO is that right?
 
     color_for_each (col) {

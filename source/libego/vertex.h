@@ -104,7 +104,7 @@ istream& operator>> (istream& in, Vertex& v);
 ostream& operator<< (ostream& out, Vertex& v);
 
 template <typename T>
-string to_string_2d (const FastMap<Vertex, T>& map, int precision = 3) {
+string to_string_2d (const NatMap<Vertex, T>& map, int precision = 3) {
   ostringstream out;
   out << setiosflags (ios_base::fixed) ;
   

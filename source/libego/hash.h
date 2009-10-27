@@ -25,7 +25,7 @@ public:
 class Zobrist {
 public:
 
-  FastMap<Move, Hash> hashes;
+  NatMap<Move, Hash> hashes;
 
   Zobrist ();
 

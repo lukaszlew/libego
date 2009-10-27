@@ -28,10 +28,10 @@
 
 #include "utils.h"
 
-// very simple and useful FastMap
+// very simple and useful NatMap
 
 template <typename idx_t, typename elt_t>
-class FastMap {
+class NatMap {
 
   elt_t tab [idx_t::kBound];
 

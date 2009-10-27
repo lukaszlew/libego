@@ -51,7 +51,7 @@ public:
 
   Player player;
   Vertex v;
-  FastMap <Player, bool> has_all_legal_children;
+  NatMap <Player, bool> has_all_legal_children;
 
   Stat stat;
   Stat rave_stat;
