@@ -33,7 +33,7 @@
 template <typename idx_t, typename elt_t>
 class FastMap {
 
-  elt_t tab [idx_t::cnt];
+  elt_t tab [idx_t::kBound];
 
 public:
 
@@ -46,11 +46,11 @@ public:
   }
 
   void memset(uint val) { 
-    ::memset(tab, val, sizeof(elt_t)*idx_t::cnt); 
+    ::memset(tab, val, sizeof(elt_t)*idx_t::kBound); 
   }
 
   void SetAll(const elt_t& val) {
-    rep (ii, idx_t::cnt)
+    rep (ii, idx_t::kBound)
       tab[ii] = val;
   }
 };

@@ -74,7 +74,7 @@ char Color::to_char () const {
 }
 
 bool Color::in_range () const {
-  return idx < Color::cnt;
+  return idx < Color::kBound;
 }
 
 // TODO iterators?

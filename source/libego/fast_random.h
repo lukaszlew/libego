@@ -18,7 +18,7 @@ public:
   void test ();
   void test2 (uint k, uint n);
 
-  static const int cnt;
+  static const int kBound;
   uint seed;
 };
 

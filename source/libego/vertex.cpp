@@ -100,7 +100,7 @@ bool Vertex::operator!= (Vertex other) const {
 }
 
 bool Vertex::in_range () const {
-  return idx < cnt; 
+  return idx < kBound; 
 }
 
 void Vertex::next () {

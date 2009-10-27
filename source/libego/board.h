@@ -152,9 +152,9 @@ private:
     static NbrCounter OfCounts(uint black_cnt, uint white_cnt, uint empty_cnt);
 
     static const uint f_size; // size in bits of each of 3 counters in nbr_cnt::t
-    static const uint player_inc_tab [Player::cnt];
+    static const uint player_inc_tab [Player::kBound];
     static const uint f_shift [3];
-    static const uint player_cnt_is_max_mask [Player::cnt];
+    static const uint player_cnt_is_max_mask [Player::kBound];
   };
 
   struct Chain {

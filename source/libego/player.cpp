@@ -61,7 +61,7 @@ string Player::to_string () const {
 }
 
 bool Player::in_range () const {
-  return idx < cnt; 
+  return idx < kBound; 
 }
 
 void Player::next () {

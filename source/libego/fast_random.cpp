@@ -29,7 +29,7 @@
 #include <time.h>
 #endif
 
-const int FastRandom::cnt = (uint(1)<<31) - 1;
+const int FastRandom::kBound = (uint(1)<<31) - 1;
 
 //tr1::minstd_rand0 mt; // this is eqivalent when #include <tr1/random>
 
@@ -46,7 +46,7 @@ uint FastRandom::get_seed () {
   return seed; 
 }
 
-uint FastRandom::rand_int () {       // a number between  0 ... cnt - 1
+uint FastRandom::rand_int () {       // a number between  0 ... kBound - 1
   uint hi, lo;
   lo = 16807 * (seed & 0xffff);
   hi = 16807 * (seed >> 16);

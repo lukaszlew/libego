@@ -104,12 +104,12 @@ const uint Board::NbrCounter::f_shift [3] = {
   2 * f_size,
 };
 
-const uint Board::NbrCounter::player_cnt_is_max_mask [Player::cnt] = {  // TODO player_Map
+const uint Board::NbrCounter::player_cnt_is_max_mask [Player::kBound] = {  // TODO player_Map
   (max << f_shift[0]),
   (max << f_shift[1])
 };
 
-const uint Board::NbrCounter::player_inc_tab [Player::cnt] = {
+const uint Board::NbrCounter::player_inc_tab [Player::kBound] = {
   (1 << f_shift[0]) - (1 << f_shift[2]),
   (1 << f_shift[1]) - (1 << f_shift[2]),
 };
@@ -452,7 +452,7 @@ void Board::remove_stone (Vertex v) {
   empty_v [empty_v_cnt++] = v;
   chain_id_ [v] = v;
 
-  assertc (board_ac, empty_v_cnt < Vertex::cnt);
+  assertc (board_ac, empty_v_cnt < Vertex::kBound);
 }
 
 

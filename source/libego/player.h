@@ -11,7 +11,7 @@ public:
 
   const static uint black_idx = 0;
   const static uint white_idx = 1;
-  const static uint cnt = 2;
+  const static uint kBound = 2;
   uint get_idx () const;
 
   Player other () const;

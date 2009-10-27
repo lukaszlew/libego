@@ -26,7 +26,7 @@ public:
   void next ();
   bool in_range () const;
 
-  const static uint cnt = Player::white_idx << Vertex::bits_used | Vertex::cnt;
+  const static uint kBound = Player::white_idx << Vertex::bits_used | Vertex::kBound;
   const static uint no_move_idx = 1;
 
   uint get_idx ();
