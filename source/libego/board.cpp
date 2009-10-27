@@ -172,7 +172,7 @@ void Board::clear () {
   last_player_ = Player::White (); // act player is other
   last_move_status = play_ok;
   ko_v_        = Vertex::Any ();
-  vertex_for_each_all (v) {
+  for (Vertex v; v.Next(); ) {
     color_at      [v] = Color::OffBoard ();
     nbr_cnt       [v] = NbrCounter::Empty();
     chain_next_v  [v] = v;
@@ -203,7 +203,7 @@ Hash Board::recalc_hash () const {
 
   new_hash.set_zero ();
 
-  vertex_for_each_all (v) {
+  for (Vertex v; v.Next(); ) {
     if (color_at [v].IsPlayer ()) {
       new_hash ^= zobrist->of_pl_v (color_at [v].ToPlayer (), v);
     }
@@ -491,7 +491,7 @@ int Board::tt_score() const {
     FastStack<Vertex, area> queue;
     NatMap<Vertex, bool> visited;
 
-    vertex_for_each_all(v) {
+    for (Vertex v; v.Next(); ) {
       visited[v] = false;
       if (color_at[v] == Color::OfPlayer (pl)) {
         queue.Push(v);
@@ -574,7 +574,7 @@ void Board::check_empty_v () const {
   NatMap<Vertex, bool> noticed;
   NatMap<Player, uint> exp_player_v_cnt;
 
-  vertex_for_each_all (v) noticed[v] = false;
+  for (Vertex v; v.Next(); ) noticed[v] = false;
 
   assert (empty_v_cnt <= area);
 
@@ -586,7 +586,7 @@ void Board::check_empty_v () const {
   for (Player pl; pl.Next ();)
     exp_player_v_cnt [pl] = 0;
 
-  vertex_for_each_all (v) {
+  for (Vertex v; v.Next(); ) {
     assert ((color_at[v] == Color::Empty ()) == noticed[v]);
     if (color_at[v] == Color::Empty ()) {
       assert (empty_pos[v] < empty_v_cnt);
@@ -621,7 +621,7 @@ void Board::check_hash () const {
 void Board::check_color_at () const {
   if (!board_color_at_ac) return;
 
-  vertex_for_each_all (v) {
+  for (Vertex v; v.Next(); ) {
     assert ((color_at[v] != Color::OffBoard()) == (v.IsOnBoard ()));
   }
 }
@@ -630,7 +630,7 @@ void Board::check_color_at () const {
 void Board::check_nbr_cnt () const {
   if (!board_nbr_cnt_ac) return;
 
-  vertex_for_each_all (v) {
+  for (Vertex v; v.Next(); ) {
     NatMap<Color, uint> nbr_color_cnt;
     if (color_at[v] == Color::OffBoard()) continue; // TODO is that right?
 
@@ -649,7 +649,7 @@ void Board::check_nbr_cnt () const {
 void Board::check_chain_at () const {
   if (!chain_at_ac) return;
 
-  vertex_for_each_all (v) {
+  for (Vertex v; v.Next(); ) {
     // whether same color neighbours have same root and liberties
     // TODO what about off_board and empty?
     if (color_at [v].IsPlayer ()) {
@@ -667,7 +667,7 @@ void Board::check_chain_at () const {
 
 void Board::check_chain_next_v () const {
   if (!chain_next_v_ac) return;
-  vertex_for_each_all (v) {
+  for (Vertex v; v.Next(); ) {
     // TODO chain_next_v[v].check ();
     if (!color_at [v].IsPlayer ())
       assert (chain_next_v [v] == v);
@@ -692,7 +692,7 @@ void Board::check_no_more_legal (Player player) const { // at the end of the pla
 
   if (!board_ac) return;
 
-  vertex_for_each_all (v)
+  for (Vertex v; v.Next(); )
     if (color_at[v] == Color::Empty ())
       assert (is_eyelike (player, v) || is_pseudo_legal (player, v) == false);
 }

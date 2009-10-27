@@ -89,9 +89,6 @@ string to_string_2d (const NatMap<Vertex, T>& map, int precision = 3) {
   return out.str ();
 }
 
-#define vertex_for_each_all(vv) for (Vertex vv; vv.Next();) 
-
-
 // misses some offboard vertices (for speed) 
 #define vertex_for_each_faster(vv)                                  \
   for (Vertex vv = Vertex(Vertex::dNS+Vertex::dWE);                 \
@@ -108,50 +105,12 @@ string to_string_2d (const NatMap<Vertex, T>& map, int precision = 3) {
     nbr_v = center_v.S (); block;                       \
   }
 
-#define vertex_for_each_5_nbr(center_v, nbr_v, block) { \
-    center_v.check_is_on_board ();                      \
-    Vertex nbr_v;                                       \
-    nbr_v = center_v.N (); block;                       \
-    nbr_v = center_v.W (); block;                       \
-    nbr_v = center_v;      block;                       \
-    nbr_v = center_v.E (); block;                       \
-    nbr_v = center_v.S (); block;                       \
-  }
-
 // TODO center_v.check_is_on_board ();
 #define vertex_for_each_diag_nbr(center_v, nbr_v, block) {      \
     Vertex nbr_v;                                               \
     nbr_v = center_v.NW (); block;                              \
     nbr_v = center_v.NE (); block;                              \
     nbr_v = center_v.SW (); block;                              \
-    nbr_v = center_v.SE (); block;                              \
-  }
-
-#define vertex_for_each_8_nbr(center_v, nbr_v, block) {         \
-    center_v.check_is_on_board ();                              \
-    Vertex nbr_v;                                               \
-    nbr_v = center_v.NW (); block;                              \
-    nbr_v = center_v.N ();  block;                              \
-    nbr_v = center_v.NE (); block;                              \
-    nbr_v = center_v.W ();  block;                              \
-    nbr_v = center_v.E ();  block;                              \
-    nbr_v = center_v.SW (); block;                              \
-    nbr_v = center_v.S ();  block;                              \
-    nbr_v = center_v.SE (); block;                              \
-  }
-
-
-#define vertex_for_each_9_nbr(center_v, nbr_v, block) {         \
-    center_v.check_is_on_board ();                              \
-    Vertex nbr_v;                                               \
-    nbr_v = center_v.NW (); block;                              \
-    nbr_v = center_v.N ();  block;                              \
-    nbr_v = center_v.NE (); block;                              \
-    nbr_v = center_v.W ();  block;                              \
-    nbr_v = center_v;       block;                              \
-    nbr_v = center_v.E ();  block;                              \
-    nbr_v = center_v.SW (); block;                              \
-    nbr_v = center_v.S ();  block;                              \
     nbr_v = center_v.SE (); block;                              \
   }
 
