@@ -1,15 +1,19 @@
+//
+// Copyright 2006 and onwards, Lukasz Lew
+//
+
 #ifndef VERTEX_H_
 #define VERTEX_H_
 
+// TODO remove headers
 #include <string>
 #include <iomanip>
 
 #include "utils.h"
 
-using namespace std;
 
+// TODO move this to config.h
 // TODO this have to be renamed to max_board_size
-
 #ifdef BOARDSIZE
 const uint board_size = BOARDSIZE;
 #undef BOARDSIZE
@@ -17,8 +21,7 @@ const uint board_size = BOARDSIZE;
 const uint board_size = 9;
 #endif
 
-#define coord_for_each(rc) for (int rc = 0; rc < int(board_size); rc += 1)
-
+// -----------------------------------------------------------------------------
 
 class Vertex {
 
@@ -80,6 +83,10 @@ private:
   uint idx;
 
 };
+
+// -----------------------------------------------------------------------------
+
+#define coord_for_each(rc) for (int rc = 0; rc < int(board_size); rc += 1)
 
 
 // TODO of_gtp_string
