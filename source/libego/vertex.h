@@ -44,6 +44,7 @@ public:
   static Vertex any    ();
   static Vertex resign ();
   static Vertex of_sgf_coords (string s);
+  static Vertex of_gtp_string (string s);
 
   explicit Vertex (); // TODO is it needed
   explicit Vertex (uint _idx);

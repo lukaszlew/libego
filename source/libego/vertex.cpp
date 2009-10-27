@@ -175,42 +175,39 @@ Vertex Vertex::of_sgf_coords (string s) {
   }
 }
 
+Vertex Vertex::of_gtp_string (string s) {
+  if (s == "pass" || s == "PASS" || s == "Pass") return Vertex::pass ();
+  if (s == "resign" || s == "RESIGN" || s == "Resign") return Vertex::resign ();
 
-// TODO of_gtp_string
-istream& operator>> (istream& in, Vertex& v) {
+  istringstream in (s);
   char c;
-  int n;
-
-  string str;
-  if (!(in >> str)) return in;
-  if (str == "pass" || str == "PASS" || str == "Pass") { 
-    v = Vertex::pass ();
-    return in; 
-  }
-  if (str == "resign" || str == "RESIGN" || str == "Resign") {
-    v = Vertex::resign ();
-    return in; 
-  }
-
-  istringstream in2 (str);
-  if (!(in2 >> c >> n)) return in;
+  uint n;
+  if (!(in >> c >> n)) return Vertex::any ();
 
   Coord row (board_size - n);
   
   Coord col (0);
   while (col.idx < int (Coord::col_tab.size ())) {
     if (Coord::col_tab[col.idx] == c || 
-        Coord::col_tab[col.idx] -'A' + 'a' == c ) 
+        Coord::col_tab[col.idx] -'A' + 'a' == c )
+    {
       break;
+    }
     col.idx++;
   }
   
-  if (col.idx == int (Coord::col_tab.size ())) {
-    in.setstate (ios_base::badbit);
-    return in;
-  }
+  if (col.idx == int (Coord::col_tab.size ())) return Vertex::any ();
 
-  v = Vertex (row, col);
+  return Vertex (row, col);
+}
+
+
+// TODO of_gtp_string
+istream& operator>> (istream& in, Vertex& v) {
+  string str;
+  if (!(in >> str)) return in;
+  v = Vertex::of_gtp_string (str);
+  if (v == Vertex::any()) in.setstate (ios_base::badbit);
   return in;
 }
 
