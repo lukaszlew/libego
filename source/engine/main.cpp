@@ -73,6 +73,7 @@ int main(int argc, char** argv) {
   MctsGtp mcts_gtp (gtp, mcts_engine);
 
   reps (ii, 1, argc) {
+    if (ii == argc-1 && string (argv[ii]) == "gtp") continue;
     string response;
     switch (gtp.RunOneCommand (argv[ii], &response)) {
     case Gtp::Repl::Success:
