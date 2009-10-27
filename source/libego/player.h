@@ -1,3 +1,7 @@
+//
+// Copyright 2006 and onwards, Lukasz Lew
+//
+
 #ifndef PLAYER_H_
 #define PLAYER_H_
 
@@ -5,16 +9,18 @@
 
 class Player : public Nat<2> { // TODO check is check always checked in constructors
 public:
-  // constructors
+  // Constructors.
 
   explicit Player ();
 
   static Player Black ();
   static Player White ();
-  static Player OfGtpString (std::string s);
+  static Player OfRaw (uint raw);
+  static Player OfGtpString (const std::string& s);
 
-  // utilities
+  // Utilities.
 
+  // Returns the other player.
   Player Other() const;
   
   int ToScore () const;   // ToScore (Black()) == 1, ToScore (White()) == -1
@@ -24,18 +30,15 @@ public:
   template <typename T>
   T SubjectiveScore (const T& score) const;
 
-  // TODO
+ private:
 
-  explicit Player (uint _idx); // TODO private
+  explicit Player (uint raw);
 };
 
-
+// TODO move this to GTP implementation.
 istream& operator>> (istream& in, Player& pl);
-ostream& operator<< (ostream& out, Player& pl);
 
-// faster than non-loop
-
-
+// TODO move this to player-impl.h
 // -----------------------------------------------------------------------------
 // internal
 

@@ -59,7 +59,7 @@ bool Color::is_not_player () const {
 }
 
 Player Color::to_player () const {
-  return Player (idx);
+  return Player::OfRaw (idx);
 }
 
 char Color::to_char () const { 

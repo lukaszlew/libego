@@ -24,7 +24,7 @@
 #include "move.h"
 
 void Move::check () {
-  Player (idx >> Vertex::bits_used);
+  Player::OfRaw (idx >> Vertex::bits_used);
   Vertex (idx & ((1 << Vertex::bits_used) - 1)).check();
 }
 
@@ -45,7 +45,7 @@ Move Move::other_player () {
 };
 
 Player Move::get_player () { 
-  return Player (idx >> Vertex::bits_used);
+  return Player::OfRaw (idx >> Vertex::bits_used);
 }
 
 Vertex Move::get_vertex () { 

@@ -515,7 +515,7 @@ int Board::tt_score() const {
 }
 
 Player Board::tt_winner() const {
-  return Player (tt_score () <= 0);
+  return Player::OfRaw (tt_score () <= 0);
 }
 
 int Board::approx_score () const {
@@ -536,12 +536,12 @@ int Board::playout_score () const {
 
 
 Player Board::approx_winner () const { 
-  return Player (approx_score () <= 0); 
+  return Player::OfRaw (approx_score () <= 0); 
 }
 
 
 Player Board::playout_winner () const {
-  return Player (playout_score () <= 0);
+  return Player::OfRaw (playout_score () <= 0);
 }
 
 
