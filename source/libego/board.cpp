@@ -48,11 +48,11 @@ Board::NbrCounter Board::NbrCounter::Empty () {
 }
 
 void Board::NbrCounter::player_inc (Player player) {
-  bitfield += player_inc_tab [player.get_idx ()]; 
+  bitfield += player_inc_tab [player.GetRaw ()]; 
 }
 
 void Board::NbrCounter::player_dec (Player player) {
-  bitfield -= player_inc_tab [player.get_idx ()]; 
+  bitfield -= player_inc_tab [player.GetRaw ()]; 
 }
 
 void Board::NbrCounter::off_board_inc () { 
@@ -67,13 +67,13 @@ uint Board::NbrCounter::empty_cnt () const {
 
 uint Board::NbrCounter::player_cnt (Player pl) const { 
   static const uint f_mask = (1 << f_size) - 1;
-  return (bitfield >> f_shift [pl.get_idx ()]) & f_mask; 
+  return (bitfield >> f_shift [pl.GetRaw ()]) & f_mask; 
 }
 
 uint Board::NbrCounter::player_cnt_is_max (Player pl) const {
   return
-    (player_cnt_is_max_mask [pl.get_idx ()] & bitfield) ==
-    player_cnt_is_max_mask [pl.get_idx ()];
+    (player_cnt_is_max_mask [pl.GetRaw ()] & bitfield) ==
+    player_cnt_is_max_mask [pl.GetRaw ()];
 }
 
 void Board::NbrCounter::check () const {
@@ -554,7 +554,7 @@ int Board::vertex_score (Vertex v) const {
   //       (nbr_cnt[v].player_cnt_is_max (Player::white ()));
   //     Coloro_score [Color::off_board ()] = 0;
   //     return Coloro_score [color_at [v]];
-  switch (color_at [v].get_idx ()) {
+  switch (color_at [v].GetRaw ()) {
   case Color::black_idx: return 1;
   case Color::white_idx: return -1;
   case Color::empty_idx:

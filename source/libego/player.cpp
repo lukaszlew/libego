@@ -68,7 +68,7 @@ void Player::next () {
   idx++; 
 }
 
-uint Player::get_idx () const {
+uint Player::GetRaw () const {
   return idx; 
 }
   

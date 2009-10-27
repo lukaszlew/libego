@@ -33,7 +33,7 @@ Color::Color (uint idx_) {
 } // TODO test - remove it
 
 Color::Color (Player pl) {
-  idx = pl.get_idx ();
+  idx = pl.GetRaw ();
 }
 
 Color::Color (char c) {  // may return color_wrong_char
@@ -82,7 +82,7 @@ void Color::next () {
   idx++;
 }
 
-uint Color::get_idx () const {
+uint Color::GetRaw () const {
   return idx;
 }
 

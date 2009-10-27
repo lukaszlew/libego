@@ -29,8 +29,15 @@ public:
   const static uint kBound = Player::white_idx << Vertex::bits_used | Vertex::kBound;
   const static uint no_move_idx = 1;
 
-  uint get_idx ();
+  uint GetRaw ();
 
+  bool TryInc () {
+    if (idx+1 < kBound) {
+      idx += 1;
+      return true;
+    }
+    return false;
+  }
 private:
   void check ();
 

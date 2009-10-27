@@ -87,7 +87,7 @@ Vertex::Vertex (Coord row, Coord col) {
   idx = (row.idx+1) * dNS + (col.idx+1) * dWE;
 }
 
-uint Vertex::get_idx () const {
+uint Vertex::GetRaw () const {
   return idx;
 }
 

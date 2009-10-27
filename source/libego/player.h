@@ -12,7 +12,7 @@ public:
   const static uint black_idx = 0;
   const static uint white_idx = 1;
   const static uint kBound = 2;
-  uint get_idx () const;
+  uint GetRaw () const;
 
   Player other () const;
   
@@ -32,6 +32,14 @@ public:
   // TODO iterators?
   bool in_range () const; // TODO do it like check
   void next ();
+
+  bool TryInc () {
+    if (idx+1 < kBound) {
+      idx += 1;
+      return true;
+    }
+    return false;
+  }
 
 private:
 

@@ -4,6 +4,9 @@ find_package (Boost COMPONENTS date_time filesystem REQUIRED)
 include_directories (${Boost_INCLUDE_DIRS})
 link_directories    (${Boost_LIBRARY_DIRS})
 
+include_directories (${libego_SOURCE_DIR}/utils)
+link_directories    (${libego_BINARY_DIR}/utils)
+
 include_directories (${libego_SOURCE_DIR}/libego)
 link_directories    (${libego_BINARY_DIR}/libego)
 

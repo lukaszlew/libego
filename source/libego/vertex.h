@@ -5,7 +5,6 @@
 #include <iomanip>
 
 #include "utils.h"
-#include "fast_map.h"
 
 using namespace std;
 
@@ -80,7 +79,7 @@ public:
 
   void check_is_on_board () const;
 
-  uint get_idx () const;
+  uint GetRaw () const;
 
   const static uint dNS = (board_size + 2);
   const static uint dWE = 1;
@@ -127,7 +126,7 @@ string to_string_2d (const NatMap<Vertex, T>& map, int precision = 3) {
 // misses some offboard vertices (for speed) 
 #define vertex_for_each_faster(vv)                                  \
   for (Vertex vv = Vertex(Vertex::dNS+Vertex::dWE);                 \
-       vv.get_idx () <= board_size * (Vertex::dNS + Vertex::dWE);   \
+       vv.GetRaw () <= board_size * (Vertex::dNS + Vertex::dWE);   \
        vv.next ())
 
 

@@ -29,11 +29,11 @@ void Move::check () {
 }
 
 Move::Move (Player player, Vertex v) { 
-  idx = (player.get_idx () << Vertex::bits_used) | v.get_idx ();
+  idx = (player.GetRaw () << Vertex::bits_used) | v.GetRaw ();
 }
 
 Move::Move () {
-  Move (Player::black (), Vertex::any ());
+  Move (-1);
 }
 
 Move::Move (int idx_) {
@@ -56,7 +56,7 @@ string Move::to_string () {
   return get_player ().to_string () + " " + get_vertex ().to_string ();
 }
 
-uint Move::get_idx () { return idx; }
+uint Move::GetRaw () { return idx; }
 
 bool Move::operator== (Move other) const { return idx == other.idx; }
 bool Move::operator!= (Move other) const { return idx != other.idx; }

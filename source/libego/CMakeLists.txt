@@ -11,6 +11,7 @@ message("BOARDSIZE = ${BOARDSIZE}")
 
 # Targets
 
+include_directories (${libego_SOURCE_DIR}/utils)
 add_library(ego ego.cpp)
 target_link_libraries (ego)
 

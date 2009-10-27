@@ -3,12 +3,12 @@
 
 #include "testing.h"
 #include "utils.h"
+#include "nat.h"
 
 #include "fast_pool.h"
 #include "fast_timer.h"
 #include "fast_random.h"
 #include "fast_stack.h"
-#include "fast_map.h"
 
 #include "player.h"
 #include "color.h"

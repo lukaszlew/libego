@@ -37,7 +37,7 @@ public:
   const static uint off_board_idx  = 3;
   const static uint wrong_char_idx = 40;
   const static uint kBound = 4;
-  uint get_idx () const;
+  uint GetRaw () const;
 
 private:
 

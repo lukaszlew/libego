@@ -15,5 +15,6 @@ include (SetDefaultInstallationDirs)
 # Add subdirectories.
 
 add_subdirectory (libgtp)
+add_subdirectory (utils)
 add_subdirectory (libego)
 add_subdirectory (engine)
