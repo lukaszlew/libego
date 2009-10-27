@@ -24,54 +24,28 @@
 #include "player.h"
 #include "testing.h"
 
-Player::Player () { 
-  idx = uint(-1);  
+Player::Player () : Nat<2> () { 
 }
 
-Player::Player (uint _idx) { 
-  idx = _idx;
-  check ();
-}
-
-bool Player::operator== (Player other) const { 
-  return idx == other.idx; 
-}
-
-bool Player::operator!= (Player other) const { 
-  return idx != other.idx; 
-}
-
-void Player::check () const { 
-  assertc (player_ac, (idx & (~1)) == 0);
+Player::Player (uint raw) : Nat<2> (raw) { 
 }
 
 Player Player::other () const { 
-  return Player(idx ^ 1);
+  return Player(GetRaw() ^ 1);
 }
   
 int Player::to_score () const {
-  return 1 - int(idx + idx) ;
+  return 1 - int(GetRaw() + GetRaw()) ;
 }
 
 string Player::to_string () const {
-  if (idx == black_idx)
+  if (GetRaw() == black_idx)
     return "B";
   else
     return "W";
 }
 
-bool Player::in_range () const {
-  return idx < kBound; 
-}
 
-void Player::next () {
-  idx++; 
-}
-
-uint Player::GetRaw () const {
-  return idx; 
-}
-  
 Player Player::black () { 
   return Player (black_idx); 
 }

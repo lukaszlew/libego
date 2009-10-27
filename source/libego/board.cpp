@@ -515,7 +515,7 @@ int Board::tt_score() const {
 }
 
 Player Board::tt_winner() const {
-  return Player(tt_score () <= 0);
+  return Player (tt_score () <= 0);
 }
 
 int Board::approx_score () const {

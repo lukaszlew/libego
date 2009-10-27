@@ -3,16 +3,15 @@
 
 #include "utils.h"
 
-class Player { // TODO check is check always checked in constructors
+class Player : public Nat<2> { // TODO check is check always checked in constructors
 public:
+  explicit Player ();
 
   static Player black ();
   static Player white ();
 
   const static uint black_idx = 0;
   const static uint white_idx = 1;
-  const static uint kBound = 2;
-  uint GetRaw () const;
 
   Player other () const;
   
@@ -23,29 +22,7 @@ public:
 
   template <typename T> T subjective_score (const T& score) const;
 
-  explicit Player ();
-  explicit Player (uint _idx);
-
-  bool operator== (Player other) const;
-  bool operator!= (Player other) const;
-  
-  // TODO iterators?
-  bool in_range () const; // TODO do it like check
-  void next ();
-
-  bool TryInc () {
-    if (idx+1 < kBound) {
-      idx += 1;
-      return true;
-    }
-    return false;
-  }
-
-private:
-
-  void check () const;
-
-  uint idx;
+  explicit Player (uint _idx); // TODO private
 };
 
 
@@ -54,8 +31,7 @@ ostream& operator<< (ostream& out, Player& pl);
 
 // faster than non-loop
 
-#define player_for_each(pl) \
-  for (Player pl = Player::black (); pl.in_range (); pl.next ())
+#define player_for_each(pl) for (Player pl; pl.TryInc ();)
 
 // -----------------------------------------------------------------------------
 // internal
@@ -64,7 +40,7 @@ template <typename T> T Player::subjective_score (const T& score) const {
   T tab[2];
   tab[0] = score;
   tab[1] = - score;
-  return tab[idx];
+  return tab [GetRaw()];
 }
 
 #endif
