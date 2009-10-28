@@ -29,6 +29,25 @@
 #include "fast_stack.h"
 #include "testing.h"
 
+// TODO    center_v.check_is_on_board ();
+#define vertex_for_each_4_nbr(center_v, nbr_v, block) { \
+    Vertex nbr_v;                                       \
+    nbr_v = center_v.N (); block;                       \
+    nbr_v = center_v.W (); block;                       \
+    nbr_v = center_v.E (); block;                       \
+    nbr_v = center_v.S (); block;                       \
+  }
+
+// TODO center_v.check_is_on_board ();
+#define vertex_for_each_diag_nbr(center_v, nbr_v, block) {      \
+    Vertex nbr_v;                                               \
+    nbr_v = center_v.NW (); block;                              \
+    nbr_v = center_v.NE (); block;                              \
+    nbr_v = center_v.SW (); block;                              \
+    nbr_v = center_v.SE (); block;                              \
+  }
+
+
 Board::NbrCounter Board::NbrCounter::OfCounts (uint black_cnt,
                                                uint white_cnt,
                                                uint empty_cnt) {
@@ -701,3 +720,6 @@ void Board::check_no_more_legal (Player player) const { // at the end of the pla
 }
 
 const Zobrist Board::zobrist[1] = { Zobrist () };
+
+#undef vertex_for_each_4_nbr
+#undef vertex_for_each_diag_nbr

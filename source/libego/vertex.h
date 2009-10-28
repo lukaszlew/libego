@@ -49,35 +49,8 @@ private:
   explicit Vertex (uint raw);
 };
 
-// -----------------------------------------------------------------------------
-
-
-// TODO of_gtp_string
+// TODO move this to GTP namespace
 istream& operator>> (istream& in, Vertex& v);
 
-// misses some offboard vertices (for speed) 
-#define vertex_for_each_faster(vv)                                  \
-  for (Vertex vv = Vertex(Vertex::dNS+Vertex::dWE);                 \
-       vv.GetRaw () <= board_size * (Vertex::dNS + Vertex::dWE);   \
-       vv.next ())
-
-
-// TODO    center_v.check_is_on_board ();
-#define vertex_for_each_4_nbr(center_v, nbr_v, block) { \
-    Vertex nbr_v;                                       \
-    nbr_v = center_v.N (); block;                       \
-    nbr_v = center_v.W (); block;                       \
-    nbr_v = center_v.E (); block;                       \
-    nbr_v = center_v.S (); block;                       \
-  }
-
-// TODO center_v.check_is_on_board ();
-#define vertex_for_each_diag_nbr(center_v, nbr_v, block) {      \
-    Vertex nbr_v;                                               \
-    nbr_v = center_v.NW (); block;                              \
-    nbr_v = center_v.NE (); block;                              \
-    nbr_v = center_v.SW (); block;                              \
-    nbr_v = center_v.SE (); block;                              \
-  }
 
 #endif
