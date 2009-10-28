@@ -6,15 +6,26 @@
 // -----------------------------------------------------------------------------
 // Nat<bound> class implements integers smaller than bound.
 
+// TODO separate implementation
+// TODO assert system
+
 template <uint bound>
 class Nat {
  public:
   static const uint kBound = bound;
 
+  // Constructors.
+
+  static Nat OfRaw (uint raw) {
+    return Nat (raw);
+  }
+
   Nat () : raw (-1) {
   }
 
-  bool Next () {
+  // Utils.
+
+  bool MoveNext() {
     if (raw+1 < kBound) {
       raw += 1;
       return true;
@@ -28,10 +39,6 @@ class Nat {
 
   void SetRaw (uint raw) {
     this->raw = raw;
-  }
-
-  static Nat OfRaw (uint raw) {
-    return Nat (raw);
   }
 
   operator bool () {
@@ -72,7 +79,7 @@ class NatMap {
   }
 
   void SetAll (const Elt& elt) {
-    for (Nat nat; nat.Next();) {
+    for (Nat nat; nat.MoveNext(); ) {
       (*this)[nat] = elt;
     }
   }

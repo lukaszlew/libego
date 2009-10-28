@@ -31,7 +31,7 @@ public:
 
   uint GetRaw ();
 
-  bool Next () {
+  bool MoveNext() { // TODO Nat
     if (idx+1 < kBound) {
       idx += 1;
       return true;

@@ -185,7 +185,7 @@ void Board::print_cerr (Vertex v) const {
 
 void Board::clear () {
   empty_v_cnt = 0;
-  for (Player pl; pl.Next ();) {
+  for (Player pl; pl.MoveNext();) {
     player_v_cnt [pl] = 0;
     last_play_ [pl]   = Vertex::Any ();
   }
@@ -193,7 +193,7 @@ void Board::clear () {
   last_player_ = Player::White (); // act player is other
   last_move_status = play_ok;
   ko_v_        = Vertex::Any ();
-  for (Vertex v; v.Next(); ) {
+  for (Vertex v; v.MoveNext(); ) {
     color_at      [v] = Color::OffBoard ();
     nbr_cnt       [v] = NbrCounter::Empty();
     chain_next_v  [v] = v;
@@ -224,7 +224,7 @@ Hash Board::recalc_hash () const {
 
   new_hash.set_zero ();
 
-  for (Vertex v; v.Next(); ) {
+  for (Vertex v; v.MoveNext(); ) {
     if (color_at [v].IsPlayer ()) {
       new_hash ^= zobrist->of_pl_v (color_at [v].ToPlayer (), v);
     }
@@ -275,7 +275,7 @@ bool Board::is_eyelike (Player player, Vertex v) const {
   if (! nbr_cnt[v].player_cnt_is_max (player)) return false;
 
   NatMap<Color, int> diag_color_cnt; // TODO
-  for (Color color; color.Next();)
+  for (Color color; color.MoveNext();)
     diag_color_cnt [color] = 0;
 
   vertex_for_each_diag_nbr (v, diag_v, {
@@ -507,13 +507,13 @@ bool Board::both_player_pass () const {
 
 int Board::tt_score() const {
   NatMap<Player, int> score;
-  for (Player pl; pl.Next ();) score[pl] = 0;
+  for (Player pl; pl.MoveNext();) score[pl] = 0;
 
-  for (Player pl; pl.Next ();) {
+  for (Player pl; pl.MoveNext();) {
     FastStack<Vertex, area> queue;
     NatMap<Vertex, bool> visited;
 
-    for (Vertex v; v.Next(); ) {
+    for (Vertex v; v.MoveNext(); ) {
       visited[v] = false;
       if (color_at[v] == Color::OfPlayer (pl)) {
         queue.Push(v);
@@ -596,7 +596,7 @@ void Board::check_empty_v () const {
   NatMap<Vertex, bool> noticed;
   NatMap<Player, uint> exp_player_v_cnt;
 
-  for (Vertex v; v.Next(); ) noticed[v] = false;
+  for (Vertex v; v.MoveNext(); ) noticed[v] = false;
 
   assert (empty_v_cnt <= area);
 
@@ -605,10 +605,10 @@ void Board::check_empty_v () const {
       noticed [v] = true;
     });
 
-  for (Player pl; pl.Next ();)
+  for (Player pl; pl.MoveNext();)
     exp_player_v_cnt [pl] = 0;
 
-  for (Vertex v; v.Next(); ) {
+  for (Vertex v; v.MoveNext(); ) {
     assert ((color_at[v] == Color::Empty ()) == noticed[v]);
     if (color_at[v] == Color::Empty ()) {
       assert (empty_pos[v] < empty_v_cnt);
@@ -617,7 +617,7 @@ void Board::check_empty_v () const {
     if (color_at [v].IsPlayer ()) exp_player_v_cnt [color_at[v].ToPlayer ()]++;
   }
 
-  for (Player pl; pl.Next ();)
+  for (Player pl; pl.MoveNext();)
     assert (exp_player_v_cnt [pl] == player_v_cnt [pl]);
 }
 
@@ -643,7 +643,7 @@ void Board::check_hash () const {
 void Board::check_color_at () const {
   if (!board_color_at_ac) return;
 
-  for (Vertex v; v.Next(); ) {
+  for (Vertex v; v.MoveNext(); ) {
     assert ((color_at[v] != Color::OffBoard()) == (v.IsOnBoard ()));
   }
 }
@@ -652,11 +652,11 @@ void Board::check_color_at () const {
 void Board::check_nbr_cnt () const {
   if (!board_nbr_cnt_ac) return;
 
-  for (Vertex v; v.Next(); ) {
+  for (Vertex v; v.MoveNext(); ) {
     NatMap<Color, uint> nbr_color_cnt;
     if (color_at[v] == Color::OffBoard()) continue; // TODO is that right?
 
-    for (Color color; color.Next();)
+    for (Color color; color.MoveNext();)
       nbr_color_cnt [color] = 0;
 
     vertex_for_each_4_nbr (v, nbr_v, {
@@ -671,7 +671,7 @@ void Board::check_nbr_cnt () const {
 void Board::check_chain_at () const {
   if (!chain_at_ac) return;
 
-  for (Vertex v; v.Next(); ) {
+  for (Vertex v; v.MoveNext(); ) {
     // whether same color neighbours have same root and liberties
     // TODO what about off_board and empty?
     if (color_at [v].IsPlayer ()) {
@@ -689,7 +689,7 @@ void Board::check_chain_at () const {
 
 void Board::check_chain_next_v () const {
   if (!chain_next_v_ac) return;
-  for (Vertex v; v.Next(); ) {
+  for (Vertex v; v.MoveNext(); ) {
     // TODO chain_next_v[v].check ();
     if (!color_at [v].IsPlayer ())
       assert (chain_next_v [v] == v);
@@ -714,7 +714,7 @@ void Board::check_no_more_legal (Player player) const { // at the end of the pla
 
   if (!board_ac) return;
 
-  for (Vertex v; v.Next(); )
+  for (Vertex v; v.MoveNext(); )
     if (color_at[v] == Color::Empty ())
       assert (is_eyelike (player, v) || is_pseudo_legal (player, v) == false);
 }
