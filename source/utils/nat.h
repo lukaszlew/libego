@@ -72,8 +72,8 @@ class NatMap {
   }
 
   void SetAll (const Elt& elt) {
-    for (Nat e; e.Next();) {
-      (*this)[e] = elt;
+    for (Nat nat; nat.Next();) {
+      (*this)[nat] = elt;
     }
   }
 

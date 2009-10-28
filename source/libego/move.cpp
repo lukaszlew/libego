@@ -33,8 +33,7 @@ Move::Move (Player player, Vertex v) {
   idx = (player.GetRaw () << Vertex::bits_used) | v.GetRaw ();
 }
 
-Move::Move () {
-  Move (-1);
+Move::Move () : idx(-1) {
 }
 
 Move::Move (int idx_) {
