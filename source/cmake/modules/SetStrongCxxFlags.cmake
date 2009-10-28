@@ -17,7 +17,7 @@ elseif(CMAKE_COMPILER_IS_GNUCXX)
   endif()
 
   set (CMAKE_CXX_FLAGS "-ggdb3 -Wall -Wextra -Wswitch-enum -Wunused -fshow-column")
-  set (CMAKE_CXX_FLAGS_RELEASE "-O3 -fomit-frame-pointer -frename-registers -ffast-math ${CMAKE_CXX_MARCH_FLAGS}")
+  set (CMAKE_CXX_FLAGS_RELEASE "-O3 -fomit-frame-pointer -frename-registers ${CMAKE_CXX_MARCH_FLAGS}")
   set (CMAKE_CXX_FLAGS_DEBUG "-fno-inline -DTESTING")
 
 else()
