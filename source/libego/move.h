@@ -26,7 +26,7 @@ public:
   void next ();
   bool in_range () const;
 
-  const static uint kBound = 1 << Vertex::bits_used | Vertex::kBound; // 1 == Player::White().GetRaw()
+  const static uint kBound = Vertex::kBound << 1;
   const static uint no_move_idx = 1;
 
   uint GetRaw ();

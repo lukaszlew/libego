@@ -45,8 +45,6 @@ public:
 
   string ToGtpString() const;
 
-  const static uint bits_used = 9;     // on 19x19 kBound == 441 < 512 == 1 << 9;
-
 private:
   explicit Vertex (uint raw);
 };

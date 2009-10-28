@@ -24,13 +24,13 @@
 #include "move.h"
 
 void Move::check () {
-  Player::OfRaw (idx >> Vertex::bits_used);
+  Player::OfRaw (idx & 0x1);
   // TODO
   //Vertex::OfRaw (idx & ((1 << Vertex::bits_used) - 1)).check();
 }
 
 Move::Move (Player player, Vertex v) { 
-  idx = (player.GetRaw () << Vertex::bits_used) | v.GetRaw ();
+  idx = player.GetRaw () | (v.GetRaw () << 1);
 }
 
 Move::Move () : idx(-1) {
@@ -41,15 +41,15 @@ Move::Move (int idx_) {
 }
 
 Move Move::other_player () {
-  return Move (idx ^ (1 << Vertex::bits_used));
+  return Move (idx ^ 0x1);
 };
 
 Player Move::get_player () { 
-  return Player::OfRaw (idx >> Vertex::bits_used);
+  return Player::OfRaw (idx & 0x1);
 }
 
 Vertex Move::get_vertex () { 
-  return Vertex::OfRaw (idx & ((1 << ::Vertex::bits_used) - 1)) ; 
+  return Vertex::OfRaw (idx >> 1) ; 
 }
 
 string Move::to_string () {
