@@ -22,19 +22,13 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "vertex.h"
+
 #include "testing.h"
 
 namespace {
   const string col_tab = "ABCDEFGHJKLMNOPQRSTUVWXYZ";
-  const static uint pass_idx = 0; // TODO make it big
-  const static uint any_idx  = 1; // TODO any
-  const static uint resign_idx = 2;
   const static uint dNS = (board_size + 2);
   const static uint dWE = 1;
-}
-
-bool CoordIsOk (int idx) {
-  return (idx < int (board_size)) & (idx >= -1); 
 }
 
 bool CoordIsOnBoard (int idx) {
@@ -43,15 +37,11 @@ bool CoordIsOnBoard (int idx) {
 
 // TODO to gtp string
 string CoordRowToString (int idx) {
-  ostringstream ss;
-  ss << board_size - idx;
-  return ss.str ();
+  return ToString (board_size - idx);
 }
 
 string CoordColToString (int idx) {
-  ostringstream ss;
-  ss << col_tab [idx];
-  return ss.str ();
+  return ToString (col_tab [idx]);
 }
 
 
@@ -59,7 +49,6 @@ string CoordColToString (int idx) {
 // TODO
 // static_assert (cnt <= (1 << bits_used));
 // static_assert (cnt > (1 << (bits_used-1)));
-
 //--------------------------------------------------------------------------------
 
 Vertex::Vertex () : Nat <kBoardAreaWithGuards> () { 
@@ -69,15 +58,15 @@ Vertex::Vertex (uint raw) : Nat <kBoardAreaWithGuards> (raw) {
 }
 
 Vertex Vertex::Pass() {
-  return Vertex (pass_idx);
+  return Vertex (0); // TODO change it
 }
 
 Vertex Vertex::Any() {
-  return Vertex (any_idx);
+  return Vertex (1); // TODO change it 
 }
 
 Vertex Vertex::Resign() {
-  return Vertex (resign_idx);
+  return Vertex (2); // TODO change it
 }
 
 Vertex Vertex::OfRaw (uint raw) {
