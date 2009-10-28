@@ -5,21 +5,15 @@
 #ifndef VERTEX_H_
 #define VERTEX_H_
 
-// TODO move this to config.h
-// TODO this have to be renamed to max_board_size
-#ifdef BOARDSIZE
-const uint board_size = BOARDSIZE;
-#undef BOARDSIZE
-#else
-const uint board_size = 9;
-#endif
+#include "config.h"
 
-// -----------------------------------------------------------------------------
 const static uint kBoardAreaWithGuards = (board_size + 2) * (board_size + 2);
 
 class Vertex : public Nat <kBoardAreaWithGuards> {
 public:
+
   // Constructors.
+
   explicit Vertex();
 
   static Vertex Pass();
@@ -54,7 +48,7 @@ public:
   const static uint bits_used = 9;     // on 19x19 kBound == 441 < 512 == 1 << 9;
 
 private:
-  explicit Vertex (uint _idx);
+  explicit Vertex (uint raw);
 };
 
 // -----------------------------------------------------------------------------
