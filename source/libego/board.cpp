@@ -216,6 +216,7 @@ Hash Board::recalc_hash () const {
 
 Board::Board () {
   clear ();
+  set_komi (6.5);
 }
 
 void Board::load (const Board* save_board) {
