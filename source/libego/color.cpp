@@ -7,10 +7,10 @@
 
 // TODO asserts about not initialized Color
 
-Color::Color () : Nat<4> () {
+Color::Color () : Nat<Color> () {
 }
 
-Color::Color (uint raw) : Nat<4> (raw) {
+Color::Color (uint raw) : Nat<Color> (raw) {
 }
 
 Color Color::Black() {

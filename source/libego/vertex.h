@@ -7,10 +7,10 @@
 
 #include "config.h"
 
-const static uint kBoardAreaWithGuards = (board_size + 2) * (board_size + 2);
-
-class Vertex : public Nat <kBoardAreaWithGuards> {
+class Vertex : public Nat <Vertex> {
 public:
+
+  static const uint kBound = (board_size + 2) * (board_size + 2);
 
   // Constructors.
 

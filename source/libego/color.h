@@ -7,8 +7,11 @@
 
 #include "player.h"
 
-class Color : public Nat<4> {
+class Color : public Nat<Color> {
 public:
+
+  static const uint kBound = 4;
+
   // Constructors.
   explicit Color();
 

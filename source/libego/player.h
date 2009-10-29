@@ -5,8 +5,10 @@
 #ifndef PLAYER_H_
 #define PLAYER_H_
 
-class Player : public Nat<2> { // TODO check is check always checked in constructors
+class Player : public Nat <Player> { // TODO check is check always checked in constructors
 public:
+
+  static const uint kBound = 2;
 
   // Constructors.
 

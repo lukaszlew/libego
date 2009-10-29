@@ -9,15 +9,13 @@
 // TODO separate implementation
 // TODO assert system
 
-template <uint bound>
+template <class T>
 class Nat {
  public:
-  static const uint kBound = bound;
-
   // Constructors.
 
-  static Nat OfRaw (uint raw) {
-    return Nat (raw);
+  static T OfRaw (uint raw) {
+    return T (raw);
   }
 
   Nat () : raw (-1) {
@@ -26,7 +24,7 @@ class Nat {
   // Utils.
 
   bool MoveNext() {
-    if (raw+1 < kBound) {
+    if (raw+1 < T::kBound) {
       raw += 1;
       return true;
     }

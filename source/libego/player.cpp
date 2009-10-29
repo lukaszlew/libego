@@ -4,10 +4,10 @@
 
 #include "player.h"
 
-Player::Player () : Nat<2> () { 
+Player::Player () : Nat<Player> () { 
 }
 
-Player::Player (uint raw) : Nat<2> (raw) { 
+Player::Player (uint raw) : Nat<Player> (raw) { 
 }
 
 Player Player::Black () { 

@@ -51,10 +51,10 @@ string CoordColToString (int idx) {
 // static_assert (cnt > (1 << (bits_used-1)));
 //--------------------------------------------------------------------------------
 
-Vertex::Vertex () : Nat <kBoardAreaWithGuards> () { 
+Vertex::Vertex () : Nat <Vertex> () { 
 } // TODO is it needed
 
-Vertex::Vertex (uint raw) : Nat <kBoardAreaWithGuards> (raw) {
+Vertex::Vertex (uint raw) : Nat <Vertex> (raw) {
 }
 
 Vertex Vertex::Pass() {
