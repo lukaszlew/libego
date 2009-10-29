@@ -7,7 +7,7 @@
 
 #include "player.h"
 
-class Color : public Nat<Color> {
+class Color : public Nat <Color> {
 public:
 
   static const uint kBound = 4;
@@ -20,7 +20,6 @@ public:
   static Color Empty();
   static Color OffBoard();
 
-  static Color OfRaw (uint raw);
   static Color OfPlayer (Player pl);
 
   // Utilities.
@@ -31,6 +30,7 @@ public:
   char ToShowboardChar() const;
 
 private:
+  friend class Nat <Color>;
   explicit Color (uint raw);
 };
 

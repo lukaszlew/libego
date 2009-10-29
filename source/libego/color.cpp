@@ -29,10 +29,6 @@ Color Color::OffBoard() {
   return Color (3);
 }
 
-Color Color::OfRaw (uint raw) {
-  return Color (raw);
-}
-
 Color Color::OfPlayer (Player pl) {
   return OfRaw (pl.GetRaw ());
 }

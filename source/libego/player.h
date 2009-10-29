@@ -15,7 +15,6 @@ public:
   explicit Player ();
   static Player Black ();
   static Player White ();
-  static Player OfRaw (uint raw);
   static Player OfGtpString (const std::string& s);
 
   // Utilities.
@@ -27,7 +26,8 @@ public:
   template <typename T>
   T SubjectiveScore (const T& score) const;
 
- private:
+ protected:
+  friend class Nat <Player>;
   explicit Player (uint raw);
 };
 

@@ -18,10 +18,6 @@ Player Player::White () {
   return Player (1); 
 }
 
-Player Player::OfRaw (uint raw) {
-  return Player (raw);
-}
-
 Player Player::OfGtpString (const string& s) {
   if (s == "b" || s == "B" || s == "Black" || s == "BLACK "|| s == "black") { 
     return Player::Black();

@@ -69,10 +69,6 @@ Vertex Vertex::Resign() {
   return Vertex (2); // TODO change it
 }
 
-Vertex Vertex::OfRaw (uint raw) {
-  return Vertex (raw);
-}
-
 Vertex Vertex::OfSgfString (const string& s) {
   if (s == "") return Pass(); // TODO pass ?
   if (s == "tt" && board_size <= 19) return Pass(); // TODO comment

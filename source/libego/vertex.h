@@ -20,7 +20,6 @@ public:
   static Vertex Any(); // TODO remove it
   static Vertex Resign();
 
-  static Vertex OfRaw (uint raw);
   static Vertex OfSgfString (const string& s);
   static Vertex OfGtpString (const string& s);
   static Vertex OfCoords (int row, int column); // TODO uint
@@ -46,6 +45,7 @@ public:
   string ToGtpString() const;
 
 private:
+  friend class Nat <Vertex>;
   explicit Vertex (uint raw);
 };
 
