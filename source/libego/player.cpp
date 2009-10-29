@@ -15,14 +15,18 @@ Player Player::White () {
   return Player (1); 
 }
 
-Player Player::OfGtpString (const string& s) {
+Player Player::OfGtpStream (istream& in) {
+  string s;
+  in >> s;
+  if (!in) return Invalid ();
   if (s == "b" || s == "B" || s == "Black" || s == "BLACK "|| s == "black") { 
-    return Player::Black();
+    return Black();
   }
   if (s == "w" || s == "W" || s == "White" || s == "WHITE "|| s == "white") {
-    return Player::White();
+    return White();
   }
-  return Player::Invalid();
+  in.setstate (ios_base::badbit); // TODO undo read?
+  return Invalid();
 }
 
 
@@ -39,16 +43,4 @@ string Player::ToGtpString () const {
   gtp_string [Black()] = "B";
   gtp_string [White()] = "W";
   return gtp_string [*this];
-}
-
-// TODO move this to GTP implementation
-istream& operator>> (istream& in, Player& pl) {
-  string s;
-  in >> s;
-  if (!in) return in;
-  pl = Player::OfGtpString (s);
-  if (!pl) {
-    in.setstate (ios_base::badbit);
-  }
-  return in;
 }

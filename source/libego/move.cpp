@@ -71,11 +71,3 @@ void Move::next () {
   idx++; 
 }
 
-
-istream& operator>> (istream& in, Move& m) {
-  Player pl = Player::Invalid();
-  Vertex v;
-  if (!(in >> pl >> v)) return in;
-  m = Move (pl, v);
-  return in;
-}

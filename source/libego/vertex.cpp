@@ -83,14 +83,21 @@ Vertex Vertex::OfSgfString (const string& s) {
   }
 }
 
-Vertex Vertex::OfGtpString (const string& s) {
+Vertex Vertex::OfGtpStream (istream& in) {
+  string s;
+  in >> s;
+  if (!in) return Invalid ();
+
   if (s == "pass" || s == "PASS" || s == "Pass") return Pass();
   if (s == "resign" || s == "RESIGN" || s == "Resign") return Resign();
 
-  istringstream in (s);
+  istringstream vin (s);
   char c;
   uint n;
-  if (!(in >> c >> n)) return Any();
+  if (!(vin >> c >> n)) {
+    in.setstate (ios_base::badbit); // TODO undo read + error handling based on invalid
+    return Invalid();
+  }
 
   int row = board_size - n;
   
@@ -150,13 +157,4 @@ string Vertex::ToGtpString() const {
   ostringstream ss;
   ss << CoordColToString (c) << CoordRowToString (r);
   return ss.str ();
-}
-
-
-istream& operator>> (istream& in, Vertex& v) {
-  string str;
-  if (!(in >> str)) return in;
-  v = Vertex::OfGtpString (str);
-  if (v == Vertex::Any()) in.setstate (ios_base::badbit);
-  return in;
 }

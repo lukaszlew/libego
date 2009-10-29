@@ -14,7 +14,7 @@ public:
 
   static Player Black ();
   static Player White ();
-  static Player OfGtpString (const std::string& s);
+  static Player OfGtpStream (istream& s);
 
   // Utilities.
 
@@ -32,12 +32,9 @@ public:
   explicit Player (uint raw);
 };
 
-// TODO move this to GTP implementation.
-istream& operator>> (istream& in, Player& pl);
-
-// TODO move this to player-impl.h
 // -----------------------------------------------------------------------------
 // internal
+// TODO move this to player-impl.h
 
 template <typename T>
 T Player::SubjectiveScore (const T& score) const {

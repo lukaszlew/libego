@@ -175,4 +175,24 @@ bool Repl::IsCommand (const string& name) {
   return callbacks.find(name) != callbacks.end();
 }
 
-} // end of namespace Gtp
+namespace detail {
+
+#define Specialization(T)                               \
+  template<> T IoReadOfStream< T > (istream& in) {      \
+    T t;                                                \
+    in >> t;                                            \
+    return t;                                           \
+  }
+
+  Specialization(bool);
+  Specialization(char);
+  Specialization(int);
+  Specialization(unsigned int);
+  Specialization(float);
+  Specialization(double);
+  Specialization(string);
+#undef Specialization
+
+} // namespace detail
+
+} // namespace Gtp

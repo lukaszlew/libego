@@ -46,8 +46,6 @@ private:
   uint idx;
 };
 
-istream& operator>> (istream& in, Move& m);
-
 #define move_for_each_all(m) for (Move m = Move (0); m.in_range (); m.next ())
 
 #endif

@@ -21,7 +21,7 @@ public:
   static Vertex Resign();
 
   static Vertex OfSgfString (const string& s);
-  static Vertex OfGtpString (const string& s);
+  static Vertex OfGtpStream (istream& in);
   static Vertex OfCoords (int row, int column); // TODO uint
 
   // Utilities.
@@ -48,9 +48,5 @@ private:
   friend class Nat <Vertex>;
   explicit Vertex (uint raw);
 };
-
-// TODO move this to GTP namespace
-istream& operator>> (istream& in, Vertex& v);
-
 
 #endif
