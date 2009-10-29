@@ -10,12 +10,13 @@
 using std::endl;
 using std::stringstream;
 using std::string;
+using std::istream;
 
 // -----------------------------------------------------------------------------
 
 // A simple command.
 void CAdd (Gtp::Io& io) {
-  io.out << io.Read<int>() + io.Read<int>(11);
+  io.out << io.Read<int>() + io.Read<unsigned int>(11);
   io.CheckEmpty ();
 }
 
@@ -179,6 +180,41 @@ BOOST_AUTO_TEST_CASE (RunSingleCommand) {
   BOOST_CHECK_EQUAL (response, "bye");
   BOOST_CHECK_EQUAL (gtp.RunOneCommand ("123 \t ", &response), Gtp::Repl::NoOp);
   BOOST_CHECK_EQUAL (response, "");
+}
+
+// Private Default Constructor class
+class Pdc {
+public:
+  int i;
+  string s;
+
+  static Pdc OfGtpStream (istream& in) {
+    Pdc pdc;
+    in >> pdc.i >> pdc.s;
+    return pdc;
+  }
+
+private:
+  Pdc () {};
+};
+
+void CReadPdc (Gtp::Io& io) {
+  Pdc pdc = io.Read <Pdc> ();
+  io.out << pdc.s << " - " << pdc.i;
+}
+
+BOOST_AUTO_TEST_CASE (NoDefaultConstructorGtp) {
+  gtp.Register ("read_pdc", CReadPdc);
+
+  string response;
+
+  BOOST_CHECK_EQUAL (gtp.RunOneCommand ("read_pdc 42 istheanswer", &response),
+                     Gtp::Repl::Success);
+  BOOST_CHECK_EQUAL (response, "istheanswer - 42");
+
+  BOOST_CHECK_EQUAL (gtp.RunOneCommand ("read_pdc istheanswer 42", &response),
+                     Gtp::Repl::Failure);
+  BOOST_CHECK_EQUAL (response, "syntax error");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

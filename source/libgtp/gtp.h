@@ -1,5 +1,5 @@
-#ifndef _GTP_H_
-#define _GTP_H_
+#ifndef GTP_H_
+#define GTP_H_
 
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
@@ -104,12 +104,24 @@ Repl::Callback GetSetCallback (T* var);
 
 // -----------------------------------------------------------------------------
 // implementation
+namespace detail {
+  template <class T> T IoReadOfStream (istream& in) { return T::OfGtpStream (in); }
+#define Specialization(T) template<> T IoReadOfStream< T > (istream& in)
+  Specialization(bool);
+  Specialization(char);
+  Specialization(int);
+  Specialization(unsigned int);
+  Specialization(float);
+  Specialization(double);
+  Specialization(string);
+#undef Specialization
+}
+
 
 template <typename T>
 T Io::Read () {
   in.clear();
-  T t;
-  in >> t;
+  T t = detail::IoReadOfStream<T> (in);
   if (in.fail()) {
     in.clear();
     SetError ("syntax error");
@@ -121,8 +133,7 @@ T Io::Read () {
 template <typename T>
 T Io::Read (const T& default_value) {
   in.clear();
-  T t;
-  in >> t;
+  T t = detail::IoReadOfStream<T> (in);
   if (in.fail()) {
     in.clear();
     return default_value;
