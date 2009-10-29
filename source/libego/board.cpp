@@ -185,7 +185,7 @@ void Board::print_cerr (Vertex v) const {
 
 void Board::clear () {
   empty_v_cnt = 0;
-  for (Player pl; pl.MoveNext();) {
+  ForEachNat (Player, pl) {
     player_v_cnt [pl] = 0;
     last_play_ [pl]   = Vertex::Any ();
   }
@@ -233,7 +233,7 @@ Hash Board::recalc_hash () const {
   return new_hash;
 }
 
-Board::Board () {
+Board::Board () : last_player_ (Player::Black()) {
   clear ();
   set_komi (6.5);
 }
@@ -507,9 +507,9 @@ bool Board::both_player_pass () const {
 
 int Board::tt_score() const {
   NatMap<Player, int> score;
-  for (Player pl; pl.MoveNext();) score[pl] = 0;
+  ForEachNat (Player, pl) score[pl] = 0;
 
-  for (Player pl; pl.MoveNext();) {
+  ForEachNat (Player, pl) {
     FastStack<Vertex, area> queue;
     NatMap<Vertex, bool> visited;
 
@@ -605,7 +605,7 @@ void Board::check_empty_v () const {
       noticed [v] = true;
     });
 
-  for (Player pl; pl.MoveNext();)
+  ForEachNat (Player, pl)
     exp_player_v_cnt [pl] = 0;
 
   for (Vertex v; v.MoveNext(); ) {
@@ -617,7 +617,7 @@ void Board::check_empty_v () const {
     if (color_at [v].IsPlayer ()) exp_player_v_cnt [color_at[v].ToPlayer ()]++;
   }
 
-  for (Player pl; pl.MoveNext();)
+  ForEachNat (Player, pl)
     assert (exp_player_v_cnt [pl] == player_v_cnt [pl]);
 }
 

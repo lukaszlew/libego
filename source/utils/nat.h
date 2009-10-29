@@ -18,7 +18,11 @@ class Nat {
     return T (raw);
   }
 
-  Nat () : raw (-1) {
+  static T Invalid() {
+    return T (-1);
+  }
+
+  Nat () : raw (-1) { // TODO remove it
   }
 
   // Utils.
@@ -59,6 +63,8 @@ class Nat {
   uint raw;
 };
 
+#define ForEachNat(T, var) for (T var = T::Invalid(); var.MoveNext(); )
+
 // -----------------------------------------------------------------------------
 // NatMap<Nat, Elt> is an array that can be indexed by Nat
 
@@ -77,7 +83,7 @@ class NatMap {
   }
 
   void SetAll (const Elt& elt) {
-    for (Nat nat; nat.MoveNext(); ) {
+    ForEachNat (Nat, nat) {
       (*this)[nat] = elt;
     }
   }

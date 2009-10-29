@@ -8,11 +8,10 @@
 class Player : public Nat <Player> { // TODO check is check always checked in constructors
 public:
 
-  static const uint kBound = 2;
-
   // Constructors.
 
-  explicit Player ();
+  Player() {} // TODO remove it after Gtp::Io::Read <Player> problem is resolved.
+
   static Player Black ();
   static Player White ();
   static Player OfGtpString (const std::string& s);
@@ -26,7 +25,9 @@ public:
   template <typename T>
   T SubjectiveScore (const T& score) const;
 
- protected:
+  static const uint kBound = 2;
+
+ private:
   friend class Nat <Player>;
   explicit Player (uint raw);
 };

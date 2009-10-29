@@ -13,6 +13,8 @@ public:
   explicit Move ();
   explicit Move (int idx_);
 
+  static Move Invalid() { return Move (-1); } // TODO replace by Nat
+
   Player get_player ();
   Vertex get_vertex ();
 

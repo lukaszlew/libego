@@ -53,7 +53,7 @@ namespace Benchmark {
     NatMap<Player, uint>  win_cnt;
     FastTimer              fast_timer;
 
-    for (Player pl; pl.MoveNext();) 
+    ForEachNat (Player, pl) 
       win_cnt [pl] = 0;
 
     fast_timer.reset ();

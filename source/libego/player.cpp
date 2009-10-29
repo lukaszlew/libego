@@ -4,9 +4,6 @@
 
 #include "player.h"
 
-Player::Player () : Nat<Player> () { 
-}
-
 Player::Player (uint raw) : Nat<Player> (raw) { 
 }
 
@@ -25,7 +22,7 @@ Player Player::OfGtpString (const string& s) {
   if (s == "w" || s == "W" || s == "White" || s == "WHITE "|| s == "white") {
     return Player::White();
   }
-  return Player();
+  return Player::Invalid();
 }
 
 
