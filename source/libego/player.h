@@ -10,8 +10,6 @@ public:
 
   // Constructors.
 
-  Player() {} // TODO remove it after Gtp::Io::Read <Player> problem is resolved.
-
   static Player Black ();
   static Player White ();
   static Player OfGtpStream (istream& s);
