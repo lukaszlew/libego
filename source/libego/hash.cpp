@@ -46,7 +46,7 @@ void Hash::operator^= (const Hash& other) { hash ^= other.hash; }
 Zobrist::Zobrist () {
   FastRandom fr (123);
   ForEachNat (Player, pl) {
-    for (Vertex v; v.MoveNext(); ) {
+    ForEachNat (Vertex, v) {
       Move m = Move (pl, v);
       hashes [m].randomize (fr);
     }
