@@ -54,7 +54,7 @@
 void Cbenchmark (Gtp::Io& io) {
   uint n = io.Read<uint> (100000);
   io.CheckEmpty ();
-  io.out << Benchmark::run (n);
+  io.out << Benchmark::Run (n);
 }
 
 int main(int argc, char** argv) {

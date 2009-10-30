@@ -31,11 +31,11 @@ namespace Benchmark {
 
   static const Board empty_board;
 
-  void do_playouts (uint playout_cnt, NatMap<Player, uint>* win_cnt) {
+  void DoPlayouts (uint playout_cnt, NatMap<Player, uint>* win_cnt) {
     static Board playout_board;
     static FastRandom random (123);
 
-    LightPlayout playout(&playout_board, random);
+    LightPlayout playout (&playout_board, random);
 
     rep (ii, playout_cnt) {
       playout_board.load (&empty_board);
@@ -49,9 +49,9 @@ namespace Benchmark {
     unused(xxx);
   }
 
-  string run (uint playout_cnt) {
-    NatMap<Player, uint>  win_cnt;
-    FastTimer              fast_timer;
+  string Run (uint playout_cnt) {
+    NatMap <Player, uint> win_cnt;
+    FastTimer fast_timer;
 
     ForEachNat (Player, pl) 
       win_cnt [pl] = 0;
@@ -60,7 +60,7 @@ namespace Benchmark {
     fast_timer.start ();
     float seconds_begin = process_user_time ();
     
-    do_playouts(playout_cnt, &win_cnt);
+    DoPlayouts (playout_cnt, &win_cnt);
 
     float seconds_end = process_user_time ();
     fast_timer.stop ();

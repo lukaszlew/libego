@@ -6,7 +6,7 @@
 #include "board.h"
 
 namespace Benchmark {
-  string run (uint playout_cnt);
+  string Run (uint playout_cnt);
 }
 
 #endif
