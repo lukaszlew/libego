@@ -15,7 +15,6 @@ public:
   explicit Vertex() {}; // TODO remove it
 
   static Vertex Pass();
-  static Vertex Any(); // TODO replae it with Invalid
   static Vertex Resign();
 
   static Vertex OfSgfString (const string& s);
@@ -27,7 +26,7 @@ public:
   int GetRow() const;
   int GetColumn() const;
 
-  // this can be achieved quicker by color_at lookup
+  // This can be achieved quicker by color_at lookup.
   bool IsOnBoard() const;
 
   Vertex N() const;
@@ -41,6 +40,8 @@ public:
   Vertex SE() const;
 
   string ToGtpString() const;
+
+  // Other.
 
   static const uint kBound = (board_size + 2) * (board_size + 2);
 

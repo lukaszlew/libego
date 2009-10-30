@@ -91,7 +91,7 @@ public:                         // board interface
   // Returns vertex forbidden by simple ko rule or Vertex::Any()
   Vertex ko_v () const;
 
-  string to_string (Vertex mark_v = Vertex::Any ()) const;
+  string to_string (Vertex mark_v = Vertex::Invalid ()) const;
 
   // debugging helper
   void print_cerr (Vertex v = Vertex::Pass ()) const;
@@ -204,7 +204,7 @@ private:
 };
 
 #define empty_v_for_each(board, vv, i) {                                \
-    Vertex vv = Vertex::Any ();                                         \
+    Vertex vv = Vertex::Invalid();                                      \
     rep (ev_i, (board)->empty_v_cnt) {                                  \
       vv = (board)->empty_v [ev_i];                                     \
       i;                                                                \

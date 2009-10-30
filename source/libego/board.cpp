@@ -168,12 +168,12 @@ void Board::clear () {
   empty_v_cnt = 0;
   ForEachNat (Player, pl) {
     player_v_cnt [pl] = 0;
-    last_play_ [pl]   = Vertex::Any ();
+    last_play_ [pl]   = Vertex::Invalid();
   }
   move_no      = 0;
   last_player_ = Player::White (); // act player is other
   last_move_status = play_ok;
-  ko_v_        = Vertex::Any ();
+  ko_v_        = Vertex::Invalid();
   ForEachNat (Vertex, v) {
     color_at      [v] = Color::OffBoard ();
     nbr_cnt       [v] = NbrCounter::Empty();
@@ -376,7 +376,7 @@ void Board::play_eye_legal (Player player, Vertex v) {
 
 // Warning: has to be called before place_stone, because of hash storing
 void Board::basic_play (Player player, Vertex v) {
-  ko_v_                   = Vertex::Any ();
+  ko_v_                   = Vertex::Invalid();
   last_empty_v_cnt        = empty_v_cnt;
   last_player_            = player;
   last_play_ [player]     = v;
@@ -524,9 +524,9 @@ int Board::playout_score () const {
   int eye_score = 0;
 
   empty_v_for_each (this, v, {
-      eye_score += nbr_cnt[v].player_cnt_is_max (Player::Black ());
-      eye_score -= nbr_cnt[v].player_cnt_is_max (Player::White ());
-    });
+    eye_score += nbr_cnt[v].player_cnt_is_max (Player::Black ());
+    eye_score -= nbr_cnt[v].player_cnt_is_max (Player::White ());
+  });
 
   return approx_score () + eye_score;
 }

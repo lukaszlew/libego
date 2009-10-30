@@ -27,9 +27,6 @@ string CoordColToString (int idx) {
 
 
 
-// TODO
-// static_assert (cnt <= (1 << bits_used));
-// static_assert (cnt > (1 << (bits_used-1)));
 //--------------------------------------------------------------------------------
 
 Vertex::Vertex (uint raw) : Nat <Vertex> (raw) {
@@ -39,10 +36,6 @@ Vertex Vertex::Pass() {
   return Vertex (0); // TODO change it
 }
 
-Vertex Vertex::Any() {
-  return Vertex (1); // TODO change it 
-}
-
 Vertex Vertex::Resign() {
   return Vertex (2); // TODO change it
 }
@@ -50,14 +43,14 @@ Vertex Vertex::Resign() {
 Vertex Vertex::OfSgfString (const string& s) {
   if (s == "") return Pass(); // TODO pass ?
   if (s == "tt" && board_size <= 19) return Pass(); // TODO comment
-  if (s.size() != 2) return Any();
+  if (s.size() != 2) return Invalid();
   int col = s[0] - 'a';
   int row = s[1] - 'a';
   
   if (CoordIsOnBoard (row) && CoordIsOnBoard (col)) { // TODO move this ...
     return Vertex::OfCoords (row, col); // ... to this
   } else {
-    return Any ();
+    return Invalid();
   }
 }
 
@@ -85,7 +78,10 @@ Vertex Vertex::OfGtpStream (istream& in) {
     col++;
   }
 
-  if (col == int (col_tab.size ())) return Any();
+  if (col == int (col_tab.size ())) {
+    in.setstate (ios_base::badbit);
+    return Invalid();
+  }
   return Vertex::OfCoords (row, col);
 }
 
@@ -126,9 +122,9 @@ string Vertex::ToGtpString() const {
   int r;
   int c;
   
-  if (*this == Pass())   return "pass";
-  if (*this == Any())    return "any";
-  if (*this == Resign()) return "resign";
+  if (*this == Invalid()) return "invalid";
+  if (*this == Pass())    return "pass";
+  if (*this == Resign())  return "resign";
 
   r = GetRow ();
   c = GetColumn ();
