@@ -11,31 +11,30 @@
 
 class Hash {
 public:
-  
-  uint64 hash;
-
   Hash ();
-  uint index () const;
-  uint lock  () const;
+  uint Index () const;
+  uint Lock  () const;
 
-  void randomize (FastRandom& fr);
-  void set_zero ();
+  void Randomize (FastRandom& fr);
+  void SetZero();
 
   bool operator== (const Hash& other) const;
   void operator^= (const Hash& other);
+
+private:  
+  uint64 hash;
 };
 
+// -----------------------------------------------------------------------------
 
 class Zobrist {
 public:
+  Zobrist();
+  Hash OfMove (Move m) const;
+  Hash OfPlayerVertex (Player pl,  Vertex v) const;
 
+private:
   NatMap<Move, Hash> hashes;
-
-  Zobrist ();
-
-  Hash of_move (Move m) const;
-
-  Hash of_pl_v (Player pl,  Vertex v) const;
 };
 
 #endif

@@ -203,11 +203,11 @@ void Board::clear () {
 Hash Board::recalc_hash () const {
   Hash new_hash;
 
-  new_hash.set_zero ();
+  new_hash.SetZero ();
 
   ForEachNat (Vertex, v) {
     if (color_at [v].IsPlayer ()) {
-      new_hash ^= zobrist->of_pl_v (color_at [v].ToPlayer (), v);
+      new_hash ^= zobrist->OfPlayerVertex (color_at [v].ToPlayer (), v);
     }
   }
 
@@ -412,9 +412,9 @@ void Board::remove_chain (Vertex v) {
 
   do {
     vertex_for_each_4_nbr (act_v, nbr_v, {
-        nbr_cnt [nbr_v].player_dec (old_color.ToPlayer());
-        chain_at(nbr_v).lib_cnt += 1;
-      });
+      nbr_cnt [nbr_v].player_dec (old_color.ToPlayer());
+      chain_at(nbr_v).lib_cnt += 1;
+    });
 
     Vertex tmp_v = act_v;
     act_v = chain_next_v[act_v];
@@ -425,7 +425,7 @@ void Board::remove_chain (Vertex v) {
 
 
 void Board::place_stone (Player pl, Vertex v) {
-  hash_ ^= zobrist->of_pl_v (pl, v);
+  hash_ ^= zobrist->OfPlayerVertex (pl, v);
   player_v_cnt[pl]++;
   color_at[v] = Color::OfPlayer (pl);
 
@@ -441,7 +441,7 @@ void Board::place_stone (Player pl, Vertex v) {
 
 
 void Board::remove_stone (Vertex v) {
-  hash_ ^= zobrist->of_pl_v (color_at [v].ToPlayer (), v);
+  hash_ ^= zobrist->OfPlayerVertex (color_at [v].ToPlayer (), v);
   player_v_cnt [color_at[v].ToPlayer ()]--;
   color_at [v] = Color::Empty ();
 
