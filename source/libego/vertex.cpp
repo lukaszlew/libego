@@ -44,17 +44,11 @@ Vertex Vertex::OfCoords (int row, int column) {
 }
 
 Vertex Vertex::OfSgfString (const string& s) {
-  if (s == "") return Pass(); // TODO pass ?
-  if (s == "tt" && board_size <= 19) return Pass(); // TODO comment
+  if (s == "" || (s == "tt" && board_size <= 19)) return Pass();
   if (s.size() != 2) return Invalid();
   int col = s[0] - 'a';
   int row = s[1] - 'a';
-  
-  if (CoordIsOnBoard (row) && CoordIsOnBoard (col)) { // TODO move this ...
-    return Vertex::OfCoords (row, col); // ... to this
-  } else {
-    return Invalid();
-  }
+  return Vertex::OfCoords (row, col);
 }
 
 Vertex Vertex::OfGtpStream (istream& in) {
@@ -111,15 +105,10 @@ Vertex Vertex::SW() const { return S().W(); }
 Vertex Vertex::SE() const { return S().E(); }
 
 string Vertex::ToGtpString() const {
-  int r;
-  int c;
-  
   if (*this == Invalid()) return "invalid";
   if (*this == Pass())    return "pass";
 
-  r = GetRow ();
-  c = GetColumn ();
-  ostringstream ss;
-  ss << CoordColToString (c) << CoordRowToString (r);
-  return ss.str ();
+  return
+    CoordColToString (GetColumn ()) +
+    CoordRowToString (GetRow ());
 }
