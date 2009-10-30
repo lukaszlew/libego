@@ -8,59 +8,26 @@
 #include "uint.h"
 
 // -----------------------------------------------------------------------------
-// Nat<bound> class implements integers smaller than bound.
-
-// TODO separate implementation
+// For a use case look in player.h
 
 template <class T>
 class Nat {
  public:
   // Constructors.
 
-  static T OfRaw (uint raw) {
-    return T (raw);
-  }
-
-  static T Invalid() {
-    return T (-1);
-  }
-
-  Nat () : raw (-1) { // TODO remove it
-  }
+  Nat ();  // TODO replace default constructor with Invalid.
+  static T OfRaw (uint raw);
+  static T Invalid();
 
   // Utils.
 
-  bool MoveNext() {
-    if (raw+1 < T::kBound) {
-      raw += 1;
-      return true;
-    }
-    return false;
-  }
-
-  uint GetRaw() const {
-    return raw;
-  }
-
-  void SetRaw (uint raw) {
-    this->raw = raw;
-  }
-
-  operator bool () {
-    return raw != static_cast<uint> (-1);
-  }
-
-  bool operator == (const Nat& other) const {
-    return this->raw == other.raw;
-  }
-
-  bool operator != (const Nat& other) const {
-    return this->raw != other.raw;
-  }
+  bool MoveNext();
+  uint GetRaw() const;
+  bool operator == (const Nat& other) const;
+  bool operator != (const Nat& other) const;
 
  protected:
-  explicit Nat (uint raw) : raw (raw) {
-  }
+  explicit Nat (uint raw);
 
  private:
   uint raw;
@@ -74,31 +41,18 @@ class Nat {
 template <typename Nat, typename Elt>
 class NatMap {
  public:
-  NatMap() {
-  }
-
-  Elt& operator[] (Nat nat) { 
-    return tab [nat.GetRaw()];
-  }
-
-  const Elt& operator[] (Nat nat) const {
-    return tab [nat.GetRaw()];
-  }
-
-  void SetAll (const Elt& elt) {
-    ForEachNat (Nat, nat) {
-      (*this)[nat] = elt;
-    }
-  }
-
-  void SetToZero () { 
-    memset (tab, '\0', sizeof (tab)); 
-  }
+  NatMap();
+  Elt& operator[] (Nat nat);
+  const Elt& operator[] (Nat nat) const;
+  void SetAll (const Elt& elt);
+  void SetToZero ();
 
  private:
   Elt tab [Nat::kBound];
 };
 
 // -----------------------------------------------------------------------------
+
+#include "nat-inl.h"
 
 #endif // NAT_H_
