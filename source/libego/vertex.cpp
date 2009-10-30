@@ -10,13 +10,13 @@ namespace {
   const string col_tab = "ABCDEFGHJKLMNOPQRSTUVWXYZ";
   const static uint dNS = (board_size + 2);
   const static uint dWE = 1;
+
+  bool CoordIsOnBoard (int coord) {
+    return static_cast <uint> (coord) < board_size; 
+  }
+
 }
 
-bool CoordIsOnBoard (int idx) {
-  return uint (idx) < board_size; 
-}
-
-// TODO to gtp string
 string CoordRowToString (int idx) {
   return ToString (board_size - idx);
 }
@@ -34,6 +34,13 @@ Vertex::Vertex (uint raw) : Nat <Vertex> (raw) {
 
 Vertex Vertex::Pass() {
   return Vertex (0); // TODO change it
+}
+
+Vertex Vertex::OfCoords (int row, int column) {
+  if (!CoordIsOnBoard (row) || !CoordIsOnBoard (column)) {
+    return Vertex::Invalid();
+  }
+  return Vertex::OfRaw ((row+1) * dNS + (column+1) * dWE);
 }
 
 Vertex Vertex::OfSgfString (const string& s) {
@@ -80,16 +87,6 @@ Vertex Vertex::OfGtpStream (istream& in) {
   return Vertex::OfCoords (row, col);
 }
 
-Vertex Vertex::OfCoords (int row, int column) {
-  // TODO
-  //   if (vertex_ac) {
-  //     if (row != -1 || col != -1) { // pass
-  //       assertc (coord_ac, CoordIsOnBoard (row)); 
-  //       assertc (coord_ac, CoordIsOnBoard (col)); 
-  //     }
-  //   }
-  return Vertex::OfRaw ((row+1) * dNS + (column+1) * dWE);
-}
 
 int Vertex::GetRow() const {
   return int (GetRaw() / dNS - 1); 
