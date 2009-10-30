@@ -9,27 +9,14 @@
 #include "hash.h"
 #include "color.h"
 
-// TODO move these to Board
-
 class Board {
-public:                         // board interface
+public:
 
+  // Constructs empty board.
   Board ();
-  
 
-  /* Slow full rules implementation */
-
-
-  // Tromp-Taylor score.
-  // Scoring uses integers, so to get a true result you need to
-  // substract 0.5 (convention is that white wins when score == 0).
-  int tt_score() const;
-
-  // Winner according to tt_score.
-  Player tt_winner() const;
-
-
-  /* Fast playout functions */ 
+  // ----------------------
+  // Fast playout functions
 
 
   // Loads save_board into this board.
@@ -66,8 +53,19 @@ public:                         // board interface
   // Winner according to playout_score.
   Player playout_winner () const;
 
+  // ------------------------------------------------------
+  // Some slow functions needed in some playout situations.
 
-  /* Auxiliary functions. May/will change. */
+  // Tromp-Taylor score - quite slow function.
+  // Scoring uses integers, so to get a true result you need to
+  // substract 0.5 (convention is that white wins when score == 0).
+  int tt_score() const;
+
+  // Winner according to tt_score.
+  Player tt_winner() const;
+
+  // -------------------------------------
+  // Auxiliary functions. May/will change.
 
 
   // Returns 1 (-1) if v is occupied by or is an eye of Black(White).
