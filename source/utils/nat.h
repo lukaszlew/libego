@@ -11,7 +11,6 @@
 // Nat<bound> class implements integers smaller than bound.
 
 // TODO separate implementation
-// TODO assert system
 
 template <class T>
 class Nat {
