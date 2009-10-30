@@ -1,3 +1,7 @@
+//
+// Copyright 2006 and onwards, Lukasz Lew
+//
+
 #ifndef FAST_TIMER_H_
 #define FAST_TIMER_H_
 

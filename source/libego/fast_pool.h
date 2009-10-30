@@ -1,3 +1,7 @@
+//
+// Copyright 2006 and onwards, Lukasz Lew
+//
+
 #ifndef FAST_POOL_H_
 #define FAST_POOL_H_
 

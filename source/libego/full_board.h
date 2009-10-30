@@ -1,3 +1,7 @@
+//
+// Copyright 2006 and onwards, Lukasz Lew
+//
+
 #ifndef FULL_BOARD_H_
 #define FULL_BOARD_H_
 

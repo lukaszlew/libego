@@ -1,3 +1,7 @@
+//
+// Copyright 2006 and onwards, Lukasz Lew
+//
+
 #ifndef HASH_H_
 #define HASH_H_
 

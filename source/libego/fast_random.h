@@ -1,3 +1,7 @@
+//
+// Copyright 2006 and onwards, Lukasz Lew
+//
+
 #ifndef FAST_RANDOM_
 #define FAST_RANDOM_
 

@@ -1,3 +1,7 @@
+//
+// Copyright 2006 and onwards, Lukasz Lew
+//
+
 #ifndef PLAYOUT_H_
 #define PLAYOUT_H_
 
