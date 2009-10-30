@@ -5,7 +5,7 @@
 #ifndef PLAYER_H_
 #define PLAYER_H_
 
-class Player : public Nat <Player> { // TODO check is check always checked in constructors
+class Player : public Nat <Player> {
 public:
 
   // Constructors.
@@ -23,6 +23,8 @@ public:
   template <typename T>
   T SubjectiveScore (const T& score) const;
 
+  // Other.
+
   static const uint kBound = 2;
 
  private:
@@ -30,16 +32,6 @@ public:
   explicit Player (uint raw);
 };
 
-// -----------------------------------------------------------------------------
-// internal
-// TODO move this to player-impl.h
-
-template <typename T>
-T Player::SubjectiveScore (const T& score) const {
-  T tab[2];
-  tab[0] = score;
-  tab[1] = - score;
-  return tab [GetRaw()];
-}
+#include "player-inl.h"
 
 #endif
