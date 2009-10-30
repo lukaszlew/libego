@@ -9,16 +9,16 @@
 
 class FastTimer {
 public:
-  static uint64 get_cc_time ();
-
   FastTimer ();
-  void   reset ();
-  void   start ();
-  void   stop ();
-  double ticks ();
-  string to_string (float unit = 1.0);
+  void Reset();
+  void Start();
+  void Stop();
+  double Ticks();
+  string ToString (float unit = 1.0);
 
 private:
+  static uint64 GetCcTime ();
+
   double  sample_cnt;
   double  sample_sum;
   uint64  start_time;

@@ -37,18 +37,18 @@ namespace Benchmark {
     ForEachNat (Player, pl) 
       win_cnt [pl] = 0;
 
-    fast_timer.reset ();
-    fast_timer.start ();
+    fast_timer.Reset ();
+    fast_timer.Start ();
     float seconds_begin = process_user_time ();
     
     DoPlayouts (playout_cnt, &win_cnt);
 
     float seconds_end = process_user_time ();
-    fast_timer.stop ();
+    fast_timer.Stop ();
 
 
     float seconds_total = seconds_end - seconds_begin;
-    float cc_per_playout = fast_timer.ticks () / double (playout_cnt);
+    float cc_per_playout = fast_timer.Ticks () / double (playout_cnt);
     
     ostringstream ret;
     ret << endl 

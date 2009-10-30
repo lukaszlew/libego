@@ -11,16 +11,16 @@
 #include "fast_timer.h"
 
 FastTimer::FastTimer () {
-  reset ();
+  Reset ();
   uint64 t1, t2;
-  t1 = get_cc_time ();
-  t2 = get_cc_time ();
+  t1 = GetCcTime ();
+  t2 = GetCcTime ();
   overhead = double (t2 - t1);
 }
 
 // TODO: http://stackoverflow.com/questions/771867/how-to-make-a-cross-platform-c-inline-assembly-language/
 
-uint64 FastTimer::get_cc_time () {
+uint64 FastTimer::GetCcTime () {
 #ifdef _MSC_VER
   return __rdtsc();
 #else
@@ -36,27 +36,27 @@ uint64 FastTimer::get_cc_time () {
 #endif //_MSC_VER
 }
 
-void FastTimer::reset () {
+void FastTimer::Reset () {
   sample_cnt = 0;
   sample_sum = 0;
 }
 
-void FastTimer::start () {
-  start_time = get_cc_time ();
+void FastTimer::Start () {
+  start_time = GetCcTime ();
 }
 
-void FastTimer::stop () {
+void FastTimer::Stop () {
   uint64 stop_time;
-  stop_time = get_cc_time ();
+  stop_time = GetCcTime ();
   sample_cnt += 1.0;
   sample_sum += double (stop_time - start_time) - overhead;
 }
 
-double FastTimer::ticks () { return sample_sum / sample_cnt; }
+double FastTimer::Ticks () { return sample_sum / sample_cnt; }
 
-string FastTimer::to_string (float unit) {
+string FastTimer::ToString (float unit) {
   ostringstream s;
   s.precision(15);
-  s << "avg CC = " << ticks () / unit << " (cnt = " << sample_cnt << ")";
+  s << "avg CC = " << Ticks () / unit << " (cnt = " << sample_cnt << ")";
   return s.str ();
 }
