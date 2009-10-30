@@ -128,12 +128,12 @@ string Board::to_string (Vertex mark_v) const {
 
   out << " ";
   if (board_size < 10) out << " "; else out << "  ";
-  coord_for_each (col) os (Coord::ColumnName (col));
+  coord_for_each (col) os (Coord::ColumnToGtpString (col));
   out << endl;
 
   coord_for_each (row) {
     if (board_size >= 10 && board_size - row < 10) out << " ";
-    os (Coord::RowName (row));
+    os (Coord::RowToGtpString (row));
     coord_for_each (col) {
       Vertex v = Vertex::OfCoords (row, col);
       char ch = color_at [v].ToShowboardChar ();
@@ -142,12 +142,12 @@ string Board::to_string (Vertex mark_v) const {
       else                         os (ch);
     }
     if (board_size >= 10 && board_size - row < 10) out << " ";
-    os (Coord::RowName (row));
+    os (Coord::RowToGtpString (row));
     out << endl;
   }
 
   if (board_size < 10) out << "  "; else out << "   ";
-  coord_for_each (col) os (Coord::ColumnName (col));
+  coord_for_each (col) os (Coord::ColumnToGtpString (col));
   out << endl;
 
 #undef coord_for_each

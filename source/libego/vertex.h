@@ -7,6 +7,15 @@
 
 #include "config.h"
 
+namespace Coord {
+  bool IsOk (int coord);
+
+  string RowToGtpString (int row);
+  string ColumnToGtpString (int column);
+  int RowOfGtpInt (int r);
+  int ColumnOfGtpChar (char c);
+}
+
 class Vertex : public Nat <Vertex> {
 public:
 

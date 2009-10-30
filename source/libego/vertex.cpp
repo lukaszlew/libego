@@ -3,32 +3,40 @@
 //
 
 #include "vertex.h"
-
 #include "testing.h"
 
-namespace {
-  const string col_tab = "ABCDEFGHJKLMNOPQRSTUVWXYZ";
-  const static uint dNS = (board_size + 2);
-  const static uint dWE = 1;
-
-
-}
+// -----------------------------------------------------------------------------
 
 namespace Coord {
-  string RowName (int row) {
-    return ToString (board_size - row);
-  }
-
-  string ColumnName (int column) {
-    return ToString (col_tab [column]);
-  }
+  const string col_tab = "ABCDEFGHJKLMNOPQRSTUVWXYZ";
 
   bool IsOk (int coord) {
     return static_cast <uint> (coord) < board_size; 
   }
+
+  string RowToGtpString (int row) {
+    return ToString (board_size - row);
+  }
+
+  string ColumnToGtpString (int column) {
+    return ToString (col_tab [column]);
+  }
+
+  int RowOfGtpInt (int r) {
+    return board_size - r;
+  }
+
+  int ColumnOfGtpChar (char c) {
+    return col_tab.find (c);
+  }
 }
 
 //--------------------------------------------------------------------------------
+
+namespace {
+  const static uint dNS = (board_size + 2);
+  const static uint dWE = 1;
+}
 
 Vertex::Vertex (uint raw) : Nat <Vertex> (raw) {
 }
@@ -55,15 +63,15 @@ Vertex Vertex::OfSgfString (const string& s) {
 Vertex Vertex::OfGtpString (const string& s) {
   if (s == "pass" || s == "PASS" || s == "Pass") return Pass();
 
-  istringstream vin (s);
+  istringstream parser (s);
   char c;
-  uint n;
-  if (!(vin >> c >> n))  return Invalid();
+  int r;
+  if (!(parser >> c >> r)) return Invalid();
 
   if (c >= 'a' && c <= 'z') c = c - 'a' + 'A';
+  int row = Coord::RowOfGtpInt (r);
+  int col = Coord::ColumnOfGtpChar (c);
 
-  int row = board_size - n;
-  int col = col_tab.find (c);
   return Vertex::OfCoords (row, col);
 }
 
@@ -103,6 +111,6 @@ string Vertex::ToGtpString() const {
   if (*this == Pass())    return "pass";
 
   return
-    Coord::ColumnName (GetColumn()) +
-    Coord::RowName    (GetRow());
+    Coord::ColumnToGtpString (GetColumn()) +
+    Coord::RowToGtpString    (GetRow());
 }
