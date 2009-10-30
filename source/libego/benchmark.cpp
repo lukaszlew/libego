@@ -20,7 +20,7 @@ namespace Benchmark {
 
     rep (ii, playout_cnt) {
       playout_board.load (&empty_board);
-      if (playout.Run () == LightPlayout::pass_pass) {
+      if (playout.Run ()) {
         (*win_cnt) [playout_board.playout_winner ()] ++;
       }
     }

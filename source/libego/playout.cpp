@@ -4,17 +4,16 @@
 
 #include "playout.h"
 
-
 LightPlayout::LightPlayout (Board* board_, FastRandom& random_, uint max_moves_)
 : board (board_), random (random_), max_moves (max_moves_)
 {
 }
 
 all_inline
-LightPlayout::Status LightPlayout::Run () {
+bool LightPlayout::Run() {
   while (true) {
-    if (board->both_player_pass ())  return pass_pass;
-    if (board->move_no >= max_moves) return too_long;
+    if (board->both_player_pass ())  return true;
+    if (board->move_no >= max_moves) return false;
     // if (abs(board->approx_score ()) > 25) return mercy;
     PlayOneMove ();
   }

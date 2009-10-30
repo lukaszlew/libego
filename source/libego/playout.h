@@ -17,24 +17,22 @@
 class LightPlayout {
 public:
 
-  enum Status { pass_pass, too_long, mercy };
+  static const uint kDefaultMaxMoves = Board::area * 2;
 
-  static const uint default_max_moves = Board::area * 2;
-
-  typedef FastStack <Move, default_max_moves> MoveHistory;
+  typedef FastStack <Move, kDefaultMaxMoves> MoveHistory;
 
 public:
 
   LightPlayout (Board* board_,
                 FastRandom& random_,
-                uint max_moves_ = default_max_moves);
+                uint max_moves = kDefaultMaxMoves);
 
   // Look at Run() implementation in playout.cpp
-  Status Run ();
+  bool Run();
   
   // The same as Run() but stores the moves on given stack as long as possible.
   template <uint stack_size>
-  Status Run (FastStack<Move, stack_size>& history);
+  bool Run (FastStack<Move, stack_size>& history);
 
   // Plays one move according to Light policy
   void PlayOneMove ();
@@ -49,12 +47,11 @@ private:
 // internatl implementation
 
 template <uint stack_size> all_inline
-LightPlayout::Status LightPlayout::Run (FastStack<Move, stack_size>& history) {
+bool LightPlayout::Run (FastStack<Move, stack_size>& history) {
   uint last_move = board->move_no + max_moves;
   while (true) {
-    if (board->both_player_pass ())  return pass_pass;
-    if (board->move_no >= last_move) return too_long;
-    // if (abs(board->approx_score ()) > 25) return mercy;
+    if (board->both_player_pass ())  return true;
+    if (board->move_no >= last_move) return false;
     PlayOneMove ();
     if (!history.IsFull ()) history.Push (board->last_move());
   }
