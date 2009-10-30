@@ -45,9 +45,8 @@ void LightPlayout::PlayOneMove () {
   uint ii = ii_start;
   Player act_player = board->act_player ();
 
-  Vertex v;
   while (true) { // TODO separate iterator
-    v = board->empty_v [ii];
+    Vertex v = board->empty_v [ii];
     if (!board->is_eyelike (act_player, v) &&
         board->is_pseudo_legal (act_player, v)) { 
       board->play_legal(act_player, v);

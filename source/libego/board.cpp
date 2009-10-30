@@ -31,7 +31,7 @@
 
 // TODO    center_v.check_is_on_board ();
 #define vertex_for_each_4_nbr(center_v, nbr_v, block) { \
-    Vertex nbr_v;                                       \
+    Vertex nbr_v = Vertex::Invalid();                   \
     nbr_v = center_v.N (); block;                       \
     nbr_v = center_v.W (); block;                       \
     nbr_v = center_v.E (); block;                       \
@@ -40,7 +40,7 @@
 
 // TODO center_v.check_is_on_board ();
 #define vertex_for_each_diag_nbr(center_v, nbr_v, block) {      \
-    Vertex nbr_v;                                               \
+    Vertex nbr_v = Vertex::Invalid();                           \
     nbr_v = center_v.NW (); block;                              \
     nbr_v = center_v.NE (); block;                              \
     nbr_v = center_v.SW (); block;                              \
@@ -404,11 +404,9 @@ void Board::basic_play (Player player, Vertex v) {
 
 
 void Board::merge_chains (Vertex v_base, Vertex v_new) {
-  Vertex act_v;
-
   chain_at(v_base).lib_cnt += chain_at(v_new).lib_cnt;
 
-  act_v = v_new;
+  Vertex act_v = v_new;
   do {
     chain_id_ [act_v] = chain_id_ [v_base];
     act_v = chain_next_v [act_v];
@@ -419,12 +417,8 @@ void Board::merge_chains (Vertex v_base, Vertex v_new) {
 
 no_inline
 void Board::remove_chain (Vertex v) {
-  Vertex act_v;
-  Vertex tmp_v;
-  Color old_color;
-
-  old_color = color_at[v];
-  act_v = v;
+  Color old_color = color_at[v];
+  Vertex act_v = v;
 
   assertc (board_ac, old_color.IsPlayer ());
 
@@ -441,7 +435,7 @@ void Board::remove_chain (Vertex v) {
         chain_at(nbr_v).lib_cnt += 1;
       });
 
-    tmp_v = act_v;
+    Vertex tmp_v = act_v;
     act_v = chain_next_v[act_v];
     chain_next_v [tmp_v] = tmp_v;
 

@@ -10,14 +10,12 @@
 class Vertex : public Nat <Vertex> {
 public:
 
-  static const uint kBound = (board_size + 2) * (board_size + 2);
-
   // Constructors.
 
-  explicit Vertex();
+  explicit Vertex() {}; // TODO remove it
 
   static Vertex Pass();
-  static Vertex Any(); // TODO remove it
+  static Vertex Any(); // TODO replae it with Invalid
   static Vertex Resign();
 
   static Vertex OfSgfString (const string& s);
@@ -43,6 +41,8 @@ public:
   Vertex SE() const;
 
   string ToGtpString() const;
+
+  static const uint kBound = (board_size + 2) * (board_size + 2);
 
 private:
   friend class Nat <Vertex>;
