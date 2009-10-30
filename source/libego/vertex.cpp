@@ -11,21 +11,22 @@ namespace {
   const static uint dNS = (board_size + 2);
   const static uint dWE = 1;
 
-  bool CoordIsOnBoard (int coord) {
-    return static_cast <uint> (coord) < board_size; 
+
+}
+
+namespace Coord {
+  string RowName (int row) {
+    return ToString (board_size - row);
   }
 
+  string ColumnName (int column) {
+    return ToString (col_tab [column]);
+  }
+
+  bool IsOk (int coord) {
+    return static_cast <uint> (coord) < board_size; 
+  }
 }
-
-string CoordRowToString (int idx) {
-  return ToString (board_size - idx);
-}
-
-string CoordColToString (int idx) {
-  return ToString (col_tab [idx]);
-}
-
-
 
 //--------------------------------------------------------------------------------
 
@@ -37,7 +38,7 @@ Vertex Vertex::Pass() {
 }
 
 Vertex Vertex::OfCoords (int row, int column) {
-  if (!CoordIsOnBoard (row) || !CoordIsOnBoard (column)) {
+  if (!Coord::IsOk (row) || !Coord::IsOk (column)) {
     return Vertex::Invalid();
   }
   return Vertex::OfRaw ((row+1) * dNS + (column+1) * dWE);
@@ -84,7 +85,7 @@ int Vertex::GetColumn() const {
 }
 
 bool Vertex::IsOnBoard() const {
-  return CoordIsOnBoard (GetRow()) & CoordIsOnBoard (GetColumn());
+  return Coord::IsOk (GetRow()) & Coord::IsOk (GetColumn());
 }
 
 Vertex Vertex::N() const { return Vertex::OfRaw (GetRaw() - dNS); }
@@ -102,6 +103,6 @@ string Vertex::ToGtpString() const {
   if (*this == Pass())    return "pass";
 
   return
-    CoordColToString (GetColumn ()) +
-    CoordRowToString (GetRow ());
+    Coord::ColumnName (GetColumn()) +
+    Coord::RowName    (GetRow());
 }
