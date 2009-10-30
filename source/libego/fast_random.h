@@ -10,19 +10,13 @@
 class FastRandom {             // Park - Miller "minimal standard"
 public:
 
-  FastRandom (uint seed_);
-  void set_seed (uint seed_);
-  uint get_seed ();
+  FastRandom (uint seed);
+  void SetSeed (uint seed);
+  uint GetSeed ();
 
-  uint rand_int ();
+  uint GetNextUint ();
+  uint GetNextUint (uint n);   // n must be between 1 .. (1<<16) + 1
 
-  // n must be between 1 .. (1<<16) + 1
-  uint rand_int (uint n);
-  
-  void test ();
-  void test2 (uint k, uint n);
-
-  static const int kBound;
   uint seed;
 };
 

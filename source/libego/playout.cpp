@@ -22,7 +22,7 @@ LightPlayout::Status LightPlayout::Run () {
 
 all_inline
 void LightPlayout::PlayOneMove () {
-  uint ii_start = random.rand_int (board->empty_v_cnt); 
+  uint ii_start = random.GetNextUint (board->empty_v_cnt); 
   uint ii = ii_start;
   Player act_player = board->act_player ();
 

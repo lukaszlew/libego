@@ -11,10 +11,10 @@ uint Hash::lock  () const { return hash >> 32; }
 
 void Hash::randomize (FastRandom& fr) { 
   hash =
-    (uint64 (fr.rand_int ()) << (0*16)) ^
-    (uint64 (fr.rand_int ()) << (1*16)) ^ 
-    (uint64 (fr.rand_int ()) << (2*16)) ^ 
-    (uint64 (fr.rand_int ()) << (3*16));
+    (uint64 (fr.GetNextUint ()) << (0*16)) ^
+    (uint64 (fr.GetNextUint ()) << (1*16)) ^ 
+    (uint64 (fr.GetNextUint ()) << (2*16)) ^ 
+    (uint64 (fr.GetNextUint ()) << (3*16));
 }
 
 void Hash::set_zero () { hash = 0; }

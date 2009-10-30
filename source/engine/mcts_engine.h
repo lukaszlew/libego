@@ -73,7 +73,7 @@ public:
   }
 
   Vertex Genmove (Player player) {
-    logger.LogLine ("random_seed     #? [" + ToString (random.get_seed ()) + "]");
+    logger.LogLine ("random_seed     #? [" + ToString (random.GetSeed ()) + "]");
     if (reset_tree_on_genmove) root.Reset ();
     full_board.set_act_player(player); // TODO move player parameter to DoPlayouts
     DoNPlayouts (genmove_playouts);

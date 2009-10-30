@@ -75,7 +75,7 @@ public:
 
   Elt PopRandom (FastRandom& fr) {
     assertc (stack_ac, size > 0);
-    uint idx = fr.rand_int (size);
+    uint idx = fr.GetNextUint (size);
     Elt elt = tab [idx];
     size--;
     tab [idx] = tab [size];

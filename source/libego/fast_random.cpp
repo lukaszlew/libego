@@ -10,24 +10,20 @@
 #include <time.h>
 #endif
 
-const int FastRandom::kBound = (uint(1)<<31) - 1;
-
 //tr1::minstd_rand0 mt; // this is eqivalent when #include <tr1/random>
 
-
-FastRandom::FastRandom (uint seed_) {
-  seed = seed_; 
+FastRandom::FastRandom (uint seed) : seed (seed) {
 }
 
-void FastRandom::set_seed (uint seed_) { 
-  seed = seed_; 
+void FastRandom::SetSeed (uint new_seed) { 
+  seed = new_seed;
 }
 
-uint FastRandom::get_seed () { 
+uint FastRandom::GetSeed () { 
   return seed; 
 }
 
-uint FastRandom::rand_int () {       // a number between  0 ... kBound - 1
+uint FastRandom::GetNextUint () { // a number between  0 ... (uint(1)<<31) - 1 - 1
   uint hi, lo;
   lo = 16807 * (seed & 0xffff);
   hi = 16807 * (seed >> 16);
@@ -35,25 +31,26 @@ uint FastRandom::rand_int () {       // a number between  0 ... kBound - 1
   lo += hi >> 15;
   seed = (lo & 0x7FFFFFFF) + (lo >> 31);
   return seed;
-  //return mt (); // equivalen
 }
 
 // n must be between 1 .. (1<<16) + 1
-uint FastRandom::rand_int (uint n) { // 0 .. n-1
+uint FastRandom::GetNextUint (uint n) { // 0 .. n-1
   assertc (fast_random_ac, n > 0);
   assertc (fast_random_ac, n <= (1<<16)+1);
-  return ((rand_int () & 0xffff) * n) >> 16;
+  return ((GetNextUint() & 0xffff) * n) >> 16;
 }
 
+/*
+// TODO move it to test
 void FastRandom::test () {
-  uint start = rand_int ();
+  uint start = GetNextUint ();
 
   uint n = 1;
   uint max = 0;
   uint sum = start;
 
   while (true) {
-    uint r = rand_int ();
+    uint r = GetNextUint ();
     if (r == start) break;
     n++;
     sum += r;
@@ -69,10 +66,11 @@ void FastRandom::test2 (uint k, uint n) {
 
   rep (ii, k)  bucket [ii] = 0;
   rep (ii, n) {
-    uint r = rand_int (k);
+    uint r = GetNextUint (k);
     assert (r < k);
     bucket [r] ++;
   }
   rep (ii, k)  printf ("%d\n", bucket [ii]);
   delete[] bucket;
 }
+*/

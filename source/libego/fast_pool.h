@@ -5,8 +5,8 @@
 #ifndef FAST_POOL_H_
 #define FAST_POOL_H_
 
-#include "fast_stack.h"
 #include "utils.h"
+#include "fast_stack.h"
 #include "testing.h"
 
 template <class Elt, uint size>
@@ -48,5 +48,7 @@ private:
   Elt* memory;
   FreeEltsStack* free_elts;
 };
+
+// TODO make fast_pool-inl.h
 
 #endif
