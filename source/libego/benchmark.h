@@ -1,3 +1,7 @@
+//
+// Copyright 2006 and onwards, Lukasz Lew
+//
+
 #ifndef BENCHMARK_H_
 #define BENCHMARK_H_
 

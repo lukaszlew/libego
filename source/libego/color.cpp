@@ -5,8 +5,6 @@
 #include "color.h"
 #include "testing.h"
 
-// TODO asserts about not initialized Color
-
 Color::Color () : Nat<Color> () {
 }
 
@@ -35,11 +33,11 @@ Color Color::OfPlayer (Player pl) {
 
 
 bool Color::IsPlayer () const {
-  return GetRaw() <= 1;         // & (~1)) == 0; }
+  return GetRaw() <= 1;
 } 
 
 bool Color::IsNotPlayer () const {
-  return GetRaw() > 1;          // & (~1)) == 0; }
+  return GetRaw() > 1;
 }
 
 Player Color::ToPlayer () const {
@@ -47,7 +45,6 @@ Player Color::ToPlayer () const {
 }
 
 char Color::ToShowboardChar () const { 
-  NatMap<Color, char> tab;
   tab [Black()] = '#';
   tab [White()] = 'O';
   tab [Empty()] = '.';

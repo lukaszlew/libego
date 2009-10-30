@@ -10,9 +10,8 @@
 class Color : public Nat <Color> {
 public:
 
-  static const uint kBound = 4;
-
   // Constructors.
+
   explicit Color();
 
   static Color Black();
@@ -28,6 +27,10 @@ public:
   bool IsNotPlayer() const;
   Player ToPlayer() const;
   char ToShowboardChar() const;
+
+  // Other.
+
+  static const uint kBound = 4;
 
 private:
   friend class Nat <Color>;
