@@ -16,9 +16,10 @@ public:
 
   static Vertex Pass();
 
-  static Vertex OfSgfString (const string& s);
+  static Vertex OfCoords (int row, int column);
+  static Vertex OfGtpString (const string& s);
   static Vertex OfGtpStream (istream& in);
-  static Vertex OfCoords (int row, int column); // TODO uint
+  static Vertex OfSgfString (const string& s);
 
   // Utilities.
 

@@ -51,36 +51,29 @@ Vertex Vertex::OfSgfString (const string& s) {
   return Vertex::OfCoords (row, col);
 }
 
-Vertex Vertex::OfGtpStream (istream& in) {
-  string s;
-  in >> s;
-  if (!in) return Invalid ();
-
+Vertex Vertex::OfGtpString (const string& s) {
   if (s == "pass" || s == "PASS" || s == "Pass") return Pass();
 
   istringstream vin (s);
   char c;
   uint n;
-  if (!(vin >> c >> n)) {
-    in.setstate (ios_base::badbit); // TODO undo read + error handling based on invalid
-    return Invalid();
-  }
+  if (!(vin >> c >> n))  return Invalid();
+
+  if (c >= 'a' && c <= 'z') c = c - 'a' + 'A';
 
   int row = board_size - n;
-  
-  int col = 0;
-  while (col < int (col_tab.size ())) {
-    if (col_tab [col] == c || col_tab [col] -'A' + 'a' == c) break;
-    col++;
-  }
-
-  if (col == int (col_tab.size ())) {
-    in.setstate (ios_base::badbit);
-    return Invalid();
-  }
+  int col = col_tab.find (c);
   return Vertex::OfCoords (row, col);
 }
 
+Vertex Vertex::OfGtpStream (istream& in) {
+  string s;
+  in >> s;
+  if (!in) return Invalid ();
+  Vertex v = OfGtpString (s);
+  if (v == Invalid()) in.setstate (ios_base::badbit);
+  return v;
+}
 
 int Vertex::GetRow() const {
   return int (GetRaw() / dNS - 1); 
