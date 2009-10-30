@@ -66,7 +66,8 @@ private:
   void Cgenmove (Gtp::Io& io) {
     Player player = io.Read<Player> ();
     io.CheckEmpty ();
-    io.out << mcts_engine.Genmove (player).ToGtpString();
+    Vertex v = mcts_engine.Genmove (player);
+    io.out << (v.IsValid() ? v.ToGtpString() : "resign");
   }
 
   void Cboardsize (Gtp::Io& io) {

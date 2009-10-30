@@ -82,7 +82,7 @@ public:
 
     Vertex v = BestMove (player);
 
-    if (v != Vertex::Resign ()) {
+    if (v != Vertex::Invalid ()) {
       bool ok = full_board.try_play (player, v);
       assert(ok);
     }
@@ -137,7 +137,7 @@ private:
 
     return
       best_node.SubjectiveMean() < resign_mean ?
-      Vertex::Resign() :
+      Vertex::Invalid() :
       best_node.v;
   }
 

@@ -36,6 +36,11 @@ uint Nat<T>::GetRaw() const {
 }
 
 template <class T>
+bool Nat<T>::IsValid() const {
+  return *this != Invalid();
+}
+
+template <class T>
 bool Nat<T>::operator == (const Nat& other) const {
   return this->raw == other.raw;
 }

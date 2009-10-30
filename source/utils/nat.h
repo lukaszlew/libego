@@ -23,6 +23,7 @@ class Nat {
 
   bool MoveNext();
   uint GetRaw() const;
+  bool IsValid() const;
   bool operator == (const Nat& other) const;
   bool operator != (const Nat& other) const;
 

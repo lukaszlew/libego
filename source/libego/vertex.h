@@ -15,7 +15,6 @@ public:
   explicit Vertex() {}; // TODO remove it
 
   static Vertex Pass();
-  static Vertex Resign();
 
   static Vertex OfSgfString (const string& s);
   static Vertex OfGtpStream (istream& in);

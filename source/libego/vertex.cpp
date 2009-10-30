@@ -36,10 +36,6 @@ Vertex Vertex::Pass() {
   return Vertex (0); // TODO change it
 }
 
-Vertex Vertex::Resign() {
-  return Vertex (2); // TODO change it
-}
-
 Vertex Vertex::OfSgfString (const string& s) {
   if (s == "") return Pass(); // TODO pass ?
   if (s == "tt" && board_size <= 19) return Pass(); // TODO comment
@@ -60,7 +56,6 @@ Vertex Vertex::OfGtpStream (istream& in) {
   if (!in) return Invalid ();
 
   if (s == "pass" || s == "PASS" || s == "Pass") return Pass();
-  if (s == "resign" || s == "RESIGN" || s == "Resign") return Resign();
 
   istringstream vin (s);
   char c;
@@ -124,7 +119,6 @@ string Vertex::ToGtpString() const {
   
   if (*this == Invalid()) return "invalid";
   if (*this == Pass())    return "pass";
-  if (*this == Resign())  return "resign";
 
   r = GetRow ();
   c = GetColumn ();
