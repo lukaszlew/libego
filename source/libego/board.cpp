@@ -6,9 +6,9 @@
 #include <cstring>
 #include <iostream>
 
-#include "board.h"
-#include "fast_stack.h"
-#include "testing.h"
+#include "board.hpp"
+#include "fast_stack.hpp"
+#include "testing.hpp"
 
 // TODO    center_v.check_is_on_board ();
 #define vertex_for_each_4_nbr(center_v, nbr_v, block) { \

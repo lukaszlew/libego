@@ -3,7 +3,7 @@
 #include <boost/lambda/lambda.hpp>
 #include <iostream>
 #include <fstream>
-#include "gtp.h"
+#include "gtp.hpp"
 
 namespace Gtp {
 

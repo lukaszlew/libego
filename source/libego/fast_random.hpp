@@ -5,7 +5,7 @@
 #ifndef FAST_RANDOM_
 #define FAST_RANDOM_
 
-#include "utils.h"
+#include "utils.hpp"
 
 class FastRandom {             // Park - Miller "minimal standard"
 public:

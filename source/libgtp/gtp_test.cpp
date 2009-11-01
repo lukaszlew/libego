@@ -5,7 +5,7 @@
 #include <iostream>
 #include <sstream>
 
-#include "gtp.h"
+#include "gtp.hpp"
 
 using std::endl;
 using std::stringstream;

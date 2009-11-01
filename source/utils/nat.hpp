@@ -5,7 +5,7 @@
 #ifndef NAT_H_
 #define NAT_H_
 
-#include "uint.h"
+#include "uint.hpp"
 
 // -----------------------------------------------------------------------------
 // For a use case look in player.h
@@ -54,6 +54,6 @@ class NatMap {
 
 // -----------------------------------------------------------------------------
 
-#include "nat-inl.h"
+#include "nat-inl.hpp"
 
 #endif // NAT_H_

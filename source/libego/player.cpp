@@ -2,7 +2,7 @@
 // Copyright 2006 and onwards, Lukasz Lew
 //
 
-#include "player.h"
+#include "player.hpp"
 
 Player::Player (uint raw) : Nat<Player> (raw) { 
 }

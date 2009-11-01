@@ -8,7 +8,7 @@
 #endif
 
 
-#include "fast_timer.h"
+#include "fast_timer.hpp"
 
 FastTimer::FastTimer () {
   Reset ();

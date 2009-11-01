@@ -5,8 +5,8 @@
 #define BOOST_TEST_DYN_LINK // IMPROVE: why do I need this?
 #include <boost/test/unit_test.hpp>
 
-#include "gtp.h"
-#include "gtp_gogui.h"
+#include "gtp.hpp"
+#include "gtp_gogui.hpp"
 
 using std::endl;
 using std::stringstream;

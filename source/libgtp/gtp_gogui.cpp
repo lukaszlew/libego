@@ -1,6 +1,6 @@
 #include "boost/foreach.hpp"
 
-#include "gtp_gogui.h"
+#include "gtp_gogui.hpp"
 
 namespace Gtp {
 

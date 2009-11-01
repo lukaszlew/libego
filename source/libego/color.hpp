@@ -5,7 +5,7 @@
 #ifndef COLOR_H_
 #define COLOR_H_
 
-#include "player.h"
+#include "player.hpp"
 
 class Color : public Nat <Color> {
 public:

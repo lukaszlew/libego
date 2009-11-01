@@ -2,8 +2,8 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem.hpp>
 
-#include "logger.h"
-#include "utils.h"
+#include "logger.hpp"
+#include "utils.hpp"
 
 namespace bdate = boost::gregorian;
 namespace btime = boost::posix_time;

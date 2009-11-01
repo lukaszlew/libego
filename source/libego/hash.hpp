@@ -5,9 +5,9 @@
 #ifndef HASH_H_
 #define HASH_H_
 
-#include "utils.h"
-#include "fast_random.h"
-#include "move.h"
+#include "utils.hpp"
+#include "fast_random.hpp"
+#include "move.hpp"
 
 class Hash {
 public:

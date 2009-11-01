@@ -5,7 +5,7 @@
 #ifndef FAST_TIMER_H_
 #define FAST_TIMER_H_
 
-#include "utils.h"
+#include "utils.hpp"
 
 class FastTimer {
 public:

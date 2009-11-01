@@ -2,8 +2,8 @@
 // Copyright 2006 and onwards, Lukasz Lew
 //
 
-#include "vertex.h"
-#include "testing.h"
+#include "vertex.hpp"
+#include "testing.hpp"
 
 // -----------------------------------------------------------------------------
 

@@ -22,9 +22,9 @@
  \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-#include "sgf_gtp.h"
+#include "sgf_gtp.hpp"
 
-#include "testing.h"
+#include "testing.hpp"
 
 // class gtp_sgf
 

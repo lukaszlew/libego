@@ -32,6 +32,6 @@ public:
   explicit Player (uint raw);
 };
 
-#include "player-inl.h"
+#include "player-inl.hpp"
 
 #endif

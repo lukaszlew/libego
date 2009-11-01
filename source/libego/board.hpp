@@ -5,9 +5,9 @@
 #ifndef BOARD_H_
 #define BOARD_H_
 
-#include "utils.h"
-#include "hash.h"
-#include "color.h"
+#include "utils.hpp"
+#include "hash.hpp"
+#include "color.hpp"
 
 class Board {
 public:

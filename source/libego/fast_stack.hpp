@@ -7,9 +7,9 @@
 
 #include <vector>
 
-#include "utils.h"
-#include "testing.h"
-#include "fast_random.h"
+#include "utils.hpp"
+#include "testing.hpp"
+#include "fast_random.hpp"
 
 template <typename Elt, uint max_size> class FastStack {
 public:

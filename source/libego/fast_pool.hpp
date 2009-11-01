@@ -5,9 +5,9 @@
 #ifndef FAST_POOL_H_
 #define FAST_POOL_H_
 
-#include "utils.h"
-#include "fast_stack.h"
-#include "testing.h"
+#include "utils.hpp"
+#include "fast_stack.hpp"
+#include "testing.hpp"
 
 template <class Elt, uint size>
 class FastPool {

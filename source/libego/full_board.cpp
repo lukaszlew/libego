@@ -2,8 +2,8 @@
 // Copyright 2006 and onwards, Lukasz Lew
 //
 
-#include "full_board.h"
-#include "testing.h"
+#include "full_board.hpp"
+#include "testing.hpp"
 
 
 void FullBoard::clear() {

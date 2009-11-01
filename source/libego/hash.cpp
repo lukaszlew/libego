@@ -2,7 +2,7 @@
 // Copyright 2006 and onwards, Lukasz Lew
 //
 
-#include "hash.h"
+#include "hash.hpp"
 
 Hash::Hash () {
 }

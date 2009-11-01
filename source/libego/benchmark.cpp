@@ -2,11 +2,11 @@
 // Copyright 2006 and onwards, Lukasz Lew
 //
 
-#include "benchmark.h"
+#include "benchmark.hpp"
 
-#include "fast_timer.h"
-#include "playout.h"
-#include "utils.h"
+#include "fast_timer.hpp"
+#include "playout.hpp"
+#include "utils.hpp"
 
 namespace Benchmark {
 

@@ -6,7 +6,7 @@
 #define FULL_BOARD_H_
 
 #include <vector>
-#include "board.h"
+#include "board.hpp"
 
 class FullBoard : public Board {
 public:

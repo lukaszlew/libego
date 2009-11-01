@@ -2,8 +2,8 @@
 // Copyright 2006 and onwards, Lukasz Lew
 //
 
-#include "color.h"
-#include "testing.h"
+#include "color.hpp"
+#include "testing.hpp"
 
 Color::Color () : Nat<Color> () {
 }

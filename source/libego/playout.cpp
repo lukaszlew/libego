@@ -2,7 +2,7 @@
 // Copyright 2006 and onwards, Lukasz Lew
 //
 
-#include "playout.h"
+#include "playout.hpp"
 
 LightPlayout::LightPlayout (Board* board_, FastRandom& random_, uint max_moves_)
 : board (board_), random (random_), max_moves (max_moves_)
