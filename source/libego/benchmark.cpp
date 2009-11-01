@@ -31,11 +31,8 @@ namespace Benchmark {
   }
 
   string Run (uint playout_cnt) {
-    NatMap <Player, uint> win_cnt;
+    NatMap <Player, uint> win_cnt (0);
     FastTimer fast_timer;
-
-    ForEachNat (Player, pl) 
-      win_cnt [pl] = 0;
 
     fast_timer.Reset ();
     fast_timer.Start ();

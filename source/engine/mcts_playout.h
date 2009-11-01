@@ -166,15 +166,13 @@ private:
   void UpdateTraceRave (float score) {
     // TODO configure rave blocking through options
 
-    NatMap <Move, bool> do_update;
-    NatMap <Move, bool> do_update_set_to;
 
     uint last_ii  = move_history.Size () * 7 / 8;
 
     rep (act_ii, trace.size()) {
       // Mark moves that should be updated.
-      do_update.SetAll (false);
-      do_update_set_to.SetAll (true);
+      NatMap <Move, bool> do_update (false);
+      NatMap <Move, bool> do_update_set_to (true);
 
       // TODO this is the slow and too-fixed part
       // TODO Change it to weighting with flexible masking.

@@ -27,6 +27,9 @@ class AafStats {
 public:
   Stat unconditional;
   NatMap<Move, Stat> given_move;
+  
+  AafStats () : given_move (Stat()) {
+  }
 
   void reset (float prior = 1.0) {
     unconditional.reset (prior);

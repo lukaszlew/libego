@@ -64,7 +64,8 @@ private:
 
 // -----------------------------------------------------------------------------
 
-MctsNode::MctsNode (Player player_, Vertex v_) : player(player_), v(v_) {
+MctsNode::MctsNode (Player player_, Vertex v_)
+: player(player_), v(v_), has_all_legal_children (false) {
   Reset ();
 }
 

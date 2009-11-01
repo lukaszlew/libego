@@ -45,7 +45,7 @@ Player Color::ToPlayer () const {
 }
 
 char Color::ToShowboardChar () const { 
-  NatMap <Color, char> tab;
+  NatMap <Color, char> tab (' ');
   tab [Black()] = '#';
   tab [White()] = 'O';
   tab [Empty()] = '.';
