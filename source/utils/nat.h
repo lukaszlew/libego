@@ -32,6 +32,7 @@ class Nat {
 
  private:
   uint raw;
+  const static bool kDoTests = false;
 };
 
 #define ForEachNat(T, var) for (T var = T::Invalid(); var.MoveNext(); )
@@ -46,10 +47,11 @@ class NatMap {
   Elt& operator[] (Nat nat);
   const Elt& operator[] (Nat nat) const;
   void SetAll (const Elt& elt);
-  void SetToZero ();
+  void SetToZero (); // Assumes POD of Elt, uses memcpy.
 
  private:
   Elt tab [Nat::kBound];
+  const static bool kDoTests = false;
 };
 
 // -----------------------------------------------------------------------------

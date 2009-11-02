@@ -5,8 +5,11 @@
 #ifndef NAT_INL_H_
 #define NAT_INL_H_
 
+#include "test.hpp"
+
 template <class T>
 T Nat<T>::OfRaw (uint raw) {
+  TEST (raw < T::kBound);
   return T (raw);
 }
 
@@ -23,11 +26,11 @@ Nat<T>::Nat () : raw (-1) {
 
 template <class T>
 bool Nat<T>::MoveNext() {
-  if (raw+1 < T::kBound) {
-    raw += 1;
-    return true;
+  if (raw+1 == T::kBound) {
+    return false;
   }
-  return false;
+  raw += 1;
+  return true;
 }
 
 template <class T>
@@ -52,6 +55,7 @@ bool Nat<T>::operator != (const Nat& other) const {
 
 template <class T>
 Nat<T>::Nat (uint raw) : raw (raw) {
+  TEST (raw < T::kBound || raw == static_cast <uint> (-1));
 }
 
 // -----------------------------------------------------------------------------
@@ -62,11 +66,13 @@ NatMap <Nat, Elt>::NatMap() {
 
 template <typename Nat, typename Elt>
 Elt& NatMap <Nat, Elt>::operator [] (Nat nat) { 
+  TEST (nat != Nat::Invalid());
   return tab [nat.GetRaw()];
 }
 
 template <typename Nat, typename Elt>
 const Elt& NatMap <Nat, Elt>::operator [] (Nat nat) const {
+  TEST (nat != Nat::Invalid());
   return tab [nat.GetRaw()];
 }
 
