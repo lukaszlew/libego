@@ -26,7 +26,7 @@ namespace Benchmark {
     }
 
     // ignore this line, this is for a stupid g++ to force aligning(?)
-    int xxx = playout_board.empty_v_cnt;
+    int xxx = playout_board.move_no;
     unused(xxx);
   }
 

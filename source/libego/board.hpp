@@ -15,32 +15,23 @@ public:
   // Constructs empty board.
   Board ();
 
-  //  Return color of board vertex
+  // -------------------------------------------------------
+  // Quesring board state
+
+  // Return color of board vertex
   Color ColorAt (Vertex v) const;
 
-  // ----------------------
-  // Fast playout functions
+  // Returs array of Vertices that are empty.
+  Vertex EmptyVertex (uint ii) const;
 
+  // Length of the array return by EmptyVertices()
+  uint EmptyVertexCount () const;
 
-  // Loads save_board into this board.
-  void Load (const Board* save_board);
-
-  // Returns false for simple ko and single stone suicide.
-  // Returns true despite bigger suicides and superko violation.
-  bool IsPseudoLegal (Player player, Vertex v) const;
-
-  // Returns true iff v is uncut eye of the player.
-  bool IsEyelike (Player player, Vertex v) const;
-
-  // Plays a move, returns false if move was large suicide.
-  // Assumes IsPseudoLegal (player, v) - Do not support single stone suicides.
-  bool PlayPseudoLegal (Player player, Vertex v);
-
-  // Returns player on move.
-  Player ActPlayer () const;
-  
   // Sets player on move. Play-undo will forget this set.(use pass)
   void SetActPlayer (Player); // TODO remove it
+  
+  // Returns player on move.
+  Player ActPlayer () const;
   
   // Returns player that played last move.
   Player LastPlayer () const;
@@ -52,6 +43,29 @@ public:
 
   // Returns true if both players pass.
   bool BothPlayerPass () const;
+
+  // Positional hash (just color of stones)
+  Hash PositionalHash () const;
+
+  // Returns vertex forbidden by simple ko rule or Vertex::Invalid()
+  Vertex KoVertex () const;
+
+  // -------------------------------------------------------
+  // Fast playout functions
+
+  // Loads save_board into this board.
+  void Load (const Board* save_board);
+
+  // Returns true iff v is uncut eye of the player.
+  bool IsEyelike (Player player, Vertex v) const;
+
+  // Returns false for simple ko and single stone suicide.
+  // Returns true despite bigger suicides and superko violation.
+  bool IsPseudoLegal (Player player, Vertex v) const;
+
+  // Plays a move, returns false if move was large suicide.
+  // Assumes IsPseudoLegal (player, v) - Do not support single stone suicides.
+  bool PlayPseudoLegal (Player player, Vertex v);
 
   // Difference in (number of stones + number of eyes) of each player - komi.
   // See TrompTaylorScore.
@@ -84,12 +98,6 @@ public:
   // Gets, sets the komi value. Positive means adventage for white.
   float GetKomi () const;
   void SetKomi (float fkomi);
-
-  // Positional hash (just color of stones)
-  Hash PositionalHash () const;
-
-  // Returns vertex forbidden by simple ko rule or Vertex::Invalid()
-  Vertex KoVertex () const;
 
   string ToAsciiArt (Vertex mark_v = Vertex::Invalid ()) const;
 
@@ -168,10 +176,11 @@ private:
 
   NatMap<Vertex, Color>   color_at;
 
-public:
   // TODO make iterators / accessors
   Vertex                   empty_v [kArea]; // TODO use FastSet (empty_pos)
   uint                     empty_v_cnt;
+
+public:
   uint                     move_no;
 
 private:
@@ -196,8 +205,8 @@ private:
 
 #define empty_v_for_each(board, vv, i) {                                \
     Vertex vv = Vertex::Invalid();                                      \
-    rep (ev_i, (board)->empty_v_cnt) {                                  \
-      vv = (board)->empty_v [ev_i];                                     \
+    rep (ev_i, (board)->EmptyVertexCount()) {                           \
+      vv = (board)->EmptyVertex (ev_i);                                 \
       i;                                                                \
     }                                                                   \
   }
@@ -205,8 +214,8 @@ private:
 #define empty_v_for_each_and_pass(board, vv, i) {                       \
     Vertex vv = Vertex::Pass ();                                        \
     i;                                                                  \
-    rep (ev_i, (board)->empty_v_cnt) {                                  \
-      vv = (board)->empty_v [ev_i];                                     \
+    rep (ev_i, (board)->EmptyVertexCount()) {                           \
+      vv = (board)->EmptyVertex (ev_i);                                 \
       i;                                                                \
     }                                                                   \
   }

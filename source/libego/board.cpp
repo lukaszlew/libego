@@ -233,6 +233,16 @@ Color Board::ColorAt (Vertex v) const {
   return color_at [v];
 }
 
+Vertex Board::EmptyVertex (uint ii) const {
+  ASSERT (ii < EmptyVertexCount());
+  return empty_v [ii];
+}
+
+uint Board::EmptyVertexCount () const {
+  return empty_v_cnt;
+}
+
+
 void Board::Load (const Board* save_board) {
   memcpy(this, save_board, sizeof(Board));
   check ();
