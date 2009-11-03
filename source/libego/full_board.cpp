@@ -29,17 +29,17 @@ void FullBoard::Load (const FullBoard* save_board) {
 }
 
 
-void FullBoard::PlayLegal (Player player, Vertex v) {
-  Board::PlayLegal(player, v);
-  Move m = Board::LastMove(); // TODO why can't I inline it?
-  move_history.push_back(m);
+bool FullBoard::PlayPseudoLegal (Player player, Vertex v) {
+  bool status = Board::PlayPseudoLegal(player, v);
+  move_history.push_back (Board::LastMove());
+  return status;
 }
 
 
 bool FullBoard::undo () {
   vector<Move> replay;
 
-  uint   game_length  = move_no;
+  uint game_length  = move_no;
 
   if (game_length == 0)
     return false;
@@ -50,7 +50,7 @@ bool FullBoard::undo () {
   clear ();  // TODO maybe last_player should be preserverd as well
 
   rep (mn, game_length-1)
-    PlayLegal (replay [mn].get_player (), replay [mn].get_vertex ());
+    PlayPseudoLegal (replay [mn].get_player (), replay [mn].get_vertex ());
 
   return true;
 }
@@ -66,8 +66,8 @@ bool FullBoard::is_legal (Player pl, Vertex v) const {
 bool FullBoard::is_hash_repeated () {
   Board tmp_board;
   rep (mn, move_no-1) {
-    tmp_board.PlayLegal (move_history[mn].get_player (),
-                          move_history[mn].get_vertex ());
+    tmp_board.PlayPseudoLegal (move_history[mn].get_player (),
+                               move_history[mn].get_vertex ());
     if (PositionalHash() == tmp_board.PositionalHash())
       return true;
   }
@@ -77,7 +77,7 @@ bool FullBoard::is_hash_repeated () {
 
 bool FullBoard::try_play (Player player, Vertex v) {
   if (v == Vertex::Pass ()) {
-    PlayLegal (player, v);
+    PlayPseudoLegal (player, v);
     return true;
   }
 
@@ -89,17 +89,13 @@ bool FullBoard::try_play (Player player, Vertex v) {
   if (IsPseudoLegal (player,v) == false)
     return false;
 
-  PlayLegal (player, v);
-
-  if (last_move_status != play_ok) {
-    bool ok = undo ();
-    assert(ok);
+  if (!PlayPseudoLegal (player, v)) {
+    CHECK (undo ());
     return false;
   }
 
   if (is_hash_repeated ()) {
-    bool ok = undo ();
-    assert(ok);
+    CHECK (undo ());
     return false;
   }
 

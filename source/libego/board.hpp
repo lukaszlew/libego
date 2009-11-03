@@ -25,15 +25,16 @@ public:
   // Loads save_board into this board.
   void Load (const Board* save_board);
 
-  // Returns false for simple ko and single stone suicide
+  // Returns false for simple ko and single stone suicide.
   // Returns true despite bigger suicides and superko violation.
   bool IsPseudoLegal (Player player, Vertex v) const;
 
   // Returns true iff v is uncut eye of the player.
   bool IsEyelike (Player player, Vertex v) const;
 
-  // Plays a move. Accepts passes, suicides and ko moves.
-  void PlayLegal (Player player, Vertex v);
+  // Plays a move, returns false if move was large suicide.
+  // Assumes IsPseudoLegal (player, v) - Do not support single stone suicides.
+  bool PlayPseudoLegal (Player player, Vertex v);
 
   // Returns player on move.
   Player ActPlayer () const;
@@ -104,13 +105,15 @@ public:
 
 private: 
 
+  static const bool kDoTests = false;
+
   Hash recalc_hash () const;
 
   bool eye_is_ko (Player player, Vertex v) const;
   bool eye_is_suicide (Vertex v) const;
 
   void basic_play (Player player, Vertex v);
-  void play_not_eye (Player player, Vertex v);
+  bool play_not_eye (Player player, Vertex v);
   void play_eye_legal (Player player, Vertex v);
 
   void update_neighbour (Player player, Vertex v, Vertex nbr_v);
@@ -170,13 +173,6 @@ public:
   Vertex                   empty_v [kArea]; // TODO use FastSet (empty_pos)
   uint                     empty_v_cnt;
   uint                     move_no;
-
-  enum {
-    play_ok,
-    play_suicide,
-    play_ss_suicide,
-    play_ko
-  } last_move_status;
 
 private:
   int komi_inverse;

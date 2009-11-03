@@ -172,7 +172,6 @@ void Board::Clear () {
   }
   move_no      = 0;
   last_player  = Player::White (); // act player is other
-  last_move_status = play_ok;
   ko_v         = Vertex::Invalid();
   ForEachNat (Vertex, v) {
     color_at      [v] = Color::OffBoard ();
@@ -283,24 +282,26 @@ bool Board::IsEyelike (Player player, Vertex v) const {
 }
 
 flatten all_inline
-void Board::PlayLegal (Player player, Vertex v) { // TODO test with move
+bool Board::PlayPseudoLegal (Player player, Vertex v) { // TODO test with move
   check ();
+
+  TEST (player.IsValid());
+  TEST (v.IsValid());
+  TEST (IsPseudoLegal (player, v));
 
   if (v == Vertex::Pass ()) {
     basic_play (player, Vertex::Pass ());
-    return;
+    return true;
   }
 
   // TODO v.check_is_on_board ();
   assertc (board_ac, color_at[v] == Color::Empty ());
 
   if (nbr_cnt[v].player_cnt_is_max (player.Other())) {
-    play_eye_legal (player, v);
+    play_eye_legal (player, v); // never fails
+    return true;
   } else {
-    play_not_eye (player, v);
-    assertc (board_ac, last_move_status == play_ok ||
-             last_move_status == play_suicide);
-    // TODO invent complete suicide testing
+    return play_not_eye (player, v);
   }
 }
 
@@ -342,7 +343,7 @@ void Board::update_neighbour (Player player, Vertex v, Vertex nbr_v) {
 
 
 all_inline
-void Board::play_not_eye (Player player, Vertex v) {
+bool Board::play_not_eye (Player player, Vertex v) {
   check ();
   // TODO v.check_is_on_board ();
   assertc (board_ac, color_at[v] == Color::Empty ());
@@ -357,9 +358,9 @@ void Board::play_not_eye (Player player, Vertex v) {
     assertc (board_ac, last_empty_v_cnt - empty_v_cnt == 1);
     remove_chain(v);
     assertc (board_ac, last_empty_v_cnt - empty_v_cnt > 0);
-    last_move_status = play_suicide;
+    return  false;
   } else {
-    last_move_status = play_ok;
+    return true;
   }
 }
 

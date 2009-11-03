@@ -101,8 +101,7 @@ MctsNode* MctsNode::AddFindChild (Move m, Board& board) {
   EnsureAllPseudoLegalChildren (pl, board);
   BOOST_FOREACH (MctsNode& child, children) {
     if (child.player == pl && child.v == v) {
-      board.PlayLegal (pl, v);
-      assertc (mcts_tree_ac, board.last_move_status == Board::play_ok);
+      CHECK (board.PlayPseudoLegal (pl, v));
       return &child;
     }
   }

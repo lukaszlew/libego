@@ -33,7 +33,7 @@ public:
   const vector<Move>& MoveHistory () const; // TODO rename all to CamelCase
 
 private:
-  void PlayLegal (Player player, Vertex v);
+  bool PlayPseudoLegal (Player player, Vertex v);
   bool is_hash_repeated ();
 
   vector<Move> move_history;

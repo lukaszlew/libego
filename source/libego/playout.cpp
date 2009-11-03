@@ -28,14 +28,15 @@ void LightPlayout::PlayOneMove () {
   while (true) { // TODO separate iterator
     Vertex v = board->empty_v [ii];
     if (!board->IsEyelike (act_player, v) &&
-        board->IsPseudoLegal (act_player, v)) { 
-      board->PlayLegal(act_player, v);
+        board->IsPseudoLegal (act_player, v))
+    {
+      board->PlayPseudoLegal(act_player, v);
       return;
     }
     ii += 1;
     ii &= ~(-(ii == board->empty_v_cnt)); // if (ii==board->empty_v_cnt) ii=0;
     if (ii == ii_start) {
-      board->PlayLegal(act_player, Vertex::Pass());
+      board->PlayPseudoLegal(act_player, Vertex::Pass());
       return;
     }
   }

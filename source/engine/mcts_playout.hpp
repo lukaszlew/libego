@@ -136,9 +136,7 @@ private:
     assertc (mcts_ac, play_board.IsPseudoLegal (pl, uct_child.v));
 
     // Try to play it on the board
-    play_board.PlayLegal (pl, uct_child.v);
-    if (play_board.last_move_status != Board::play_ok) { // large suicide
-      assertc (mcts_ac, play_board.last_move_status == Board::play_suicide);
+    if (!play_board.PlayPseudoLegal (pl, uct_child.v)) { // large suicide
       assertc (mcts_ac, !uct_child.has_all_legal_children [pl.Other()]);
       assertc (mcts_ac, uct_child.stat.update_count() == Stat::prior_update_count);
       // Remove in case of large suicide.
