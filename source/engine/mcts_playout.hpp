@@ -100,7 +100,7 @@ public:
       if (!DoTreeMove ()) return;
     }
 
-    if (play_board.both_player_pass()) {
+    if (play_board.BothPlayerPass()) {
       UpdateTrace (play_board.tt_winner().ToScore());
       return;
     }

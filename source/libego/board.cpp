@@ -471,19 +471,19 @@ void Board::SetActPlayer (Player pl) {
   last_player_ = pl.Other();
 }
 
-Player Board::last_player () const {
+Player Board::LastPlayer () const {
   return last_player_;
 }
 
-Vertex Board::last_play() const {
-  return last_play_[last_player()];
+Vertex Board::LastVertex() const {
+  return last_play_ [LastPlayer()];
 }
 
 Move Board::last_move() const {
-  return Move(last_player(), last_play());
+  return Move (LastPlayer(), LastVertex());
 }
 
-bool Board::both_player_pass () const {
+bool Board::BothPlayerPass () const {
   return
     (last_play_ [Player::Black ()] == Vertex::Pass ()) &
     (last_play_ [Player::White ()] == Vertex::Pass ());

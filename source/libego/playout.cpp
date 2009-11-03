@@ -12,7 +12,7 @@ LightPlayout::LightPlayout (Board* board_, FastRandom& random_, uint max_moves_)
 all_inline
 bool LightPlayout::Run() {
   while (true) {
-    if (board->both_player_pass ())  return true;
+    if (board->BothPlayerPass ())  return true;
     if (board->move_no >= max_moves) return false;
     // if (abs(board->approx_score ()) > 25) return mercy;
     PlayOneMove ();

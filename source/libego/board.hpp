@@ -39,13 +39,13 @@ public:
   void SetActPlayer (Player);
   
   // Returns player that played last move.
-  Player last_player () const;
+  Player LastPlayer () const;
 
   // Returns a last played vertex or Vertex::Any()
-  Vertex last_play () const;
+  Vertex LastVertex () const;
 
   // Returns true if both players pass.
-  bool both_player_pass () const;
+  bool BothPlayerPass () const;
 
   // Difference in (number of stones + number of eyes) of each player - komi.
   // See tt_score.
