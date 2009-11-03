@@ -75,7 +75,7 @@ public:
   Vertex Genmove (Player player) {
     logger.LogLine ("random_seed     #? [" + ToString (random.GetSeed ()) + "]");
     if (reset_tree_on_genmove) root.Reset ();
-    full_board.set_act_player(player); // TODO move player parameter to DoPlayouts
+    full_board.SetActPlayer(player); // TODO move player parameter to DoPlayouts
     DoNPlayouts (genmove_playouts);
 
     //cerr << mcts.ToString (show_tree_min_updates, show_tree_max_children) << endl;
@@ -148,7 +148,7 @@ private:
       act_root = act_root->AddFindChild (m, sync_board);
     }
     
-    Player pl = full_board.act_player();
+    Player pl = full_board.ActPlayer();
     act_root->EnsureAllPseudoLegalChildren (pl, full_board);
     act_root->RemoveIllegalChildren (pl, full_board);
 

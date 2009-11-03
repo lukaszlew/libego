@@ -23,19 +23,19 @@ all_inline
 void LightPlayout::PlayOneMove () {
   uint ii_start = random.GetNextUint (board->empty_v_cnt); 
   uint ii = ii_start;
-  Player act_player = board->act_player ();
+  Player act_player = board->ActPlayer ();
 
   while (true) { // TODO separate iterator
     Vertex v = board->empty_v [ii];
     if (!board->IsEyelike (act_player, v) &&
         board->IsPseudoLegal (act_player, v)) { 
-      board->play_legal(act_player, v);
+      board->PlayLegal(act_player, v);
       return;
     }
     ii += 1;
     ii &= ~(-(ii == board->empty_v_cnt)); // if (ii==board->empty_v_cnt) ii=0;
     if (ii == ii_start) {
-      board->play_legal(act_player, Vertex::Pass());
+      board->PlayLegal(act_player, Vertex::Pass());
       return;
     }
   }

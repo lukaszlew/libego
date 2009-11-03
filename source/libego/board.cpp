@@ -278,7 +278,7 @@ bool Board::IsEyelike (Player player, Vertex v) const {
 }
 
 flatten all_inline
-void Board::play_legal (Player player, Vertex v) { // TODO test with move
+void Board::PlayLegal (Player player, Vertex v) { // TODO test with move
   check ();
 
   if (v == Vertex::Pass ()) {
@@ -463,11 +463,11 @@ void Board::remove_stone (Vertex v) {
 
 
 // TODO/FIXME last_player should be preserverd in undo function
-Player Board::act_player () const {
+Player Board::ActPlayer () const {
   return last_player_.Other();
 }
 
-void Board::set_act_player (Player pl) {
+void Board::SetActPlayer (Player pl) {
   last_player_ = pl.Other();
 }
 

@@ -96,7 +96,7 @@ public:
     move_history.Clear ();
 
     // descent the MCTS tree
-    while(ActNode().has_all_legal_children [play_board.act_player()]) {
+    while(ActNode().has_all_legal_children [play_board.ActPlayer()]) {
       if (!DoTreeMove ()) return;
     }
 
@@ -107,7 +107,7 @@ public:
     
     // Is leaf is ready to expand ?
     if (ActNode().stat.update_count() > mature_update_count) {
-      Player pl = play_board.act_player();
+      Player pl = play_board.ActPlayer();
       assertc (mcts_ac, pl == ActNode().player.Other());
 
       ActNode().EnsureAllPseudoLegalChildren (pl, play_board);
@@ -130,13 +130,13 @@ public:
 private:
 
   bool DoTreeMove () {
-    Player pl = play_board.act_player ();
+    Player pl = play_board.ActPlayer ();
     MctsNode& uct_child = best_child_finder.Find (pl, ActNode());
 
     assertc (mcts_ac, play_board.IsPseudoLegal (pl, uct_child.v));
 
     // Try to play it on the board
-    play_board.play_legal (pl, uct_child.v);
+    play_board.PlayLegal (pl, uct_child.v);
     if (play_board.last_move_status != Board::play_ok) { // large suicide
       assertc (mcts_ac, play_board.last_move_status == Board::play_suicide);
       assertc (mcts_ac, !uct_child.has_all_legal_children [pl.Other()]);

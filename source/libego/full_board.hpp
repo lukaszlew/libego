@@ -26,14 +26,14 @@ public:
   // auxiliary functions
 
   void set_komi (float fkomi);
-  void set_act_player (Player pl);
+  void SetActPlayer (Player pl);
 
   void Load (const FullBoard* save_board);
 
   const vector<Move>& MoveHistory () const; // TODO rename all to CamelCase
 
 private:
-  void play_legal (Player player, Vertex v);
+  void PlayLegal (Player player, Vertex v);
   bool is_hash_repeated ();
 
   vector<Move> move_history;

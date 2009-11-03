@@ -18,8 +18,8 @@ void FullBoard::set_komi (float fkomi) {
 }
 
 
-void FullBoard::set_act_player (Player pl) {
-  Board::set_act_player(pl);
+void FullBoard::SetActPlayer (Player pl) {
+  Board::SetActPlayer(pl);
 }
 
 
@@ -29,8 +29,8 @@ void FullBoard::Load (const FullBoard* save_board) {
 }
 
 
-void FullBoard::play_legal (Player player, Vertex v) {
-  Board::play_legal(player, v);
+void FullBoard::PlayLegal (Player player, Vertex v) {
+  Board::PlayLegal(player, v);
   Move m = Board::last_move(); // TODO why can't I inline it?
   move_history.push_back(m);
 }
@@ -50,7 +50,7 @@ bool FullBoard::undo () {
   clear ();  // TODO maybe last_player should be preserverd as well
 
   rep (mn, game_length-1)
-    play_legal (replay [mn].get_player (), replay [mn].get_vertex ());
+    PlayLegal (replay [mn].get_player (), replay [mn].get_vertex ());
 
   return true;
 }
@@ -66,7 +66,7 @@ bool FullBoard::is_legal (Player pl, Vertex v) const {
 bool FullBoard::is_hash_repeated () {
   Board tmp_board;
   rep (mn, move_no-1) {
-    tmp_board.play_legal (move_history[mn].get_player (),
+    tmp_board.PlayLegal (move_history[mn].get_player (),
                           move_history[mn].get_vertex ());
     if (hash() == tmp_board.hash())
       return true;
@@ -77,7 +77,7 @@ bool FullBoard::is_hash_repeated () {
 
 bool FullBoard::try_play (Player player, Vertex v) {
   if (v == Vertex::Pass ()) {
-    play_legal (player, v);
+    PlayLegal (player, v);
     return true;
   }
 
@@ -89,7 +89,7 @@ bool FullBoard::try_play (Player player, Vertex v) {
   if (IsPseudoLegal (player,v) == false)
     return false;
 
-  play_legal (player, v);
+  PlayLegal (player, v);
 
   if (last_move_status != play_ok) {
     bool ok = undo ();

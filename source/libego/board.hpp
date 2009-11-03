@@ -30,13 +30,13 @@ public:
   bool IsEyelike (Player player, Vertex v) const;
 
   // Plays a move. Accepts passes, suicides and ko moves.
-  void play_legal (Player player, Vertex v);
+  void PlayLegal (Player player, Vertex v);
 
   // Returns player on move.
-  Player act_player () const;
+  Player ActPlayer () const;
   
   // Sets player on move. Play-undo will forget this set.(use pass)
-  void set_act_player (Player);
+  void SetActPlayer (Player);
   
   // Returns player that played last move.
   Player last_player () const;
