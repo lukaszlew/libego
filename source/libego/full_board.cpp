@@ -31,7 +31,7 @@ void FullBoard::Load (const FullBoard* save_board) {
 
 void FullBoard::PlayLegal (Player player, Vertex v) {
   Board::PlayLegal(player, v);
-  Move m = Board::last_move(); // TODO why can't I inline it?
+  Move m = Board::LastMove(); // TODO why can't I inline it?
   move_history.push_back(m);
 }
 
@@ -68,7 +68,7 @@ bool FullBoard::is_hash_repeated () {
   rep (mn, move_no-1) {
     tmp_board.PlayLegal (move_history[mn].get_player (),
                           move_history[mn].get_vertex ());
-    if (hash() == tmp_board.hash())
+    if (PositionalHash() == tmp_board.PositionalHash())
       return true;
   }
   return false;

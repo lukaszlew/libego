@@ -118,7 +118,7 @@ const uint Board::NbrCounter::player_inc_tab [Player::kBound] = {
 // -----------------------------------------------------------------------------
 
 
-string Board::to_string (Vertex mark_v) const {
+string Board::ToAsciiArt (Vertex mark_v) const {
   ostringstream out;
 
 #define coord_for_each(rc) for (int rc = 0; rc < int(board_size); rc += 1)
@@ -159,8 +159,8 @@ string Board::to_string (Vertex mark_v) const {
 }
 
 
-void Board::print_cerr (Vertex v) const {
-  cerr << to_string (v);
+void Board::DebugPrint (Vertex v) const {
+  cerr << ToAsciiArt (v);
 }
 
 
@@ -244,11 +244,11 @@ float Board::GetKomi () const {
   return -float(komi_inverse_) + 0.5;
 }
 
-Vertex Board::ko_v () const {
+Vertex Board::KoVertex () const {
   return ko_v_;
 }
 
-Hash Board::hash () const {
+Hash Board::PositionalHash () const {
   return hash_;
 }
 
@@ -479,7 +479,7 @@ Vertex Board::LastVertex() const {
   return last_play_ [LastPlayer()];
 }
 
-Move Board::last_move() const {
+Move Board::LastMove() const {
   return Move (LastPlayer(), LastVertex());
 }
 

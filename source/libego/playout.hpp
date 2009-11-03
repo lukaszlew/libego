@@ -53,7 +53,7 @@ bool LightPlayout::Run (FastStack<Move, stack_size>& history) {
     if (board->BothPlayerPass ())  return true;
     if (board->move_no >= last_move) return false;
     PlayOneMove ();
-    if (!history.IsFull ()) history.Push (board->last_move());
+    if (!history.IsFull ()) history.Push (board->LastMove());
   }
 }
 

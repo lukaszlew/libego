@@ -94,7 +94,7 @@ public:
   }
 
   string BoardAsciiArt () {
-    return full_board.to_string();
+    return full_board.ToAsciiArt();
   }
 
   string TreeAsciiArt (float min_updates, float max_children) {

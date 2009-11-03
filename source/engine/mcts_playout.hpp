@@ -148,7 +148,7 @@ private:
 
     // Update tree itreatror.
     trace.push_back (&uct_child);
-    move_history.Push (play_board.last_move ());
+    move_history.Push (play_board.LastMove ());
     return true;
   }
 

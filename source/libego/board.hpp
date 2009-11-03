@@ -36,13 +36,15 @@ public:
   Player ActPlayer () const;
   
   // Sets player on move. Play-undo will forget this set.(use pass)
-  void SetActPlayer (Player);
+  void SetActPlayer (Player); // TODO remove it
   
   // Returns player that played last move.
   Player LastPlayer () const;
 
   // Returns a last played vertex or Vertex::Any()
   Vertex LastVertex () const;
+
+  Move LastMove () const;
 
   // Returns true if both players pass.
   bool BothPlayerPass () const;
@@ -80,19 +82,17 @@ public:
   void SetKomi (float fkomi);
 
   // Positional hash (just color of stones)
-  Hash hash () const;
+  Hash PositionalHash () const;
 
-  // Returns vertex forbidden by simple ko rule or Vertex::Any()
-  Vertex ko_v () const;
+  // Returns vertex forbidden by simple ko rule or Vertex::Invalid()
+  Vertex KoVertex () const;
 
-  string to_string (Vertex mark_v = Vertex::Invalid ()) const;
+  string ToAsciiArt (Vertex mark_v = Vertex::Invalid ()) const;
 
   // debugging helper
-  void print_cerr (Vertex v = Vertex::Pass ()) const;
+  void DebugPrint (Vertex v = Vertex::Pass ()) const;
 
   uint last_capture_size () const;
-
-  Move last_move () const;
 
   // Clears the board. (It is faster to Load(empty_board))
   void clear ();
