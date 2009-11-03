@@ -168,18 +168,18 @@ void Board::Clear () {
   empty_v_cnt = 0;
   ForEachNat (Player, pl) {
     player_v_cnt [pl] = 0;
-    last_play_ [pl]   = Vertex::Invalid();
+    last_play [pl]    = Vertex::Invalid();
   }
   move_no      = 0;
-  last_player_ = Player::White (); // act player is other
+  last_player  = Player::White (); // act player is other
   last_move_status = play_ok;
-  ko_v_        = Vertex::Invalid();
+  ko_v         = Vertex::Invalid();
   ForEachNat (Vertex, v) {
     color_at      [v] = Color::OffBoard ();
     nbr_cnt       [v] = NbrCounter::Empty();
     chain_next_v  [v] = v;
-    chain_id_     [v] = v;      // TODO is it needed, is it used?
-    chain_[v].lib_cnt = NbrCounter::max; // TODO off_boards?
+    chain_id      [v] = v;      // TODO is it needed, is it used?
+    chain[v].lib_cnt = NbrCounter::max; // TODO off_boards?
 
     if (v.IsOnBoard ()) {
       color_at   [v]              = Color::Empty ();
@@ -194,7 +194,7 @@ void Board::Clear () {
     }
   }
 
-  hash_ = recalc_hash ();
+  hash = recalc_hash ();
 
   check ();
 }
@@ -220,11 +220,11 @@ Board::Board ()
     nbr_cnt (NbrCounter()), // TODO
     empty_pos (0), // TODO id
     chain_next_v (Vertex::Invalid()), // TODO id
-    chain_id_ (Vertex::Invalid()), // TODO id
-    chain_ (Chain ()), // TODO ?
+    chain_id (Vertex::Invalid()), // TODO id
+    chain (Chain ()), // TODO ?
     player_v_cnt (0),
-    last_play_ (Vertex::Invalid()),
-    last_player_ (Player::White())
+    last_play (Vertex::Invalid()),
+    last_player (Player::White())
 {
   Clear ();
   SetKomi (6.5);
@@ -241,20 +241,20 @@ void Board::Load (const Board* save_board) {
 }
 
 void Board::SetKomi (float fkomi) {
-  komi_inverse_ = int (ceil (-fkomi));
+  komi_inverse = int (ceil (-fkomi));
 }
 
 
 float Board::GetKomi () const {
-  return -float(komi_inverse_) + 0.5;
+  return -float(komi_inverse) + 0.5;
 }
 
 Vertex Board::KoVertex () const {
-  return ko_v_;
+  return ko_v;
 }
 
 Hash Board::PositionalHash () const {
-  return hash_;
+  return hash;
 }
 
 bool Board::IsPseudoLegal (Player player, Vertex v) const {
@@ -306,7 +306,7 @@ void Board::PlayLegal (Player player, Vertex v) { // TODO test with move
 
 
 bool Board::eye_is_ko (Player player, Vertex v) const {
-  return (v == ko_v_) & (player == last_player_.Other());
+  return (v == ko_v) & (player == last_player.Other());
 }
 
 
@@ -330,7 +330,7 @@ void Board::update_neighbour (Player player, Vertex v, Vertex nbr_v) {
     if (chain_at(nbr_v).lib_cnt == 0)
       remove_chain (nbr_v);
   } else {
-    if (chain_id_ [nbr_v] != chain_id_ [v]) {
+    if (chain_id [nbr_v] != chain_id [v]) {
       if (chain_at(v).lib_cnt > chain_at(nbr_v).lib_cnt) {
         merge_chains (v, nbr_v);
       } else {
@@ -384,16 +384,16 @@ void Board::play_eye_legal (Player player, Vertex v) {
 
   // if captured exactly one stone (and this was eye)
   if (last_empty_v_cnt == empty_v_cnt) {
-    ko_v_ = empty_v [empty_v_cnt - 1]; // then ko is formed
+    ko_v = empty_v [empty_v_cnt - 1]; // then ko is formed
   }
 }
 
 // Warning: has to be called before place_stone, because of hash storing
 void Board::basic_play (Player player, Vertex v) {
-  ko_v_                   = Vertex::Invalid();
-  last_empty_v_cnt        = empty_v_cnt;
-  last_player_            = player;
-  last_play_ [player]     = v;
+  ko_v                   = Vertex::Invalid();
+  last_empty_v_cnt       = empty_v_cnt;
+  last_player            = player;
+  last_play [player]     = v;
   move_no                += 1;
 }
 
@@ -403,7 +403,7 @@ void Board::merge_chains (Vertex v_base, Vertex v_new) {
 
   Vertex act_v = v_new;
   do {
-    chain_id_ [act_v] = chain_id_ [v_base];
+    chain_id [act_v] = chain_id [v_base];
     act_v = chain_next_v [act_v];
   } while (act_v != v_new);
 
@@ -439,7 +439,7 @@ void Board::remove_chain (Vertex v) {
 
 
 void Board::place_stone (Player pl, Vertex v) {
-  hash_ ^= zobrist->OfPlayerVertex (pl, v);
+  hash ^= zobrist->OfPlayerVertex (pl, v);
   player_v_cnt[pl]++;
   color_at[v] = Color::OfPlayer (pl);
 
@@ -449,19 +449,19 @@ void Board::place_stone (Player pl, Vertex v) {
 
   assertc (chain_next_v_ac, chain_next_v[v] == v);
 
-  chain_id_ [v] = v;
+  chain_id [v] = v;
   chain_at(v).lib_cnt = nbr_cnt[v].empty_cnt ();
 }
 
 
 void Board::remove_stone (Vertex v) {
-  hash_ ^= zobrist->OfPlayerVertex (color_at [v].ToPlayer (), v);
+  hash ^= zobrist->OfPlayerVertex (color_at [v].ToPlayer (), v);
   player_v_cnt [color_at[v].ToPlayer ()]--;
   color_at [v] = Color::Empty ();
 
   empty_pos [v] = empty_v_cnt;
   empty_v [empty_v_cnt++] = v;
-  chain_id_ [v] = v;
+  chain_id [v] = v;
 
   assertc (board_ac, empty_v_cnt < Vertex::kBound);
 }
@@ -469,19 +469,19 @@ void Board::remove_stone (Vertex v) {
 
 // TODO/FIXME last_player should be preserverd in undo function
 Player Board::ActPlayer () const {
-  return last_player_.Other();
+  return last_player.Other();
 }
 
 void Board::SetActPlayer (Player pl) {
-  last_player_ = pl.Other();
+  last_player = pl.Other();
 }
 
 Player Board::LastPlayer () const {
-  return last_player_;
+  return last_player;
 }
 
 Vertex Board::LastVertex() const {
-  return last_play_ [LastPlayer()];
+  return last_play [LastPlayer()];
 }
 
 Move Board::LastMove() const {
@@ -490,8 +490,8 @@ Move Board::LastMove() const {
 
 bool Board::BothPlayerPass () const {
   return
-    (last_play_ [Player::Black ()] == Vertex::Pass ()) &
-    (last_play_ [Player::White ()] == Vertex::Pass ());
+    (last_play [Player::Black ()] == Vertex::Pass ()) &
+    (last_play [Player::White ()] == Vertex::Pass ());
 }
 
 int Board::TrompTaylorScore() const {
@@ -520,7 +520,7 @@ int Board::TrompTaylorScore() const {
       });
     }
   }
-  return komi_inverse_ + score[Player::Black ()] - score[Player::White ()];
+  return komi_inverse + score[Player::Black ()] - score[Player::White ()];
 }
 
 Player Board::TrompTaylorWinner() const {
@@ -528,7 +528,7 @@ Player Board::TrompTaylorWinner() const {
 }
 
 int Board::StoneScore () const {
-  return komi_inverse_ + player_v_cnt[Player::Black ()] -  player_v_cnt[Player::White ()];
+  return komi_inverse + player_v_cnt[Player::Black ()] -  player_v_cnt[Player::White ()];
 }
 
 
@@ -581,17 +581,17 @@ void Board::check_empty_v () const {
 }
 
 Board::Chain& Board::chain_at (Vertex v) {
-  return chain_[chain_id_[v]];
+  return chain[chain_id[v]];
 }
 
 const Board::Chain& Board::chain_at (Vertex v) const {
-  return chain_[chain_id_[v]];
+  return chain[chain_id[v]];
 }
 
 // -----------------------------------------------------------------------------
 
 void Board::check_hash () const {
-  assertc (board_hash_ac, hash_ == recalc_hash ());
+  assertc (board_hash_ac, hash == recalc_hash ());
 }
 
 
@@ -628,11 +628,11 @@ void Board::check_chain_at () const {
     // TODO what about off_board and empty?
     if (color_at [v].IsPlayer ()) {
 
-      assert (chain_[chain_id_[v]].lib_cnt != 0);
+      assert (chain[chain_id[v]].lib_cnt != 0);
 
       vertex_for_each_4_nbr (v, nbr_v, {
           if (color_at[v] == color_at[nbr_v])
-            assert (chain_id_ [v] == chain_id_ [nbr_v]);
+            assert (chain_id [v] == chain_id [nbr_v]);
         });
     }
   }

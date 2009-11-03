@@ -179,7 +179,7 @@ public:
   } last_move_status;
 
 private:
-  int komi_inverse_;
+  int komi_inverse;
 
   static const Zobrist zobrist[1];
 
@@ -187,15 +187,15 @@ private:
   NatMap<Vertex, uint>         empty_pos; // liberty position in empty_v
   NatMap<Vertex, Vertex>       chain_next_v;
 
-  NatMap<Vertex, Vertex>       chain_id_;
-  NatMap<Vertex, Chain>        chain_; // indexed by chain_id[v]
+  NatMap<Vertex, Vertex>       chain_id;
+  NatMap<Vertex, Chain>        chain; // indexed by chain_id[v]
 
   uint                         last_empty_v_cnt;
   NatMap<Player, uint>         player_v_cnt;
-  NatMap<Player, Vertex>       last_play_;
-  Hash                         hash_;
-  Vertex                       ko_v_;             // vertex forbidden by ko
-  Player                       last_player_;      // player who made the last play
+  NatMap<Player, Vertex>       last_play;
+  Hash                         hash;
+  Vertex                       ko_v;             // vertex forbidden by ko
+  Player                       last_player;      // player who made the last play
 };
 
 #define empty_v_for_each(board, vv, i) {                                \
