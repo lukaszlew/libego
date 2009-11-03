@@ -489,7 +489,7 @@ bool Board::BothPlayerPass () const {
     (last_play_ [Player::White ()] == Vertex::Pass ());
 }
 
-int Board::tt_score() const {
+int Board::TrompTaylorScore() const {
   NatMap<Player, int> score (0);
 
   ForEachNat (Player, pl) {
@@ -518,8 +518,8 @@ int Board::tt_score() const {
   return komi_inverse_ + score[Player::Black ()] - score[Player::White ()];
 }
 
-Player Board::tt_winner() const {
-  return Player::OfRaw (tt_score () <= 0);
+Player Board::TrompTaylorWinner() const {
+  return Player::OfRaw (TrompTaylorScore () <= 0);
 }
 
 int Board::approx_score () const {
@@ -527,7 +527,7 @@ int Board::approx_score () const {
 }
 
 
-int Board::playout_score () const {
+int Board::PlayoutScore () const {
   int eye_score = 0;
 
   empty_v_for_each (this, v, {
@@ -544,31 +544,8 @@ Player Board::approx_winner () const {
 }
 
 
-Player Board::playout_winner () const {
-  return Player::OfRaw (playout_score () <= 0);
-}
-
-
-int Board::vertex_score (Vertex v) const {
-  //     NatMap<Color, int> Coloro_score;
-  //     Coloro_score [Color::Black ()] = 1;
-  //     Coloro_score [Color::White ()] = -1;
-  //     Coloro_score [Color::Empty ()] =
-  //       (nbr_cnt[v].player_cnt_is_max (Player::Black ())) -
-  //       (nbr_cnt[v].player_cnt_is_max (Player::White ()));
-  //     Coloro_score [Color::OffBoard ()] = 0;
-  //     return Coloro_score [color_at [v]];
-  // TODO remove magic numbers
-  switch (color_at [v].GetRaw ()) {
-  case 0 : return 1;            // Black()
-  case 1 : return -1;           // White()
-  case 2 :                      // Empty()
-    return
-      (nbr_cnt[v].player_cnt_is_max (Player::Black ())) -
-      (nbr_cnt[v].player_cnt_is_max (Player::White ()));
-  case 3 : return 0;            // OffBoard()
-  default: assert (false);
-  }
+Player Board::PlayoutWinner () const {
+  return Player::OfRaw (PlayoutScore () <= 0);
 }
 
 

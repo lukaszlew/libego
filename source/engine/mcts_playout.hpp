@@ -101,7 +101,7 @@ public:
     }
 
     if (play_board.BothPlayerPass()) {
-      UpdateTrace (play_board.tt_winner().ToScore());
+      UpdateTrace (play_board.TrompTaylorWinner().ToScore());
       return;
     }
     
@@ -120,7 +120,7 @@ public:
     LightPlayout (&play_board, random).Run (move_history);
     
     // Update score.
-    UpdateTrace (play_board.playout_winner().ToScore());
+    UpdateTrace (play_board.PlayoutWinner().ToScore());
   }
 
   vector<Move> LastPlayout () {

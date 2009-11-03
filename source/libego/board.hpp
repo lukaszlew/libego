@@ -48,11 +48,11 @@ public:
   bool BothPlayerPass () const;
 
   // Difference in (number of stones + number of eyes) of each player - komi.
-  // See tt_score.
-  int playout_score () const;
+  // See TrompTaylorScore.
+  int PlayoutScore () const;
 
-  // Winner according to playout_score.
-  Player playout_winner () const;
+  // Winner according to PlayoutScore.
+  Player PlayoutWinner () const;
 
   // ------------------------------------------------------
   // Some slow functions needed in some playout situations.
@@ -60,18 +60,13 @@ public:
   // Tromp-Taylor score - quite slow function.
   // Scoring uses integers, so to get a true result you need to
   // substract 0.5 (convention is that white wins when score == 0).
-  int tt_score() const;
+  int TrompTaylorScore() const;
 
-  // Winner according to tt_score.
-  Player tt_winner() const;
+  // Winner according to TrompTaylorScore.
+  Player TrompTaylorWinner() const;
 
   // -------------------------------------
   // Auxiliary functions. May/will change.
-
-
-  // Returns 1 (-1) if v is occupied by or is an eye of Black(White).
-  // Returns 0 for other empty vertices.
-  int vertex_score (Vertex v) const;
 
   // Difference in (number of stones) of each player - komi. Used with
   // mercy heuristic.

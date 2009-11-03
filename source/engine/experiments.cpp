@@ -90,7 +90,7 @@ public:
     playout.Run (history);
 
     uint aaf_move_count = uint (float(history.Size())*aaf_fraction);
-    float score = mc_board->playout_score ();
+    float score = mc_board->PlayoutScore ();
 
     aaf_stats.update (history.Data(), aaf_move_count, score);
   }
