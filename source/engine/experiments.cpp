@@ -27,6 +27,9 @@ class AafStats {
 public:
   Stat unconditional;
   NatMap<Move, Stat> given_move;
+  
+  AafStats () : given_move (Stat()) {
+  }
 
   void reset (float prior = 1.0) {
     unconditional.reset (prior);
@@ -80,7 +83,7 @@ public:
     
   void do_playout (const FullBoard* base_board) {
     Board mc_board [1];
-    mc_board->load (&base_board->board());
+    mc_board->Load (&base_board->board());
 
     LightPlayout playout(mc_board, random);
     LightPlayout::MoveHistory history;

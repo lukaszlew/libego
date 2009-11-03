@@ -2,8 +2,8 @@
 // Copyright 2006 and onwards, Lukasz Lew
 //
 
-#include "fast_random.h"
-#include "testing.h"
+#include "fast_random.hpp"
+#include "testing.hpp"
 #include "cstdio"
 
 #ifdef __MINGW32__

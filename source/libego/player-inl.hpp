@@ -7,7 +7,7 @@
 
 template <typename T>
 T Player::SubjectiveScore (const T& score) const {
-  NatMap <Player, T> tab;
+  NatMap <Player, T> tab (0);
   tab[Black()] = score;
   tab[White()] = - score;
   return tab [*this];

@@ -5,9 +5,9 @@
 #ifndef PLAYOUT_H_
 #define PLAYOUT_H_
 
-#include "utils.h"
-#include "board.h"
-#include "fast_stack.h"
+#include "utils.hpp"
+#include "board.hpp"
+#include "fast_stack.hpp"
 
 #include <cmath>
 

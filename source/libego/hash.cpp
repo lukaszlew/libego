@@ -2,7 +2,7 @@
 // Copyright 2006 and onwards, Lukasz Lew
 //
 
-#include "hash.h"
+#include "hash.hpp"
 
 Hash::Hash () {
 }
@@ -37,7 +37,7 @@ void Hash::operator^= (const Hash& other) {
 
 // -----------------------------------------------------------------------------
 
-Zobrist::Zobrist () {
+Zobrist::Zobrist () : hashes (Hash()) {
   FastRandom fr (123);
   ForEachNat (Player, pl) {
     ForEachNat (Vertex, v) {

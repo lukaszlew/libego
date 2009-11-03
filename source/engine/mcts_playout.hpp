@@ -90,7 +90,7 @@ public:
 
   void DoOnePlayout (MctsNode& playout_root, const Board& board) {
     // Prepare simulation board and tree iterator.
-    play_board.load (&board);
+    play_board.Load (&board);
     trace.clear();
     trace.push_back (&playout_root);
     move_history.Clear ();
@@ -133,7 +133,7 @@ private:
     Player pl = play_board.act_player ();
     MctsNode& uct_child = best_child_finder.Find (pl, ActNode());
 
-    assertc (mcts_ac, play_board.is_pseudo_legal (pl, uct_child.v));
+    assertc (mcts_ac, play_board.IsPseudoLegal (pl, uct_child.v));
 
     // Try to play it on the board
     play_board.play_legal (pl, uct_child.v);
@@ -166,15 +166,13 @@ private:
   void UpdateTraceRave (float score) {
     // TODO configure rave blocking through options
 
-    NatMap <Move, bool> do_update;
-    NatMap <Move, bool> do_update_set_to;
 
     uint last_ii  = move_history.Size () * 7 / 8;
 
     rep (act_ii, trace.size()) {
       // Mark moves that should be updated.
-      do_update.SetAll (false);
-      do_update_set_to.SetAll (true);
+      NatMap <Move, bool> do_update (false);
+      NatMap <Move, bool> do_update_set_to (true);
 
       // TODO this is the slow and too-fixed part
       // TODO Change it to weighting with flexible masking.

@@ -2,8 +2,8 @@
 // Copyright 2006 and onwards, Lukasz Lew
 //
 
-#include "color.h"
-#include "testing.h"
+#include "color.hpp"
+#include "testing.hpp"
 
 Color::Color () : Nat<Color> () {
 }
@@ -45,7 +45,7 @@ Player Color::ToPlayer () const {
 }
 
 char Color::ToShowboardChar () const { 
-  NatMap <Color, char> tab;
+  NatMap <Color, char> tab (' ');
   tab [Black()] = '#';
   tab [White()] = 'O';
   tab [Empty()] = '.';

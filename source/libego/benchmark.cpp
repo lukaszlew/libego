@@ -2,11 +2,11 @@
 // Copyright 2006 and onwards, Lukasz Lew
 //
 
-#include "benchmark.h"
+#include "benchmark.hpp"
 
-#include "fast_timer.h"
-#include "playout.h"
-#include "utils.h"
+#include "fast_timer.hpp"
+#include "playout.hpp"
+#include "utils.hpp"
 
 namespace Benchmark {
 
@@ -19,7 +19,7 @@ namespace Benchmark {
     LightPlayout playout (&playout_board, random);
 
     rep (ii, playout_cnt) {
-      playout_board.load (&empty_board);
+      playout_board.Load (&empty_board);
       if (playout.Run ()) {
         (*win_cnt) [playout_board.playout_winner ()] ++;
       }
@@ -31,11 +31,8 @@ namespace Benchmark {
   }
 
   string Run (uint playout_cnt) {
-    NatMap <Player, uint> win_cnt;
+    NatMap <Player, uint> win_cnt (0);
     FastTimer fast_timer;
-
-    ForEachNat (Player, pl) 
-      win_cnt [pl] = 0;
 
     fast_timer.Reset ();
     fast_timer.Start ();

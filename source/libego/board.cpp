@@ -6,9 +6,9 @@
 #include <cstring>
 #include <iostream>
 
-#include "board.h"
-#include "fast_stack.h"
-#include "testing.h"
+#include "board.hpp"
+#include "fast_stack.hpp"
+#include "testing.hpp"
 
 // TODO    center_v.check_is_on_board ();
 #define vertex_for_each_4_nbr(center_v, nbr_v, block) { \
@@ -214,12 +214,23 @@ Hash Board::recalc_hash () const {
   return new_hash;
 }
 
-Board::Board () : last_player_ (Player::Black()) {
+
+Board::Board ()
+  : color_at (Color::OffBoard()),
+    nbr_cnt (NbrCounter()), // TODO
+    empty_pos (0), // TODO id
+    chain_next_v (Vertex::Invalid()), // TODO id
+    chain_id_ (Vertex::Invalid()), // TODO id
+    chain_ (Chain ()), // TODO ?
+    player_v_cnt (0),
+    last_play_ (Vertex::Invalid()),
+    last_player_ (Player::White())
+{
   clear ();
   set_komi (6.5);
 }
 
-void Board::load (const Board* save_board) {
+void Board::Load (const Board* save_board) {
   memcpy(this, save_board, sizeof(Board));
   check ();
 }
@@ -241,7 +252,7 @@ Hash Board::hash () const {
   return hash_;
 }
 
-bool Board::is_pseudo_legal (Player player, Vertex v) const {
+bool Board::IsPseudoLegal (Player player, Vertex v) const {
   check ();
   return
     v == Vertex::Pass () ||
@@ -251,13 +262,11 @@ bool Board::is_pseudo_legal (Player player, Vertex v) const {
 }
 
 
-bool Board::is_eyelike (Player player, Vertex v) const {
+bool Board::IsEyelike (Player player, Vertex v) const {
   assertc (board_ac, color_at [v] == Color::Empty ());
   if (! nbr_cnt[v].player_cnt_is_max (player)) return false;
 
-  NatMap<Color, int> diag_color_cnt; // TODO
-  ForEachNat (Color , color)
-    diag_color_cnt [color] = 0;
+  NatMap<Color, int> diag_color_cnt (0); // TODO
 
   vertex_for_each_diag_nbr (v, diag_v, {
     diag_color_cnt [color_at [diag_v]]++;
@@ -481,15 +490,13 @@ bool Board::both_player_pass () const {
 }
 
 int Board::tt_score() const {
-  NatMap<Player, int> score;
-  ForEachNat (Player, pl) score[pl] = 0;
+  NatMap<Player, int> score (0);
 
   ForEachNat (Player, pl) {
     FastStack<Vertex, area> queue;
-    NatMap<Vertex, bool> visited;
+    NatMap<Vertex, bool> visited (false);
 
     ForEachNat (Vertex, v) {
-      visited[v] = false;
       if (color_at[v] == Color::OfPlayer (pl)) {
         queue.Push(v);
         visited[v] = true;
@@ -568,10 +575,8 @@ int Board::vertex_score (Vertex v) const {
 void Board::check_empty_v () const {
   if (!board_empty_v_ac) return;
 
-  NatMap<Vertex, bool> noticed;
-  NatMap<Player, uint> exp_player_v_cnt;
-
-  ForEachNat (Vertex, v) noticed[v] = false;
+  NatMap<Vertex, bool> noticed (false);
+  NatMap<Player, uint> exp_player_v_cnt (0);
 
   assert (empty_v_cnt <= area);
 
@@ -579,9 +584,6 @@ void Board::check_empty_v () const {
       assert (noticed [v] == false);
       noticed [v] = true;
     });
-
-  ForEachNat (Player, pl)
-    exp_player_v_cnt [pl] = 0;
 
   ForEachNat (Vertex, v) {
     assert ((color_at[v] == Color::Empty ()) == noticed[v]);
@@ -628,11 +630,8 @@ void Board::check_nbr_cnt () const {
   if (!board_nbr_cnt_ac) return;
 
   ForEachNat (Vertex, v) {
-    NatMap<Color, uint> nbr_color_cnt;
+    NatMap<Color, uint> nbr_color_cnt (0);
     if (color_at[v] == Color::OffBoard()) continue; // TODO is that right?
-
-    ForEachNat (Color , color)
-      nbr_color_cnt [color] = 0;
 
     vertex_for_each_4_nbr (v, nbr_v, {
         nbr_color_cnt [color_at [nbr_v]]++;
@@ -691,7 +690,7 @@ void Board::check_no_more_legal (Player player) const { // at the end of the pla
 
   ForEachNat (Vertex, v)
     if (color_at[v] == Color::Empty ())
-      assert (is_eyelike (player, v) || is_pseudo_legal (player, v) == false);
+      assert (IsEyelike (player, v) || IsPseudoLegal (player, v) == false);
 }
 
 const Zobrist Board::zobrist[1] = { Zobrist () };

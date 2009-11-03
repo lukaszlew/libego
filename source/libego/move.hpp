@@ -8,8 +8,8 @@
 #include <string>
 using namespace std;
 
-#include "player.h"
-#include "vertex.h"
+#include "player.hpp"
+#include "vertex.hpp"
 
 class Move {
 public:

@@ -21,7 +21,7 @@
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "sgf.h"
+#include "sgf.hpp"
 
 #include <stack>
 #include <fstream>
@@ -29,7 +29,7 @@
 
 using namespace std;
 
-#include "testing.h"
+#include "testing.hpp"
 
 
 const string embedded_gtp_tag = "@gtp";

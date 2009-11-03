@@ -2,7 +2,7 @@
 // Copyright 2006 and onwards, Lukasz Lew
 //
 
-#include "player.h"
+#include "player.hpp"
 
 Player::Player (uint raw) : Nat<Player> (raw) { 
 }
@@ -39,7 +39,7 @@ int Player::ToScore () const {
 }
 
 string Player::ToGtpString () const {
-  NatMap <Player, string> gtp_string;
+  NatMap <Player, string> gtp_string ("");
   gtp_string [Black()] = "B";
   gtp_string [White()] = "W";
   return gtp_string [*this];

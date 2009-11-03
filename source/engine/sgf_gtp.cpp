@@ -22,9 +22,9 @@
  \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-#include "sgf_gtp.h"
+#include "sgf_gtp.hpp"
 
-#include "testing.h"
+#include "testing.hpp"
 
 // class gtp_sgf
 
@@ -69,14 +69,14 @@ void SgfGtp::CGtpExec (Gtp::Io& io) {
   }
 
   FullBoard save_board;
-  save_board.load (&base_board);
+  save_board.Load (&base_board);
       
   base_board.clear ();
   base_board.set_komi (sgf_tree.properties ().get_komi ());
   ostringstream response;
   exec_embedded_gtp_rec (sgf_tree.game_node (), response);
 
-  base_board.load (&save_board);
+  base_board.Load (&save_board);
 
   io.out << response.str ();
 }
@@ -115,13 +115,13 @@ void SgfGtp::exec_embedded_gtp_rec (SgfNode* current_node, ostream& response) {
 
   // save board
   FullBoard node_board;
-  node_board.load (&base_board);
+  node_board.Load (&base_board);
 
   // recursove call
   for (list<SgfNode>::iterator child = current_node->children.begin();
        child != current_node->children.end();
        child++) {
-    base_board.load (&node_board);
+    base_board.Load (&node_board);
     exec_embedded_gtp_rec (&(*child), response);
   }
     

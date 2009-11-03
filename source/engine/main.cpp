@@ -31,17 +31,17 @@
 #include <vector>
 
 // private libraries
-#include <gtp_gogui.h>
-#include <ego.h>
+#include "gtp_gogui.hpp"
+#include "ego.hpp"
 
 // local hard-include
-#include "stat.h"
-#include "logger.h"
+#include "stat.hpp"
+#include "logger.hpp"
 
-#include "mcts_tree.h"
-#include "mcts_playout.h"
-#include "mcts_engine.h"
-#include "mcts_gtp.h"
+#include "mcts_tree.hpp"
+#include "mcts_playout.hpp"
+#include "mcts_engine.hpp"
+#include "mcts_gtp.hpp"
 
 
 #include "experiments.cpp"

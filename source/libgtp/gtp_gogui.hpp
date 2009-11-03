@@ -5,7 +5,7 @@
 #include <map>
 #include <boost/bind.hpp>
 
-#include "gtp.h"
+#include "gtp.hpp"
 
 namespace Gtp {
 

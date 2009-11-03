@@ -2,8 +2,8 @@
 // Copyright 2006 and onwards, Lukasz Lew
 //
 
-#include "full_board.h"
-#include "testing.h"
+#include "full_board.hpp"
+#include "testing.hpp"
 
 
 void FullBoard::clear() {
@@ -23,7 +23,7 @@ void FullBoard::set_act_player (Player pl) {
 }
 
 
-void FullBoard::load (const FullBoard* save_board) {
+void FullBoard::Load (const FullBoard* save_board) {
   memcpy((Board*)this, (Board*)save_board, sizeof(Board));
   move_history = save_board->move_history;
 }
@@ -58,7 +58,7 @@ bool FullBoard::undo () {
 
 bool FullBoard::is_legal (Player pl, Vertex v) const {
   FullBoard tmp;
-  tmp.load(this);
+  tmp.Load(this);
   return tmp.try_play (pl, v);
 }
 
@@ -86,7 +86,7 @@ bool FullBoard::try_play (Player player, Vertex v) {
   if (color_at [v] != Color::Empty ())
     return false;
 
-  if (is_pseudo_legal (player,v) == false)
+  if (IsPseudoLegal (player,v) == false)
     return false;
 
   play_legal (player, v);

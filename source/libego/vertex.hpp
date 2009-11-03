@@ -5,7 +5,7 @@
 #ifndef VERTEX_H_
 #define VERTEX_H_
 
-#include "config.h"
+#include "config.hpp"
 
 namespace Coord {
   bool IsOk (int coord);

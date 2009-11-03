@@ -1,9 +1,9 @@
 #ifndef SGF_GTP_H_
 #define SGF_GTP_H_
 
-#include "full_board.h"
-#include "sgf.h"
-#include "gtp.h"
+#include "full_board.hpp"
+#include "sgf.hpp"
+#include "gtp.hpp"
 
 class SgfGtp {
 public:

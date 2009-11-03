@@ -61,7 +61,8 @@ Nat<T>::Nat (uint raw) : raw (raw) {
 // -----------------------------------------------------------------------------
 
 template <typename Nat, typename Elt>
-NatMap <Nat, Elt>::NatMap() {
+NatMap <Nat, Elt>::NatMap (const Elt& init) {
+  SetAll (init);
 }
 
 template <typename Nat, typename Elt>

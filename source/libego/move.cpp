@@ -2,7 +2,7 @@
 // Copyright 2006 and onwards, Lukasz Lew
 //
 
-#include "move.h"
+#include "move.hpp"
 
 void Move::check () {
   Player::OfRaw (idx & 0x1);

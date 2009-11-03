@@ -5,8 +5,8 @@
 #include <list>
 #include <string>
 
-#include "vertex.h"
-#include "color.h"
+#include "vertex.hpp"
+#include "color.hpp"
 
 using namespace std;
 
