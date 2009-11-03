@@ -90,7 +90,7 @@ public:
 
   void DoOnePlayout (MctsNode& playout_root, const Board& board) {
     // Prepare simulation board and tree iterator.
-    play_board.load (&board);
+    play_board.Load (&board);
     trace.clear();
     trace.push_back (&playout_root);
     move_history.Clear ();
@@ -133,7 +133,7 @@ private:
     Player pl = play_board.act_player ();
     MctsNode& uct_child = best_child_finder.Find (pl, ActNode());
 
-    assertc (mcts_ac, play_board.is_pseudo_legal (pl, uct_child.v));
+    assertc (mcts_ac, play_board.IsPseudoLegal (pl, uct_child.v));
 
     // Try to play it on the board
     play_board.play_legal (pl, uct_child.v);

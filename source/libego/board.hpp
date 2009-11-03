@@ -20,13 +20,14 @@ public:
 
 
   // Loads save_board into this board.
-  void load (const Board* save_board);
+  void Load (const Board* save_board);
 
-  // Returns false for simple ko and single stone suicide.
-  bool is_pseudo_legal (Player player, Vertex v) const;
+  // Returns false for simple ko and single stone suicide
+  // Returns true despite bigger suicides and superko violation.
+  bool IsPseudoLegal (Player player, Vertex v) const;
 
   // Returns true iff v is uncut eye of the player.
-  bool is_eyelike (Player player, Vertex v) const;
+  bool IsEyelike (Player player, Vertex v) const;
 
   // Plays a move. Accepts passes, suicides and ko moves.
   void play_legal (Player player, Vertex v);
@@ -98,7 +99,7 @@ public:
 
   Move last_move () const;
 
-  // Clears the board. (It is faster to load(empty_board))
+  // Clears the board. (It is faster to Load(empty_board))
   void clear ();
 
 public:

@@ -19,7 +19,7 @@ namespace Benchmark {
     LightPlayout playout (&playout_board, random);
 
     rep (ii, playout_cnt) {
-      playout_board.load (&empty_board);
+      playout_board.Load (&empty_board);
       if (playout.Run ()) {
         (*win_cnt) [playout_board.playout_winner ()] ++;
       }

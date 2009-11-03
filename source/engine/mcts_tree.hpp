@@ -171,7 +171,7 @@ void MctsNode::EnsureAllPseudoLegalChildren (Player pl, const Board& board) {
   if (has_all_legal_children [pl]) return;
   empty_v_for_each_and_pass (&board, v, {
       // big suicides and superko nodes have to be removed from the tree later
-      if (board.is_pseudo_legal (pl, v))
+      if (board.IsPseudoLegal (pl, v))
         AddChild (MctsNode(pl, v));
     });
   has_all_legal_children [pl] = true;

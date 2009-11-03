@@ -230,7 +230,7 @@ Board::Board ()
   set_komi (6.5);
 }
 
-void Board::load (const Board* save_board) {
+void Board::Load (const Board* save_board) {
   memcpy(this, save_board, sizeof(Board));
   check ();
 }
@@ -252,7 +252,7 @@ Hash Board::hash () const {
   return hash_;
 }
 
-bool Board::is_pseudo_legal (Player player, Vertex v) const {
+bool Board::IsPseudoLegal (Player player, Vertex v) const {
   check ();
   return
     v == Vertex::Pass () ||
@@ -262,7 +262,7 @@ bool Board::is_pseudo_legal (Player player, Vertex v) const {
 }
 
 
-bool Board::is_eyelike (Player player, Vertex v) const {
+bool Board::IsEyelike (Player player, Vertex v) const {
   assertc (board_ac, color_at [v] == Color::Empty ());
   if (! nbr_cnt[v].player_cnt_is_max (player)) return false;
 
@@ -690,7 +690,7 @@ void Board::check_no_more_legal (Player player) const { // at the end of the pla
 
   ForEachNat (Vertex, v)
     if (color_at[v] == Color::Empty ())
-      assert (is_eyelike (player, v) || is_pseudo_legal (player, v) == false);
+      assert (IsEyelike (player, v) || IsPseudoLegal (player, v) == false);
 }
 
 const Zobrist Board::zobrist[1] = { Zobrist () };

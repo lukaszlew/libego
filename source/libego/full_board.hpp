@@ -28,7 +28,7 @@ public:
   void set_komi (float fkomi);
   void set_act_player (Player pl);
 
-  void load (const FullBoard* save_board);
+  void Load (const FullBoard* save_board);
 
   const vector<Move>& MoveHistory () const; // TODO rename all to CamelCase
 
