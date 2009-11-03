@@ -17,7 +17,7 @@
 class LightPlayout {
 public:
 
-  static const uint kDefaultMaxMoves = Board::area * 2;
+  static const uint kDefaultMaxMoves = Board::kArea * 2;
 
   typedef FastStack <Move, kDefaultMaxMoves> MoveHistory;
 

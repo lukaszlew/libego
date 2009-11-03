@@ -15,6 +15,9 @@ public:
   // Constructs empty board.
   Board ();
 
+  //  Return color of board vertex
+  Color ColorAt (Vertex v) const;
+
   // ----------------------
   // Fast playout functions
 
@@ -92,14 +95,12 @@ public:
   // debugging helper
   void DebugPrint (Vertex v = Vertex::Pass ()) const;
 
-  uint last_capture_size () const;
-
   // Clears the board. (It is faster to Load(empty_board))
-  void clear ();
+  void Clear ();
 
 public:
 
-  static const uint area = board_size * board_size;
+  static const uint kArea = board_size * board_size;
 
 private: 
 
@@ -162,11 +163,11 @@ private:
   Chain& chain_at (Vertex v);
   const Chain& chain_at (Vertex v) const;
 
-public:
-  // TODO make iterators / accessors
   NatMap<Vertex, Color>   color_at;
 
-  Vertex                   empty_v [area]; // TODO use FastSet (empty_pos)
+public:
+  // TODO make iterators / accessors
+  Vertex                   empty_v [kArea]; // TODO use FastSet (empty_pos)
   uint                     empty_v_cnt;
   uint                     move_no;
 

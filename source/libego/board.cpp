@@ -164,7 +164,7 @@ void Board::DebugPrint (Vertex v) const {
 }
 
 
-void Board::clear () {
+void Board::Clear () {
   empty_v_cnt = 0;
   ForEachNat (Player, pl) {
     player_v_cnt [pl] = 0;
@@ -226,8 +226,13 @@ Board::Board ()
     last_play_ (Vertex::Invalid()),
     last_player_ (Player::White())
 {
-  clear ();
+  Clear ();
   SetKomi (6.5);
+}
+
+
+Color Board::ColorAt (Vertex v) const {
+  return color_at [v];
 }
 
 void Board::Load (const Board* save_board) {
@@ -493,7 +498,7 @@ int Board::TrompTaylorScore() const {
   NatMap<Player, int> score (0);
 
   ForEachNat (Player, pl) {
-    FastStack<Vertex, area> queue;
+    FastStack<Vertex, kArea> queue;
     NatMap<Vertex, bool> visited (false);
 
     ForEachNat (Vertex, v) {
@@ -555,7 +560,7 @@ void Board::check_empty_v () const {
   NatMap<Vertex, bool> noticed (false);
   NatMap<Player, uint> exp_player_v_cnt (0);
 
-  assert (empty_v_cnt <= area);
+  assert (empty_v_cnt <= kArea);
 
   empty_v_for_each (this, v, {
       assert (noticed [v] == false);
@@ -581,10 +586,6 @@ Board::Chain& Board::chain_at (Vertex v) {
 
 const Board::Chain& Board::chain_at (Vertex v) const {
   return chain_[chain_id_[v]];
-}
-
-uint Board::last_capture_size () const {
-  return empty_v_cnt + 1 - last_empty_v_cnt;
 }
 
 // -----------------------------------------------------------------------------

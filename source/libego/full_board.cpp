@@ -8,7 +8,7 @@
 
 void FullBoard::clear() {
   // move_no = 0;
-  Board::clear();
+  Board::Clear();
   move_history.clear();
 }
 
@@ -83,7 +83,7 @@ bool FullBoard::try_play (Player player, Vertex v) {
 
   // TODO v.check_is_on_board ();
 
-  if (color_at [v] != Color::Empty ())
+  if (ColorAt (v) != Color::Empty ())
     return false;
 
   if (IsPseudoLegal (player,v) == false)

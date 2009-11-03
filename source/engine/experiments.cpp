@@ -109,7 +109,7 @@ public:
     Gtp::GoguiGfx gfx;
 
     ForEachNat (Vertex, v) {
-      if (board->board().color_at [v] == Color::Empty ()) {
+      if (board->board().ColorAt (v) == Color::Empty ()) {
         gfx.SetInfluence(v.ToGtpString (),
                          aaf_stats.norm_mean_given_move (Move(player, v)) /
                          influence_scale
