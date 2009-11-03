@@ -227,7 +227,7 @@ Board::Board ()
     last_player_ (Player::White())
 {
   clear ();
-  set_komi (6.5);
+  SetKomi (6.5);
 }
 
 void Board::Load (const Board* save_board) {
@@ -235,12 +235,12 @@ void Board::Load (const Board* save_board) {
   check ();
 }
 
-void Board::set_komi (float fkomi) {
+void Board::SetKomi (float fkomi) {
   komi_inverse_ = int (ceil (-fkomi));
 }
 
 
-float Board::komi () const {
+float Board::GetKomi () const {
   return -float(komi_inverse_) + 0.5;
 }
 
@@ -522,7 +522,7 @@ Player Board::TrompTaylorWinner() const {
   return Player::OfRaw (TrompTaylorScore () <= 0);
 }
 
-int Board::approx_score () const {
+int Board::StoneScore () const {
   return komi_inverse_ + player_v_cnt[Player::Black ()] -  player_v_cnt[Player::White ()];
 }
 
@@ -535,12 +535,12 @@ int Board::PlayoutScore () const {
     eye_score -= nbr_cnt[v].player_cnt_is_max (Player::White ());
   });
 
-  return approx_score () + eye_score;
+  return StoneScore () + eye_score;
 }
 
 
-Player Board::approx_winner () const { 
-  return Player::OfRaw (approx_score () <= 0); 
+Player Board::StoneWinner () const { 
+  return Player::OfRaw (StoneScore () <= 0); 
 }
 
 

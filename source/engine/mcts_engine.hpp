@@ -37,8 +37,8 @@ public:
   }
 
   void SetKomi (float komi) {
-    float old_komi = full_board.komi ();
-    full_board.set_komi (komi);
+    float old_komi = full_board.GetKomi ();
+    full_board.SetKomi (komi);
     if (komi != old_komi) {
       logger.LogLine("komi "+ToString(komi));
       logger.LogLine ("");
@@ -50,7 +50,7 @@ public:
     root.Reset ();
     logger.NewLog ();
     logger.LogLine ("clear_board");
-    logger.LogLine ("komi " + ToString (full_board.komi()));
+    logger.LogLine ("komi " + ToString (full_board.GetKomi()));
     logger.LogLine ("");
   }
 

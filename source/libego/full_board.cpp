@@ -13,8 +13,8 @@ void FullBoard::clear() {
 }
 
 
-void FullBoard::set_komi (float fkomi) {
-  Board::set_komi(fkomi);
+void FullBoard::SetKomi (float fkomi) {
+  Board::SetKomi(fkomi);
 }
 
 

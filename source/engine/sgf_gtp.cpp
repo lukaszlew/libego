@@ -72,7 +72,7 @@ void SgfGtp::CGtpExec (Gtp::Io& io) {
   save_board.Load (&base_board);
       
   base_board.clear ();
-  base_board.set_komi (sgf_tree.properties ().get_komi ());
+  base_board.SetKomi (sgf_tree.properties ().get_komi ());
   ostringstream response;
   exec_embedded_gtp_rec (sgf_tree.game_node (), response);
 

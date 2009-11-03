@@ -70,14 +70,14 @@ public:
 
   // Difference in (number of stones) of each player - komi. Used with
   // mercy heuristic.
-  int approx_score () const;
+  int StoneScore () const;
 
-  // Winner according to approx_score.
-  Player approx_winner () const;
+  // Winner according to StoneScore.
+  Player StoneWinner () const;
 
   // Gets, sets the komi value. Positive means adventage for white.
-  float komi () const;
-  void set_komi (float fkomi);
+  float GetKomi () const;
+  void SetKomi (float fkomi);
 
   // Positional hash (just color of stones)
   Hash hash () const;

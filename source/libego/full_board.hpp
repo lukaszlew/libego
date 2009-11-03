@@ -25,7 +25,7 @@ public:
 
   // auxiliary functions
 
-  void set_komi (float fkomi);
+  void SetKomi (float fkomi);
   void SetActPlayer (Player pl);
 
   void Load (const FullBoard* save_board);
