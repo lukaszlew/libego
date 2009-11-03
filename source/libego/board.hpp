@@ -105,7 +105,7 @@ public:
 
 private: 
 
-  static const bool kDoTests = false;
+  static const bool kCheckAsserts = false;
 
   Hash recalc_hash () const;
 

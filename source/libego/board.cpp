@@ -285,9 +285,9 @@ flatten all_inline
 bool Board::PlayPseudoLegal (Player player, Vertex v) { // TODO test with move
   check ();
 
-  TEST (player.IsValid());
-  TEST (v.IsValid());
-  TEST (IsPseudoLegal (player, v));
+  ASSERT (player.IsValid());
+  ASSERT (v.IsValid());
+  ASSERT (IsPseudoLegal (player, v));
 
   if (v == Vertex::Pass ()) {
     basic_play (player, Vertex::Pass ());

@@ -9,7 +9,7 @@
 
 template <class T>
 T Nat<T>::OfRaw (uint raw) {
-  TEST (raw < T::kBound);
+  ASSERT (raw < T::kBound);
   return T (raw);
 }
 
@@ -55,7 +55,7 @@ bool Nat<T>::operator != (const Nat& other) const {
 
 template <class T>
 Nat<T>::Nat (uint raw) : raw (raw) {
-  TEST (raw < T::kBound || raw == static_cast <uint> (-1));
+  ASSERT (raw < T::kBound || raw == static_cast <uint> (-1));
 }
 
 // -----------------------------------------------------------------------------
@@ -67,13 +67,13 @@ NatMap <Nat, Elt>::NatMap (const Elt& init) {
 
 template <typename Nat, typename Elt>
 Elt& NatMap <Nat, Elt>::operator [] (Nat nat) { 
-  TEST (nat != Nat::Invalid());
+  ASSERT (nat != Nat::Invalid());
   return tab [nat.GetRaw()];
 }
 
 template <typename Nat, typename Elt>
 const Elt& NatMap <Nat, Elt>::operator [] (Nat nat) const {
-  TEST (nat != Nat::Invalid());
+  ASSERT (nat != Nat::Invalid());
   return tab [nat.GetRaw()];
 }
 
