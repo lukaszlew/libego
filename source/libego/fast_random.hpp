@@ -18,6 +18,8 @@ public:
   uint GetNextUint (uint n);   // n must be between 1 .. (1<<16) + 1
 
   uint seed;
+
+  static const bool kCheckAsserts = false;
 };
 
 #endif

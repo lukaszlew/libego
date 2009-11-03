@@ -8,7 +8,6 @@
 
 #include "board.hpp"
 #include "fast_stack.hpp"
-#include "testing.hpp"
 
 // TODO    center_v.check_is_on_board ();
 #define vertex_for_each_4_nbr(center_v, nbr_v, block) { \
@@ -32,9 +31,9 @@
 Board::NbrCounter Board::NbrCounter::OfCounts (uint black_cnt,
                                                uint white_cnt,
                                                uint empty_cnt) {
-  assertc (nbr_cnt_ac, black_cnt <= max);
-  assertc (nbr_cnt_ac, white_cnt <= max);
-  assertc (nbr_cnt_ac, empty_cnt <= max);
+  ASSERT (black_cnt <= max);
+  ASSERT (white_cnt <= max);
+  ASSERT (empty_cnt <= max);
   Board::NbrCounter nc;
   nc.bitfield =
     (black_cnt << f_shift[0]) +
@@ -77,14 +76,14 @@ uint Board::NbrCounter::player_cnt_is_max (Player pl) const {
 }
 
 void Board::NbrCounter::check () const {
-  if (!nbr_cnt_ac) return;
-  assert (empty_cnt () <= max);
-  assert (player_cnt (Player::Black ()) <= max);
-  assert (player_cnt (Player::White ()) <= max);
+  if (!kCheckAsserts) return;
+  ASSERT (empty_cnt () <= max);
+  ASSERT (player_cnt (Player::Black ()) <= max);
+  ASSERT (player_cnt (Player::White ()) <= max);
 }
 
 void Board::NbrCounter::check(const NatMap<Color, uint>& nbr_color_cnt) const {
-  if (!nbr_cnt_ac) return;
+  if (!kCheckAsserts) return;
 
   uint expected_nbr_cnt =        // definition of nbr_cnt[v]
     + ((nbr_color_cnt [Color::Black ()] + nbr_color_cnt [Color::OffBoard ()])
@@ -93,7 +92,7 @@ void Board::NbrCounter::check(const NatMap<Color, uint>& nbr_color_cnt) const {
        << f_shift[1])
     + ((nbr_color_cnt [Color::Empty ()])
        << f_shift[2]);
-  assert (bitfield == expected_nbr_cnt);
+  ASSERT (bitfield == expected_nbr_cnt);
 }
 
 const uint Board::NbrCounter::max = 4;    // maximal number of neighbours
@@ -267,7 +266,7 @@ bool Board::IsPseudoLegal (Player player, Vertex v) const {
 
 
 bool Board::IsEyelike (Player player, Vertex v) const {
-  assertc (board_ac, color_at [v] == Color::Empty ());
+  ASSERT (color_at [v] == Color::Empty ());
   if (! nbr_cnt[v].player_cnt_is_max (player)) return false;
 
   NatMap<Color, int> diag_color_cnt (0); // TODO
@@ -295,7 +294,7 @@ bool Board::PlayPseudoLegal (Player player, Vertex v) { // TODO test with move
   }
 
   // TODO v.check_is_on_board ();
-  assertc (board_ac, color_at[v] == Color::Empty ());
+  ASSERT (color_at[v] == Color::Empty ());
 
   if (nbr_cnt[v].player_cnt_is_max (player.Other())) {
     play_eye_legal (player, v); // never fails
@@ -346,7 +345,7 @@ all_inline
 bool Board::play_not_eye (Player player, Vertex v) {
   check ();
   // TODO v.check_is_on_board ();
-  assertc (board_ac, color_at[v] == Color::Empty ());
+  ASSERT (color_at[v] == Color::Empty ());
 
   basic_play (player, v);
 
@@ -355,9 +354,9 @@ bool Board::play_not_eye (Player player, Vertex v) {
   vertex_for_each_4_nbr (v, nbr_v, update_neighbour(player, v, nbr_v));
 
   if (chain_at(v).lib_cnt == 0) {
-    assertc (board_ac, last_empty_v_cnt - empty_v_cnt == 1);
+    ASSERT (last_empty_v_cnt - empty_v_cnt == 1);
     remove_chain(v);
-    assertc (board_ac, last_empty_v_cnt - empty_v_cnt > 0);
+    ASSERT (last_empty_v_cnt - empty_v_cnt > 0);
     return  false;
   } else {
     return true;
@@ -381,7 +380,7 @@ void Board::play_eye_legal (Player player, Vertex v) {
         remove_chain (nbr_v);
     });
 
-  assertc (board_ac, chain_at(v).lib_cnt != 0);
+  ASSERT (chain_at(v).lib_cnt != 0);
 
   // if captured exactly one stone (and this was eye)
   if (last_empty_v_cnt == empty_v_cnt) {
@@ -416,14 +415,14 @@ void Board::remove_chain (Vertex v) {
   Color old_color = color_at[v];
   Vertex act_v = v;
 
-  assertc (board_ac, old_color.IsPlayer ());
+  ASSERT (old_color.IsPlayer ());
 
   do {
     remove_stone (act_v);
     act_v = chain_next_v[act_v];
   } while (act_v != v);
 
-  assertc (board_ac, act_v == v);
+  ASSERT (act_v == v);
 
   do {
     vertex_for_each_4_nbr (act_v, nbr_v, {
@@ -448,7 +447,7 @@ void Board::place_stone (Player pl, Vertex v) {
   empty_pos [empty_v [empty_v_cnt]] = empty_pos [v];
   empty_v [empty_pos [v]] = empty_v [empty_v_cnt];
 
-  assertc (chain_next_v_ac, chain_next_v[v] == v);
+  ASSERT (chain_next_v[v] == v);
 
   chain_id [v] = v;
   chain_at(v).lib_cnt = nbr_cnt[v].empty_cnt ();
@@ -464,7 +463,7 @@ void Board::remove_stone (Vertex v) {
   empty_v [empty_v_cnt++] = v;
   chain_id [v] = v;
 
-  assertc (board_ac, empty_v_cnt < Vertex::kBound);
+  ASSERT (empty_v_cnt < Vertex::kBound);
 }
 
 
@@ -511,7 +510,7 @@ int Board::TrompTaylorScore() const {
 
     while (!queue.IsEmpty()) {
       Vertex v = queue.PopTop();
-      assertc (board_ac, visited[v]);
+      ASSERT (visited[v]);
       score[pl] += 1;
       vertex_for_each_4_nbr(v, nbr, {
         if (!visited[nbr] && color_at[nbr] == Color::Empty()) {
@@ -556,29 +555,29 @@ Player Board::PlayoutWinner () const {
 
 
 void Board::check_empty_v () const {
-  if (!board_empty_v_ac) return;
+  if (!kCheckAsserts) return;
 
   NatMap<Vertex, bool> noticed (false);
   NatMap<Player, uint> exp_player_v_cnt (0);
 
-  assert (empty_v_cnt <= kArea);
+  ASSERT (empty_v_cnt <= kArea);
 
   empty_v_for_each (this, v, {
-      assert (noticed [v] == false);
+      ASSERT (noticed [v] == false);
       noticed [v] = true;
     });
 
   ForEachNat (Vertex, v) {
-    assert ((color_at[v] == Color::Empty ()) == noticed[v]);
+    ASSERT ((color_at[v] == Color::Empty ()) == noticed[v]);
     if (color_at[v] == Color::Empty ()) {
-      assert (empty_pos[v] < empty_v_cnt);
-      assert (empty_v [empty_pos[v]] == v);
+      ASSERT (empty_pos[v] < empty_v_cnt);
+      ASSERT (empty_v [empty_pos[v]] == v);
     }
     if (color_at [v].IsPlayer ()) exp_player_v_cnt [color_at[v].ToPlayer ()]++;
   }
 
   ForEachNat (Player, pl)
-    assert (exp_player_v_cnt [pl] == player_v_cnt [pl]);
+    ASSERT (exp_player_v_cnt [pl] == player_v_cnt [pl]);
 }
 
 Board::Chain& Board::chain_at (Vertex v) {
@@ -592,21 +591,21 @@ const Board::Chain& Board::chain_at (Vertex v) const {
 // -----------------------------------------------------------------------------
 
 void Board::check_hash () const {
-  assertc (board_hash_ac, hash == recalc_hash ());
+  ASSERT (hash == recalc_hash ());
 }
 
 
 void Board::check_color_at () const {
-  if (!board_color_at_ac) return;
+  if (!kCheckAsserts) return;
 
   ForEachNat (Vertex, v) {
-    assert ((color_at[v] != Color::OffBoard()) == (v.IsOnBoard ()));
+    ASSERT ((color_at[v] != Color::OffBoard()) == (v.IsOnBoard ()));
   }
 }
 
 
 void Board::check_nbr_cnt () const {
-  if (!board_nbr_cnt_ac) return;
+  if (!kCheckAsserts) return;
 
   ForEachNat (Vertex, v) {
     NatMap<Color, uint> nbr_color_cnt (0);
@@ -622,18 +621,18 @@ void Board::check_nbr_cnt () const {
 
 
 void Board::check_chain_at () const {
-  if (!chain_at_ac) return;
+  if (!kCheckAsserts) return;
 
   ForEachNat (Vertex, v) {
     // whether same color neighbours have same root and liberties
     // TODO what about off_board and empty?
     if (color_at [v].IsPlayer ()) {
 
-      assert (chain[chain_id[v]].lib_cnt != 0);
+      ASSERT (chain[chain_id[v]].lib_cnt != 0);
 
       vertex_for_each_4_nbr (v, nbr_v, {
           if (color_at[v] == color_at[nbr_v])
-            assert (chain_id [v] == chain_id [nbr_v]);
+            ASSERT (chain_id [v] == chain_id [nbr_v]);
         });
     }
   }
@@ -641,17 +640,17 @@ void Board::check_chain_at () const {
 
 
 void Board::check_chain_next_v () const {
-  if (!chain_next_v_ac) return;
+  if (!kCheckAsserts) return;
   ForEachNat (Vertex, v) {
     // TODO chain_next_v[v].check ();
     if (!color_at [v].IsPlayer ())
-      assert (chain_next_v [v] == v);
+      ASSERT (chain_next_v [v] == v);
   }
 }
 
 
 void Board::check () const {
-  if (!board_ac) return;
+  if (!kCheckAsserts) return;
 
   check_empty_v       ();
   check_hash          ();
@@ -665,11 +664,11 @@ void Board::check () const {
 void Board::check_no_more_legal (Player player) const { // at the end of the playout
   unused (player);
 
-  if (!board_ac) return;
+  if (!kCheckAsserts) return;
 
   ForEachNat (Vertex, v)
     if (color_at[v] == Color::Empty ())
-      assert (IsEyelike (player, v) || IsPseudoLegal (player, v) == false);
+      ASSERT (IsEyelike (player, v) || IsPseudoLegal (player, v) == false);
 }
 
 const Zobrist Board::zobrist[1] = { Zobrist () };

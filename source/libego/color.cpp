@@ -3,7 +3,6 @@
 //
 
 #include "color.hpp"
-#include "testing.hpp"
 
 Color::Color () : Nat<Color> () {
 }

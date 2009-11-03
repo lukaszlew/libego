@@ -26,6 +26,7 @@ const bool mcts_ac = true;
 // -----------------------------------------------------------------------------
 
 class MctsBestChildFinder {
+  static const bool kCheckAsserts = false;
 public:
   MctsBestChildFinder () {
     uct_explore_coeff = 1.0;
@@ -36,10 +37,10 @@ public:
 
   MctsNode& Find (Player pl, MctsNode& node) {
     MctsNode* best_child = NULL;
-    float best_urgency = -large_float;
+    float best_urgency = -100000000000000.0; // TODO infinity
     const float explore_coeff = log (node.stat.update_count()) * uct_explore_coeff;
 
-    assertc (mcts_tree_ac, node.has_all_legal_children [pl]);
+    ASSERT (node.has_all_legal_children [pl]);
 
     BOOST_FOREACH (MctsNode& child, node.Children()) {
       if (child.player != pl) continue;
@@ -50,7 +51,7 @@ public:
       }
     }
 
-    assertc (mcts_tree_ac, best_child != NULL); // at least pass
+    ASSERT (best_child != NULL); // at least pass
     return *best_child;
   }
 
@@ -82,6 +83,7 @@ private:
 // -----------------------------------------------------------------------------
 
 class MctsPlayout {
+  static const bool kCheckAsserts = false;
 public:
   MctsPlayout (FastRandom& random_) : random (random_) {
     mature_update_count  = 100.0;
@@ -108,7 +110,7 @@ public:
     // Is leaf is ready to expand ?
     if (ActNode().stat.update_count() > mature_update_count) {
       Player pl = play_board.ActPlayer();
-      assertc (mcts_ac, pl == ActNode().player.Other());
+      ASSERT (pl == ActNode().player.Other());
 
       ActNode().EnsureAllPseudoLegalChildren (pl, play_board);
 
@@ -133,12 +135,12 @@ private:
     Player pl = play_board.ActPlayer ();
     MctsNode& uct_child = best_child_finder.Find (pl, ActNode());
 
-    assertc (mcts_ac, play_board.IsPseudoLegal (pl, uct_child.v));
+    ASSERT (play_board.IsPseudoLegal (pl, uct_child.v));
 
     // Try to play it on the board
     if (!play_board.PlayPseudoLegal (pl, uct_child.v)) { // large suicide
-      assertc (mcts_ac, !uct_child.has_all_legal_children [pl.Other()]);
-      assertc (mcts_ac, uct_child.stat.update_count() == Stat::prior_update_count);
+      ASSERT (!uct_child.has_all_legal_children [pl.Other()]);
+      ASSERT (uct_child.stat.update_count() == Stat::prior_update_count);
       // Remove in case of large suicide.
       ActNode().RemoveChild (&uct_child);
       return false;
@@ -191,7 +193,7 @@ private:
   }
 
   MctsNode& ActNode() {
-    assertc (mcts_ac, trace.size() > 0);
+    ASSERT (trace.size() > 0);
     return *trace.back ();
   }
 

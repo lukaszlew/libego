@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "utils.hpp"
-#include "testing.hpp"
 #include "fast_random.hpp"
 
 template <typename Elt, uint max_size> class FastStack {
@@ -52,7 +51,7 @@ public:
   }
 
   Elt& Top () {
-    assertc (stack_ac, size > 0);
+    ASSERT (size > 0);
     return tab [size-1];
   }
 
@@ -74,7 +73,7 @@ public:
   }
 
   Elt PopRandom (FastRandom& fr) {
-    assertc (stack_ac, size > 0);
+    ASSERT (size > 0);
     uint idx = fr.GetNextUint (size);
     Elt elt = tab [idx];
     size--;
@@ -83,21 +82,24 @@ public:
   }
 
   Elt& operator[] (uint i) { 
-    assertc (stack_ac, i < size);
+    ASSERT (i < size);
     return tab [i];
   }
 
   const Elt& operator[] (uint i) const {
-    assertc (stack_ac, i < size);
+    ASSERT (i < size);
     return tab [i];
   }
 
 private:
   void Check () const {
-    assertc (stack_ac, size <= max_size);
+    ASSERT (size <= max_size);
   }
 
 private:
+
+  static const bool kCheckAsserts = false;
+
   Elt tab [max_size];
   uint size;
 };

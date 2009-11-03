@@ -106,7 +106,7 @@ list <Vertex> SgfNodeProperties::get_vertices_to_play (Color color) {
     add_moves ("W");
     add_moves ("AW");
   } else {
-    assert(false);
+    FAIL ("should not happen");
   }
 
   return ret;
@@ -128,7 +128,7 @@ string SgfNodeProperties::get_single_property (string prop_name,
   if (property_map [prop_name].size () > 1) {
     //cerr << "warning: multiple property value for: " << prop_name <<
     //endl;
-    assert(false);
+    FAIL ("should not happen");
   } 
   return property_map [prop_name].front ();
 }
@@ -283,7 +283,7 @@ bool SgfTree::is_loaded () { return root->children.size () > 0; }
 
 
 SgfNode* SgfTree::game_node () {
-  assert (is_loaded ());
+  ASSERT (is_loaded ());
   return & (root->children.front ());
 }
 

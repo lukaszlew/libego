@@ -3,7 +3,6 @@
 //
 
 #include "full_board.hpp"
-#include "testing.hpp"
 
 
 void FullBoard::clear() {

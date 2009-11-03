@@ -60,6 +60,8 @@ private:
   void RecPrint (ostream& out, uint depth, float min_visit, uint max_children) const;
 
   ChildrenList children;
+
+  static const bool kCheckAsserts = false;
 };
 
 // -----------------------------------------------------------------------------
@@ -85,7 +87,7 @@ void MctsNode::AddChild (const MctsNode& node) {
 void MctsNode::RemoveChild (MctsNode* child_ptr) {
   ChildrenList::iterator child = children.begin();
   while (true) {
-    assertc (mcts_tree_ac, child != children.end());
+    ASSERT (child != children.end());
     if (&*child == child_ptr) {
       children.erase(child);
       return;
@@ -105,7 +107,7 @@ MctsNode* MctsNode::AddFindChild (Move m, Board& board) {
       return &child;
     }
   }
-  assert (false);
+  FAIL ("should not happen");
 }
 
 string MctsNode::ToString() const {
@@ -153,7 +155,7 @@ const MctsNode& MctsNode::MostExploredChild (Player pl) {
   const MctsNode* best = NULL;
   float best_update_count = -1;
 
-  assertc (mcts_tree_ac, has_all_legal_children [pl]);
+  ASSERT (has_all_legal_children [pl]);
 
   BOOST_FOREACH (const MctsNode& child, children) {
     if (child.player == pl && child.stat.update_count() > best_update_count) {
@@ -162,7 +164,7 @@ const MctsNode& MctsNode::MostExploredChild (Player pl) {
     }
   }
 
-  assertc (mcts_tree_ac, best != NULL);
+  ASSERT (best != NULL);
   return *best;
 }
 
@@ -177,7 +179,7 @@ void MctsNode::EnsureAllPseudoLegalChildren (Player pl, const Board& board) {
 }
 
 void MctsNode::RemoveIllegalChildren (Player pl, const FullBoard& full_board) {
-  assertc (mcts_tree_ac, has_all_legal_children [pl]);
+  ASSERT (has_all_legal_children [pl]);
 
   ChildrenList::iterator child = children.begin();
   while (child != children.end()) {

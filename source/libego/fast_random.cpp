@@ -3,7 +3,6 @@
 //
 
 #include "fast_random.hpp"
-#include "testing.hpp"
 #include "cstdio"
 
 #ifdef __MINGW32__
@@ -35,8 +34,8 @@ uint FastRandom::GetNextUint () { // a number between  0 ... (uint(1)<<31) - 1 -
 
 // n must be between 1 .. (1<<16) + 1
 uint FastRandom::GetNextUint (uint n) { // 0 .. n-1
-  assertc (fast_random_ac, n > 0);
-  assertc (fast_random_ac, n <= (1<<16)+1);
+  ASSERT (n > 0);
+  ASSERT (n <= (1<<16)+1);
   return ((GetNextUint() & 0xffff) * n) >> 16;
 }
 
@@ -67,7 +66,7 @@ void FastRandom::test2 (uint k, uint n) {
   rep (ii, k)  bucket [ii] = 0;
   rep (ii, n) {
     uint r = GetNextUint (k);
-    assert (r < k);
+    ASSERT (r < k);
     bucket [r] ++;
   }
   rep (ii, k)  printf ("%d\n", bucket [ii]);

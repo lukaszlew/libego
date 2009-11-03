@@ -5,7 +5,6 @@
 #ifndef EGO_H_
 #define EGO_H_
 
-#include "testing.hpp"
 #include "utils.hpp"
 #include "nat.hpp"
 

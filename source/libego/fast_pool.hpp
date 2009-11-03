@@ -7,7 +7,6 @@
 
 #include "utils.hpp"
 #include "fast_stack.hpp"
-#include "testing.hpp"
 
 template <class Elt, uint size>
 class FastPool {

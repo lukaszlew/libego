@@ -10,10 +10,7 @@
 
 using namespace std;
 
-typedef unsigned int uint;
-typedef unsigned long long uint64;
-
-// standard macros
+// debugging  macros
 
 #define qq(x) cerr << x << flush;
 #define qqv(x) cerr << #x << " = " << x << endl << flush;
@@ -27,35 +24,9 @@ typedef unsigned long long uint64;
 #define _STRING(x) #x
 #define STRING(x) _STRING(x)
 
-const float large_float = 1000000000000.0;
-
 float process_user_time ();
 
 // string/stream opereations
-
-class SS {
-public:
-  template <typename T> SS& operator<< (const T& elt) {
-    buffer_ << elt;
-    return *this;
-  }
-
-  operator std::string () const;
-private:
-  std::ostringstream buffer_;
-};
-
-
-char getc_non_space (istream& is);
-bool is_all_whitespace (const string& s);
-void remove_empty_lines (string* s);
-void remove_trailing_whitespace (string* str);
-
-template <typename T>
-bool string_to(const string &s, T* i) {
-  istringstream myStream(s);
-  return (myStream >> *i);
-}
 
 template <typename T>
 string ToString(const T& val) {

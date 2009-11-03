@@ -80,7 +80,7 @@ public:
 
     float mix = (t1*s1 + t2*s2) / (t1*n1 + t2*n2);
 
-    assertc (stat_ac, fabs(mix - SlowMix(stat1, b1, stat2 ,b2)) < 0.00001);
+    ASSERT (fabs(mix - SlowMix(stat1, b1, stat2 ,b2)) < 0.00001);
     return mix;
   }
 
@@ -96,6 +96,8 @@ public:
   }
 
 private:
+  static const bool kCheckAsserts = false;
+
   float sample_count;
   float sample_sum;
   float square_sample_sum;

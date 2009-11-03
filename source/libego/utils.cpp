@@ -10,7 +10,6 @@
 #endif
 
 #include <iostream>
-#include <cassert>
 #include <cstdlib>
 
 #include "utils.hpp"
@@ -49,47 +48,4 @@ float process_user_time () {
 
 #endif
 
-}
-
-void fatal_error (const char* s) {
-  cerr << "Fatal error: " << s << endl;
-  assert (false);
-  exit (1);
-}
-
-
-// string/stream opereations
-
-char getc_non_space (istream& is) {
-  char c;
-  is.get(c);
-  if (c == ' ' || c == '\t') return getc_non_space (is);
-  return c;
-}
-
-bool is_all_whitespace (const string& s) {
-  for(string::const_iterator cp = s.begin(); cp != s.end(); cp++)
-    if (!isspace (*cp))
-      return false;
-  return true;
-}
-
-void remove_empty_lines (string* s) {
-  istringstream in (*s);
-  ostringstream out;
-  string line;
-  while (getline (in, line)) {
-    if (is_all_whitespace (line)) continue;
-    out << line << endl;
-  }
-  *s = out.str ();
-}
-
-void remove_trailing_whitespace (string* str) {
-  while (isspace ( *(str->end ()-1) ))
-    str->resize (str->size () - 1);
-}
-
-SS::operator std::string () const {
-  return buffer_.str();
 }

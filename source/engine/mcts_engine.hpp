@@ -83,8 +83,7 @@ public:
     Vertex v = BestMove (player);
 
     if (v != Vertex::Invalid ()) {
-      bool ok = full_board.try_play (player, v);
-      assert(ok);
+      CHECK (full_board.try_play (player, v));
     }
     logger.LogLine ("reg_genmove " + player.ToGtpString() +
                     "   #? [" + v.ToGtpString() + "]");
