@@ -5,7 +5,7 @@
 #ifndef FAST_TIMER_H_
 #define FAST_TIMER_H_
 
-#include "utils.hpp"
+#include <string>
 
 class FastTimer {
 public:
@@ -14,7 +14,7 @@ public:
   void Start();
   void Stop();
   double Ticks();
-  string ToString (float unit = 1.0);
+  std::string ToString (float unit = 1.0);
 
 private:
   static uint64 GetCcTime ();
@@ -24,5 +24,7 @@ private:
   uint64  start_time;
   double  overhead;
 };
+
+float ProcessUserTime ();
 
 #endif

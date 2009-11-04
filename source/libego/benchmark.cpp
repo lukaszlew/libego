@@ -38,11 +38,11 @@ namespace Benchmark {
 
     fast_timer.Reset ();
     fast_timer.Start ();
-    float seconds_begin = process_user_time ();
+    float seconds_begin = ProcessUserTime ();
     
     DoPlayouts (playout_cnt, &win_cnt);
 
-    float seconds_end = process_user_time ();
+    float seconds_end = ProcessUserTime ();
     fast_timer.Stop ();
 
 

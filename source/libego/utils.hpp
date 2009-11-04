@@ -24,8 +24,6 @@ using namespace std;
 #define _STRING(x) #x
 #define STRING(x) _STRING(x)
 
-float process_user_time ();
-
 // string/stream opereations
 
 template <typename T>
