@@ -33,7 +33,7 @@ public:
 
   void reset (float prior = 1.0) {
     unconditional.reset (prior);
-    move_for_each_all (m)
+    ForEachNat (Move, m)
       given_move [m].reset (prior);
   }
 

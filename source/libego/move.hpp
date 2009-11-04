@@ -6,7 +6,6 @@
 #define MOVE_H_
 
 #include <string>
-using namespace std;
 
 #include "player.hpp"
 #include "vertex.hpp"
@@ -15,7 +14,6 @@ class Move {
 public:
   explicit Move (Player player, Vertex v);
   explicit Move ();
-  explicit Move (int idx_);
 
   static Move Invalid() { return Move (-1); } // TODO replace by Nat
 
@@ -29,11 +27,7 @@ public:
   bool operator!= (Move other) const;
   bool operator== (Move other) const;
 
-  void next ();
-  bool in_range () const;
-
   const static uint kBound = Vertex::kBound << 1;
-  const static uint no_move_idx = 1;
 
   uint GetRaw ();
 
@@ -44,12 +38,12 @@ public:
     }
     return false;
   }
+
 private:
+  explicit Move (int idx_);
   void check ();
 
   uint idx;
 };
-
-#define move_for_each_all(m) for (Move m = Move (0); m.in_range (); m.next ())
 
 #endif

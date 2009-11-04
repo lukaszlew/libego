@@ -44,11 +44,3 @@ uint Move::GetRaw () { return idx; }
 bool Move::operator== (Move other) const { return idx == other.idx; }
 bool Move::operator!= (Move other) const { return idx != other.idx; }
 
-bool Move::in_range () const {
-  return idx < kBound;
-}
-
-void Move::next () {
-  idx++; 
-}
-
