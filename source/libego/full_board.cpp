@@ -23,9 +23,10 @@ void FullBoard::Load (const FullBoard& save_board) {
 }
 
 
-bool FullBoard::PlayPseudoLegal (Player player, Vertex v) {
-  bool status = board.PlayPseudoLegal(player, v);
-  move_history.push_back (board.LastMove());
+bool FullBoard::PlayPseudoLegal (Move m) {
+  move_history.push_back (m);
+  bool status = board.PlayPseudoLegal (m.get_player(), m.get_vertex());
+  CHECK (m == board.LastMove());
   return status;
 }
 
@@ -44,16 +45,16 @@ bool FullBoard::Undo () {
   Clear ();  // TODO maybe last_player should be preserverd as well
 
   rep (mn, game_length-1)
-    PlayPseudoLegal (replay [mn].get_player (), replay [mn].get_vertex ());
+    PlayPseudoLegal (replay [mn]);
 
   return true;
 }
 
 
-bool FullBoard::IsLegal (Player pl, Vertex v) const {
+bool FullBoard::IsLegal (Move move) const {
   FullBoard tmp;
   tmp.Load (*this);
-  return tmp.Play (pl, v);
+  return tmp.Play (move);
 }
 
 
@@ -69,21 +70,19 @@ bool FullBoard::IsHashRepeated () {
 }
 
 
-bool FullBoard::Play (Player player, Vertex v) {
-  if (v == Vertex::Pass ()) {
-    PlayPseudoLegal (player, v);
+bool FullBoard::Play (Move move) {
+  if (move.get_vertex() == Vertex::Pass ()) {
+    PlayPseudoLegal (move);
     return true;
   }
 
-  // TODO v.check_is_on_board ();
-
-  if (board.ColorAt (v) != Color::Empty ())
+  if (board.ColorAt (move.get_vertex()) != Color::Empty ())
     return false;
 
-  if (board.IsPseudoLegal (player,v) == false)
+  if (board.IsPseudoLegal (move.get_player(), move.get_vertex()) == false)
     return false;
 
-  if (!PlayPseudoLegal (player, v)) {
+  if (!PlayPseudoLegal (move)) {
     CHECK (Undo ());
     return false;
   }

@@ -8,31 +8,39 @@
 #include <vector>
 #include "board.hpp"
 
+// All functions in this class are ineffictient and should not be used
+// for performance tasks. Use Board instead.
+
 class FullBoard {
 public:
+  // Clears the board.
   void Clear();
 
-  // Implemented by calling try_play. Slow.
-  bool IsLegal (Player pl, Vertex v) const;
+  // Returns legality of move. Implemented by calling Play on a FullBoard copy.
+  bool IsLegal (Move move) const;
 
-  // Returns false if move is illegal - forbids suicide and superko. Slow.
-  bool Play (Player player, Vertex v);
+  // Play if the move is legal and return true.
+  // Otherwise do not play and return false. 
+  // (forbids everything inlcuding suicide and positional superko detection).
+  bool Play (Move move);
 
-  // Undo move. Slow.
+  // Undo move. Replays the game
   bool Undo ();
 
+  // Get underlying fast board implementation.
   const Board& GetBoard() const;
 
-  // auxiliary functions
-
+  // Sets komi value.
   void SetKomi (float fkomi);
 
+  // Loads position (and history) from other board.
   void Load (const FullBoard& save_board);
 
+  // Returns list of played moves.
   const vector<Move>& MoveHistory () const; // TODO rename all to CamelCase
 
 private:
-  bool PlayPseudoLegal (Player player, Vertex v);
+  bool PlayPseudoLegal (Move move);
   bool IsHashRepeated ();
 
 private:

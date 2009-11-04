@@ -55,7 +55,7 @@ public:
   }
 
   bool Play (Player pl, Vertex v) {
-    bool ok = full_board.Play (pl, v);
+    bool ok = full_board.Play (Move (pl, v));
     if (ok) {
       logger.LogLine ("play " + pl.ToGtpString() + " " + v.ToGtpString());
       logger.LogLine ("");
@@ -82,7 +82,7 @@ public:
     Vertex v = BestMove (player);
 
     if (v != Vertex::Invalid ()) {
-      CHECK (full_board.Play (player, v));
+      CHECK (full_board.Play (Move (player, v)));
     }
     logger.LogLine ("reg_genmove " + player.ToGtpString() +
                     "   #? [" + v.ToGtpString() + "]");
