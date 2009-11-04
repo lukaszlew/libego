@@ -83,7 +83,7 @@ public:
     
   void do_playout (const FullBoard* base_board) {
     Board mc_board [1];
-    mc_board->Load (&base_board->GetBoard());
+    mc_board->Load (base_board->GetBoard());
 
     LightPlayout playout(mc_board, random);
     LightPlayout::MoveHistory history;

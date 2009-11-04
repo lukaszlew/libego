@@ -7,25 +7,25 @@
 
 void FullBoard::Clear() {
   // move_no = 0;
-  Board::Clear();
+  board.Clear();
   move_history.clear();
 }
 
 
 void FullBoard::SetKomi (float fkomi) {
-  Board::SetKomi(fkomi);
+  board.SetKomi(fkomi);
 }
 
 
-void FullBoard::Load (const FullBoard* save_board) {
-  memcpy((Board*)this, (Board*)save_board, sizeof(Board));
-  move_history = save_board->move_history;
+void FullBoard::Load (const FullBoard& save_board) {
+  board.Load (save_board.GetBoard());
+  move_history = save_board.move_history;
 }
 
 
 bool FullBoard::PlayPseudoLegal (Player player, Vertex v) {
-  bool status = Board::PlayPseudoLegal(player, v);
-  move_history.push_back (Board::LastMove());
+  bool status = board.PlayPseudoLegal(player, v);
+  move_history.push_back (board.LastMove());
   return status;
 }
 
@@ -33,7 +33,7 @@ bool FullBoard::PlayPseudoLegal (Player player, Vertex v) {
 bool FullBoard::Undo () {
   vector<Move> replay;
 
-  uint game_length = MoveCount ();
+  uint game_length = board.MoveCount ();
 
   if (game_length == 0)
     return false;
@@ -52,17 +52,17 @@ bool FullBoard::Undo () {
 
 bool FullBoard::IsLegal (Player pl, Vertex v) const {
   FullBoard tmp;
-  tmp.Load(this);
+  tmp.Load (*this);
   return tmp.Play (pl, v);
 }
 
 
 bool FullBoard::IsHashRepeated () {
   Board tmp_board;
-  rep (mn, MoveCount()-1) {
+  rep (mn, board.MoveCount()-1) {
     tmp_board.PlayPseudoLegal (move_history[mn].get_player (),
                                move_history[mn].get_vertex ());
-    if (PositionalHash() == tmp_board.PositionalHash())
+    if (board.PositionalHash() == tmp_board.PositionalHash())
       return true;
   }
   return false;
@@ -77,10 +77,10 @@ bool FullBoard::Play (Player player, Vertex v) {
 
   // TODO v.check_is_on_board ();
 
-  if (ColorAt (v) != Color::Empty ())
+  if (board.ColorAt (v) != Color::Empty ())
     return false;
 
-  if (IsPseudoLegal (player,v) == false)
+  if (board.IsPseudoLegal (player,v) == false)
     return false;
 
   if (!PlayPseudoLegal (player, v)) {
@@ -98,7 +98,7 @@ bool FullBoard::Play (Player player, Vertex v) {
 
 
 const Board& FullBoard::GetBoard() const {
-  return *this;
+  return board;
 }
 
 const vector<Move>& FullBoard::MoveHistory () const {

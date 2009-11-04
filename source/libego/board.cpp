@@ -247,8 +247,8 @@ uint Board::EmptyVertexCount () const {
 }
 
 
-void Board::Load (const Board* save_board) {
-  memcpy(this, save_board, sizeof(Board));
+void Board::Load (const Board& save_board) {
+  memcpy(this, &save_board, sizeof(Board));
   check ();
 }
 

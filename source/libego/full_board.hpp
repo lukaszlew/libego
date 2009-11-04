@@ -8,7 +8,7 @@
 #include <vector>
 #include "board.hpp"
 
-class FullBoard : private Board {
+class FullBoard {
 public:
   void Clear();
 
@@ -27,7 +27,7 @@ public:
 
   void SetKomi (float fkomi);
 
-  void Load (const FullBoard* save_board);
+  void Load (const FullBoard& save_board);
 
   const vector<Move>& MoveHistory () const; // TODO rename all to CamelCase
 
@@ -35,6 +35,8 @@ private:
   bool PlayPseudoLegal (Player player, Vertex v);
   bool IsHashRepeated ();
 
+private:
+  Board board;
   vector<Move> move_history;
 };
 

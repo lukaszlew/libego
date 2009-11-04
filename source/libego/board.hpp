@@ -55,7 +55,7 @@ public:
   // Fast playout functions
 
   // Loads save_board into this board.
-  void Load (const Board* save_board);
+  void Load (const Board& save_board);
 
   // Sets player on move. Play-undo will forget this set.(use pass)
   void SetActPlayer (Player);
