@@ -83,7 +83,7 @@ public:
     
   void do_playout (const FullBoard* base_board) {
     Board mc_board [1];
-    mc_board->Load (&base_board->board());
+    mc_board->Load (&base_board->GetBoard());
 
     LightPlayout playout(mc_board, random);
     LightPlayout::MoveHistory history;
@@ -109,7 +109,7 @@ public:
     Gtp::GoguiGfx gfx;
 
     ForEachNat (Vertex, v) {
-      if (board->board().ColorAt (v) == Color::Empty ()) {
+      if (board->GetBoard().ColorAt (v) == Color::Empty ()) {
         gfx.SetInfluence(v.ToGtpString (),
                          aaf_stats.norm_mean_given_move (Move(player, v)) /
                          influence_scale

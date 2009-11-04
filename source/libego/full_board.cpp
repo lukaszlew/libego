@@ -5,7 +5,7 @@
 #include "full_board.hpp"
 
 
-void FullBoard::clear() {
+void FullBoard::Clear() {
   // move_no = 0;
   Board::Clear();
   move_history.clear();
@@ -14,11 +14,6 @@ void FullBoard::clear() {
 
 void FullBoard::SetKomi (float fkomi) {
   Board::SetKomi(fkomi);
-}
-
-
-void FullBoard::SetActPlayer (Player pl) {
-  Board::SetActPlayer(pl);
 }
 
 
@@ -35,7 +30,7 @@ bool FullBoard::PlayPseudoLegal (Player player, Vertex v) {
 }
 
 
-bool FullBoard::undo () {
+bool FullBoard::Undo () {
   vector<Move> replay;
 
   uint game_length = MoveCount ();
@@ -46,7 +41,7 @@ bool FullBoard::undo () {
   rep (mn, game_length-1)
     replay.push_back (move_history [mn]);
 
-  clear ();  // TODO maybe last_player should be preserverd as well
+  Clear ();  // TODO maybe last_player should be preserverd as well
 
   rep (mn, game_length-1)
     PlayPseudoLegal (replay [mn].get_player (), replay [mn].get_vertex ());
@@ -55,14 +50,14 @@ bool FullBoard::undo () {
 }
 
 
-bool FullBoard::is_legal (Player pl, Vertex v) const {
+bool FullBoard::IsLegal (Player pl, Vertex v) const {
   FullBoard tmp;
   tmp.Load(this);
-  return tmp.try_play (pl, v);
+  return tmp.Play (pl, v);
 }
 
 
-bool FullBoard::is_hash_repeated () {
+bool FullBoard::IsHashRepeated () {
   Board tmp_board;
   rep (mn, MoveCount()-1) {
     tmp_board.PlayPseudoLegal (move_history[mn].get_player (),
@@ -74,7 +69,7 @@ bool FullBoard::is_hash_repeated () {
 }
 
 
-bool FullBoard::try_play (Player player, Vertex v) {
+bool FullBoard::Play (Player player, Vertex v) {
   if (v == Vertex::Pass ()) {
     PlayPseudoLegal (player, v);
     return true;
@@ -89,12 +84,12 @@ bool FullBoard::try_play (Player player, Vertex v) {
     return false;
 
   if (!PlayPseudoLegal (player, v)) {
-    CHECK (undo ());
+    CHECK (Undo ());
     return false;
   }
 
-  if (is_hash_repeated ()) {
-    CHECK (undo ());
+  if (IsHashRepeated ()) {
+    CHECK (Undo ());
     return false;
   }
 
@@ -102,7 +97,7 @@ bool FullBoard::try_play (Player player, Vertex v) {
 }
 
 
-const Board& FullBoard::board() const {
+const Board& FullBoard::GetBoard() const {
   return *this;
 }
 

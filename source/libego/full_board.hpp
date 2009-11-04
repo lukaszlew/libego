@@ -10,23 +10,22 @@
 
 class FullBoard : public Board {
 public:
-  void clear();
+  void Clear();
 
   // Implemented by calling try_play. Slow.
-  bool is_legal (Player pl, Vertex v) const;
+  bool IsLegal (Player pl, Vertex v) const;
 
   // Returns false if move is illegal - forbids suicide and superko. Slow.
-  bool try_play (Player player, Vertex v);
+  bool Play (Player player, Vertex v);
 
   // Undo move. Slow.
-  bool undo ();
+  bool Undo ();
 
-  const Board& board() const;
+  const Board& GetBoard() const;
 
   // auxiliary functions
 
   void SetKomi (float fkomi);
-  void SetActPlayer (Player pl);
 
   void Load (const FullBoard* save_board);
 
@@ -34,7 +33,7 @@ public:
 
 private:
   bool PlayPseudoLegal (Player player, Vertex v);
-  bool is_hash_repeated ();
+  bool IsHashRepeated ();
 
   vector<Move> move_history;
 };

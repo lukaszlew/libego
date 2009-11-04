@@ -28,9 +28,6 @@ public:
   // Length of the array return by EmptyVertices()
   uint EmptyVertexCount () const;
 
-  // Sets player on move. Play-undo will forget this set.(use pass)
-  void SetActPlayer (Player); // TODO remove it
-  
   // Returns player on move.
   Player ActPlayer () const;
   
@@ -60,6 +57,9 @@ public:
   // Loads save_board into this board.
   void Load (const Board* save_board);
 
+  // Sets player on move. Play-undo will forget this set.(use pass)
+  void SetActPlayer (Player);
+  
   // Returns true iff v is uncut eye of the player.
   bool IsEyelike (Player player, Vertex v) const;
 

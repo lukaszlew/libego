@@ -183,7 +183,7 @@ void MctsNode::RemoveIllegalChildren (Player pl, const FullBoard& full_board) {
 
   ChildrenList::iterator child = children.begin();
   while (child != children.end()) {
-    if (child->player == pl && !full_board.is_legal (pl, child->v)) {
+    if (child->player == pl && !full_board.IsLegal (pl, child->v)) {
       children.erase (child++);
     } else {
       ++child;

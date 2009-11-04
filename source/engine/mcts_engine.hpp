@@ -46,7 +46,7 @@ public:
   }
 
   void ClearBoard () {
-    full_board.clear ();
+    full_board.Clear ();
     root.Reset ();
     logger.NewLog ();
     logger.LogLine ("clear_board");
@@ -55,7 +55,7 @@ public:
   }
 
   bool Play (Player pl, Vertex v) {
-    bool ok = full_board.try_play (pl, v);
+    bool ok = full_board.Play (pl, v);
     if (ok) {
       logger.LogLine ("play " + pl.ToGtpString() + " " + v.ToGtpString());
       logger.LogLine ("");
@@ -64,7 +64,7 @@ public:
   }
 
   bool Undo () {
-    bool ok = full_board.undo ();
+    bool ok = full_board.Undo ();
     if (ok) {
       logger.LogLine ("undo");
       logger.LogLine ("");
@@ -83,7 +83,7 @@ public:
     Vertex v = BestMove (player);
 
     if (v != Vertex::Invalid ()) {
-      CHECK (full_board.try_play (player, v));
+      CHECK (full_board.Play (player, v));
     }
     logger.LogLine ("reg_genmove " + player.ToGtpString() +
                     "   #? [" + v.ToGtpString() + "]");
@@ -104,7 +104,7 @@ public:
   void DoNPlayouts (uint n) { // TODO first_player
     MctsNode& act_root = FindRoot ();
     rep (ii, n) {
-      playout.DoOnePlayout (act_root, full_board.board());
+      playout.DoOnePlayout (act_root, full_board.GetBoard());
     }
   }
 
