@@ -213,16 +213,16 @@ Hash Board::recalc_hash () const {
 }
 
 
-Board::Board ()
-  : color_at (Color::OffBoard()),
-    nbr_cnt (NbrCounter()), // TODO
-    empty_pos (0), // TODO id
-    chain_next_v (Vertex::Invalid()), // TODO id
-    chain_id (Vertex::Invalid()), // TODO id
-    chain (Chain ()), // TODO ?
-    player_v_cnt (0),
-    last_play (Vertex::Invalid()),
-    last_player (Player::White())
+Board::Board () :
+  color_at (Color::OffBoard()),
+  last_player (Player::White()),
+  last_play (Vertex::Invalid()),
+  player_v_cnt (0),
+  chain_next_v (Vertex::Invalid()),
+  chain_id (Vertex::Invalid()),
+  chain (Chain ()),
+  nbr_cnt (NbrCounter()),
+  empty_pos (0)
 {
   Clear ();
   SetKomi (6.5);
@@ -231,6 +231,10 @@ Board::Board ()
 
 Color Board::ColorAt (Vertex v) const {
   return color_at [v];
+}
+
+uint Board::MoveCount () const {
+  return move_no;
 }
 
 Vertex Board::EmptyVertex (uint ii) const {
@@ -685,3 +689,11 @@ const Zobrist Board::zobrist[1] = { Zobrist () };
 
 #undef vertex_for_each_4_nbr
 #undef vertex_for_each_diag_nbr
+
+
+void Board::AlignHack (Board& board) {
+  int xxx = board.komi_inverse;
+  unused(xxx);
+}
+
+

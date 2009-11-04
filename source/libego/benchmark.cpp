@@ -25,9 +25,11 @@ namespace Benchmark {
       }
     }
 
-    // ignore this line, this is for a stupid g++ to force aligning(?)
-    int xxx = playout_board.move_no;
-    unused(xxx);
+    // This line does nothing, ignore it.
+    // This is for a stupid g++ to force aligning(?)
+    // I will buy a bear to somebody who explains 
+    // why its removeal drops performance by more than 5%.
+    Board::AlignHack (playout_board);
   }
 
   string Run (uint playout_cnt) {

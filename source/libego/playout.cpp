@@ -13,7 +13,7 @@ all_inline
 bool LightPlayout::Run() {
   while (true) {
     if (board->BothPlayerPass ())  return true;
-    if (board->move_no >= max_moves) return false;
+    if (board->MoveCount () >= max_moves) return false;
     // if (abs(board->StoneScore ()) > 25) return mercy;
     PlayOneMove ();
   }

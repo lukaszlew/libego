@@ -48,10 +48,10 @@ private:
 
 template <uint stack_size> all_inline
 bool LightPlayout::Run (FastStack<Move, stack_size>& history) {
-  uint last_move = board->move_no + max_moves;
+  uint last_move = board->MoveCount() + max_moves;
   while (true) {
     if (board->BothPlayerPass ())  return true;
-    if (board->move_no >= last_move) return false;
+    if (board->MoveCount() >= last_move) return false;
     PlayOneMove ();
     if (!history.IsFull ()) history.Push (board->LastMove());
   }

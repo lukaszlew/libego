@@ -38,7 +38,7 @@ bool FullBoard::PlayPseudoLegal (Player player, Vertex v) {
 bool FullBoard::undo () {
   vector<Move> replay;
 
-  uint game_length  = move_no;
+  uint game_length = MoveCount ();
 
   if (game_length == 0)
     return false;
@@ -64,7 +64,7 @@ bool FullBoard::is_legal (Player pl, Vertex v) const {
 
 bool FullBoard::is_hash_repeated () {
   Board tmp_board;
-  rep (mn, move_no-1) {
+  rep (mn, MoveCount()-1) {
     tmp_board.PlayPseudoLegal (move_history[mn].get_player (),
                                move_history[mn].get_vertex ());
     if (PositionalHash() == tmp_board.PositionalHash())

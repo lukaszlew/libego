@@ -9,6 +9,7 @@
 #include "hash.hpp"
 #include "color.hpp"
 
+
 class Board {
 public:
 
@@ -40,6 +41,9 @@ public:
   Vertex LastVertex () const;
 
   Move LastMove () const;
+
+  // Return number of already played moves.
+  uint MoveCount () const;
 
   // Returns true if both players pass.
   bool BothPlayerPass () const;
@@ -107,8 +111,6 @@ public:
   // Clears the board. (It is faster to Load(empty_board))
   void Clear ();
 
-public:
-
   static const uint kArea = board_size * board_size;
 
 private: 
@@ -141,7 +143,7 @@ private:
   void check () const;
   void check_no_more_legal (Player player) const;
 
-  class NbrCounter {
+  class NbrCounter { // TODO update it to a full 3x3 pattern
   public:
     static NbrCounter Empty();
 
@@ -168,39 +170,47 @@ private:
   };
 
   struct Chain {
-    mutable uint lib_cnt;
+    mutable uint lib_cnt; // TODO move this out.
   };
 
   Chain& chain_at (Vertex v);
   const Chain& chain_at (Vertex v) const;
 
-  NatMap<Vertex, Color>   color_at;
-
-  // TODO make iterators / accessors
-  Vertex                   empty_v [kArea]; // TODO use FastSet (empty_pos)
-  uint                     empty_v_cnt;
-
-public:
-  uint                     move_no;
-
 private:
-  int komi_inverse;
+
+  // Unique board data.
+
+  uint                         move_no;
+  int                          komi_inverse;
+  NatMap<Vertex, Color>        color_at;
+  Vertex                       ko_v;             // vertex forbidden by ko
+  Player                       last_player;      // player who made the last play
+  NatMap<Player, Vertex>       last_play;
+
+  // Reconstructible board data.
+
+  Hash                         hash;         // Positional hash.
+
+  NatMap<Player, uint>         player_v_cnt; // Sum of numer of stones of each color.
+
+  NatMap<Vertex, Vertex>       chain_next_v; // Next Vertex in chain.
+  NatMap<Vertex, Vertex>       chain_id;     // Identical for one chain.
+  NatMap<Vertex, Chain>        chain;        // Indexed by chain_id[v]
+
+  NatMap<Vertex, NbrCounter>   nbr_cnt; // 3x3 patterns
+
+  // Incremantal set of empty Vertices.
+  // TODO Merge this four members into NatSet
+  uint                         empty_v_cnt;
+  uint                         last_empty_v_cnt;
+  Vertex                       empty_v [kArea];
+  NatMap<Vertex, uint>         empty_pos;
 
   static const Zobrist zobrist[1];
 
-  NatMap<Vertex, NbrCounter>   nbr_cnt; // incremental, for fast eye checking
-  NatMap<Vertex, uint>         empty_pos; // liberty position in empty_v
-  NatMap<Vertex, Vertex>       chain_next_v;
-
-  NatMap<Vertex, Vertex>       chain_id;
-  NatMap<Vertex, Chain>        chain; // indexed by chain_id[v]
-
-  uint                         last_empty_v_cnt;
-  NatMap<Player, uint>         player_v_cnt;
-  NatMap<Player, Vertex>       last_play;
-  Hash                         hash;
-  Vertex                       ko_v;             // vertex forbidden by ko
-  Player                       last_player;      // player who made the last play
+public:
+  // This function does nothing. Read comment in benchmark.cpp.
+  static void AlignHack(Board&);
 };
 
 #define empty_v_for_each(board, vv, i) {                                \
