@@ -37,7 +37,7 @@ public:
   }
 
   void SetKomi (float komi) {
-    float old_komi = full_board.GetKomi ();
+    float old_komi = full_board.GetBoard().GetKomi ();
     full_board.SetKomi (komi);
     if (komi != old_komi) {
       logger.LogLine("komi "+ToString(komi));
@@ -50,7 +50,7 @@ public:
     root.Reset ();
     logger.NewLog ();
     logger.LogLine ("clear_board");
-    logger.LogLine ("komi " + ToString (full_board.GetKomi()));
+    logger.LogLine ("komi " + ToString (full_board.GetBoard().GetKomi()));
     logger.LogLine ("");
   }
 
@@ -75,8 +75,7 @@ public:
   Vertex Genmove (Player player) {
     logger.LogLine ("random_seed     #? [" + ToString (random.GetSeed ()) + "]");
     if (reset_tree_on_genmove) root.Reset ();
-    full_board.SetActPlayer(player); // TODO move player parameter to DoPlayouts
-    DoNPlayouts (genmove_playouts);
+    DoNPlayouts (genmove_playouts, player);
 
     //cerr << mcts.ToString (show_tree_min_updates, show_tree_max_children) << endl;
 
@@ -93,7 +92,7 @@ public:
   }
 
   string BoardAsciiArt () {
-    return full_board.ToAsciiArt();
+    return full_board.GetBoard().ToAsciiArt();
   }
 
   string TreeAsciiArt (float min_updates, float max_children) {
@@ -101,10 +100,14 @@ public:
     return act_root.RecToString (min_updates, max_children);
   }
 
-  void DoNPlayouts (uint n) { // TODO first_player
+  void DoNPlayouts (uint n) {
+    DoNPlayouts (n, full_board.GetBoard().ActPlayer());
+  }
+
+  void DoNPlayouts (uint n, Player first_player) {
     MctsNode& act_root = FindRoot ();
     rep (ii, n) {
-      playout.DoOnePlayout (act_root, full_board.GetBoard());
+      playout.DoOnePlayout (act_root, full_board.GetBoard(), first_player);
     }
   }
 
@@ -147,8 +150,8 @@ private:
       act_root = act_root->AddFindChild (m, sync_board);
     }
     
-    Player pl = full_board.ActPlayer();
-    act_root->EnsureAllPseudoLegalChildren (pl, full_board);
+    Player pl = full_board.GetBoard().ActPlayer();
+    act_root->EnsureAllPseudoLegalChildren (pl, full_board.GetBoard());
     act_root->RemoveIllegalChildren (pl, full_board);
 
     return *act_root;

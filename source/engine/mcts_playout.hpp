@@ -90,9 +90,10 @@ public:
     update_rave = true;
   }
 
-  void DoOnePlayout (MctsNode& playout_root, const Board& board) {
+  void DoOnePlayout (MctsNode& playout_root, const Board& board, Player first_player) {
     // Prepare simulation board and tree iterator.
     play_board.Load (&board);
+    play_board.SetActPlayer (first_player);
     trace.clear();
     trace.push_back (&playout_root);
     move_history.Clear ();

@@ -8,7 +8,7 @@
 #include <vector>
 #include "board.hpp"
 
-class FullBoard : public Board {
+class FullBoard : private Board {
 public:
   void Clear();
 
