@@ -98,8 +98,8 @@ void MctsNode::RemoveChild (MctsNode* child_ptr) {
 
 MctsNode* MctsNode::AddFindChild (Move m, Board& board) {
   // TODO make invariant about haveChildren and has_all_legal_children
-  Player pl = m.get_player();
-  Vertex v  = m.get_vertex();
+  Player pl = m.GetPlayer();
+  Vertex v  = m.GetVertex();
   EnsureAllPseudoLegalChildren (pl, board);
   BOOST_FOREACH (MctsNode& child, children) {
     if (child.player == pl && child.v == v) {

@@ -14,20 +14,30 @@ Move::Move (Player player, Vertex vertex)
 Move::Move (int raw) : Nat<Move> (raw) {
 }
 
-Move Move::other_player () {
+Move Move::OtherPlayer () {
   return Move::OfRaw (GetRaw() ^ 0x1);
 };
 
-Player Move::get_player () { 
+Player Move::GetPlayer () { 
   return Player::OfRaw (GetRaw() & 0x1);
 }
 
-Vertex Move::get_vertex () { 
+Vertex Move::GetVertex () { 
   return Vertex::OfRaw (GetRaw() >> 1) ; 
 }
 
-string Move::to_string () {
+string Move::ToGtpString () {
   return
-    get_player().ToGtpString() + " " +
-    get_vertex().ToGtpString();
+    GetPlayer().ToGtpString() + " " +
+    GetVertex().ToGtpString();
+}
+
+Move Move::OfGtpStream (istream& in) {
+  Player pl = Player::OfGtpStream (in);
+  Vertex v  = Vertex::OfGtpStream (in);
+  if (!in || pl == Player::Invalid() || v == Vertex::Invalid()) {
+    in.setstate (ios_base::badbit); // TODO undo read?
+    return Invalid();
+  }
+  return Move (pl, v);
 }

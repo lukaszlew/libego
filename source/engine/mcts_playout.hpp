@@ -181,7 +181,7 @@ private:
         Move m = move_history [jj];
         do_update [m] = do_update_set_to [m];
         do_update_set_to [m] = false;
-        do_update_set_to [m.other_player()] = false;
+        do_update_set_to [m.OtherPlayer()] = false;
       }
 
       // Do the update.

@@ -86,11 +86,10 @@ private:
   }
 
   void Cplay (Gtp::Io& io) {
-    Player pl = io.Read<Player> ();
-    Vertex v  = io.Read<Vertex> ();
+    Move move = io.Read<Move> ();
     io.CheckEmpty ();
 
-    if (!mcts_engine.Play(pl, v)) {
+    if (!mcts_engine.Play (move)) {
       io.SetError ("illegal move");
       return;
     }

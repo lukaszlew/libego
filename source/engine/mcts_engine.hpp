@@ -54,10 +54,10 @@ public:
     logger.LogLine ("");
   }
 
-  bool Play (Player pl, Vertex v) {
-    bool ok = full_board.Play (Move (pl, v));
+  bool Play (Move move) {
+    bool ok = full_board.Play (move);
     if (ok) {
-      logger.LogLine ("play " + pl.ToGtpString() + " " + v.ToGtpString());
+      logger.LogLine ("play " + move.ToGtpString());
       logger.LogLine ("");
     }
     return ok;
@@ -86,7 +86,7 @@ public:
     }
     logger.LogLine ("reg_genmove " + player.ToGtpString() +
                     "   #? [" + v.ToGtpString() + "]");
-    logger.LogLine ("play " + player.ToGtpString() + " " + v.ToGtpString());
+    logger.LogLine ("play " + Move (player, v).ToGtpString());
     logger.LogLine ("");
     return v;
   }
@@ -120,11 +120,11 @@ public:
     Gtp::GoguiGfx gfx;
 
     rep(ii, move_count) {
-      gfx.AddVariationMove (last_playout[ii].to_string());
+      gfx.AddVariationMove (last_playout[ii].ToGtpString());
     }
 
     if (move_count > 0) {
-      gfx.SetSymbol (last_playout[move_count-1].get_vertex().ToGtpString(),
+      gfx.SetSymbol (last_playout[move_count-1].GetVertex().ToGtpString(),
                      Gtp::GoguiGfx::circle);
     }
 

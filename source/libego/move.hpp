@@ -17,15 +17,14 @@ public:
 
   Move () {}                           // TODO remove it
   Move (Player player, Vertex vertex); // Asserts valid player and vertex.
+  static Move OfGtpStream (istream& s);
 
   // Utilities.
 
-  Player get_player ();
-  Vertex get_vertex ();
-
-  Move other_player ();
-
-  string to_string ();
+  Player GetPlayer ();
+  Vertex GetVertex ();
+  Move OtherPlayer ();
+  string ToGtpString ();
 
   // Other.
 
