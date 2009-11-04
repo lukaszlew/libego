@@ -10,19 +10,11 @@
 
 using namespace std;
 
-// debugging  macros
-
-#define qq(x) cerr << x << flush;
-#define qqv(x) cerr << #x << " = " << x << endl << flush;
-
 //TODO rename to ignore
 #define unused(p) (void)(p)
 
 #define rep(i,n)     for (uint i = 0; i != (uint)(n); i++)
 #define reps(i,s,n)  for (int i = (s); i < int(n); i++)
-
-#define _STRING(x) #x
-#define STRING(x) _STRING(x)
 
 // string/stream opereations
 
