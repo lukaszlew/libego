@@ -10,12 +10,15 @@
 #include "player.hpp"
 #include "vertex.hpp"
 
-class Move {
+class Move : public Nat <Move> {
 public:
-  explicit Move (Player player, Vertex v);
-  explicit Move ();
 
-  static Move Invalid() { return Move (-1); } // TODO replace by Nat
+  // Constructors.
+
+  Move () {}                           // TODO remove it
+  Move (Player player, Vertex vertex); // Asserts valid player and vertex.
+
+  // Utilities.
 
   Player get_player ();
   Vertex get_vertex ();
@@ -24,26 +27,15 @@ public:
 
   string to_string ();
 
-  bool operator!= (Move other) const;
-  bool operator== (Move other) const;
+  // Other.
 
   const static uint kBound = Vertex::kBound << 1;
 
-  uint GetRaw ();
-
-  bool MoveNext() { // TODO Nat
-    if (idx+1 < kBound) {
-      idx += 1;
-      return true;
-    }
-    return false;
-  }
-
 private:
-  explicit Move (int idx_);
-  void check ();
+  friend class Nat <Move>;
+  explicit Move (int raw);
 
-  uint idx;
+  const static bool kCheckAsserts = false;
 };
 
 #endif
