@@ -34,6 +34,7 @@ PLEASE_WAIT_FILE="${LOGIN_DIR}/please_wait_for_game_end"
 STARTSCRIPT_FILE="${LOGIN_DIR}/cgos.start.sh"
 STOPSCRIPT_FILE="${LOGIN_DIR}/cgos.stop.sh"
 KILLSCRIPT_FILE="${LOGIN_DIR}/cgos.kill.sh"
+CONFIGGTP_FILE="${LOGIN_DIR}/config.gtp"
 
 DATE=`date "+%FT%T"`
 LOG_FILE="${LOGIN_DIR}/${DATE}.log"
@@ -48,7 +49,7 @@ CGOS_CONFIG="
 %section player
      name      ${LOGIN}
      password  ${PASSWORD}
-     invoke    ${THIS_DIR}/../bin/engine \"gtpfile ${GTP_CONFIG_FILE}\"  gtp
+     invoke    ${THIS_DIR}/../bin/engine \"gtpfile ${CONFIGGTP_FILE}\" gtp
      priority  10
 "
 
@@ -74,6 +75,7 @@ rm -f \"${PLEASE_WAIT_FILE}\"
 # Do the job
 
 mkdir -p "${LOGIN_DIR}" &&
+cp "${GTP_CONFIG_FILE}" "${CONFIGGTP_FILE}" &&
 echo "${CGOS_CONFIG}" > "${CGOS_CONFIG_FILE}" &&
 echo "${STARTSCRIPT}" > "${STARTSCRIPT_FILE}" &&
 echo "${STOPSCRIPT}"  > "${STOPSCRIPT_FILE}" &&
