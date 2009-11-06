@@ -6,16 +6,17 @@ const bool stat_ac = false;
 class Stat {
 public:
 
-  static const float prior_update_count = 1.0;
+  static const float prior_update_count = 10.0; // TODO make this a parameter
 
   Stat () {
     reset ();
   }
   
+  // TODO better prior initialization
   void reset (float prior_sample_count = Stat::prior_update_count) {
-    sample_count       = prior_sample_count; // TODO 
-    sample_sum         = 0.0; // TODO
-    square_sample_sum  = 0.0; // TODO
+    sample_count       = prior_sample_count;
+    sample_sum         = 0.0;
+    square_sample_sum  = prior_sample_count;
   }
 
   void update (float sample) {

@@ -115,14 +115,16 @@ string MctsNode::ToString() const {
   s << player.ToGtpString() << " " 
     << v.ToGtpString() << " " 
     << stat.to_string() << " "
-    << rave_stat.to_string()
+    << rave_stat.to_string() << " -> "
+    << Stat::Mix (stat, 1e-07, rave_stat, 0.001);
     ;
   return s.str();
 }
 
 namespace {
   bool SubjectiveCmp (const MctsNode* a, const MctsNode* b) {
-    return a->SubjectiveMean () > b->SubjectiveMean ();
+    return a->stat.update_count() > b->stat.update_count();
+    // return SubjectiveMean () > b->SubjectiveMean ();
   }
 }
 
