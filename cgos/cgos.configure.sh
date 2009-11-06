@@ -69,7 +69,7 @@ touch \"${PLEASE_WAIT_FILE}\"
 "
 
 KILLSCRIPT="#!/bin/sh
-pkill -f \"cgosGtp.tcl*${LOGIN_DIR}\"
+pkill -f \"cgosGtp.tcl.*${LOGIN_DIR}\"
 rm -f \"${PLEASE_WAIT_FILE}\"
 "
 # Do the job
