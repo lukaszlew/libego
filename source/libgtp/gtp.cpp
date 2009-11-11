@@ -3,6 +3,8 @@
 #include <boost/lambda/lambda.hpp>
 #include <iostream>
 #include <fstream>
+#include <cerrno>
+
 #include "gtp.h"
 
 namespace Gtp {
@@ -128,7 +130,15 @@ void Repl::Run (istream& in, ostream& out) {
   in.clear();
   while (true) {
     string line, report;
-    if (!getline (in, line)) break;
+    if (!getline (in, line)) {
+      if (errno == EINTR) {
+        errno = 0;
+        in.clear();
+        std::cerr << "X" << endl;
+        continue;
+      }
+      break;
+    }
 
     Status status = RunOneCommand (line, &report);
     if (status == NoOp) continue;
