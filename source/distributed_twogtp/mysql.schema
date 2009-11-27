@@ -1,0 +1,67 @@
+DROP TABLE IF EXISTS game;
+DROP TABLE IF EXISTS experiment;
+DROP TABLE IF EXISTS game_setup;
+DROP TABLE IF EXISTS engine;
+DROP TABLE IF EXISTS engine_search_path;
+
+CREATE TABLE engine_search_path (
+  path TEXT
+);
+
+
+CREATE TABLE engine (
+  id INTEGER PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  name VARCHAR(255) NOT NULL UNIQUE,
+
+  command_line TEXT NOT NULL,
+  gtp_name TEXT,                -- to be checked upon execution
+  gtp_version TEXT,             -- to be checked upon execution
+  send_gtp_config TEXT NOT NULL -- first commands sent to engine
+);
+
+
+CREATE TABLE game_setup (
+  id INTEGER PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  name VARCHAR(255) NOT NULL UNIQUE,
+
+  rule_set INTEGER NOT NULL, -- 0 = CGOS TrompTaylor
+  board_size INTEGER NOT NULL,
+  komi REAL NOT NULL
+);
+
+
+CREATE TABLE experiment (
+  id INTEGER PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  name VARCHAR(255) NOT NULL UNIQUE,
+
+  description TEXT
+);
+
+
+CREATE TABLE game (
+  id INTEGER PRIMARY KEY NOT NULL AUTO_INCREMENT,
+
+  experiment_id INTEGER NOT NULL REFERENCES experiment (id),
+  game_setup_id INTEGER NOT NULL REFERENCES game_setup (id),
+
+  black_engine_id INTEGER NOT NULL REFERENCES engine (id),
+  white_engine_id INTEGER NOT NULL REFERENCES engine (id),
+
+  -- commands sent to engine before game, seed for instance
+  black_send_gtp_config TEXT,
+  white_send_gtp_config TEXT,
+
+  -- text returned by game_report GTP command
+  black_gtp_game_report TEXT,
+  white_gtp_game_report TEXT,
+
+  -- report
+  black_won INTEGER,
+  sgf TEXT,
+
+  -- job scheduling
+  created_at DATETIME NOT NULL,
+  claimed_at DATETIME,
+  claimed_by TEXT,
+  finished_at DATETIME
+);

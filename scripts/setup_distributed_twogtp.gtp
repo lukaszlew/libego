@@ -1,0 +1,28 @@
+#
+# 1. Create database:
+#   mysql --host=host --user=user --password=password db_name < mysql.schema
+#
+# 2. Create config file for distributed_twogtp
+#   ./bin/distributed_twogtp_admin distributed_twogtp.ini --admin
+#
+# 3. Edit distributed_twogtp.ini and get some engines in ../opponents (or other) directory
+#
+# 4. Modify this file and use it to fill database with tasks.
+#   ./bin/distributed_twogtp distributed_twogtp.ini --admin < scripts/setup_distributed_twogtp.gtp
+#
+# 5. Launch workers:
+#   ./bin/distributed_twogtp_admin distributed_twogtp.ini --worker
+#
+
+add_game_setup 9x9 9 6.5
+
+add_engine_search_path ../../opponents
+add_engine_search_path ../opponents
+add_engine_search_path .
+
+add_engine gnugo-3.8-l0 no_config                  ./gnugo-3.8 --mode gtp --chinese-rules --capture-all-dead --level=0
+add_engine gnugo-3.8    no_config                  ./gnugo-3.8 --mode gtp --chinese-rules --capture-all-dead
+add_engine fuego-0.4    scripts/fuego_config.gtp   ./fuego-0.4 -nobook
+
+add_experiment Test.1  This is a test experiment of 100 games fuego with 10k playouts against itself.
+add_games Test.1 9x9 fuego-0.4 fuego-0.4 100
