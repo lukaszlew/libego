@@ -1,18 +1,10 @@
+# HOWTO:
 #
-# 1. Create database:
-#   mysql --host=host --user=user --password=password db_name < mysql.schema
-#
-# 2. Create config file for distributed_twogtp
-#   ./bin/distributed_twogtp_admin distributed_twogtp.ini --admin
-#
-# 3. Edit distributed_twogtp.ini and get some engines in ../opponents (or other) directory
-#
-# 4. Modify this file and use it to fill database with tasks.
-#   ./bin/distributed_twogtp distributed_twogtp.ini --admin < scripts/setup_distributed_twogtp.gtp
-#
-# 5. Launch workers:
-#   ./bin/distributed_twogtp_admin distributed_twogtp.ini --worker
-#
+# ./bin/distributed_twogtp --admin           # create ~/.my.cnf
+# emacs ~/.my.cnf                            # fill it 
+# mysql < mysql.schema                       # create db schema
+# ./bin/distributed_twogtp --admin < scripts/setup_distributed_twogtp.gtp   # fill db with tasks
+# ./bin/distributed_twogtp_admin --worker    # launch you workers
 
 add_game_setup 9x9 9 6.5
 

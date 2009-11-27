@@ -33,15 +33,15 @@ bool Database::ProcessSettingsFile (QString file_name)
 {
   QSettings db_settings (file_name, QSettings::IniFormat);
 
-  if (!db_settings.contains ("db/host_name") ||
-      !db_settings.contains ("db/user_name") ||
-      !db_settings.contains ("db/password")  ||
-      !db_settings.contains ("db/database_name"))
+  if (!db_settings.contains ("client/host") ||
+      !db_settings.contains ("client/user") ||
+      !db_settings.contains ("client/pass")  ||
+      !db_settings.contains ("client/database"))
   {
-    db_settings.setValue ("db/host_name", "example_host");
-    db_settings.setValue ("db/user_name", "example_user");
-    db_settings.setValue ("db/password", "example_password");
-    db_settings.setValue ("db/database_name", "example_database_name");
+    db_settings.setValue ("client/host", "example_host");
+    db_settings.setValue ("client/user", "example_user");
+    db_settings.setValue ("client/pass", "example_password");
+    db_settings.setValue ("client/database", "example_database");
 
     qWarning()
       << "Created exemplary config file: "
@@ -51,10 +51,10 @@ bool Database::ProcessSettingsFile (QString file_name)
     return false;
   }
 
-  db.setHostName (db_settings.value ("db/host_name").toString());
-  db.setUserName (db_settings.value ("db/user_name").toString());
-  db.setPassword (db_settings.value ("db/password").toString());
-  db.setDatabaseName (db_settings.value ("db/database_name").toString());
+  db.setHostName (db_settings.value ("client/host").toString());
+  db.setUserName (db_settings.value ("client/user").toString());
+  db.setPassword (db_settings.value ("client/pass").toString());
+  db.setDatabaseName (db_settings.value ("client/database").toString());
 
   return true;
 }
