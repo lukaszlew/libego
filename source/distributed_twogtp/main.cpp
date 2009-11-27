@@ -1,3 +1,4 @@
+#include <QDir>
 #include <QString>
 #include <QtDebug>
 
@@ -18,7 +19,7 @@ int main (int argc, char** argv) {
   }
 
   Database db;
-  if (!db.ProcessSettingsFile ("~/.my.cnf") || !db.Connect ()) {
+  if (!db.ProcessSettingsFile (QDir::homePath() + "/.my.cnf") || !db.Connect ()) {
     return 1;
   }
 
