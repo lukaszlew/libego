@@ -2,8 +2,9 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem.hpp>
 
+#include "to_string.hpp"
+
 #include "logger.hpp"
-#include "utils.hpp"
 
 namespace bdate = boost::gregorian;
 namespace btime = boost::posix_time;
@@ -14,10 +15,25 @@ using namespace std;
 Logger::Logger () {
   is_active = false;
   log_directory = "log";
+  prefix = "";
+  suffix = ".log";
 }
 
 Logger::~Logger () {
   if (out.is_open()) out.close();
+}
+
+void Logger::SetFileNamePrefix (const string& s) {
+  prefix = s;
+}
+
+void Logger::SetFileNameSuffix (const string& s) {
+  suffix = s;
+}
+
+void Logger::EnableLogging (const string& log_directory) {
+  is_active = true;
+  this->log_directory = log_directory;
 }
 
 void Logger::NewLog () {
@@ -33,7 +49,7 @@ void Logger::NewLog () {
   if (path != "" && *(path.end()-1) != '/') path += "/";
   path += date;
   path += "/";
-  string filename = path + time + ".log.gtp";
+  string filename = path + prefix + time + suffix;
 
   try {
     bfile::create_directories (path);

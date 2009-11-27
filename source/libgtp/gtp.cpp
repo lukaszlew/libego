@@ -3,11 +3,23 @@
 #include <boost/lambda/lambda.hpp>
 #include <iostream>
 #include <fstream>
+#include <cerrno>
+
 #include "gtp.hpp"
 
 namespace Gtp {
 
 Io::Io (const string& params_) : params (params_), success(true), quit_gtp (false) { 
+}
+
+string Io::ReadLine () {
+  in.clear();
+  string line;
+  if (!getline (in, line)) {
+    SetError ("Io::ReadLine failed, this should not happen.");
+    throw Repl::Return();
+  }
+  return line;
 }
 
 void Io::SetError (const string& message) {
@@ -128,7 +140,14 @@ void Repl::Run (istream& in, ostream& out) {
   in.clear();
   while (true) {
     string line, report;
-    if (!getline (in, line)) break;
+    if (!getline (in, line)) {
+      if (errno == EINTR) {
+        errno = 0;
+        in.clear();
+        continue;
+      }
+      break;
+    }
 
     Status status = RunOneCommand (line, &report);
     if (status == NoOp) continue;

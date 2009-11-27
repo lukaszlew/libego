@@ -1,4 +1,4 @@
-include (SetStrongCxxFlags)
+set_cxx_flags (TRUE)
 
 # Ensure BOARDSIZE is correct.
 
@@ -13,7 +13,7 @@ message("BOARDSIZE = ${BOARDSIZE}")
 
 include_directories (${libego_SOURCE_DIR}/utils)
 add_library(ego ego.cpp)
-target_link_libraries (ego)
+target_link_libraries (ego utils)
 
 #TODO install includes as well
 #install (TARGETS ego ${INSTALL_TARGETS_DEFAULT_ARGS})

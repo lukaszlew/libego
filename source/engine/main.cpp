@@ -33,6 +33,7 @@
 // private libraries
 #include "gtp_gogui.hpp"
 #include "ego.hpp"
+#include "to_string.hpp"
 
 // local hard-include
 #include "stat.hpp"
@@ -42,7 +43,6 @@
 #include "mcts_playout.hpp"
 #include "mcts_engine.hpp"
 #include "mcts_gtp.hpp"
-
 
 #include "experiments.cpp"
 

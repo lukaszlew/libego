@@ -6,9 +6,11 @@
 #define MOVE_H_
 
 #include <string>
+#include <istream>
 
 #include "player.hpp"
 #include "vertex.hpp"
+
 
 class Move : public Nat <Move> {
 public:
@@ -17,14 +19,15 @@ public:
 
   Move () {}                           // TODO remove it
   Move (Player player, Vertex vertex); // Asserts valid player and vertex.
-  static Move OfGtpStream (istream& s);
+  static Move OfGtpString (const std::string& s);
+  static Move OfGtpStream (std::istream& s);
 
   // Utilities.
 
   Player GetPlayer ();
   Vertex GetVertex ();
   Move OtherPlayer ();
-  string ToGtpString ();
+  std::string ToGtpString ();
 
   // Other.
 

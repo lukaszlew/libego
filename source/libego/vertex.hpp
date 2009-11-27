@@ -5,13 +5,15 @@
 #ifndef VERTEX_H_
 #define VERTEX_H_
 
+#include <istream>
+#include <string>
 #include "config.hpp"
 
 namespace Coord {
   bool IsOk (int coord);
 
-  string RowToGtpString (int row);
-  string ColumnToGtpString (int column);
+  std::string RowToGtpString (int row);
+  std::string ColumnToGtpString (int column);
   int RowOfGtpInt (int r);
   int ColumnOfGtpChar (char c);
 }
@@ -26,9 +28,9 @@ public:
   static Vertex Pass();
 
   static Vertex OfCoords (int row, int column);
-  static Vertex OfGtpString (const string& s);
-  static Vertex OfGtpStream (istream& in);
-  static Vertex OfSgfString (const string& s);
+  static Vertex OfGtpString (const std::string& s);
+  static Vertex OfGtpStream (std::istream& in);
+  static Vertex OfSgfString (const std::string& s);
 
   // Utilities.
 
@@ -48,7 +50,7 @@ public:
   Vertex SW() const;
   Vertex SE() const;
 
-  string ToGtpString() const;
+  std::string ToGtpString() const;
 
   // Other.
 

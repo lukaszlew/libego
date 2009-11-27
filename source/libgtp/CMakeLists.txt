@@ -1,3 +1,5 @@
+set_cxx_flags (FALSE)
+
 add_library (gtp gtp.cpp gtp_gogui.cpp)
 
 add_boost_cxx_test (gtp_test)

@@ -20,6 +20,9 @@
  *  Boston, MA  02110-1301  USA                                              *
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+namespace Mcts {
+  class Judge;
+}
 
 class MctsEngine {
 public:
@@ -37,7 +40,7 @@ public:
   }
 
   void SetKomi (float komi) {
-    float old_komi = full_board.GetBoard().GetKomi ();
+    float old_komi = full_board.GetBoard().Komi ();
     full_board.SetKomi (komi);
     if (komi != old_komi) {
       logger.LogLine("komi "+ToString(komi));
@@ -50,7 +53,7 @@ public:
     root.Reset ();
     logger.NewLog ();
     logger.LogLine ("clear_board");
-    logger.LogLine ("komi " + ToString (full_board.GetBoard().GetKomi()));
+    logger.LogLine ("komi " + ToString (full_board.GetBoard().Komi()));
     logger.LogLine ("");
   }
 
@@ -131,6 +134,7 @@ public:
     return gfx;
   }
 
+
 private:
 
   Vertex BestMove (Player pl) {
@@ -157,8 +161,10 @@ private:
     return *act_root;
   }
 
+
 private:
   friend class MctsGtp;
+  friend class Mcts::Judge;
 
   // parameters
   float print_update_count;

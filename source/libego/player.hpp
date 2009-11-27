@@ -5,6 +5,10 @@
 #ifndef PLAYER_H_
 #define PLAYER_H_
 
+#include <istream>
+#include <string>
+#include "nat.hpp"
+
 class Player : public Nat <Player> {
 public:
 
@@ -12,13 +16,13 @@ public:
 
   static Player Black ();
   static Player White ();
-  static Player OfGtpStream (istream& s);
+  static Player OfGtpStream (std::istream& s);
 
   // Utilities.
 
   Player Other() const;
   int ToScore () const;   // ToScore (Black()) == 1, ToScore (White()) == -1
-  string ToGtpString () const;
+  std::string ToGtpString () const;
 
   template <typename T>
   T SubjectiveScore (const T& score) const;

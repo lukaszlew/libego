@@ -33,6 +33,9 @@ public:
   // Sets komi value.
   void SetKomi (float fkomi);
 
+  // Sets komi value.
+  bool SetBoardSize (uint size);
+
   // Loads position (and history) from other board.
   void Load (const FullBoard& save_board);
 

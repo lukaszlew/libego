@@ -30,6 +30,9 @@ public:
   // Reads and returns type T, returns default value in case of syntax error.
   template <typename T> T Read (const T& default_value);
 
+  // Reads and returns rest of the argument line.
+  string ReadLine ();
+
   // Returns true is all that's left in in is whitespace.
   bool IsEmpty ();
 

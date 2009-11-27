@@ -257,8 +257,12 @@ void Board::SetKomi (float fkomi) {
 }
 
 
-float Board::GetKomi () const {
+float Board::Komi () const {
   return -float(komi_inverse) + 0.5;
+}
+
+uint Board::Size () const {
+  return board_size;
 }
 
 Vertex Board::KoVertex () const {

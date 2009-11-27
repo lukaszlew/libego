@@ -32,6 +32,11 @@ string Move::ToGtpString () {
     GetVertex().ToGtpString();
 }
 
+Move Move::OfGtpString (const std::string& s) {
+  stringstream ss (s);
+  return OfGtpStream (ss);
+}
+
 Move Move::OfGtpStream (istream& in) {
   Player pl = Player::OfGtpStream (in);
   Vertex v  = Vertex::OfGtpStream (in);

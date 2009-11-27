@@ -1,10 +1,9 @@
 #ifndef TEST_H_
 #define TEST_H_
 
-#include <cassert>
+#include <cstdlib>
 
-// TODO replace __assert_fail with a backtrace and core dump
-// http://stackoverflow.com/questions/18265/
+void TestFail (const char* msg, const char* file, int line, const char* pf);
 
 // debugging  macros
 
@@ -18,7 +17,7 @@
 #define QQEE(x) cerr << #x << " = " << x << endl << flush;
 
 // Automatic progam failure with report.
-#define FAIL(msg) (__assert_fail (msg, __FILE__, __LINE__, __PRETTY_FUNCTION__))
+#define FAIL(msg) (TestFail (msg, __FILE__, __LINE__, __PRETTY_FUNCTION__), exit(0))
 
 // Always evaluate condition and always assert true.
 #define CHECK(expr) ((expr) ? void(0) : FAIL (#expr))

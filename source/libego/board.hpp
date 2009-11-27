@@ -51,6 +51,12 @@ public:
   // Returns vertex forbidden by simple ko rule or Vertex::Invalid()
   Vertex KoVertex () const;
 
+  // Gets the komi value. Positive means adventage for white.
+  float Komi () const;
+
+  // Gets the board size.
+  uint Size () const;
+
   // -------------------------------------------------------
   // Fast playout functions
 
@@ -99,8 +105,7 @@ public:
   // Winner according to StoneScore.
   Player StoneWinner () const;
 
-  // Gets, sets the komi value. Positive means adventage for white.
-  float GetKomi () const;
+  // Sets the komi value. Positive means adventage for white.
   void SetKomi (float fkomi);
 
   string ToAsciiArt (Vertex mark_v = Vertex::Invalid ()) const;

@@ -11,10 +11,11 @@ include (EnsureOutOfSourceBuild)
 include (EnsureBuildTypeIsChosen)
 include (AddBoostCxxTest)
 include (SetDefaultInstallationDirs)
+include (SetCxxFlags)
 
 # Add subdirectories.
 
-add_subdirectory (libgtp)
 add_subdirectory (utils)
+add_subdirectory (libgtp)
 add_subdirectory (libego)
 add_subdirectory (engine)

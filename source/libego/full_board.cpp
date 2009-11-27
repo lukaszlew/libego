@@ -16,6 +16,9 @@ void FullBoard::SetKomi (float fkomi) {
   board.SetKomi(fkomi);
 }
 
+bool FullBoard::SetBoardSize (uint size) {
+  return size == board_size;
+}
 
 void FullBoard::Load (const FullBoard& save_board) {
   board.Load (save_board.GetBoard());

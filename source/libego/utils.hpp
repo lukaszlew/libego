@@ -16,15 +16,6 @@ using namespace std;
 #define rep(i,n)     for (uint i = 0; i != (uint)(n); i++)
 #define reps(i,s,n)  for (int i = (s); i < int(n); i++)
 
-// string/stream opereations
-
-template <typename T>
-string ToString(const T& val) {
-  ostringstream s;
-  s << val;
-  return s.str();
-}
-
 // performance macros
 
 #ifdef _MSC_VER
