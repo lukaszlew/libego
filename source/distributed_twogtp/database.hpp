@@ -56,8 +56,10 @@ public:
                QString sgf);
 
   int id;
+  QString rule_set;
   int board_size;
   float komi;
+
   DbEngine black;
   DbEngine white;
   QString black_gtp_config;

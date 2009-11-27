@@ -50,6 +50,8 @@ void StartPlayer (GtpProcess& p, DbGame& db_game, bool black, QStringList paths)
     CHECK (!p.TryCommand (line).isNull());
   }
 
+  p.TryCommand ("go_rules " + db_game.rule_set);
+
   CHECK (p.ClearBoard (db_game.board_size, db_game.komi));
 
   qDebug () << "  more config:";

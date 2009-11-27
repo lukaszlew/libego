@@ -108,7 +108,7 @@ bool Database::AddGameSetup (QString name, int board_size, float komi) {
   CHECK (q.prepare ("INSERT INTO game_setup (name, rule_set, board_size, komi)"
                     "VALUES (?, ?, ?, ?)"));
   q.addBindValue (name);
-  q.addBindValue (0); // tromp taylor
+  q.addBindValue ("cgos");
   q.addBindValue (board_size);
   q.addBindValue (komi);
   return q.exec ();
@@ -230,6 +230,7 @@ bool DbGame::GetUnclaimed (QSqlDatabase db) {
   q.addBindValue (game_setup_id);
   CHECK (q.exec ());
   CHECK (q.next ());
+  rule_set = q.record().value ("rule_set").toString();
   board_size = q.record().value ("board_size").toInt();
   komi = q.record().value ("komi").toDouble();
   CHECK (!q.next());

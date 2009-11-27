@@ -24,7 +24,7 @@ CREATE TABLE game_setup (
   id INTEGER PRIMARY KEY NOT NULL AUTO_INCREMENT,
   name VARCHAR(255) NOT NULL UNIQUE,
 
-  rule_set INTEGER NOT NULL, -- 0 = CGOS TrompTaylor
+  rule_set TEXT NOT NULL,       -- will be sent to engine with go_rules GTP command
   board_size INTEGER NOT NULL,
   komi REAL NOT NULL
 );
