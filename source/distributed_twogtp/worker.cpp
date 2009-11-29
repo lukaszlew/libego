@@ -32,7 +32,7 @@ void Worker::Run ()
 
 void StartPlayer (GtpProcess& p, DbGame& db_game, bool black, QStringList paths) {
   DbEngine& db_player = black ? db_game.black : db_game.white;
-  QString& config = black ? db_game.black_gtp_config : db_game.white_gtp_config;
+  //QString& config = black ? db_game.black_gtp_config : db_game.white_gtp_config;
 
   qDebug() << "";
   qDebug()
@@ -54,11 +54,11 @@ void StartPlayer (GtpProcess& p, DbGame& db_game, bool black, QStringList paths)
 
   CHECK (p.ClearBoard (db_game.board_size, db_game.komi));
 
-  qDebug () << "  more config:";
+  // qDebug () << "  more config:";
 
-  foreach (QString line, config.split ("\n")) {
-    CHECK (!p.TryCommand (line).isNull());
-  }
+  // foreach (QString line, config.split ("\n")) {
+  //   CHECK (!p.TryCommand (line).isNull());
+  // }
 }
 
 const int genmove_timeout_ms = 600000;

@@ -210,15 +210,15 @@ bool DbGame::GetUnclaimed (QSqlDatabase db) {
 
 
   CHECK (q.prepare ("SELECT game_setup_id, "
-                    "       black_send_gtp_config, white_send_gtp_config, "
+                    //"       black_send_gtp_config, white_send_gtp_config, "
                     "       black_engine_id, white_engine_id "
                     "FROM game WHERE id = ?"));
   q.addBindValue (id);
   CHECK (q.exec ());
   CHECK (q.next ());
   int game_setup_id = q.record().value ("game_setup_id").toInt();
-  black_gtp_config = q.record().value ("black_gtp_config").toString();
-  white_gtp_config = q.record().value ("white_gtp_config").toString();
+  //black_send_gtp_config = q.record().value ("black_send_gtp_config").toString();
+  //white_send_gtp_config = q.record().value ("white_send_gtp_config").toString();
   int black_id = q.record().value ("black_engine_id").toInt();
   int white_id = q.record().value ("white_engine_id").toInt();
   CHECK (!q.next());
@@ -226,7 +226,7 @@ bool DbGame::GetUnclaimed (QSqlDatabase db) {
   black.Get (db, black_id);
   white.Get (db, white_id);
   
-  CHECK (q.prepare ("SELECT board_size, komi FROM game_setup WHERE id = ?"));
+  CHECK (q.prepare ("SELECT board_size, rule_set, komi FROM game_setup WHERE id = ?"));
   q.addBindValue (game_setup_id);
   CHECK (q.exec ());
   CHECK (q.next ());

@@ -62,8 +62,8 @@ public:
 
   DbEngine black;
   DbEngine white;
-  QString black_gtp_config;
-  QString white_gtp_config;
+  // QString black_send_gtp_config;
+  // QString white_send_gtp_config;
 };
 
 #endif

@@ -48,8 +48,8 @@ CREATE TABLE game (
   white_engine_id INTEGER NOT NULL REFERENCES engine (id),
 
   -- commands sent to engine before game, seed for instance
-  black_send_gtp_config TEXT,
-  white_send_gtp_config TEXT,
+  -- black_send_gtp_config TEXT,
+  -- white_send_gtp_config TEXT,
 
   -- text returned by game_report GTP command
   black_gtp_game_report TEXT,
