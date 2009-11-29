@@ -36,6 +36,9 @@ CREATE TABLE experiment (
 
   game_setup_id INTEGER NOT NULL REFERENCES game_setup (id),
 
+  first_engine_id INTEGER NOT NULL REFERENCES engine (id),
+  second_engine_id INTEGER NOT NULL REFERENCES engine (id),
+
   description TEXT
 );
 
@@ -44,16 +47,14 @@ CREATE TABLE game (
   id INTEGER PRIMARY KEY NOT NULL AUTO_INCREMENT,
 
   experiment_id INTEGER NOT NULL REFERENCES experiment (id),
-
-  black_engine_id INTEGER NOT NULL REFERENCES engine (id),
-  white_engine_id INTEGER NOT NULL REFERENCES engine (id),
+  first_is_black INTEGER NOT NULL,  
 
   -- text returned by game_report GTP command
-  black_gtp_game_report TEXT,
-  white_gtp_game_report TEXT,
+  first_report TEXT,
+  second_report TEXT,
 
   -- report
-  black_won INTEGER,
+  first_won INTEGER,
   sgf TEXT,
 
   -- job scheduling

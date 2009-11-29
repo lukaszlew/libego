@@ -22,11 +22,11 @@ public:
                   QString send_gtp_config);
   bool AddGameSetup (QString name, int board_size, float komi);
   bool AddExperiment (QString name,
-                      QString game_setup,
+                      QString game_setup_name,
+                      QString first_engine_name,
+                      QString second_engine_name,
                       QString description);
-  bool AddGame (QString experiment,
-                QString first_engine,
-                QString second_engine);
+  bool AddGame (QString experiment, bool first_is_black);
 
   QStringList EngineSearchPath();
 
@@ -51,18 +51,19 @@ class DbGame {
 public:
   bool GetUnclaimed (QSqlDatabase db);
   void Finish (QSqlDatabase db,
-               bool black_won,
-               QVariant black_gtp_game_report,
-               QVariant white_gtp_game_report,
+               bool first_won,
+               QVariant first_report,
+               QVariant second_report,
                QString sgf);
 
   int id;
   QString rule_set;
   int board_size;
   float komi;
+  bool first_is_black;
 
-  DbEngine black;
-  DbEngine white;
+  DbEngine first;
+  DbEngine second;
   // QString black_send_gtp_config;
   // QString white_send_gtp_config;
 };

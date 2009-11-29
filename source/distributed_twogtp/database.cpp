@@ -117,36 +117,46 @@ bool Database::AddGameSetup (QString name, int board_size, float komi) {
 
 bool Database::AddExperiment (QString name,
                               QString game_setup_name,
+                              QString first_engine_name,
+                              QString second_engine_name,
                               QString description) {
   QSqlQuery q (db);
-  CHECK (q.prepare ("INSERT INTO experiment (name, game_setup_id, description) "
-                    "VALUES (?, (SELECT id FROM game_setup WHERE name = ?), ?)"));
+  CHECK (q.prepare ("INSERT INTO experiment ("
+                    "  name, "
+                    "  game_setup_id, "
+                    "  first_engine_id,"
+                    "  second_engine_id, "
+                    "  description "
+                    ") VALUES ("
+                    "  ?, "
+                    "  (SELECT id FROM game_setup WHERE name = ?), "
+                    "  (SELECT id FROM engine WHERE name = ?),"
+                    "  (SELECT id FROM engine WHERE name = ?),"
+                    "  ? "
+                    ")"));
   q.addBindValue (name);
   q.addBindValue (game_setup_name);
+  q.addBindValue (first_engine_name);
+  q.addBindValue (second_engine_name);
   q.addBindValue (description);
   return q.exec ();
 }
 
 
-bool Database::AddGame (QString experiment,
-                        QString first_engine,
-                        QString second_engine)
+bool Database::AddGame (QString experiment, bool first_is_black)
 {
   QSqlQuery q (db);
   QString query = 
-    "INSERT INTO game "
-    "  (experiment_id, black_engine_id, "
-    "   white_engine_id, created_at) "
+    "INSERT INTO game (experiment_id, first_is_black, created_at) "
     "VALUES ("
-    "  (SELECT id FROM experiment WHERE name = ?),"
-    "  (SELECT id FROM engine WHERE name = ?),"
-    "  (SELECT id FROM engine WHERE name = ?),"
+    "  (SELECT id FROM experiment WHERE name = ?), "
+    "  ?, "
     "  NOW()"
     ")";
   CHECK (q.prepare (query));
+
   q.addBindValue (experiment);
-  q.addBindValue (first_engine);
-  q.addBindValue (second_engine);
+  q.addBindValue (first_is_black);
   bool ok = q.exec ();
   if (!ok) {
     qDebug() << q.lastError();
@@ -210,7 +220,8 @@ bool DbGame::GetUnclaimed (QSqlDatabase db) {
 
 
   CHECK (q.prepare ("SELECT "
-                    "  black_engine_id, white_engine_id, "
+                    "  first_engine_id, second_engine_id, "
+                    "  first_is_black, "
                     "  board_size, rule_set, komi "
                     "FROM game  "
                     "JOIN experiment ON game.experiment_id = experiment.id "
@@ -220,38 +231,39 @@ bool DbGame::GetUnclaimed (QSqlDatabase db) {
   q.addBindValue (id);
   CHECK (q.exec ());
   CHECK (q.next ());
-  int black_id = q.record().value ("black_engine_id").toInt();
-  int white_id = q.record().value ("white_engine_id").toInt();
+  int first_id = q.record().value ("first_engine_id").toInt();
+  int second_id = q.record().value ("second_engine_id").toInt();
+  first_is_black = q.record().value ("first_is_black").toBool();
   board_size = q.record().value ("board_size").toInt();
   rule_set = q.record().value ("rule_set").toString();
   komi = q.record().value ("komi").toDouble();
   CHECK (!q.next());
 
-  black.Get (db, black_id);
-  white.Get (db, white_id);
+  first.Get (db, first_id);
+  second.Get (db, second_id);
   
   return true;
 }
 
 
 void DbGame::Finish (QSqlDatabase db,
-                     bool black_won,
-                     QVariant black_gtp_game_report,
-                     QVariant white_gtp_game_report,
+                     bool first_won,
+                     QVariant first_report,
+                     QVariant second_report,
                      QString sgf)
 {
   QSqlQuery q (db);
   CHECK (q.prepare ("UPDATE game SET "
-                    "  black_won = ?, "
+                    "  first_won = ?, "
                     "  sgf = ?, "
-                    "  black_gtp_game_report = ?, "
-                    "  white_gtp_game_report = ?, "
+                    "  first_report = ?, "
+                    "  second_report = ?, "
                     "  finished_at = NOW() "
                     "WHERE id = ?"));
-  q.addBindValue (black_won);
+  q.addBindValue (first_won);
   q.addBindValue (sgf);
-  q.addBindValue (black_gtp_game_report);
-  q.addBindValue (white_gtp_game_report);
+  q.addBindValue (first_report);
+  q.addBindValue (second_report);
   q.addBindValue (id);
   CHECK (q.exec ());
 }

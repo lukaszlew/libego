@@ -30,13 +30,13 @@ void Worker::Run ()
   }
 }
 
-void StartPlayer (GtpProcess& p, DbGame& db_game, bool black, QStringList paths) {
-  DbEngine& db_player = black ? db_game.black : db_game.white;
+void StartPlayer (GtpProcess& p, DbGame& db_game, bool first, QStringList paths) {
+  DbEngine& db_player = first ? db_game.first : db_game.second;
   //QString& config = black ? db_game.black_gtp_config : db_game.white_gtp_config;
 
   qDebug() << "";
   qDebug()
-    << "STARTING " << (black ? "black " : "white ")
+    << "STARTING " << (first ? "first " : "second ")
     << db_player.name << " cmd:" <<  db_player.command_line;
 
   CHECK (p.Start (db_player.name, db_player.command_line, paths));
@@ -70,19 +70,21 @@ bool Worker::GrabJob ()
   QStringList paths = db.EngineSearchPath();
 
   // do the work
-  GtpProcess black;
-  GtpProcess white;
+  GtpProcess first;
+  GtpProcess second;
 
-  StartPlayer (black, db_game, true, paths);
-  StartPlayer (white, db_game, false, paths);
+  StartPlayer (first,  db_game, true, paths);
+  StartPlayer (second, db_game, false, paths);
 
   // TODO send seed
   
   board.Clear ();
-  GtpProcess* act   = &black;
-  GtpProcess* other = &white;
+  GtpProcess* act   = &first;
+  GtpProcess* other = &second;
+  if (!db_game.first_is_black) qSwap (act, other);
+
   vector <Move> history;
-  Player winner = Player::Invalid();
+  bool first_won;
   Player act_player = Player::Black();
   bool by_resignation;
 
@@ -91,9 +93,9 @@ bool Worker::GrabJob ()
     CHECK (act->Genmove (act_player, &v, genmove_timeout_ms));
 
     if (v == Vertex::Invalid ()) { // resignation
-      winner = (other == &black ? Player::Black() : Player::White());
-      qDebug() << "Player " << act->Name()
-               << " resigned. Winner = " << winner.ToGtpString().c_str() << "\n\n";
+      first_won = (other == &first);
+      qDebug() << "Player " << act_player.ToGtpString().c_str()
+               << " (" << act->Name() << ") resigned.";
       by_resignation = true;
       break;
     }
@@ -110,7 +112,8 @@ bool Worker::GrabJob ()
     CHECK (other->Play (move));
 
     if (board.GetBoard().BothPlayerPass()) {
-      winner = board.GetBoard().TrompTaylorWinner();
+      Player winner = board.GetBoard().TrompTaylorWinner();
+      first_won = (winner == Player::Black ()) == db_game.first_is_black;
       qDebug() << "Both player pass. Winner is "
                << QString::fromStdString (winner.ToGtpString()) << endl;
       break;
@@ -120,13 +123,15 @@ bool Worker::GrabJob ()
     qSwap (act, other);
   }
 
+  qDebug () << (first_won ? "First" : "Second") << " player won. \n\n" ;
+
   // update finish
   QString sgf = "";
 
   db_game.Finish (db.db,
-                  winner == Player::Black(),
-                  black.TryCommand ("game_report"),
-                  white.TryCommand ("game_report"),
+                  first_won,
+                  first.TryCommand ("game_report"),
+                  second.TryCommand ("game_report"),
                   sgf);
   
   return true;
