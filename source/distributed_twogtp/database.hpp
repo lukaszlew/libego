@@ -21,9 +21,10 @@ public:
                   QVariant gtp_version,
                   QString send_gtp_config);
   bool AddGameSetup (QString name, int board_size, float komi);
-  bool AddExperiment (QString name, QString description);
+  bool AddExperiment (QString name,
+                      QString game_setup,
+                      QString description);
   bool AddGame (QString experiment,
-                QString game_setup,
                 QString first_engine,
                 QString second_engine);
 

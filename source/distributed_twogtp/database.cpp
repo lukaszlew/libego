@@ -115,36 +115,36 @@ bool Database::AddGameSetup (QString name, int board_size, float komi) {
 }
 
 
-bool Database::AddExperiment (QString name, QString description) {
+bool Database::AddExperiment (QString name,
+                              QString game_setup_name,
+                              QString description) {
   QSqlQuery q (db);
-  CHECK (q.prepare ("INSERT INTO experiment (name, description) "
-                    "VALUES (?, ?)"));
+  CHECK (q.prepare ("INSERT INTO experiment (name, game_setup_id, description) "
+                    "VALUES (?, (SELECT id FROM game_setup WHERE name = ?), ?)"));
   q.addBindValue (name);
+  q.addBindValue (game_setup_name);
   q.addBindValue (description);
   return q.exec ();
 }
 
 
 bool Database::AddGame (QString experiment,
-                        QString game_setup,
                         QString first_engine,
                         QString second_engine)
 {
   QSqlQuery q (db);
   QString query = 
     "INSERT INTO game "
-    "  (experiment_id, game_setup_id, black_engine_id, "
+    "  (experiment_id, black_engine_id, "
     "   white_engine_id, created_at) "
     "VALUES ("
     "  (SELECT id FROM experiment WHERE name = ?),"
-    "  (SELECT id FROM game_setup WHERE name = ?),"
     "  (SELECT id FROM engine WHERE name = ?),"
     "  (SELECT id FROM engine WHERE name = ?),"
     "  NOW()"
     ")";
   CHECK (q.prepare (query));
   q.addBindValue (experiment);
-  q.addBindValue (game_setup);
   q.addBindValue (first_engine);
   q.addBindValue (second_engine);
   bool ok = q.exec ();
@@ -209,32 +209,27 @@ bool DbGame::GetUnclaimed (QSqlDatabase db) {
   CHECK (q.exec());
 
 
-  CHECK (q.prepare ("SELECT game_setup_id, "
-                    //"       black_send_gtp_config, white_send_gtp_config, "
-                    "       black_engine_id, white_engine_id "
-                    "FROM game WHERE id = ?"));
+  CHECK (q.prepare ("SELECT "
+                    "  black_engine_id, white_engine_id, "
+                    "  board_size, rule_set, komi "
+                    "FROM game  "
+                    "JOIN experiment ON game.experiment_id = experiment.id "
+                    "JOIN game_setup ON experiment.game_setup_id = game_setup.id "
+                    "WHERE game.id = ?"));
+
   q.addBindValue (id);
   CHECK (q.exec ());
   CHECK (q.next ());
-  int game_setup_id = q.record().value ("game_setup_id").toInt();
-  //black_send_gtp_config = q.record().value ("black_send_gtp_config").toString();
-  //white_send_gtp_config = q.record().value ("white_send_gtp_config").toString();
   int black_id = q.record().value ("black_engine_id").toInt();
   int white_id = q.record().value ("white_engine_id").toInt();
+  board_size = q.record().value ("board_size").toInt();
+  rule_set = q.record().value ("rule_set").toString();
+  komi = q.record().value ("komi").toDouble();
   CHECK (!q.next());
 
   black.Get (db, black_id);
   white.Get (db, white_id);
   
-  CHECK (q.prepare ("SELECT board_size, rule_set, komi FROM game_setup WHERE id = ?"));
-  q.addBindValue (game_setup_id);
-  CHECK (q.exec ());
-  CHECK (q.next ());
-  rule_set = q.record().value ("rule_set").toString();
-  board_size = q.record().value ("board_size").toInt();
-  komi = q.record().value ("komi").toDouble();
-  CHECK (!q.next());
-
   return true;
 }
 

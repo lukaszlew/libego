@@ -34,6 +34,8 @@ CREATE TABLE experiment (
   id INTEGER PRIMARY KEY NOT NULL AUTO_INCREMENT,
   name VARCHAR(255) NOT NULL UNIQUE,
 
+  game_setup_id INTEGER NOT NULL REFERENCES game_setup (id),
+
   description TEXT
 );
 
@@ -42,14 +44,9 @@ CREATE TABLE game (
   id INTEGER PRIMARY KEY NOT NULL AUTO_INCREMENT,
 
   experiment_id INTEGER NOT NULL REFERENCES experiment (id),
-  game_setup_id INTEGER NOT NULL REFERENCES game_setup (id),
 
   black_engine_id INTEGER NOT NULL REFERENCES engine (id),
   white_engine_id INTEGER NOT NULL REFERENCES engine (id),
-
-  -- commands sent to engine before game, seed for instance
-  -- black_send_gtp_config TEXT,
-  -- white_send_gtp_config TEXT,
 
   -- text returned by game_report GTP command
   black_gtp_game_report TEXT,

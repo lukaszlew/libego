@@ -2,8 +2,8 @@
 #
 # ./bin/distributed_twogtp --admin           # create ~/.my.cnf
 # emacs ~/.my.cnf                            # fill it 
-# mysql < mysql.schema                       # create db schema
-# ./bin/distributed_twogtp --admin < scripts/setup_distributed_twogtp.gtp   # fill db with tasks
+# mysql < scripts/d2gtp.schema.sql           # create db schema
+# ./bin/distributed_twogtp --admin < scripts/d2gtp.example.gtp   # fill db with tasks
 # ./bin/distributed_twogtp_admin --worker    # launch you workers
 
 add_game_setup 9x9 9 6.5
@@ -16,5 +16,5 @@ add_engine gnugo-3.8-l0 no_config                  ./gnugo-3.8 --mode gtp --chin
 add_engine gnugo-3.8    no_config                  ./gnugo-3.8 --mode gtp --chinese-rules --capture-all-dead
 add_engine fuego-0.4    scripts/fuego_config.gtp   ./fuego-0.4 -nobook
 
-add_experiment Test.1  This is a test experiment of 100 games fuego with 10k playouts against itself.
-add_games Test.1 9x9 fuego-0.4 fuego-0.4 100
+add_experiment Test.1 9x9 This is a test experiment of 100 games fuego with 10k playouts against itself.
+add_games Test.1 fuego-0.4 fuego-0.4 100

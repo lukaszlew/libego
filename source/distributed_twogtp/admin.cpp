@@ -69,9 +69,10 @@ void Admin::CAddGameSetup (Gtp::Io& io)
 void Admin::CAddExperiment (Gtp::Io& io)
 {
   QString name = QString::fromStdString (io.Read<std::string>());
+  QString game_setup = QString::fromStdString (io.Read<std::string>());
   QString description = QString::fromStdString (io.ReadLine());
   io.CheckEmpty();
-  if (!db.AddExperiment (name, description))
+  if (!db.AddExperiment (name, game_setup, description))
     io.SetError ("");
 }
 
@@ -79,7 +80,6 @@ void Admin::CAddExperiment (Gtp::Io& io)
 void Admin::CAddGames (Gtp::Io& io)
 {
   QString experiment = QString::fromStdString (io.Read<std::string>());
-  QString game_setup = QString::fromStdString (io.Read<std::string>());
   QString first_engine = QString::fromStdString (io.Read<std::string>());
   QString second_engine = QString::fromStdString (io.Read<std::string>());
   int game_count = io.Read<int>();
@@ -87,7 +87,7 @@ void Admin::CAddGames (Gtp::Io& io)
   
   int game_ok = 0;
   for (int i = 0; i < game_count; i++) {
-    if (!db.AddGame (experiment, game_setup, first_engine, second_engine))
+    if (!db.AddGame (experiment, first_engine, second_engine))
       break;
       
     game_ok += 1;
