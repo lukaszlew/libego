@@ -241,6 +241,27 @@ bool DbGame::GetUnclaimed (QSqlDatabase db) {
 
   first.Get (db, first_id);
   second.Get (db, second_id);
+  first_params.clear();
+  second_params.clear();
+
+  CHECK (q.prepare ("SELECT name, value, for_first_engine "
+                    "FROM param "
+                    "JOIN engine_params ON param.id = param_id "
+                    "WHERE game.id = ?"));
+  q.addBindValue (id);
+  CHECK (q.exec ());
+
+  while (q.next ()) {
+    QString param_name = q.record().value ("name").toString();
+    QString param_value = q.record().value ("value").toString();
+    CHECK (param_name != QString());
+    CHECK (param_value != QString());
+    if (q.record().value ("for_first_engine").toInt()) {
+      first_params.append (qMakePair (param_name, param_value));
+    } else {
+      second_params.append (qMakePair (param_name, param_value));
+    }
+  }
   
   return true;
 }

@@ -63,3 +63,17 @@ CREATE TABLE game (
   claimed_by TEXT,
   finished_at DATETIME
 );
+
+
+CREATE TABLE param (
+  id INTEGER PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  name TEXT NOT NULL,
+  value TEXT NOT NULL
+);
+
+
+CREATE engine_params (
+  game_id INTEGER NOT NULL REFERENCES game (id),
+  param_id INTEGER NOT NULL REFERENCES param (id),
+  for_first_engine INTEGER NOT NULL
+);

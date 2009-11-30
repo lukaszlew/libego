@@ -64,6 +64,8 @@ public:
 
   DbEngine first;
   DbEngine second;
+  QList <QPair<QString, QString> > first_params;
+  QList <QPair<QString, QString> > second_params;
   // QString black_send_gtp_config;
   // QString white_send_gtp_config;
 };
