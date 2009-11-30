@@ -6,15 +6,26 @@
 # ./bin/distributed_twogtp --admin < scripts/d2gtp.example.gtp   # fill db with tasks
 # ./bin/distributed_twogtp_admin --worker    # launch you workers
 
+# engines setup
+
 add_game_setup 9x9 9 6.5
 
 add_engine_search_path ../../opponents
 add_engine_search_path ../opponents
 add_engine_search_path .
 
-add_engine gnugo-3.8-l0 no_config                  ./gnugo-3.8 --mode gtp --chinese-rules --capture-all-dead --level=0
-add_engine gnugo-3.8    no_config                  ./gnugo-3.8 --mode gtp --chinese-rules --capture-all-dead
-add_engine fuego-0.4    scripts/fuego_config.gtp   ./fuego-0.4 -nobook
+set_engine_cmd ./gnugo-3.8 --mode gtp --chinese-rules --capture-all-dead --level=0
+add_engine gnugo-3.8-l0
 
-add_experiment Test.1 9x9 fuego-0.4 fuego-0.4 This is a test experiment of 100 games fuego with 10k playouts against itself.
+set_engine_cmd ./fuego-0.4 -nobook
+set_engine_config scripts/fuego_config.gtp
+add_engine fuego-0.4 
+
+# experiment setup
+
+set_experiment_description  This is a test experiment of 100 games.
+set_experiment_engine 1 fuego-0.4
+set_experiment_engine 2 fuego-0.4
+
+add_experiment Test.1 9x9 
 add_games Test.1 100

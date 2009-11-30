@@ -13,7 +13,7 @@
 
 #include "admin.hpp"
 
-Admin::Admin (Database& db) : db (db)
+Admin::Admin (Database& db) : db (db), config_file ("no_config")
 {
 }
 
@@ -26,14 +26,30 @@ Admin::~Admin ()
 void Admin::Run ()
 {
   Gtp::Repl gtp;
-  gtp.Register ("add_engine_search_path", this, &Admin::CAddEngineSearchPath);
+  gtp.Register ("add_engine_search_path",  this, &Admin::CAddEngineSearchPath);
+
+  gtp.Register ("set_engine_config",       this, &Admin::CSetEngineConfig);
+  gtp.Register ("set_engine_cmd", this, &Admin::CSetEngineCommandLine);
   gtp.Register ("add_engine",     this, &Admin::CAddEngine);
+
   gtp.Register ("add_game_setup", this, &Admin::CAddGameSetup);
-  gtp.Register ("add_games",      this, &Admin::CAddGames);
+
+  gtp.Register ("set_experiment_engine", this, &Admin::CSetExperimentEngine);
+  gtp.Register ("set_experiment_description", this, &Admin::CSetExperimentDescription);
   gtp.Register ("add_experiment", this, &Admin::CAddExperiment);
+  gtp.Register ("add_games",      this, &Admin::CAddGames);
   gtp.Run (std::cin, std::cout);
 }
 
+
+void Admin::CSetEngineCommandLine (Gtp::Io& io) {
+  command_line = QString::fromStdString (io.ReadLine());
+}
+
+void Admin::CSetEngineConfig (Gtp::Io& io) {
+  config_file = QString::fromStdString (io.Read<std::string>("no_config"));
+  io.CheckEmpty ();
+}
 
 void Admin::CAddEngineSearchPath (Gtp::Io& io)
 {
@@ -47,8 +63,6 @@ void Admin::CAddEngineSearchPath (Gtp::Io& io)
 void Admin::CAddEngine (Gtp::Io& io)
 {
   QString name = QString::fromStdString (io.Read<std::string>());
-  QString config_file = QString::fromStdString (io.Read<std::string>());
-  QString command_line = QString::fromStdString (io.ReadLine());
   io.CheckEmpty();
   if (!AddEngine (name, config_file, command_line))
     io.SetError ("");
@@ -66,16 +80,31 @@ void Admin::CAddGameSetup (Gtp::Io& io)
 }
 
 
+void Admin::CSetExperimentEngine (Gtp::Io& io)
+{
+  int num = io.Read<int> ();
+  if (num != 1 && num != 2) {
+    io.SetError ("wronge engine number");
+    return;
+  }
+  QString name = QString::fromStdString (io.Read<std::string>());
+  (num == 1 ? first_engine : second_engine) = name;
+}
+
+void Admin::CSetExperimentDescription (Gtp::Io& io) {
+  experiment_description = QString::fromStdString (io.ReadLine());
+}
+
 void Admin::CAddExperiment (Gtp::Io& io)
 {
   QString name = QString::fromStdString (io.Read<std::string>());
   QString game_setup = QString::fromStdString (io.Read<std::string>());
-  QString first_engine = QString::fromStdString (io.Read<std::string>());
-  QString second_engine = QString::fromStdString (io.Read<std::string>());
-  QString description = QString::fromStdString (io.ReadLine());
   io.CheckEmpty();
-  if (!db.AddExperiment (name, game_setup, first_engine, second_engine, description))
+  if (!db.AddExperiment (name, game_setup, first_engine, second_engine,
+                         experiment_description))
+  {
     io.SetError ("");
+  }
 }
 
 

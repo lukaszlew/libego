@@ -3,6 +3,8 @@ DROP TABLE IF EXISTS experiment;
 DROP TABLE IF EXISTS game_setup;
 DROP TABLE IF EXISTS engine;
 DROP TABLE IF EXISTS engine_search_path;
+DROP TABLE IF EXISTS param;
+DROP TABLE IF EXISTS engine_params;
 
 CREATE TABLE engine_search_path (
   path TEXT
@@ -72,7 +74,7 @@ CREATE TABLE param (
 );
 
 
-CREATE engine_params (
+CREATE TABLE engine_params (
   game_id INTEGER NOT NULL REFERENCES game (id),
   param_id INTEGER NOT NULL REFERENCES param (id),
   for_first_engine INTEGER NOT NULL
