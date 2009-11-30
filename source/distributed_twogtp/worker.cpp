@@ -34,32 +34,26 @@ void StartPlayer (GtpProcess& p, DbGame& db_game, bool first, QStringList paths)
   DbEngine& db_player = first ? db_game.first : db_game.second;
   //QString& config = black ? db_game.black_gtp_config : db_game.white_gtp_config;
 
-  qDebug() << "";
-  qDebug()
-    << "STARTING " << (first ? "first " : "second ")
-    << db_player.name << " cmd:" <<  db_player.command_line;
+  qDebug() << "---------------------------------------------------------";
+  qDebug() << "STARTING " << (first ? "FIRST: " : "SECOND: ");
+  qDebug() << db_player.name.toLatin1().data();
+  qDebug() << "command_line:" << db_player.command_line.trimmed().toLatin1().data();
 
   CHECK (p.Start (db_player.name, db_player.command_line, paths));
   CHECK (p.TryCommand ("name").toString () == db_player.gtp_name);
   CHECK (p.TryCommand ("version").toString () == db_player.gtp_version);
+  p.TryCommand ("go_rules " + db_game.rule_set);
 
-  qDebug () << "  config:";
-
+  qDebug () << "engine.send_gtp_config:";
   foreach (QString line, db_player.send_gtp_config.split ("\n")) {
-    qDebug () << line;
+    qDebug () << "  " << line.toLatin1().data();
     CHECK (!p.TryCommand (line).isNull());
   }
 
-  p.TryCommand ("go_rules " + db_game.rule_set);
 
   CHECK (p.ClearBoard (db_game.board_size, db_game.komi));
-
-  // qDebug () << "  more config:";
-
-  // foreach (QString line, config.split ("\n")) {
-  //   CHECK (!p.TryCommand (line).isNull());
-  // }
 }
+
 
 const int genmove_timeout_ms = 600000;
 
@@ -105,9 +99,9 @@ bool Worker::GrabJob ()
 
     CHECK (board.Play (move));
     
-    qDebug() << QString::fromStdString (move.ToGtpString())
-             << " (" << act->Name() << ")";
-    qDebug() << QString::fromStdString (board.GetBoard().ToAsciiArt(move.GetVertex()));
+    qDebug() << board.GetBoard ().ToAsciiArt (move.GetVertex()).c_str()
+             << move.ToGtpString().c_str()
+             << " (" << act->Name().toLatin1().data() << ")\n";
 
     CHECK (other->Play (move));
 
