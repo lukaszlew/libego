@@ -247,7 +247,7 @@ bool DbGame::GetUnclaimed (QSqlDatabase db) {
   CHECK (q.prepare ("SELECT name, value, for_first_engine "
                     "FROM param "
                     "JOIN engine_params ON param.id = param_id "
-                    "WHERE game.id = ?"));
+                    "WHERE game_id = ?"));
   q.addBindValue (id);
   CHECK (q.exec ());
 
