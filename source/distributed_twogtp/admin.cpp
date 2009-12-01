@@ -15,6 +15,11 @@
 
 Admin::Admin (Database& db) : db (db)
 {
+  config = "";
+  command_line = "";
+  first_engine = "";
+  second_engine = "";
+  experiment_description = "";
 }
 
 
