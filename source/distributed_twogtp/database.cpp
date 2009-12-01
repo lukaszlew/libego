@@ -143,7 +143,7 @@ bool Database::AddExperiment (QString name,
 }
 
 
-bool Database::AddGame (QString experiment, bool first_is_black)
+int Database::AddGame (QString experiment, bool first_is_black)
 {
   QSqlQuery q (db);
   QString query = 
@@ -157,13 +157,29 @@ bool Database::AddGame (QString experiment, bool first_is_black)
 
   q.addBindValue (experiment);
   q.addBindValue (first_is_black);
-  bool ok = q.exec ();
-  if (!ok) {
-    qDebug() << q.lastError();
-  }
-  return ok;
+  CHECK (q.exec ());
+  CHECK (q.lastInsertId() != QVariant());
+  return q.lastInsertId().toInt();
 }
 
+bool Database::AddEngineParam (int game_id,
+                               bool for_first,
+                               QString name,
+                               QString value)
+{
+  QSqlQuery q (db);
+  CHECK (q.prepare (
+    "INSERT INTO engine_param (game_id, name, value, for_first) "
+    "VALUES (?, ?, ?, ?)"
+  ));
+
+  q.addBindValue (game_id);
+  q.addBindValue (name);
+  q.addBindValue (value);
+  q.addBindValue (for_first);
+  CHECK (q.exec ());
+  return true;
+}
 
 QStringList Database::EngineSearchPath()
 {
@@ -244,7 +260,7 @@ bool DbGame::GetUnclaimed (QSqlDatabase db) {
   first_params.clear();
   second_params.clear();
 
-  CHECK (q.prepare ("SELECT name, value, for_first_engine "
+  CHECK (q.prepare ("SELECT name, value, for_first "
                     "FROM engine_param "
                     "WHERE game_id = ?"));
   q.addBindValue (id);
@@ -255,7 +271,7 @@ bool DbGame::GetUnclaimed (QSqlDatabase db) {
     QString param_value = q.record().value ("value").toString();
     CHECK (param_name != QString());
     CHECK (param_value != QString());
-    if (q.record().value ("for_first_engine").toInt()) {
+    if (q.record().value ("for_first").toInt()) {
       first_params.append (qMakePair (param_name, param_value));
     } else {
       second_params.append (qMakePair (param_name, param_value));

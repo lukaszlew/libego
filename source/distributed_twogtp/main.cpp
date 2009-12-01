@@ -13,6 +13,8 @@ void usage (const char* file) {
 }
 
 int main (int argc, char** argv) {
+  srand (time (0));
+
   if (argc != 2) {
     usage (argv[0]);
     return 1;

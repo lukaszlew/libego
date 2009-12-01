@@ -27,5 +27,11 @@ set_experiment_description  This is a test experiment of 100 games.
 set_experiment_engine 1 fuego-0.4
 set_experiment_engine 2 fuego-0.4
 
+add_param_value 1 test_param test_value1
+add_param_value 1 test_param test_value2
+add_param_value 1 test_param test_value3
+add_param_value 1 test_param2 test2_value1
+add_param_value 1 test_param2 test2_value2
+
 add_experiment Test.1 9x9 
 add_games Test.1 100

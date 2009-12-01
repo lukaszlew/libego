@@ -26,7 +26,9 @@ public:
                       QString first_engine_name,
                       QString second_engine_name,
                       QString description);
-  bool AddGame (QString experiment, bool first_is_black);
+  int AddGame (QString experiment, bool first_is_black);
+
+  bool AddEngineParam (int game_id, bool for_first ,QString name, QString value);
 
   QStringList EngineSearchPath();
 

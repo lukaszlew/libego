@@ -70,5 +70,5 @@ CREATE TABLE engine_param (
   game_id INTEGER NOT NULL REFERENCES game (id),
   name TEXT NOT NULL,
   value TEXT NOT NULL,
-  for_first_engine INTEGER NOT NULL
+  for_first INTEGER NOT NULL
 );

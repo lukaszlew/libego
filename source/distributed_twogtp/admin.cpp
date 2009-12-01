@@ -133,6 +133,11 @@ void Admin::CAddGames (Gtp::Io& io)
   for (int i = 0; i < game_count; i++) {
     int game_id = db.AddGame (experiment, i % 2 == 0);
     if (game_id < 0) break;
+    QPair <bool, QString> param;
+    foreach (param, params.keys()) {
+      QString value = params [param] [rand() % params [param].size()];
+      db.AddEngineParam (game_id, param.first, param.second, value);
+    }
     game_ok += 1;
   }
 
