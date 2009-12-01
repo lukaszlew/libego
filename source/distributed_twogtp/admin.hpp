@@ -23,7 +23,7 @@ private:
   void CSetExperimentEngine (Gtp::Io& io);
   void CAddExperiment (Gtp::Io& io);
 
-  void CAddParamValue (Gtp::Io& io);
+  void CAddParam (Gtp::Io& io);
   void CAddGames (Gtp::Io& io);
 
   bool AddEngine (QString name, QString config_file, QString command_line);

@@ -38,7 +38,7 @@ void Admin::Run ()
   gtp.Register ("set_experiment_description", this, &Admin::CSetExperimentDescription);
   gtp.Register ("add_experiment", this, &Admin::CAddExperiment);
 
-  gtp.Register ("add_param_value", this, &Admin::CAddParamValue);
+  gtp.Register ("add_param", this, &Admin::CAddParam);
 
   gtp.Register ("add_games",      this, &Admin::CAddGames);
   gtp.Run (std::cin, std::cout);
@@ -116,17 +116,19 @@ void Admin::CAddExperiment (Gtp::Io& io)
   experiment_description = "";
 }
 
-void Admin::CAddParamValue (Gtp::Io& io) {
+void Admin::CAddParam (Gtp::Io& io) {
   int num = io.Read<int> ();
   if (num != 1 && num != 2) {
     io.SetError ("wronge engine number");
     return;
   }
   QString name  = QString::fromStdString (io.Read<std::string>());
-  QString value = QString::fromStdString (io.Read<std::string>());
-  io.CheckEmpty ();
   bool for_first_engine = num == 1;
-  params [qMakePair (for_first_engine, name)] . append (value);
+  while (true) {
+    QString value = QString::fromStdString (io.Read<std::string>(""));
+    if (value == "") break;
+    params [qMakePair (for_first_engine, name)] . append (value);
+  }
 }
 
 void Admin::CAddGames (Gtp::Io& io)

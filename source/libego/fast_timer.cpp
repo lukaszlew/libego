@@ -7,6 +7,7 @@
 #include <windows.h>
 #else 
 #include <sys/resource.h>
+#include <sys/time.h>
 #endif
 
 #ifdef _MSC_VER
@@ -77,6 +78,14 @@ string FastTimer::ToString (float unit) {
   s << "avg CC = " << Ticks () / unit << " (cnt = " << sample_cnt << ")";
   return s.str ();
 }
+
+
+int TimeSeed () {
+  struct timeval time;
+  gettimeofday(&time, NULL);
+  return time.tv_sec * 1000000 + time.tv_usec;
+}
+
 
 float ProcessUserTime () {
 # ifndef WIN32

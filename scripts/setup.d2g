@@ -17,27 +17,23 @@ add_engine_search_path .
 # Gnu Go
 
 set_engine_cmd ./gnugo-3.8 --mode gtp --chinese-rules --capture-all-dead --level=0
-add_engine gnugo-3.8-l0
+add_engine GnuGo
 
 # Fuego
 
 set_engine_cmd ./fuego-0.4 -nobook
-add_engine_config_line uct_param_player max_games 10000
+add_engine_config_line uct_param_player max_games 100
 add_engine_config_line uct_param_player ignore_clock 1
 add_engine_config_line uct_param_player ponder 0
-add_engine fuego-0.4 
+add_engine Fuego
 
-# Experiment setup
+# Libego
 
-set_experiment_description  This is a test experiment of 100 games.
-set_experiment_engine 1 fuego-0.4
-set_experiment_engine 2 fuego-0.4
-
-add_param_value 1 test_param test_value1
-add_param_value 1 test_param test_value2
-add_param_value 1 test_param test_value3
-add_param_value 1 test_param2 test2_value1
-add_param_value 1 test_param2 test2_value2
-
-add_experiment Test.1 9x9 
-add_games Test.1 100
+set_engine_cmd ./bin/engine
+add_engine_config_line Mcts.Params.Genmove reset_tree 1
+add_engine_config_line Mcts.Params.Genmove resign_mean -0.95
+add_engine_config_line Mcts.Params.Logger is_active 0
+add_engine_config_line Mcts.Params.Search mature_at 100
+add_engine_config_line Mcts.Params.Search update_rave 1
+add_engine_config_line Mcts.Params.Search use_rave 1
+add_engine LibEgo
