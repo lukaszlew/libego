@@ -56,6 +56,18 @@ private:
 
     gtp.RegisterParam (cmd_logger, "is_active",     &mcts_engine.logger.is_active);
     gtp.RegisterParam (cmd_logger, "log_directory", &mcts_engine.logger.log_directory);
+
+    string d2gtp = "d2gtp-params";
+    gtp.RegisterParam (d2gtp, "ucb_coeff",
+                       &mcts_engine.playout.best_child_finder.uct_explore_coeff);
+    gtp.RegisterParam (d2gtp, "mcts_bias",
+                       &mcts_engine.playout.best_child_finder.bias_stat);
+    gtp.RegisterParam (d2gtp, "rave_bias",
+                       &mcts_engine.playout.best_child_finder.bias_rave);
+    gtp.RegisterParam (d2gtp, "mature_at",
+                       &mcts_engine.playout.mature_update_count);
+    gtp.RegisterParam (d2gtp, "playouts_per_genmove",
+                       &mcts_engine.genmove_playouts);
   }
 
   void Cclear_board (Gtp::Io& io) {

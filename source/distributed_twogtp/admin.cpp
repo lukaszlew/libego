@@ -13,7 +13,7 @@
 
 #include "admin.hpp"
 
-Admin::Admin (Database& db) : db (db), config_file ("no_config")
+Admin::Admin (Database& db) : db (db)
 {
 }
 
@@ -28,7 +28,7 @@ void Admin::Run ()
   Gtp::Repl gtp;
   gtp.Register ("add_engine_search_path",  this, &Admin::CAddEngineSearchPath);
 
-  gtp.Register ("set_engine_config",       this, &Admin::CSetEngineConfig);
+  gtp.Register ("add_engine_config_line", this, &Admin::CAddEngineConfigLine);
   gtp.Register ("set_engine_cmd", this, &Admin::CSetEngineCommandLine);
   gtp.Register ("add_engine",     this, &Admin::CAddEngine);
 
@@ -49,8 +49,8 @@ void Admin::CSetEngineCommandLine (Gtp::Io& io) {
   command_line = QString::fromStdString (io.ReadLine());
 }
 
-void Admin::CSetEngineConfig (Gtp::Io& io) {
-  config_file = QString::fromStdString (io.Read<std::string>("no_config"));
+void Admin::CAddEngineConfigLine (Gtp::Io& io) {
+  config += "\n" + QString::fromStdString (io.ReadLine ());
   io.CheckEmpty ();
 }
 
@@ -67,8 +67,11 @@ void Admin::CAddEngine (Gtp::Io& io)
 {
   QString name = QString::fromStdString (io.Read<std::string>());
   io.CheckEmpty();
-  if (!AddEngine (name, config_file, command_line))
+  if (!AddEngine (name, config, command_line))
     io.SetError ("");
+  name = "";
+  config = "";
+  command_line = "";
 }
 
 
@@ -108,6 +111,9 @@ void Admin::CAddExperiment (Gtp::Io& io)
   {
     io.SetError ("");
   }
+  first_engine = "";
+  second_engine = "";
+  experiment_description = "";
 }
 
 void Admin::CAddParamValue (Gtp::Io& io) {
@@ -146,20 +152,11 @@ void Admin::CAddGames (Gtp::Io& io)
 }
 
 
-bool Admin::AddEngine (QString name, QString config_file, QString command_line)
+bool Admin::AddEngine (QString name, QString config, QString command_line)
 {
   QString send_gtp_config = "";
   QVariant gtp_name;
   QVariant gtp_version;
-
-  if (config_file != "no_config") {
-    QFile config (config_file);
-    if (!config.open (QIODevice::ReadOnly | QIODevice::Text)) {
-      std::cerr << "can't open config" << std::endl;
-      return false;
-    }
-    send_gtp_config += config.readAll ();
-  }
 
   GtpProcess process;
   if (!process.Start (name, command_line, db.EngineSearchPath())) {
@@ -175,7 +172,7 @@ bool Admin::AddEngine (QString name, QString config_file, QString command_line)
                                  command_line,
                                  gtp_name,
                                  gtp_version,
-                                 send_gtp_config);
+                                 config);
   if (!db_add_ok) {
     std::cerr << "can't add engine to database" << std::endl;
     return false;

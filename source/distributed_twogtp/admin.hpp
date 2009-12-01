@@ -15,7 +15,7 @@ private:
   void CAddEngineSearchPath (Gtp::Io& io);
 
   void CSetEngineCommandLine (Gtp::Io& io);
-  void CSetEngineConfig (Gtp::Io& io);
+  void CAddEngineConfigLine (Gtp::Io& io);
   void CAddEngine (Gtp::Io& io);
 
 
@@ -31,7 +31,7 @@ private:
 private:
   Database& db;
 
-  QString config_file;
+  QString config;
   QString command_line;
 
   QString first_engine;

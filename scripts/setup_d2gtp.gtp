@@ -14,14 +14,20 @@ add_engine_search_path ../../opponents
 add_engine_search_path ../opponents
 add_engine_search_path .
 
+# Gnu Go
+
 set_engine_cmd ./gnugo-3.8 --mode gtp --chinese-rules --capture-all-dead --level=0
 add_engine gnugo-3.8-l0
 
+# Fuego
+
 set_engine_cmd ./fuego-0.4 -nobook
-set_engine_config scripts/fuego_config.gtp
+add_engine_config_line uct_param_player max_games 10000
+add_engine_config_line uct_param_player ignore_clock 1
+add_engine_config_line uct_param_player ponder 0
 add_engine fuego-0.4 
 
-# experiment setup
+# Experiment setup
 
 set_experiment_description  This is a test experiment of 100 games.
 set_experiment_engine 1 fuego-0.4
