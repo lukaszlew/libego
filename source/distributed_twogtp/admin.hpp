@@ -23,6 +23,7 @@ private:
   void CSetExperimentEngine (Gtp::Io& io);
   void CAddExperiment (Gtp::Io& io);
 
+  void CAddParamValue (Gtp::Io& io);
   void CAddGames (Gtp::Io& io);
 
   bool AddEngine (QString name, QString config_file, QString command_line);
@@ -37,6 +38,8 @@ private:
   QString second_engine;
 
   QString experiment_description;
+
+  QMap <QString, QString> params[2];
 };
 
 #endif
