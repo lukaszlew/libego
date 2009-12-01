@@ -39,7 +39,8 @@ private:
 
   QString experiment_description;
 
-  QMap <QString, QString> params[2];
+  // (for_first_engine, param_name) -> list of values
+  QMap <QPair <bool, QString>, QList <QString> > params;
 };
 
 #endif

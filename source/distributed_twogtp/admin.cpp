@@ -120,7 +120,7 @@ void Admin::CAddParamValue (Gtp::Io& io) {
   QString value = QString::fromStdString (io.Read<std::string>());
   io.CheckEmpty ();
   bool for_first_engine = num == 1;
-  params [for_first_engine] [name] . append (value);
+  params [qMakePair (for_first_engine, name)] . append (value);
 }
 
 void Admin::CAddGames (Gtp::Io& io)
@@ -131,8 +131,8 @@ void Admin::CAddGames (Gtp::Io& io)
   
   int game_ok = 0;
   for (int i = 0; i < game_count; i++) {
-    if (!db.AddGame (experiment, i % 2 == 0))
-      break;
+    int game_id = db.AddGame (experiment, i % 2 == 0);
+    if (game_id < 0) break;
     game_ok += 1;
   }
 
