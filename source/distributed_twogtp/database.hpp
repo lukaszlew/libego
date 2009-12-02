@@ -14,7 +14,6 @@ public:
 
   // for worker
   
-  bool AddEngineSearchPath (QString path);
   bool AddEngine (QString name,
                   QString command_line,
                   QVariant gtp_name,
@@ -29,8 +28,6 @@ public:
   int AddGame (QString experiment, bool first_is_black);
 
   bool AddEngineParam (int game_id, bool for_first ,QString name, QString value);
-
-  QStringList EngineSearchPath();
 
   QString settings_file_name;
   QSqlDatabase db;

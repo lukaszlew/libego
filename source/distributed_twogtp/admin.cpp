@@ -31,7 +31,6 @@ Admin::~Admin ()
 void Admin::Run ()
 {
   Gtp::Repl gtp;
-  gtp.Register ("add_engine_search_path",  this, &Admin::CAddEngineSearchPath);
 
   gtp.Register ("add_engine_config_line", this, &Admin::CAddEngineConfigLine);
   gtp.Register ("set_engine_cmd", this, &Admin::CSetEngineCommandLine);
@@ -58,15 +57,6 @@ void Admin::CAddEngineConfigLine (Gtp::Io& io) {
   config += "\n" + QString::fromStdString (io.ReadLine ());
   io.CheckEmpty ();
 }
-
-void Admin::CAddEngineSearchPath (Gtp::Io& io)
-{
-  QString path = QString::fromStdString (io.Read<std::string>());
-  io.CheckEmpty();
-  if (!db.AddEngineSearchPath (path))
-    io.SetError ("");
-}
-
 
 void Admin::CAddEngine (Gtp::Io& io)
 {
@@ -166,7 +156,7 @@ bool Admin::AddEngine (QString name, QString config, QString command_line)
   QVariant gtp_version;
 
   GtpProcess process;
-  if (!process.Start (name, command_line, db.EngineSearchPath())) {
+  if (!process.Start (name, command_line)) {
     std::cerr << "can't start the process" << std::endl;
     return false;
   }

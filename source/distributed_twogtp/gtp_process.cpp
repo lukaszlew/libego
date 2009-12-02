@@ -16,28 +16,22 @@ GtpProcess::~GtpProcess () {
 
 bool GtpProcess::Start (QString name_,
                         QString command_line_,
-                        QStringList paths,
                         int timeout_ms)
 {
   name = name_;
   command_line = command_line_.trimmed();
 
-  QDir current_dir = QDir::current ();
-  foreach (QString path_dir, paths) {
-    QDir new_dir = current_dir;
-    new_dir.cd (path_dir);
-    //qDebug () << "try cd " << new_dir.absolutePath ();
-    if (!QDir::setCurrent (new_dir.absolutePath ())) continue;
-    //qDebug () << "ok";
-    process.start (command_line);
-    if (process.waitForStarted (timeout_ms) && BasicCommandsOk ()) {
-      CHECK (QDir::setCurrent (current_dir.absolutePath ()));
-      return true;
-    }
+  process.start (command_line);
+  if (!process.waitForStarted (timeout_ms)) {
+    qDebug () << command_line << " failed to start";
+    return false;
   }
-  CHECK (QDir::setCurrent (current_dir.absolutePath ()));
-  qDebug () << command_line << " failed to start";
-  return false;
+
+  if (!BasicCommandsOk ()) {
+    return false;
+  }
+
+  return true;
 }
 
 

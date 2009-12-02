@@ -2,12 +2,7 @@ DROP TABLE IF EXISTS game;
 DROP TABLE IF EXISTS experiment;
 DROP TABLE IF EXISTS game_setup;
 DROP TABLE IF EXISTS engine;
-DROP TABLE IF EXISTS engine_search_path;
 DROP TABLE IF EXISTS engine_param;
-
-CREATE TABLE engine_search_path (
-  path TEXT
-);
 
 
 CREATE TABLE engine (

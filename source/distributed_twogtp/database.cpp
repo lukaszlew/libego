@@ -70,15 +70,6 @@ bool Database::Connect ()
 }
 
 
-bool Database::AddEngineSearchPath (QString path)
-{
-  QSqlQuery q (db);
-  CHECK (q.prepare ("INSERT INTO engine_search_path (path) VALUES (?)"));
-  q.addBindValue (path);
-  return q.exec ();
-}
-
-
 bool Database::AddEngine (QString name,
                           QString command_line,
                           QVariant gtp_name,
@@ -179,17 +170,6 @@ bool Database::AddEngineParam (int game_id,
   q.addBindValue (for_first);
   CHECK (q.exec ());
   return true;
-}
-
-QStringList Database::EngineSearchPath()
-{
-  QSqlQuery q (db);
-  QStringList list;
-  CHECK (q.exec ("SELECT path FROM engine_search_path"));
-  while (q.next()) {
-    list.append (q.value(0).toString());
-  }
-  return list;
 }
 
 // -----------------------------------------------------------------------------

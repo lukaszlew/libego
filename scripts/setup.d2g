@@ -10,18 +10,14 @@
 
 add_game_setup 9x9 9 6.5
 
-add_engine_search_path ../../opponents
-add_engine_search_path ../opponents
-add_engine_search_path .
-
 # Gnu Go
 
-set_engine_cmd ./gnugo-3.8 --mode gtp --chinese-rules --capture-all-dead --level=0
+set_engine_cmd ../opponents/gnugo-3.8 --mode gtp --chinese-rules --capture-all-dead --positional-superko --level=0
 add_engine GnuGo
 
 # Fuego
 
-set_engine_cmd ./fuego-0.4 -nobook
+set_engine_cmd ../opponents/fuego-0.4 -nobook
 add_engine_config_line uct_param_player max_games 100
 add_engine_config_line uct_param_player ignore_clock 1
 add_engine_config_line uct_param_player ponder 0

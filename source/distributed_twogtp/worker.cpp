@@ -30,7 +30,7 @@ void Worker::Run ()
   }
 }
 
-void StartPlayer (GtpProcess& p, DbGame& db_game, bool first, QStringList paths) {
+void StartPlayer (GtpProcess& p, DbGame& db_game, bool first) {
   DbEngine& db_player = first ? db_game.first : db_game.second;
   QList <QPair<QString, QString> >& player_params
     = first ? db_game.first_params : db_game.second_params;
@@ -41,7 +41,7 @@ void StartPlayer (GtpProcess& p, DbGame& db_game, bool first, QStringList paths)
   qDebug() << db_player.name.toLatin1().data();
   qDebug() << "command_line:" << db_player.command_line.trimmed().toLatin1().data();
 
-  CHECK (p.Start (db_player.name, db_player.command_line, paths));
+  CHECK (p.Start (db_player.name, db_player.command_line));
   CHECK (p.TryCommand ("name").toString () == db_player.gtp_name);
   CHECK (p.TryCommand ("version").toString () == db_player.gtp_version);
   p.TryCommand ("go_rules " + db_game.rule_set);
@@ -73,14 +73,13 @@ bool Worker::GrabJob ()
 {
   // claim job
   if (!db_game.GetUnclaimed (db.db)) return false;
-  QStringList paths = db.EngineSearchPath();
 
   // do the work
   GtpProcess first;
   GtpProcess second;
 
-  StartPlayer (first,  db_game, true, paths);
-  StartPlayer (second, db_game, false, paths);
+  StartPlayer (first,  db_game, true);
+  StartPlayer (second, db_game, false);
 
   // TODO send seed
   

@@ -15,8 +15,7 @@ public:
 
   bool Start (QString name,
               QString command_line,
-              QStringList paths,
-              int timeout_ms = 2000);
+              int timeout_ms = 20000);
 
   bool IsRunning ();
   
