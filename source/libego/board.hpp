@@ -9,6 +9,66 @@
 #include "hash.hpp"
 #include "color.hpp"
 
+// should be power of 2
+const uint kMaxPatternsPerVertex = 8; // max 8 3x3 patterns per vertex
+
+// -----------------------------------------------------------------------------
+
+class PatternId : public Nat <PatternId> {
+public:
+  PatternId () {};
+  // TODO OfVertex 
+  static const uint kBound = (board_size + 2) * (board_size + 2);
+private:
+  // maximal number of patterns supported by board.
+  // should be power of 2 for maximal efficiency - 1 TODO CHECK IT
+
+private:
+  friend class Nat <PatternId>;
+  explicit PatternId (uint raw);
+};
+
+// -----------------------------------------------------------------------------
+
+class BoardShared {
+  BoardShared ()
+    : pattern_count_at (0) , pattern_hash_base (), last_pattern (PatternId::Invalid())
+  {
+    ForEachNat (PatternId, pid) {
+      pattern_hash_base [pid].SetZero();
+    }
+  }
+
+  PatternId AddPattern () {
+    CHECK (last_pattern.MoveNext());
+    return last_pattern;
+  }
+
+  void AddVertexToPattern (PatternId pid,
+                           Vertex v,
+                           Hash black_addend,
+                           Hash white_addend)
+  {
+    uint& pca = pattern_count_at[v];
+    ASSERT (pca < kMaxPatternsPerVertex);
+    patterns_at [v] [pca] = pid;
+    hash_addends_at [v] [pca] [Player::Black()] = black_addend;
+    hash_addends_at [v] [pca] [Player::White()] = white_addend;
+    pca += 1;
+  }
+
+  static const bool kCheckAsserts = true;
+
+private:
+  friend class Board;
+  NatMap<Vertex, uint> pattern_count_at;
+  NatMap<Vertex, PatternId [kMaxPatternsPerVertex] > patterns_at;
+  NatMap<PatternId, Hash> pattern_hash_base;
+  NatMap<Vertex, NatMap<Player, Hash> [kMaxPatternsPerVertex] > hash_addends_at;
+  PatternId last_pattern;
+};
+
+// -----------------------------------------------------------------------------
 
 class Board {
 public:
@@ -97,6 +157,9 @@ public:
 
   // -------------------------------------
   // Auxiliary functions. May/will change.
+
+  // Use when you add a pattern to Board::shared.
+  void RecalculatePatternHashes ();
 
   // Difference in (number of stones) of each player - komi. Used with
   // mercy heuristic.
@@ -203,6 +266,7 @@ private:
   NatMap<Vertex, Chain>        chain;        // Indexed by chain_id[v]
 
   NatMap<Vertex, NbrCounter>   nbr_cnt; // 3x3 patterns
+  NatMap<PatternId, Hash>      pattern_hash;
 
   // Incremantal set of empty Vertices.
   // TODO Merge this four members into NatSet
@@ -212,6 +276,7 @@ private:
   NatMap<Vertex, uint>         empty_pos;
 
   static const Zobrist zobrist[1];
+  static const BoardShared shared;
 
 public:
   // This function does nothing. Read comment in benchmark.cpp.

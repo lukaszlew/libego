@@ -20,6 +20,8 @@ public:
 
   bool operator== (const Hash& other) const;
   void operator^= (const Hash& other);
+  void operator+= (const Hash& other);
+  void operator-= (const Hash& other);
 
 private:  
   uint64 hash;

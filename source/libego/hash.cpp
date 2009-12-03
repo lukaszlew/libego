@@ -35,6 +35,14 @@ void Hash::operator^= (const Hash& other) {
   hash ^= other.hash;
 }
 
+void Hash::operator+= (const Hash& other) {
+  hash += other.hash;
+}
+
+void Hash::operator-= (const Hash& other) {
+  hash -= other.hash;
+}
+
 // -----------------------------------------------------------------------------
 
 Zobrist::Zobrist () : hashes (Hash()) {

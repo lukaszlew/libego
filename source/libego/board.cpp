@@ -28,6 +28,13 @@
   }
 
 
+// -----------------------------------------------------------------------------
+
+PatternId::PatternId (uint raw) : Nat <PatternId> (raw) {
+}
+
+// -----------------------------------------------------------------------------
+
 Board::NbrCounter Board::NbrCounter::OfCounts (uint black_cnt,
                                                uint white_cnt,
                                                uint empty_cnt) {
@@ -193,7 +200,7 @@ void Board::Clear () {
   }
 
   hash = recalc_hash ();
-
+  RecalculatePatternHashes ();
   check ();
 }
 
@@ -213,6 +220,21 @@ Hash Board::recalc_hash () const {
 }
 
 
+void Board::RecalculatePatternHashes () {
+  ForEachNat (PatternId, pid) {
+    pattern_hash [pid] = shared.pattern_hash_base [pid];
+  }
+  
+  ForEachNat (Vertex, v) {
+    if (!color_at[v].IsPlayer()) continue;
+    rep (ii, shared.pattern_count_at [v]) {
+      pattern_hash [shared.patterns_at[v][ii]] +=
+        shared.hash_addends_at [v] [ii] [color_at [v].ToPlayer()];
+    }
+  }
+}
+
+
 Board::Board () :
   color_at (Color::OffBoard()),
   last_player (Player::White()),
@@ -222,6 +244,7 @@ Board::Board () :
   chain_id (Vertex::Invalid()),
   chain (Chain ()),
   nbr_cnt (NbrCounter()),
+  pattern_hash (Hash()),
   empty_pos (0)
 {
   Clear ();
@@ -457,6 +480,11 @@ void Board::remove_chain (Vertex v) {
 
 
 void Board::place_stone (Player pl, Vertex v) {
+  rep (ii, shared.pattern_count_at[v]) {
+    pattern_hash [shared.patterns_at[v][ii]] +=
+      shared.hash_addends_at[v][ii][pl];
+  }
+
   hash ^= zobrist->OfPlayerVertex (pl, v);
   player_v_cnt[pl]++;
   color_at[v] = Color::OfPlayer (pl);
@@ -473,6 +501,11 @@ void Board::place_stone (Player pl, Vertex v) {
 
 
 void Board::remove_stone (Vertex v) {
+  rep (ii, shared.pattern_count_at[v]) {
+    pattern_hash [shared.patterns_at[v][ii]] -=
+      shared.hash_addends_at[v][ii][color_at[v].ToPlayer()];
+  }
+
   hash ^= zobrist->OfPlayerVertex (color_at [v].ToPlayer (), v);
   player_v_cnt [color_at[v].ToPlayer ()]--;
   color_at [v] = Color::Empty ();
@@ -690,6 +723,7 @@ void Board::check_no_more_legal (Player player) const { // at the end of the pla
 }
 
 const Zobrist Board::zobrist[1] = { Zobrist () };
+const BoardShared Board::shared;
 
 #undef vertex_for_each_4_nbr
 #undef vertex_for_each_diag_nbr

@@ -20,6 +20,7 @@ void TestFail (const char* msg, const char* file, int line, const char* pf);
 #define FAIL(msg) (TestFail (msg, __FILE__, __LINE__, __PRETTY_FUNCTION__), exit(0))
 
 // Always evaluate condition and always assert true.
+// TODO CHECK should not always test
 #define CHECK(expr) ((expr) ? void(0) : FAIL (#expr))
 
 // Evalueate and assert only if kCheckAsserts == true
