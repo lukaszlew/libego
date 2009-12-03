@@ -31,6 +31,15 @@ Run exemplary GTP engine:
     ./bin/engine
     ./bin/engine config.gtp -
 
+To work with distributed_twogtp read:
+ 
+    ./scripts/*.sql
+    ./scripts/*.d2g
+
+and play with:
+
+    ./bin/distributed_twogtp
+
 The second command will first execute GTP commands from config.gtp.
 And then take commands from stdin.
 You can connect engine to GoGui usigng both of above commands.
