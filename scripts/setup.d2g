@@ -3,7 +3,8 @@
 # ./bin/distributed_twogtp --admin           # create ~/.my.cnf
 # emacs ~/.my.cnf                            # fill it 
 # mysql < scripts/d2gtp.schema.sql           # create db schema
-# ./bin/distributed_twogtp --admin < scripts/d2gtp.example.gtp   # fill db with tasks
+# ./bin/distributed_twogtp --admin < scripts/setup.d2g   # setup
+# ./bin/distributed_twogtp --admin < scripts/experiment.d2g   # fill db with tasks
 # ./bin/distributed_twogtp_admin --worker    # launch you workers
 
 # engines setup
