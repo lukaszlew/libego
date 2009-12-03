@@ -70,11 +70,16 @@ bool GtpProcess::Command (QString command, QString* response, int timeout_ms) {
 
   QString chunk;
   while (!chunk.contains (sep)) {
-    if (!process.waitForReadyRead (timeout_ms)) return false;
+    if (!process.waitForReadyRead (timeout_ms)) {
+      qDebug() << "GtpProcess Command timeout on command: " << command;
+      return false;
+    }
     chunk += process.readAll();
   }
 
   if (chunk.count (sep) != 1 || !chunk.endsWith (sep)  || chunk[0] != '=') {
+    CHECK (chunk[0] == '?');
+    qDebug() << "Command: " << command << " failed";
     return false;
   }
 
@@ -86,7 +91,6 @@ bool GtpProcess::Command (QString command, QString* response, int timeout_ms) {
 QVariant GtpProcess::TryCommand (QString command) {
   QString ret = "";
   if (!Command (command, &ret)) {
-    qDebug () << "GtpProcess::TryCommand (" << command << ") fail. ret=" << ret;
     return QVariant();
   }
   return ret;

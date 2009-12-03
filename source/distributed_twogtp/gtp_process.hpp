@@ -15,7 +15,7 @@ public:
 
   bool Start (QString name,
               QString command_line,
-              int timeout_ms = 20000);
+              int timeout_ms = 60000);
 
   bool IsRunning ();
   
@@ -30,7 +30,7 @@ public:
   QVariant TryCommand (QString command);
 
 private:
-  bool Command (QString command, QString* response, int timeout_ms = 1000);
+  bool Command (QString command, QString* response, int timeout_ms = 60000);
   bool BasicCommandsOk ();
 
 private:
