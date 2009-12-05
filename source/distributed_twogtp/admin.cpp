@@ -45,6 +45,9 @@ void Admin::Run ()
   gtp.Register ("add_param", this, &Admin::CAddParam);
 
   gtp.Register ("add_games",      this, &Admin::CAddGames);
+
+  gtp.Register ("extract_csv", this, &Admin::CExtractCsv);
+
   gtp.Run (std::cin, std::cout);
 }
 
@@ -176,4 +179,28 @@ bool Admin::AddEngine (QString name, QString config, QString command_line)
   }
 
   return true;
+}
+
+
+void Admin::CExtractCsv (Gtp::Io& io) {
+  QString experiment = QString::fromStdString (io.Read<std::string>());
+  int num = io.Read<int> ();
+  if (num != 1 && num != 2) {
+    io.SetError ("wronge engine number");
+    return;
+  }
+  QString file_name  = QString::fromStdString (io.Read<std::string>());
+  io.CheckEmpty();
+
+  QFile file(file_name);
+  if (!file.open (QIODevice::WriteOnly | QIODevice::Text)) {
+    io.SetError (qPrintable ("can't open file: " + file_name));
+    return;
+  }
+
+  QTextStream out(&file);
+  if (!db.DumpCsv (experiment, out, num == 1)) {
+    io.SetError ("can't extract CSV");
+    return;
+  }
 }

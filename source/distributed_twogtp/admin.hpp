@@ -28,6 +28,8 @@ private:
 
   bool AddEngine (QString name, QString config_file, QString command_line);
 
+  void CExtractCsv (Gtp::Io& io);
+
 private:
   Database& db;
 

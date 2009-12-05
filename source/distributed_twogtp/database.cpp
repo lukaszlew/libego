@@ -172,6 +172,71 @@ bool Database::AddEngineParam (int game_id,
   return true;
 }
 
+
+bool Database::DumpCsv (QString experiment_name,
+                        QTextStream& out,
+                        bool first_engine)
+{
+  QSqlQuery q (db);
+
+  // get param list 
+  CHECK (q.prepare ("SELECT param.name "
+                    "FROM experiment "
+                    "JOIN param ON param.experiment_id = experiment.id "
+                    "WHERE experiment.name = ? "));
+  q.addBindValue (experiment_name);
+  CHECK (q.exec ());
+
+  QStringList params;
+  while (q.next()) params.append (q.value(0).toString());
+    
+  out << "game.id, ";
+  foreach (QString s, params) {
+    out << s << ", ";
+  }
+  out << "first_won" << endl;
+
+  CHECK (q.prepare ("SELECT game.id, game.first_won "
+                    "FROM experiment "
+                    "JOIN game ON game.experiment_id = experiment.id "
+                    "WHERE experiment.name = ? AND game.first_won IS NOT NULL"));
+  q.addBindValue (experiment_name);
+  CHECK (q.exec ());  
+
+  while (q.next ()) {
+    int game_id = q.value (0).toInt();
+    int first_won = q.value (1).toInt();
+
+    QVector<QString> param_values (params.size());
+
+    //qDebug () << "A " << game_id << " " << first_won;
+    QSqlQuery q2 (db);
+    CHECK (q2.prepare ("SELECT name, value, for_first "
+                       "FROM engine_param "
+                       "WHERE game_id = ?"));
+    q2.addBindValue (game_id);
+    CHECK (q2.exec ());
+    while (q2.next()) {
+      QString name   = q2.record().value ("name").toString();
+      bool for_first = q2.record().value ("for_first").toInt();
+      QString value  = q2.record().value ("value").toString();
+
+      int i = params.indexOf (name);
+      if (i == -1 || first_engine != for_first) continue;
+
+      param_values [i] = value;
+    }
+
+
+    out << game_id << ", ";
+    foreach (QString s, param_values) {
+      out << s << ", ";
+    }
+    out << first_won << "\n";
+  }
+  return true;
+}
+
 // -----------------------------------------------------------------------------
 
 

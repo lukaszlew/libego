@@ -29,6 +29,10 @@ public:
 
   bool AddEngineParam (int game_id, bool for_first ,QString name, QString value);
 
+  bool DumpCsv (QString experiment_name,
+                QTextStream& out,
+                bool first_engine);
+
   QString settings_file_name;
   QSqlDatabase db;
 };

@@ -61,9 +61,17 @@ CREATE TABLE game (
 );
 
 
+CREATE TABLE param (
+  id INTEGER PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  experiment_id INTEGER NOT NULL REFERENCES game (id),
+  name TEXT NOT NULL
+);
+
+
 CREATE TABLE engine_param (
   game_id INTEGER NOT NULL REFERENCES game (id),
   name TEXT NOT NULL,
   value TEXT NOT NULL,
   for_first INTEGER NOT NULL
 );
+
