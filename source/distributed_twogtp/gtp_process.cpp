@@ -72,6 +72,7 @@ bool GtpProcess::Command (QString command, QString* response, int timeout_ms) {
   while (!chunk.contains (sep)) {
     if (!process.waitForReadyRead (timeout_ms)) {
       qDebug() << "GtpProcess Command timeout on command: " << command;
+      qDebug() << "Read so far: " << chunk;
       return false;
     }
     chunk += process.readAll();
