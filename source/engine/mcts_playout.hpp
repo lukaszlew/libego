@@ -38,13 +38,13 @@ public:
   MctsNode& Find (Player pl, MctsNode& node) {
     MctsNode* best_child = NULL;
     float best_urgency = -100000000000000.0; // TODO infinity
-    const float explore_coeff = log (node.stat.update_count()) * uct_explore_coeff;
+    const float log_val = log (node.stat.update_count());
 
     ASSERT (node.has_all_legal_children [pl]);
 
     BOOST_FOREACH (MctsNode& child, node.Children()) {
       if (child.player != pl) continue;
-      float child_urgency = NodeSubjectiveValue (child, pl, explore_coeff);
+      float child_urgency = NodeSubjectiveValue (child, pl, log_val);
       if (child_urgency > best_urgency) {
         best_urgency = child_urgency;
         best_child   = &child;
@@ -57,7 +57,7 @@ public:
 
 private:
 
-  float NodeSubjectiveValue (MctsNode& node, Player pl, float explore_coeff) {
+  float NodeSubjectiveValue (MctsNode& node, Player pl, float log_val) {
     float value;
 
     if (use_rave) {
@@ -68,7 +68,7 @@ private:
 
     return
       pl.SubjectiveScore (value) +
-      sqrt (explore_coeff / node.stat.update_count());
+      uct_explore_coeff * sqrt (log_val / node.stat.update_count());
   }
 
 private:

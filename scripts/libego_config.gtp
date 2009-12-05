@@ -1,7 +1,7 @@
 Mcts.Params.Genmove playouts 100000
 Mcts.Params.Genmove reset_tree 1
 Mcts.Params.Genmove resign_mean -0.95
-Mcts.Params.Genmove seed 123
+#Mcts.Params.Genmove seed 123
 
 Mcts.Params.Logger is_active 1
 Mcts.Params.Logger log_directory log
