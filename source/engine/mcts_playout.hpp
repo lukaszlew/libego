@@ -22,6 +22,7 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 const bool mcts_ac = true;
+const float kSureWinUpdate = 1.0; // TODO increase this
 
 // -----------------------------------------------------------------------------
 
@@ -29,10 +30,6 @@ class MctsBestChildFinder {
   static const bool kCheckAsserts = false;
 public:
   MctsBestChildFinder () {
-    uct_explore_coeff = 1.0;
-    bias_stat = 0.0000001;
-    bias_rave = 0.001;
-    use_rave = true;
   }
 
   MctsNode& Find (Player pl, MctsNode& node) {
@@ -60,24 +57,20 @@ private:
   float NodeSubjectiveValue (MctsNode& node, Player pl, float log_val) {
     float value;
 
-    if (use_rave) {
-      value = Stat::Mix (node.stat, bias_stat, node.rave_stat, bias_rave);
+    if (Param::use_rave) {
+      value = Stat::Mix (node.stat,      Param::mcts_bias,
+                         node.rave_stat, Param::rave_bias);
     } else {
       value = node.stat.mean ();
     }
 
     return
       pl.SubjectiveScore (value) +
-      uct_explore_coeff * sqrt (log_val / node.stat.update_count());
+      Param::uct_explore_coeff * sqrt (log_val / node.stat.update_count());
   }
 
 private:
   friend class MctsGtp;
-
-  float uct_explore_coeff;
-  float bias_stat;
-  float bias_rave;
-  bool  use_rave;
 };
 
 // -----------------------------------------------------------------------------
@@ -105,7 +98,7 @@ public:
 
     if (play_board.BothPlayerPass()) {
       // sure fast win/loss
-      UpdateTrace (play_board.TrompTaylorWinner().ToScore() * 1000);
+      UpdateTrace (play_board.TrompTaylorWinner().ToScore() * kSureWinUpdate);
       return;
     }
     
@@ -146,7 +139,7 @@ private:
     // Try to play it on the board
     if (!play_board.PlayPseudoLegal (pl, uct_child.v)) { // large suicide
       ASSERT (!uct_child.has_all_legal_children [pl.Other()]);
-      ASSERT (uct_child.stat.update_count() == Stat::prior_update_count);
+      ASSERT (uct_child.stat.update_count() == Param::prior_update_count);
       // Remove in case of large suicide.
       ActNode().RemoveChild (&uct_child);
       return false;

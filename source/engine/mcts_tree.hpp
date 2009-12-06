@@ -6,6 +6,18 @@
 const bool mcts_tree_ac = true;
 
 // -----------------------------------------------------------------------------
+// TODO move to separate class and static object
+namespace Param {
+  static float uct_explore_coeff = 0.0;
+  static float mcts_bias = 0.0;
+  static float rave_bias = 0.001;
+  static bool  use_rave  = true;  
+  static float prior_update_count = 10.0;
+  static float prior_mean = 1.0;
+
+};
+
+// -----------------------------------------------------------------------------
 
 class MctsNode {
 public:
@@ -116,8 +128,10 @@ string MctsNode::ToString() const {
     << v.ToGtpString() << " " 
     << stat.to_string() << " "
     << rave_stat.to_string() << " -> "
-    << Stat::Mix (stat, 1e-07, rave_stat, 0.001);
-    ;
+    << Stat::Mix (stat,
+                  Param::mcts_bias,
+                  rave_stat,
+                  Param::rave_bias);
   return s.str();
 }
 
@@ -196,8 +210,10 @@ void MctsNode::RemoveIllegalChildren (Player pl, const FullBoard& full_board) {
 void MctsNode::Reset () {
   has_all_legal_children.SetAll (false);
   children.clear ();
-  stat.reset ();
-  rave_stat.reset ();
+  stat.reset      (Param::prior_update_count,
+                   player.SubjectiveScore (Param::prior_mean));
+  rave_stat.reset (Param::prior_update_count,
+                   player.SubjectiveScore (Param::prior_mean));
 }
 
 float MctsNode::SubjectiveMean () const {
