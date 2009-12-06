@@ -104,7 +104,8 @@ public:
     }
 
     if (play_board.BothPlayerPass()) {
-      UpdateTrace (play_board.TrompTaylorWinner().ToScore());
+      // sure fast win/loss
+      UpdateTrace (play_board.TrompTaylorWinner().ToScore() * 1000);
       return;
     }
     
@@ -123,7 +124,11 @@ public:
     LightPlayout (&play_board, random).Run (move_history);
     
     // Update score.
-    UpdateTrace (play_board.PlayoutWinner().ToScore());
+    int score = play_board.PlayoutScore();
+    float squashed = Player::WinnerOfBoardScore (score).ToScore (); // +- 1
+    squashed += float(score) / 10000.0; // small bonus for bigger win.
+
+    UpdateTrace (squashed);
   }
 
   vector<Move> LastPlayout () {
@@ -153,7 +158,7 @@ private:
     return true;
   }
 
-  void UpdateTrace (float score) {  // score: black -> 1, white -> -1
+  void UpdateTrace (int score) {
     UpdateTraceRegular (score);
     if (update_rave) UpdateTraceRave (score);
   }
