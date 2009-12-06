@@ -29,6 +29,9 @@ Player Player::OfGtpStream (istream& in) {
   return Invalid();
 }
 
+Player Player::WinnerOfBoardScore (int score) {
+  return Player::OfRaw (score <= 0); 
+}
 
 Player Player::Other() const { 
   return Player(GetRaw() ^ 1);
