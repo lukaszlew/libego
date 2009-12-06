@@ -16,7 +16,7 @@ public:
   void reset (float prior_count, float prior_mean) {
     sample_count       = prior_count;
     sample_sum         = prior_count * prior_mean;
-    square_sample_sum  = prior_count * sample_sum;
+    square_sample_sum  = prior_count * prior_mean * prior_mean * 2.0;
   }
 
   void update (float sample) {

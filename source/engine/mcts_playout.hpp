@@ -90,6 +90,7 @@ public:
     trace.clear();
     trace.push_back (&playout_root);
     move_history.Clear ();
+    move_history.Push (playout_root.GetMove());
 
     // descent the MCTS tree
     while(ActNode().has_all_legal_children [play_board.ActPlayer()]) {
@@ -103,7 +104,8 @@ public:
     }
     
     // Is leaf is ready to expand ?
-    if (ActNode().stat.update_count() > mature_update_count) {
+    if (ActNode().stat.update_count() > 
+        Param::prior_update_count + mature_update_count) {
       Player pl = play_board.ActPlayer();
       ASSERT (pl == ActNode().player.Other());
 
@@ -166,16 +168,16 @@ private:
     // TODO configure rave blocking through options
 
 
-    uint last_ii  = move_history.Size () * 7 / 8;
+    uint last_ii  = move_history.Size () * 7 / 8; // TODO 
 
     rep (act_ii, trace.size()) {
-      // Mark moves that should be updated.
+      // Mark moves that should be updated in RAVE children of: trace [act_ii]
       NatMap <Move, bool> do_update (false);
       NatMap <Move, bool> do_update_set_to (true);
 
       // TODO this is the slow and too-fixed part
       // TODO Change it to weighting with flexible masking.
-      reps (jj, act_ii, last_ii) {
+      reps (jj, act_ii+1, last_ii) {
         Move m = move_history [jj];
         do_update [m] = do_update_set_to [m];
         do_update_set_to [m] = false;

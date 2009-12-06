@@ -131,7 +131,15 @@ string MctsNode::ToString() const {
     << Stat::Mix (stat,
                   Param::mcts_bias,
                   rave_stat,
-                  Param::rave_bias);
+                  Param::rave_bias)
+    // << " - ("  << stat.precision (Param::mcts_bias) << " : "
+    // << stat.precision (Param::rave_bias) << ")"
+    // << Stat::SlowMix (stat,
+    //                   Param::mcts_bias,
+    //                   rave_stat,
+    //                   Param::rave_bias)
+    ;
+
   return s.str();
 }
 
