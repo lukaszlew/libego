@@ -28,11 +28,16 @@ class MctsEngine {
 public:
   
   MctsEngine ()
-    : root (Player::White(), Vertex::Invalid()), random (TimeSeed()), playout(random)
+    : root (Player::White(), Vertex::Invalid()),
+      random (TimeSeed()),
+      playout(random),
+      time_left (0.0),
+      time_stones (-1)
   {
     resign_mean = -0.95;
     genmove_playouts = 10000;
     reset_tree_on_genmove = false;
+    playouts_per_second = 50000;
   }
 
   bool SetBoardSize (uint board_size) {
@@ -78,7 +83,15 @@ public:
   Vertex Genmove (Player player) {
     logger.LogLine ("random_seed     #? [" + ToString (random.GetSeed ()) + "]");
     if (reset_tree_on_genmove) root.Reset ();
-    DoNPlayouts (genmove_playouts, player);
+
+    int playouts = genmove_playouts;
+    if (time_stones [player] == 0 && time_left [player] < 60.0) {
+      playouts = min (playouts,
+                      int (time_left [player] / 30.0 * playouts_per_second));
+      playouts = max (playouts, 1000);
+    }
+    //cerr << "Playouts: " << playouts << endl;
+    DoNPlayouts (playouts, player);
 
     //cerr << mcts.ToString (show_tree_min_updates, show_tree_max_children) << endl;
 
@@ -134,6 +147,10 @@ public:
     return gfx;
   }
 
+  void TimeLeft (Player pl, float seconds, int stones) {
+    time_left [pl] = seconds;
+    time_stones [pl] = stones;
+  }
 
 private:
 
@@ -184,4 +201,8 @@ private:
   // playout
   FastRandom random;
   MctsPlayout playout;
+
+  float playouts_per_second;
+  NatMap <Player, float> time_left;
+  NatMap <Player, int>   time_stones;
 };

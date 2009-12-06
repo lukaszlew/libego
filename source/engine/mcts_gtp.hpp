@@ -17,6 +17,7 @@ private:
     gtp.Register ("undo",         this, &MctsGtp::Cundo);
     gtp.Register ("genmove",      this, &MctsGtp::Cgenmove);
     gtp.Register ("showboard",    this, &MctsGtp::Cshowboard);
+    gtp.Register ("time_left",    this, &MctsGtp::CTimeLeft);
 
     gtp.RegisterGfx ("Mcts.DoPlayouts",      "1", this, &MctsGtp::CDoPlayouts);
     gtp.RegisterGfx ("Mcts.DoPlayouts",     "10", this, &MctsGtp::CDoPlayouts);
@@ -132,6 +133,13 @@ private:
     int n = io.Read<int> ();
     io.CheckEmpty ();
     mcts_engine.LastPlayoutGfx(n).Report (io);
+  }
+
+  void CTimeLeft (Gtp::Io& io) {
+    Player player = io.Read<Player> ();
+    float time = io.Read<float> ();
+    int stones = io.Read<int> ();
+    mcts_engine.TimeLeft (player, time, stones);
   }
 
 private:
