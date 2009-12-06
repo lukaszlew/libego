@@ -3,7 +3,15 @@
 set_experiment_description Param test.
 set_experiment_engine 1 Libego
 set_experiment_engine 2 GnuGo
-add_experiment Test.2 9x9 
+
+add_experiment_param ucb_coeff
+add_experiment_param mcts_bias
+add_experiment_param rave_bias
+add_experiment_param mature_at
+add_experiment_param playouts_per_genmove
+
+add_experiment Test.5 9x9 
+
 
 
 add_param 1 ucb_coeff 0 0.01 -0.01
@@ -11,4 +19,4 @@ add_param 1 mcts_bias 0 0.0000001
 add_param 1 rave_bias 0.002 0.001 0.0005
 add_param 1 mature_at 10
 add_param 1 playouts_per_genmove 100000
-add_games Test.2 10000
+add_games Test.5 40

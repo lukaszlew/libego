@@ -6,6 +6,7 @@
 #include <QSqlQuery>
 #include <QSqlRecord>
 #include <QString>
+#include <QVariantList>
 #include <QtDebug>
 
 #include <unistd.h> // TODO use Qt sleep
@@ -110,7 +111,8 @@ bool Database::AddExperiment (QString name,
                               QString game_setup_name,
                               QString first_engine_name,
                               QString second_engine_name,
-                              QString description) {
+                              QString description,
+                              QStringList experiment_params) {
   QSqlQuery q (db);
   CHECK (q.prepare ("INSERT INTO experiment ("
                     "  name, "
@@ -130,7 +132,21 @@ bool Database::AddExperiment (QString name,
   q.addBindValue (first_engine_name);
   q.addBindValue (second_engine_name);
   q.addBindValue (description);
-  return q.exec ();
+  CHECK (q.exec ());
+  CHECK (q.lastInsertId() != QVariant());
+  int id = q.lastInsertId().toInt();
+
+  CHECK (q.prepare ("INSERT INTO param (experiment_id, name) VALUES (?, ?)"));
+  QVariantList ids;
+  QVariantList param_names;  
+  foreach (QString param, experiment_params) {
+    ids << id;
+    param_names << param;
+  }
+  q.addBindValue (ids);
+  q.addBindValue (param_names);
+  CHECK (q.execBatch ());
+  return true;
 }
 
 

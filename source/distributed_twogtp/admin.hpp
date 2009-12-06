@@ -21,6 +21,7 @@ private:
 
   void CSetExperimentDescription (Gtp::Io& io);
   void CSetExperimentEngine (Gtp::Io& io);
+  void CAddExperimentParam (Gtp::Io& io);
   void CAddExperiment (Gtp::Io& io);
 
   void CAddParam (Gtp::Io& io);
@@ -40,6 +41,7 @@ private:
   QString second_engine;
 
   QString experiment_description;
+  QStringList experiment_params;
 
   // (for_first_engine, param_name) -> list of values
   QMap <QPair <bool, QString>, QList <QString> > params;

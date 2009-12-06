@@ -65,6 +65,7 @@ CREATE TABLE param (
   id INTEGER PRIMARY KEY NOT NULL AUTO_INCREMENT,
   experiment_id INTEGER NOT NULL REFERENCES game (id),
   name TEXT NOT NULL
+  -- for_first INTEGER NOT NULL
 );
 
 

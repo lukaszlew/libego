@@ -20,6 +20,7 @@ Admin::Admin (Database& db) : db (db)
   first_engine = "";
   second_engine = "";
   experiment_description = "";
+  experiment_params.clear();
 }
 
 
@@ -40,6 +41,7 @@ void Admin::Run ()
 
   gtp.Register ("set_experiment_engine", this, &Admin::CSetExperimentEngine);
   gtp.Register ("set_experiment_description", this, &Admin::CSetExperimentDescription);
+  gtp.Register ("add_experiment_param", this, &Admin::CAddExperimentParam);
   gtp.Register ("add_experiment", this, &Admin::CAddExperiment);
 
   gtp.Register ("add_param", this, &Admin::CAddParam);
@@ -99,19 +101,26 @@ void Admin::CSetExperimentDescription (Gtp::Io& io) {
   experiment_description = QString::fromStdString (io.ReadLine());
 }
 
+void Admin::CAddExperimentParam (Gtp::Io& io) {
+  QString name = QString::fromStdString (io.Read<std::string>());
+  io.CheckEmpty ();
+  experiment_params.append(name);
+}
+
 void Admin::CAddExperiment (Gtp::Io& io)
 {
   QString name = QString::fromStdString (io.Read<std::string>());
   QString game_setup = QString::fromStdString (io.Read<std::string>());
   io.CheckEmpty();
   if (!db.AddExperiment (name, game_setup, first_engine, second_engine,
-                         experiment_description))
+                         experiment_description, experiment_params))
   {
     io.SetError ("");
   }
   first_engine = "";
   second_engine = "";
   experiment_description = "";
+  experiment_params.clear();
 }
 
 void Admin::CAddParam (Gtp::Io& io) {
