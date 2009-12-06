@@ -3,7 +3,12 @@ set_cxx_flags (FALSE)
 # -----------------------------------------------------------------------------
 # Qt
 
-find_package (Qt4 REQUIRED)
+find_package (Qt4)
+
+if (NOT QT_FOUND)
+  return()
+endif()
+
 set (QT_USE_QTSQL 1)
 set (QT_USE_QTNETWORK 1)
 set (QT_DONT_USE_QTGUI 1)
