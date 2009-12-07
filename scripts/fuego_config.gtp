@@ -1,0 +1,3 @@
+uct_param_player max_games 10000
+uct_param_player ignore_clock 1
+uct_param_player ponder 0

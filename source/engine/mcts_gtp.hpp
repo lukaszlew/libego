@@ -17,6 +17,7 @@ private:
     gtp.Register ("undo",         this, &MctsGtp::Cundo);
     gtp.Register ("genmove",      this, &MctsGtp::Cgenmove);
     gtp.Register ("showboard",    this, &MctsGtp::Cshowboard);
+    gtp.Register ("time_left",    this, &MctsGtp::CTimeLeft);
 
     gtp.RegisterGfx ("Mcts.DoPlayouts",      "1", this, &MctsGtp::CDoPlayouts);
     gtp.RegisterGfx ("Mcts.DoPlayouts",     "10", this, &MctsGtp::CDoPlayouts);
@@ -42,10 +43,10 @@ private:
     string cmd_genmove = "Mcts.Params.Genmove";
     string cmd_logger  = "Mcts.Params.Logger";
 
-    gtp.RegisterParam (cmd_search, "explore_coeff", &mcts_engine.playout.best_child_finder.uct_explore_coeff);
-    gtp.RegisterParam (cmd_search, "bias_stat",     &mcts_engine.playout.best_child_finder.bias_stat);
-    gtp.RegisterParam (cmd_search, "bias_rave",     &mcts_engine.playout.best_child_finder.bias_rave);
-    gtp.RegisterParam (cmd_search, "use_rave",      &mcts_engine.playout.best_child_finder.use_rave);
+    gtp.RegisterParam (cmd_search, "explore_coeff", &Param::uct_explore_coeff);
+    gtp.RegisterParam (cmd_search, "bias_stat",     &Param::mcts_bias);
+    gtp.RegisterParam (cmd_search, "bias_rave",     &Param::mcts_bias);
+    gtp.RegisterParam (cmd_search, "use_rave",      &Param::use_rave);
     gtp.RegisterParam (cmd_search, "update_rave",   &mcts_engine.playout.update_rave);
     gtp.RegisterParam (cmd_search, "mature_at",     &mcts_engine.playout.mature_update_count);
 
@@ -56,6 +57,13 @@ private:
 
     gtp.RegisterParam (cmd_logger, "is_active",     &mcts_engine.logger.is_active);
     gtp.RegisterParam (cmd_logger, "log_directory", &mcts_engine.logger.log_directory);
+
+    string d2gtp = "d2gtp-params";
+    gtp.RegisterParam (d2gtp, "ucb_coeff", &Param::uct_explore_coeff);
+    gtp.RegisterParam (d2gtp, "mcts_bias", &Param::mcts_bias);
+    gtp.RegisterParam (d2gtp, "rave_bias", &Param::rave_bias);
+    gtp.RegisterParam (d2gtp, "mature_at", &mcts_engine.playout.mature_update_count);
+    gtp.RegisterParam (d2gtp, "playouts_per_genmove", &mcts_engine.genmove_playouts);
   }
 
   void Cclear_board (Gtp::Io& io) {
@@ -125,6 +133,13 @@ private:
     int n = io.Read<int> ();
     io.CheckEmpty ();
     mcts_engine.LastPlayoutGfx(n).Report (io);
+  }
+
+  void CTimeLeft (Gtp::Io& io) {
+    Player player = io.Read<Player> ();
+    float time = io.Read<float> ();
+    int stones = io.Read<int> ();
+    mcts_engine.TimeLeft (player, time, stones);
   }
 
 private:

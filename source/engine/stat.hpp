@@ -6,17 +6,17 @@ const bool stat_ac = false;
 class Stat {
 public:
 
-  static const float prior_update_count = 10.0; // TODO make this a parameter
+  Stat () {} // NatMap needs it
 
-  Stat () {
-    reset ();
+  Stat (float prior_count, float prior_mean) {
+    reset (prior_count, prior_mean);
   }
   
   // TODO better prior initialization
-  void reset (float prior_sample_count = Stat::prior_update_count) {
-    sample_count       = prior_sample_count;
-    sample_sum         = 0.0;
-    square_sample_sum  = prior_sample_count;
+  void reset (float prior_count, float prior_mean) {
+    sample_count       = prior_count;
+    sample_sum         = prior_count * prior_mean;
+    square_sample_sum  = prior_count * prior_mean * prior_mean * 2.0;
   }
 
   void update (float sample) {

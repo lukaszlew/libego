@@ -575,7 +575,7 @@ int Board::TrompTaylorScore() const {
 }
 
 Player Board::TrompTaylorWinner() const {
-  return Player::OfRaw (TrompTaylorScore () <= 0);
+  return Player::WinnerOfBoardScore (TrompTaylorScore ());
 }
 
 int Board::StoneScore () const {
@@ -596,12 +596,12 @@ int Board::PlayoutScore () const {
 
 
 Player Board::StoneWinner () const { 
-  return Player::OfRaw (StoneScore () <= 0); 
+  return Player::WinnerOfBoardScore (StoneScore ()); 
 }
 
 
 Player Board::PlayoutWinner () const {
-  return Player::OfRaw (PlayoutScore () <= 0);
+  return Player::WinnerOfBoardScore (PlayoutScore ());
 }
 
 

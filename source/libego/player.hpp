@@ -16,6 +16,7 @@ public:
 
   static Player Black ();
   static Player White ();
+  static Player WinnerOfBoardScore (int score);
   static Player OfGtpStream (std::istream& s);
 
   // Utilities.
@@ -24,8 +25,7 @@ public:
   int ToScore () const;   // ToScore (Black()) == 1, ToScore (White()) == -1
   std::string ToGtpString () const;
 
-  template <typename T>
-  T SubjectiveScore (const T& score) const;
+  float SubjectiveScore (const float& score) const;
 
   // Other.
 
@@ -35,7 +35,5 @@ public:
   friend class Nat <Player>;
   explicit Player (uint raw);
 };
-
-#include "player-inl.hpp"
 
 #endif

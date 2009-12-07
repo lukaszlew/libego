@@ -22,6 +22,7 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 const bool mcts_ac = true;
+const float kSureWinUpdate = 1.0; // TODO increase this
 
 // -----------------------------------------------------------------------------
 
@@ -29,22 +30,18 @@ class MctsBestChildFinder {
   static const bool kCheckAsserts = false;
 public:
   MctsBestChildFinder () {
-    uct_explore_coeff = 1.0;
-    bias_stat = 0.0000001;
-    bias_rave = 0.001;
-    use_rave = true;
   }
 
   MctsNode& Find (Player pl, MctsNode& node) {
     MctsNode* best_child = NULL;
     float best_urgency = -100000000000000.0; // TODO infinity
-    const float explore_coeff = log (node.stat.update_count()) * uct_explore_coeff;
+    const float log_val = log (node.stat.update_count());
 
     ASSERT (node.has_all_legal_children [pl]);
 
     BOOST_FOREACH (MctsNode& child, node.Children()) {
       if (child.player != pl) continue;
-      float child_urgency = NodeSubjectiveValue (child, pl, explore_coeff);
+      float child_urgency = NodeSubjectiveValue (child, pl, log_val);
       if (child_urgency > best_urgency) {
         best_urgency = child_urgency;
         best_child   = &child;
@@ -57,27 +54,23 @@ public:
 
 private:
 
-  float NodeSubjectiveValue (MctsNode& node, Player pl, float explore_coeff) {
+  float NodeSubjectiveValue (MctsNode& node, Player pl, float log_val) {
     float value;
 
-    if (use_rave) {
-      value = Stat::Mix (node.stat, bias_stat, node.rave_stat, bias_rave);
+    if (Param::use_rave) {
+      value = Stat::Mix (node.stat,      Param::mcts_bias,
+                         node.rave_stat, Param::rave_bias);
     } else {
       value = node.stat.mean ();
     }
 
     return
       pl.SubjectiveScore (value) +
-      sqrt (explore_coeff / node.stat.update_count());
+      Param::uct_explore_coeff * sqrt (log_val / node.stat.update_count());
   }
 
 private:
   friend class MctsGtp;
-
-  float uct_explore_coeff;
-  float bias_stat;
-  float bias_rave;
-  bool  use_rave;
 };
 
 // -----------------------------------------------------------------------------
@@ -97,6 +90,7 @@ public:
     trace.clear();
     trace.push_back (&playout_root);
     move_history.Clear ();
+    move_history.Push (playout_root.GetMove());
 
     // descent the MCTS tree
     while(ActNode().has_all_legal_children [play_board.ActPlayer()]) {
@@ -104,12 +98,14 @@ public:
     }
 
     if (play_board.BothPlayerPass()) {
-      UpdateTrace (play_board.TrompTaylorWinner().ToScore());
+      // sure fast win/loss
+      UpdateTrace (play_board.TrompTaylorWinner().ToScore() * kSureWinUpdate);
       return;
     }
     
     // Is leaf is ready to expand ?
-    if (ActNode().stat.update_count() > mature_update_count) {
+    if (ActNode().stat.update_count() > 
+        Param::prior_update_count + mature_update_count) {
       Player pl = play_board.ActPlayer();
       ASSERT (pl == ActNode().player.Other());
 
@@ -123,7 +119,11 @@ public:
     LightPlayout (&play_board, random).Run (move_history);
     
     // Update score.
-    UpdateTrace (play_board.PlayoutWinner().ToScore());
+    int score = play_board.PlayoutScore();
+    float squashed = Player::WinnerOfBoardScore (score).ToScore (); // +- 1
+    squashed += float(score) / 10000.0; // small bonus for bigger win.
+
+    UpdateTrace (squashed);
   }
 
   vector<Move> LastPlayout () {
@@ -141,7 +141,7 @@ private:
     // Try to play it on the board
     if (!play_board.PlayPseudoLegal (pl, uct_child.v)) { // large suicide
       ASSERT (!uct_child.has_all_legal_children [pl.Other()]);
-      ASSERT (uct_child.stat.update_count() == Stat::prior_update_count);
+      ASSERT (uct_child.stat.update_count() == Param::prior_update_count);
       // Remove in case of large suicide.
       ActNode().RemoveChild (&uct_child);
       return false;
@@ -153,7 +153,7 @@ private:
     return true;
   }
 
-  void UpdateTrace (float score) {  // score: black -> 1, white -> -1
+  void UpdateTrace (int score) {
     UpdateTraceRegular (score);
     if (update_rave) UpdateTraceRave (score);
   }
@@ -168,16 +168,16 @@ private:
     // TODO configure rave blocking through options
 
 
-    uint last_ii  = move_history.Size () * 7 / 8;
+    uint last_ii  = move_history.Size () * 7 / 8; // TODO 
 
     rep (act_ii, trace.size()) {
-      // Mark moves that should be updated.
+      // Mark moves that should be updated in RAVE children of: trace [act_ii]
       NatMap <Move, bool> do_update (false);
       NatMap <Move, bool> do_update_set_to (true);
 
       // TODO this is the slow and too-fixed part
       // TODO Change it to weighting with flexible masking.
-      reps (jj, act_ii, last_ii) {
+      reps (jj, act_ii+1, last_ii) {
         Move m = move_history [jj];
         do_update [m] = do_update_set_to [m];
         do_update_set_to [m] = false;

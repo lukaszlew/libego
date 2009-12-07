@@ -26,5 +26,7 @@ private:
 };
 
 float ProcessUserTime ();
+int TimeSeed ();
+
 
 #endif

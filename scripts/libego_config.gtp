@@ -1,15 +1,15 @@
-Mcts.Params.Genmove playouts 10000
+Mcts.Params.Genmove playouts 100000
 Mcts.Params.Genmove reset_tree 1
 Mcts.Params.Genmove resign_mean -0.95
-Mcts.Params.Genmove seed 123
+#Mcts.Params.Genmove seed 123
 
 Mcts.Params.Logger is_active 1
 Mcts.Params.Logger log_directory log
 
 Mcts.Params.Search bias_rave 0.001
-Mcts.Params.Search bias_stat 1e-07
-Mcts.Params.Search explore_coeff 0.1
-Mcts.Params.Search mature_at 100
+Mcts.Params.Search bias_stat 0
+Mcts.Params.Search explore_coeff 0
+Mcts.Params.Search mature_at 10
 Mcts.Params.Search update_rave 1
 Mcts.Params.Search use_rave 1
 

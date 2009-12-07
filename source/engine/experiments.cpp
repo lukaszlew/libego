@@ -32,9 +32,9 @@ public:
   }
 
   void reset (float prior = 1.0) {
-    unconditional.reset (prior);
+    unconditional.reset (prior, 0.0);
     ForEachNat (Move, m)
-      given_move [m].reset (prior);
+      given_move [m].reset (prior, 0.0);
   }
 
   void update (Move* move_history, uint move_count, float score) {

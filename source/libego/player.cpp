@@ -29,6 +29,9 @@ Player Player::OfGtpStream (istream& in) {
   return Invalid();
 }
 
+Player Player::WinnerOfBoardScore (int score) {
+  return Player::OfRaw (score <= 0); 
+}
 
 Player Player::Other() const { 
   return Player(GetRaw() ^ 1);
@@ -43,4 +46,11 @@ string Player::ToGtpString () const {
   gtp_string [Black()] = "B";
   gtp_string [White()] = "W";
   return gtp_string [*this];
+}
+
+float Player::SubjectiveScore (const float& score) const {
+  NatMap <Player, float> tab (0.0);
+  tab[Black()] = score;
+  tab[White()] = - score;
+  return tab [*this];
 }
