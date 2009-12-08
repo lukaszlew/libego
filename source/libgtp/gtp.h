@@ -80,7 +80,7 @@ public:
   bool IsCommand (const string& name);
 
 private:
-  // Exception that can be throwed by a command and will be catched by Repl::Run
+  // Exception that can be thrown by a command and will be caught by Repl::Run
   struct Return {};
 
   friend class Io;
