@@ -32,12 +32,9 @@ public:
       random (TimeSeed()),
       playout(random),
       time_left (0.0),
-      time_stones (-1)
+      time_stones (-1),
+      playouts_per_second (50000)
   {
-    resign_mean = -0.95;
-    genmove_playouts = 10000;
-    reset_tree_on_genmove = false;
-    playouts_per_second = 50000;
   }
 
   bool SetBoardSize (uint board_size) {
@@ -82,9 +79,9 @@ public:
 
   Vertex Genmove (Player player) {
     logger.LogLine ("random_seed     #? [" + ToString (random.GetSeed ()) + "]");
-    if (reset_tree_on_genmove) root.Reset ();
+    if (Param::reset_tree_on_genmove) root.Reset ();
 
-    int playouts = genmove_playouts;
+    int playouts = Param::genmove_playouts;
     if (time_stones [player] == 0 && time_left [player] < 60.0) {
       playouts = min (playouts,
                       int (time_left [player] / 30.0 * playouts_per_second));
@@ -159,7 +156,7 @@ private:
     const MctsNode& best_node = act_root.MostExploredChild (pl);
 
     return
-      best_node.SubjectiveMean() < resign_mean ?
+      best_node.SubjectiveMean() < Param::resign_mean ?
       Vertex::Invalid() :
       best_node.v;
   }
@@ -183,12 +180,6 @@ private:
   friend class MctsGtp;
   friend class Mcts::Judge;
 
-  // parameters
-  float print_update_count;
-  float resign_mean;
-  float genmove_playouts;
-  bool reset_tree_on_genmove;
-
   // base board
   FullBoard full_board;
 
@@ -202,7 +193,7 @@ private:
   FastRandom random;
   MctsPlayout playout;
 
-  float playouts_per_second;
   NatMap <Player, float> time_left;
   NatMap <Player, int>   time_stones;
+  float playouts_per_second;
 };

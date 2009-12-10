@@ -79,8 +79,6 @@ class MctsPlayout {
   static const bool kCheckAsserts = false;
 public:
   MctsPlayout (FastRandom& random_) : random (random_) {
-    mature_update_count  = 100.0;
-    update_rave = true;
   }
 
   void DoOnePlayout (MctsNode& playout_root, const Board& board, Player first_player) {
@@ -105,7 +103,7 @@ public:
     
     // Is leaf is ready to expand ?
     if (ActNode().stat.update_count() > 
-        Param::prior_update_count + mature_update_count) {
+        Param::prior_update_count + Param::mature_update_count) {
       Player pl = play_board.ActPlayer();
       ASSERT (pl == ActNode().player.Other());
 
@@ -155,7 +153,7 @@ private:
 
   void UpdateTrace (int score) {
     UpdateTraceRegular (score);
-    if (update_rave) UpdateTraceRave (score);
+    if (Param::update_rave) UpdateTraceRave (score);
   }
 
   void UpdateTraceRegular (float score) {
@@ -200,10 +198,6 @@ private:
 
 private:
   friend class MctsGtp;
-  // parameters
-  float mature_update_count;
-
-  bool  update_rave;
   
   // playout
   Board play_board;
