@@ -68,14 +68,17 @@ public:
   
   // Returns true iff v is uncut eye of the player.
   bool IsEyelike (Player player, Vertex v) const;
+  bool IsEyelike (Move move) const;
 
   // Returns false for simple ko and single stone suicide.
   // Returns true despite bigger suicides and superko violation.
   bool IsPseudoLegal (Player player, Vertex v) const;
+  bool IsPseudoLegal (Move move) const;
 
   // Plays a move, returns false if move was large suicide.
   // Assumes IsPseudoLegal (player, v) - Do not support single stone suicides.
   bool PlayPseudoLegal (Player player, Vertex v);
+  bool PlayPseudoLegal (Move move);
 
   // Difference in (number of stones + number of eyes) of each player - komi.
   // See TrompTaylorScore.

@@ -57,7 +57,7 @@ public:
 
   // Child finding.
 
-  MctsNode* AddFindChild (Move m, Board& board);
+  MctsNode* FindChild (Move m);
 
   const MctsNode& MostExploredChild (Player pl);
 
@@ -116,14 +116,13 @@ void MctsNode::RemoveChild (MctsNode* child_ptr) {
   }
 }
 
-MctsNode* MctsNode::AddFindChild (Move m, Board& board) {
+MctsNode* MctsNode::FindChild (Move m) {
   // TODO make invariant about haveChildren and has_all_legal_children
   Player pl = m.GetPlayer();
   Vertex v  = m.GetVertex();
-  EnsureAllPseudoLegalChildren (pl, board);
+  ASSERT (has_all_legal_children [pl]);
   BOOST_FOREACH (MctsNode& child, children) {
     if (child.player == pl && child.v == v) {
-      CHECK (board.PlayPseudoLegal (pl, v));
       return &child;
     }
   }

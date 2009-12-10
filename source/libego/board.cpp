@@ -283,6 +283,11 @@ bool Board::IsPseudoLegal (Player player, Vertex v) const {
 }
 
 
+bool Board::IsPseudoLegal (Move move) const {
+  return IsPseudoLegal (move.GetPlayer (), move.GetVertex());
+}
+
+
 bool Board::IsEyelike (Player player, Vertex v) const {
   ASSERT (color_at [v] == Color::Empty ());
   if (! nbr_cnt[v].player_cnt_is_max (player)) return false;
@@ -297,6 +302,11 @@ bool Board::IsEyelike (Player player, Vertex v) const {
     diag_color_cnt [Color::OfPlayer (player.Other())] +
     (diag_color_cnt [Color::OffBoard ()] > 0) < 2;
 }
+
+bool Board::IsEyelike (Move move) const {
+  return IsEyelike (move.GetPlayer (), move.GetVertex());
+}
+
 
 flatten all_inline
 bool Board::PlayPseudoLegal (Player player, Vertex v) { // TODO test with move
@@ -320,6 +330,10 @@ bool Board::PlayPseudoLegal (Player player, Vertex v) { // TODO test with move
   } else {
     return play_not_eye (player, v);
   }
+}
+
+bool Board::PlayPseudoLegal (Move move) { // TODO test with move
+  return PlayPseudoLegal (move.GetPlayer (), move.GetVertex());
 }
 
 
