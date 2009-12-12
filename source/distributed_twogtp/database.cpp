@@ -150,6 +150,14 @@ bool Database::AddExperiment (QString name,
 }
 
 
+void Database::CloseAllExperiments ()
+{
+  QSqlQuery q (db);
+  CHECK (q.prepare ("DELETE FROM game WHERE claimed_by IS NULL"));
+  CHECK (q.exec ());
+}
+
+
 int Database::AddGame (QString experiment, bool first_is_black)
 {
   QSqlQuery q (db);

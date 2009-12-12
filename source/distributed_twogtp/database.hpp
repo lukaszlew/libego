@@ -29,6 +29,8 @@ public:
                       QString description,
                       QStringList experiment_params);
 
+  void CloseAllExperiments ();
+
   int AddGame (QString experiment, bool first_is_black);
 
   bool AddEngineParam (int game_id, bool for_first ,QString name, QString value);

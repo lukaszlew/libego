@@ -24,6 +24,8 @@ private:
   void CAddExperimentParam (Gtp::Io& io);
   void CAddExperiment (Gtp::Io& io);
 
+  void CCloseAllExperiments (Gtp::Io& io);
+
   void CAddParam (Gtp::Io& io);
   void CAddGames (Gtp::Io& io);
 

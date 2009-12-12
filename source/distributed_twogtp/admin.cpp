@@ -43,6 +43,7 @@ void Admin::Run ()
   gtp.Register ("set_experiment_description", this, &Admin::CSetExperimentDescription);
   gtp.Register ("add_experiment_param", this, &Admin::CAddExperimentParam);
   gtp.Register ("add_experiment", this, &Admin::CAddExperiment);
+  gtp.Register ("close_all_experiments", this, &Admin::CCloseAllExperiments);
 
   gtp.Register ("add_param", this, &Admin::CAddParam);
 
@@ -122,6 +123,12 @@ void Admin::CAddExperiment (Gtp::Io& io)
   experiment_description = "";
   experiment_params.clear();
 }
+
+void Admin::CCloseAllExperiments (Gtp::Io& io) {
+  io.CheckEmpty();
+  db.CloseAllExperiments();
+}
+
 
 void Admin::CAddParam (Gtp::Io& io) {
   int num = io.Read<int> ();
