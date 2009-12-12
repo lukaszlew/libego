@@ -4,6 +4,8 @@
 #include <QString>
 #include <QSqlDatabase>
 
+typedef QList< QPair<QString, QString> > ParamsValues;
+
 class Database {
 public:
   Database ();
@@ -30,9 +32,11 @@ public:
 
   void CloseAllExperiments ();
 
-  int AddGame (int experiment_id, bool first_is_black);
+  int AddGame (int experiment_id, bool first_is_black,
+               const ParamsValues& pv_first,
+               const ParamsValues& pv_second);
 
-  bool AddEngineParam (int game_id, bool for_first ,QString name, QString value);
+  bool AddGameParam (int game_id, bool for_first ,QString name, QString value);
 
   bool DumpCsv (QString experiment_name,
                 QTextStream& out,

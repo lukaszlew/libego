@@ -143,21 +143,30 @@ void Admin::CAddParam (Gtp::Io& io) {
   }
 }
 
+void Admin::SetPvBoth () {
+  pv_first.clear();
+  pv_second.clear();
+  QPair <bool, QString> param;
+  foreach (param, params.keys()) {
+    QString value = params [param] [rand() % params [param].size()];
+    if (param.first) {
+      pv_first.append (qMakePair(param.second, value));
+    } else {
+      pv_second.append (qMakePair(param.second, value));
+    }
+  }
+}
+
 void Admin::CAddGames (Gtp::Io& io)
 {
   int game_count = io.Read<int>();
   io.CheckEmpty();
   
-  int game_ok = 0;
-  for (int i = 0; i < game_count; i++) {
-    int game_id = db.AddGame (experiment_id, i % 2 == 0);
+  int game_ok;
+  for (game_ok = 0; game_ok < game_count; game_ok++) {
+    SetPvBoth ();
+    int game_id = db.AddGame (experiment_id, game_ok % 2 == 0, pv_first, pv_second);
     if (game_id < 0) break;
-    QPair <bool, QString> param;
-    foreach (param, params.keys()) {
-      QString value = params [param] [rand() % params [param].size()];
-      db.AddEngineParam (game_id, param.first, param.second, value);
-    }
-    game_ok += 1;
   }
 
   if (game_ok != game_count)

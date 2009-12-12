@@ -155,7 +155,9 @@ void Database::CloseAllExperiments ()
 }
 
 
-int Database::AddGame (int experiment_id, bool first_is_black)
+int Database::AddGame (int experiment_id, bool first_is_black,
+                       const ParamsValues& pv_first,
+                       const ParamsValues& pv_second)
 {
   QSqlQuery q (db);
   QString query = 
@@ -171,13 +173,18 @@ int Database::AddGame (int experiment_id, bool first_is_black)
   q.addBindValue (first_is_black);
   CHECK (q.exec ());
   CHECK (q.lastInsertId() != QVariant());
-  return q.lastInsertId().toInt();
+  int id = q.lastInsertId().toInt();
+  CHECK (id > 0);
+  QPair<QString, QString> pv;
+  foreach (pv, pv_first)  AddGameParam (id, true,  pv.first, pv.second);
+  foreach (pv, pv_second) AddGameParam (id, false, pv.first, pv.second);
+  return id;
 }
 
-bool Database::AddEngineParam (int game_id,
-                               bool for_first,
-                               QString name,
-                               QString value)
+bool Database::AddGameParam (int game_id,
+                             bool for_first,
+                             QString name,
+                             QString value)
 {
   QSqlQuery q (db);
   CHECK (q.prepare (

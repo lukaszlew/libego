@@ -27,6 +27,7 @@ private:
   void CCloseAllExperiments (Gtp::Io& io);
 
   void CAddParam (Gtp::Io& io);
+  void SetPvBoth ();
   void CAddGames (Gtp::Io& io);
 
   bool AddEngine (QString name, QString config_file, QString command_line);
@@ -41,6 +42,8 @@ private:
 
   QString first_engine;
   QString second_engine;
+
+  ParamsValues pv_first, pv_second;
 
   QString experiment_description;
   QStringList experiment_params;
