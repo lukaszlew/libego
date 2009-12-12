@@ -38,6 +38,8 @@ public:
 
   bool AddGameParam (int game_id, bool for_first ,QString name, QString value);
 
+  int GetUnclaimedGameCound (int experiment_id);
+
   bool DumpCsv (QString experiment_name,
                 QTextStream& out,
                 bool first_engine);

@@ -21,4 +21,4 @@ add_param 1 mcts_bias 0 0.0000001
 add_param 1 rave_bias 0.002 0.001 0.0005
 add_param 1 mature_at 10
 add_param 1 playouts_per_genmove 100000
-add_games 10
+loop_add_games

@@ -200,6 +200,19 @@ bool Database::AddGameParam (int game_id,
   return true;
 }
 
+int Database::GetUnclaimedGameCound (int experiment_id) {
+  QSqlQuery q (db);
+  CHECK (experiment_id >= 0);
+  CHECK (q.prepare ("SELECT count(id) FROM game "
+                    "WHERE experiment_id = ? AND claimed_by IS NULL"));
+  q.addBindValue (experiment_id);
+  CHECK (q.exec ());
+  CHECK (q.next());
+  QVariant count = q.value (0);
+  CHECK (count != QVariant());
+  CHECK (!q.next());
+  return count.toInt();
+}
 
 bool Database::DumpCsv (QString experiment_name,
                         QTextStream& out,

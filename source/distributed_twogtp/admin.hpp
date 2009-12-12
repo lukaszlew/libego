@@ -29,6 +29,7 @@ private:
   void CAddParam (Gtp::Io& io);
   void SetPvBoth ();
   void CAddGames (Gtp::Io& io);
+  void CLoopAddGames (Gtp::Io& io);
 
   bool AddEngine (QString name, QString config_file, QString command_line);
 

@@ -48,6 +48,7 @@ void Admin::Run ()
 
   gtp.Register ("add_param", this, &Admin::CAddParam);
 
+  gtp.Register ("loop_add_games", this, &Admin::CLoopAddGames);
   gtp.Register ("add_games",      this, &Admin::CAddGames);
 
   gtp.Register ("extract_csv", this, &Admin::CExtractCsv);
@@ -171,6 +172,35 @@ void Admin::CAddGames (Gtp::Io& io)
 
   if (game_ok != game_count)
     io.SetError ("");
+}
+
+
+void Admin::CLoopAddGames (Gtp::Io& io)
+{
+  io.CheckEmpty();
+  
+  int goal = 10;
+
+  while (true) {
+    int unclaimed_games = db.GetUnclaimedGameCound (experiment_id);
+    if (unclaimed_games < goal / 2) goal *= 2;
+    qDebug() << "unclaimed / goal = " << unclaimed_games << " / " << goal;
+
+    int add_games = goal - unclaimed_games;
+    if (add_games < 0) add_games = 0;
+    add_games = add_games / 2 * 2; // parity
+
+    for (int i = 0; i < add_games; i+=1) {
+      SetPvBoth ();
+      int game_id = db.AddGame (experiment_id, i%2, pv_first, pv_second);
+      qDebug () << "new game; id = " << game_id;
+      if (game_id < 0) {
+        io.SetError ("Can't add game");
+        return;
+      }
+    }
+    sleep (10);
+  }
 }
 
 
