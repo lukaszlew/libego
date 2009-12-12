@@ -12,7 +12,7 @@ add_experiment_param rave_bias
 add_experiment_param mature_at
 add_experiment_param playouts_per_genmove
 
-add_experiment Test.9 9x9 
+add_experiment 9x9 
 
 
 
@@ -21,4 +21,4 @@ add_param 1 mcts_bias 0 0.0000001
 add_param 1 rave_bias 0.002 0.001 0.0005
 add_param 1 mature_at 10
 add_param 1 playouts_per_genmove 100000
-add_games Test.9 10
+add_games 10

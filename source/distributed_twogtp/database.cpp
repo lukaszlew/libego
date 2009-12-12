@@ -107,27 +107,24 @@ bool Database::AddGameSetup (QString name, int board_size, float komi) {
 }
 
 
-bool Database::AddExperiment (QString name,
-                              QString game_setup_name,
-                              QString first_engine_name,
-                              QString second_engine_name,
-                              QString description,
-                              QStringList experiment_params) {
+int Database::AddExperiment (QString game_setup_name,
+                             QString first_engine_name,
+                             QString second_engine_name,
+                             QString description,
+                             QStringList experiment_params)
+{
   QSqlQuery q (db);
   CHECK (q.prepare ("INSERT INTO experiment ("
-                    "  name, "
                     "  game_setup_id, "
                     "  first_engine_id,"
                     "  second_engine_id, "
                     "  description "
                     ") VALUES ("
-                    "  ?, "
                     "  (SELECT id FROM game_setup WHERE name = ?), "
                     "  (SELECT id FROM engine WHERE name = ?),"
                     "  (SELECT id FROM engine WHERE name = ?),"
                     "  ? "
                     ")"));
-  q.addBindValue (name);
   q.addBindValue (game_setup_name);
   q.addBindValue (first_engine_name);
   q.addBindValue (second_engine_name);
@@ -146,7 +143,7 @@ bool Database::AddExperiment (QString name,
   q.addBindValue (ids);
   q.addBindValue (param_names);
   CHECK (q.execBatch ());
-  return true;
+  return id;
 }
 
 
@@ -158,19 +155,19 @@ void Database::CloseAllExperiments ()
 }
 
 
-int Database::AddGame (QString experiment, bool first_is_black)
+int Database::AddGame (int experiment_id, bool first_is_black)
 {
   QSqlQuery q (db);
   QString query = 
     "INSERT INTO game (experiment_id, first_is_black, created_at) "
     "VALUES ("
-    "  (SELECT id FROM experiment WHERE name = ?), "
+    "  ?, "
     "  ?, "
     "  NOW()"
     ")";
   CHECK (q.prepare (query));
 
-  q.addBindValue (experiment);
+  q.addBindValue (experiment_id);
   q.addBindValue (first_is_black);
   CHECK (q.exec ());
   CHECK (q.lastInsertId() != QVariant());

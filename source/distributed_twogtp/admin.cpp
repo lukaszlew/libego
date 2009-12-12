@@ -21,6 +21,7 @@ Admin::Admin (Database& db) : db (db)
   second_engine = "";
   experiment_description = "";
   experiment_params.clear();
+  experiment_id = -1;
 }
 
 
@@ -110,14 +111,11 @@ void Admin::CAddExperimentParam (Gtp::Io& io) {
 
 void Admin::CAddExperiment (Gtp::Io& io)
 {
-  QString name = QString::fromStdString (io.Read<std::string>());
   QString game_setup = QString::fromStdString (io.Read<std::string>());
   io.CheckEmpty();
-  if (!db.AddExperiment (name, game_setup, first_engine, second_engine,
-                         experiment_description, experiment_params))
-  {
-    io.SetError ("");
-  }
+  experiment_id = db.AddExperiment (game_setup, first_engine, second_engine,
+                                    experiment_description, experiment_params);
+  CHECK (experiment_id > 0);
   first_engine = "";
   second_engine = "";
   experiment_description = "";
@@ -147,13 +145,12 @@ void Admin::CAddParam (Gtp::Io& io) {
 
 void Admin::CAddGames (Gtp::Io& io)
 {
-  QString experiment = QString::fromStdString (io.Read<std::string>());
   int game_count = io.Read<int>();
   io.CheckEmpty();
   
   int game_ok = 0;
   for (int i = 0; i < game_count; i++) {
-    int game_id = db.AddGame (experiment, i % 2 == 0);
+    int game_id = db.AddGame (experiment_id, i % 2 == 0);
     if (game_id < 0) break;
     QPair <bool, QString> param;
     foreach (param, params.keys()) {

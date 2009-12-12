@@ -28,7 +28,6 @@ CREATE TABLE game_setup (
 
 CREATE TABLE experiment (
   id INTEGER PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  name VARCHAR(255) NOT NULL UNIQUE,
 
   game_setup_id INTEGER NOT NULL REFERENCES game_setup (id),
 

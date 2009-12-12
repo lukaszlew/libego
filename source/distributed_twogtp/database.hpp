@@ -22,16 +22,15 @@ public:
 
   bool AddGameSetup (QString name, int board_size, float komi);
 
-  bool AddExperiment (QString name,
-                      QString game_setup_name,
-                      QString first_engine_name,
-                      QString second_engine_name,
-                      QString description,
-                      QStringList experiment_params);
+  int AddExperiment (QString game_setup_name,
+                     QString first_engine_name,
+                     QString second_engine_name,
+                     QString description,
+                     QStringList experiment_params);
 
   void CloseAllExperiments ();
 
-  int AddGame (QString experiment, bool first_is_black);
+  int AddGame (int experiment_id, bool first_is_black);
 
   bool AddEngineParam (int game_id, bool for_first ,QString name, QString value);
 
