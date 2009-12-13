@@ -11,6 +11,8 @@
 #include "gtp_process.hpp"
 #include "test.hpp"
 
+#include "CBAST.h"
+
 #include "admin.hpp"
 
 Admin::Admin (Database& db) : db (db)
@@ -178,6 +180,8 @@ void Admin::CAddGames (Gtp::Io& io)
 void Admin::CLoopAddGames (Gtp::Io& io)
 {
   io.CheckEmpty();
+
+  CBAST bast (params.size(), 1.0);
   
   int goal = 10;
   QString last_finished_at = "1982";
