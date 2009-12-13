@@ -10,12 +10,21 @@
 #include <QtDebug>
 
 #include <unistd.h> // TODO use Qt sleep
+#include <sstream>
 
 #include "test.hpp"
 
 #include "database.hpp"
 
 static const QString sql_connection = "sql_connection";
+
+std::string GameResult::ToString () const
+{
+  std::ostringstream s;
+  for (int i = 0; i < int (params.size()); i += 1)  s << params[i] << ", ";
+  s << (victory ? 1 : 0);
+  return s.str();
+}
 
 Database::Database ()
 {
@@ -200,7 +209,7 @@ bool Database::AddGameParam (int game_id,
   return true;
 }
 
-int Database::GetUnclaimedGameCound (int experiment_id) {
+int Database::GetUnclaimedGameCount (int experiment_id) {
   QSqlQuery q (db);
   CHECK (experiment_id >= 0);
   CHECK (q.prepare ("SELECT count(id) FROM game "
@@ -214,12 +223,71 @@ int Database::GetUnclaimedGameCound (int experiment_id) {
   return count.toInt();
 }
 
+QList <GameResult> Database::GetNewGameResults (int experiment_id,
+                                                bool first_engine,
+                                                QString* last_claimed_at)
+{
+  CHECK (experiment_id >= 0);
+  QSqlQuery q (db);
+
+  // get params
+  QStringList params;
+  CHECK (q.prepare ("SELECT param.name "
+                    "FROM param "
+                    "WHERE param.experiment_id = ?"));
+  q.addBindValue (experiment_id);
+  CHECK (q.exec ());
+  while (q.next()) params.append (q.value(0).toString());
+
+  // Initialize game_results
+  QMap <int, GameResult> game_results;
+  CHECK (q.prepare ("SELECT id, first_won, finished_at FROM game "
+                    "WHERE experiment_id = ? "
+                    "      AND finished_at IS NOT NULL "
+                    "      AND finished_at > ? "
+                    "ORDER BY finished_at ASC"));
+  q.addBindValue (experiment_id);
+  q.addBindValue (*last_claimed_at);
+  CHECK (q.exec ());
+  while (q.next()) {
+    int id = q.value(0).toInt();
+    game_results [id].id = id;
+    game_results [id].victory = q.value(1).toInt() == first_engine;
+    *last_claimed_at = q.value(2).toString();
+  }
+
+  // Get game params for each game
+  foreach (int game_id, game_results.keys()) {
+    GameResult& res = game_results [game_id];
+    res.params.resize (params.size());
+    CHECK (q.prepare ("SELECT name, value, for_first "
+                       "FROM engine_param "
+                       "WHERE game_id = ?"));
+    q.addBindValue (game_id);
+    CHECK (q.exec ());
+    while (q.next()) {
+      QString name   = q.record().value ("name").toString();
+      QString value  = q.record().value ("value").toString();
+      bool for_first = q.record().value ("for_first").toInt();
+
+      int i = params.indexOf (name);
+      if (i == -1 || first_engine != for_first) continue;
+
+      bool ok = false;
+      res.params [i] = value.toDouble(&ok);
+      CHECK (ok);
+    }
+  }
+
+  return game_results.values();
+}
+
 bool Database::DumpCsv (QString experiment_name,
                         QTextStream& out,
                         bool first_engine)
 {
   QSqlQuery q (db);
-
+  CHECK(false); // TODO use GetGameResults
   // get param list 
   CHECK (q.prepare ("SELECT param.name "
                     "FROM experiment "

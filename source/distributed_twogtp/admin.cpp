@@ -180,9 +180,15 @@ void Admin::CLoopAddGames (Gtp::Io& io)
   io.CheckEmpty();
   
   int goal = 10;
+  QString last_finished_at = "1982";
 
   while (true) {
-    int unclaimed_games = db.GetUnclaimedGameCound (experiment_id);
+    QList <GameResult> results =
+      db.GetNewGameResults (experiment_id, true, &last_finished_at);
+    foreach (const GameResult& r, results) {
+      qDebug () << "New results:" << r.ToString().c_str();
+    }
+    int unclaimed_games = db.GetUnclaimedGameCount (experiment_id);
     if (unclaimed_games < goal / 2) goal *= 2;
     qDebug() << "unclaimed / goal = " << unclaimed_games << " / " << goal;
 

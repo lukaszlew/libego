@@ -1,10 +1,19 @@
 #ifndef DATABASE_HPP_
 #define DATABASE_HPP_
 
+#include <vector>
+
 #include <QString>
 #include <QSqlDatabase>
 
 typedef QList< QPair<QString, QString> > ParamsValues;
+
+struct GameResult {
+  int id;
+  std::vector <float> params;
+  bool victory; // 1 = win 0 = loss
+  std::string ToString() const;
+};
 
 class Database {
 public:
@@ -38,7 +47,11 @@ public:
 
   bool AddGameParam (int game_id, bool for_first ,QString name, QString value);
 
-  int GetUnclaimedGameCound (int experiment_id);
+  int GetUnclaimedGameCount (int experiment_id);
+
+  QList <GameResult> GetNewGameResults (int expeiment_id,
+                                        bool for_first,
+                                        QString* last_finished_at);
 
   bool DumpCsv (QString experiment_name,
                 QTextStream& out,
