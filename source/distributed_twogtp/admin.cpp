@@ -48,10 +48,7 @@ void Admin::Run ()
   gtp.Register ("add_experiment", this, &Admin::CAddExperiment);
   gtp.Register ("close_all_experiments", this, &Admin::CCloseAllExperiments);
 
-  gtp.Register ("add_param", this, &Admin::CAddParam);
-
   gtp.Register ("loop_add_games", this, &Admin::CLoopAddGames);
-  gtp.Register ("add_games",      this, &Admin::CAddGames);
 
   gtp.Register ("extract_csv", this, &Admin::CExtractCsv);
 
@@ -122,7 +119,7 @@ void Admin::CAddExperiment (Gtp::Io& io)
   first_engine = "";
   second_engine = "";
   experiment_description = "";
-  experiment_params.clear();
+  // experiment_params.clear(); // TODO solve it better
 }
 
 void Admin::CCloseAllExperiments (Gtp::Io& io) {
@@ -131,35 +128,6 @@ void Admin::CCloseAllExperiments (Gtp::Io& io) {
 }
 
 
-void Admin::CAddParam (Gtp::Io& io) {
-  int num = io.Read<int> ();
-  if (num != 1 && num != 2) {
-    io.SetError ("wronge engine number");
-    return;
-  }
-  QString name  = QString::fromStdString (io.Read<std::string>());
-  bool for_first_engine = num == 1;
-  while (true) {
-    QString value = QString::fromStdString (io.Read<std::string>(""));
-    if (value == "") break;
-    params [qMakePair (for_first_engine, name)] . append (value);
-  }
-}
-
-void Admin::SetPvBoth () {
-  pv_first.clear();
-  pv_second.clear();
-  QPair <bool, QString> param;
-  foreach (param, params.keys()) {
-    QString value = params [param] [rand() % params [param].size()];
-    if (param.first) {
-      pv_first.append (qMakePair(param.second, value));
-    } else {
-      pv_second.append (qMakePair(param.second, value));
-    }
-  }
-}
-
 void Admin::SetPvBastFirst (CBAST& bast, int bast_id) {
   pv_first.clear();
   pv_second.clear();
@@ -167,33 +135,14 @@ void Admin::SetPvBastFirst (CBAST& bast, int bast_id) {
   std::vector<double> bast_v = bast.NextSample (bast_id);
   uint ii = 0;
 
-  QPair <bool, QString> param;
-  foreach (param, params.keys()) {
-    if (param.first) {
-      CHECK (ii < bast_v.size());
-      pv_first.append (qMakePair(param.second, QString::number (bast_v[ii])));
-      qDebug () << pv_first.last();
-      ii += 1;
-    }
+  foreach (QString param, experiment_params) {
+    CHECK (ii < bast_v.size());
+    pv_first.append (qMakePair (param, QString::number (bast_v[ii])));
+    qDebug () << pv_first.last();
+    ii += 1;
   }
 
   CHECK (ii == bast_v.size());
-}
-
-void Admin::CAddGames (Gtp::Io& io)
-{
-  int game_count = io.Read<int>();
-  io.CheckEmpty();
-  
-  int game_ok;
-  for (game_ok = 0; game_ok < game_count; game_ok++) {
-    SetPvBoth ();
-    int game_id = db.AddGame (experiment_id, game_ok % 2 == 0, pv_first, pv_second);
-    if (game_id < 0) break;
-  }
-
-  if (game_ok != game_count)
-    io.SetError ("");
 }
 
 
@@ -201,7 +150,8 @@ void Admin::CLoopAddGames (Gtp::Io& io)
 {
   io.CheckEmpty();
 
-  CBAST bast (params.size(), 1.0);
+  CHECK (experiment_params.size() > 0);
+  CBAST bast (experiment_params.size(), 1.0);
   QMap <int, int> bast_id_of_game_id;
   int bast_id = 0;
 

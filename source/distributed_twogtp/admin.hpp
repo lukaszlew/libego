@@ -27,10 +27,8 @@ private:
 
   void CCloseAllExperiments (Gtp::Io& io);
 
-  void CAddParam (Gtp::Io& io);
   void SetPvBoth ();
   void SetPvBastFirst (CBAST& bast, int bast_id);
-  void CAddGames (Gtp::Io& io);
   void CLoopAddGames (Gtp::Io& io);
 
   bool AddEngine (QString name, QString config_file, QString command_line);
@@ -53,7 +51,6 @@ private:
 
   int experiment_id;
   // (for_first_engine, param_name) -> list of values
-  QMap <QPair <bool, QString>, QList <QString> > params;
 };
 
 #endif

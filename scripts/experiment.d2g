@@ -11,12 +11,4 @@ add_experiment_param mcts_bias
 add_experiment_param rave_bias
 
 add_experiment 9x9 
-
-
-
-add_param 1 ucb_coeff 0 0.01 -0.01
-add_param 1 mcts_bias 0 0.0000001
-add_param 1 rave_bias 0.002 0.001 0.0005
-add_param 1 mature_at 10
-add_param 1 playouts_per_genmove 100000
 loop_add_games
