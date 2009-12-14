@@ -178,7 +178,15 @@ void Admin::CLoopAddGames (Gtp::Io& io)
 
     int unclaimed_games = db.GetUnclaimedGameCount (experiment_id);
     if (unclaimed_games < goal / 2) goal *= 2;
-    qDebug() << "unclaimed / goal = " << unclaimed_games << " / " << goal;
+
+    std::vector<double> best;
+    bast.MaxParameter (best);
+    qDebug()
+      << "unclaimed / goal = " << unclaimed_games << " / " << goal;
+    for (int ii = 0; ii < int(best.size()); ii += 1) {
+      qDebug() << experiment_params [ii].name << " "
+               << experiment_params [ii].OfBast (best[ii]);
+    }
 
     int add_games = goal - unclaimed_games;
     if (add_games < 0) add_games = 0;
