@@ -9,8 +9,6 @@ set_experiment_engine 2 GnuGo
 add_experiment_param ucb_coeff
 add_experiment_param mcts_bias
 add_experiment_param rave_bias
-add_experiment_param mature_at
-add_experiment_param playouts_per_genmove
 
 add_experiment 9x9 
 

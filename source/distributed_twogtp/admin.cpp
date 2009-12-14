@@ -160,6 +160,26 @@ void Admin::SetPvBoth () {
   }
 }
 
+void Admin::SetPvBastFirst (CBAST& bast, int bast_id) {
+  pv_first.clear();
+  pv_second.clear();
+
+  std::vector<double> bast_v = bast.NextSample (bast_id);
+  uint ii = 0;
+
+  QPair <bool, QString> param;
+  foreach (param, params.keys()) {
+    if (param.first) {
+      CHECK (ii < bast_v.size());
+      pv_first.append (qMakePair(param.second, QString::number (bast_v[ii])));
+      qDebug () << pv_first.last();
+      ii += 1;
+    }
+  }
+
+  CHECK (ii == bast_v.size());
+}
+
 void Admin::CAddGames (Gtp::Io& io)
 {
   int game_count = io.Read<int>();
@@ -182,16 +202,23 @@ void Admin::CLoopAddGames (Gtp::Io& io)
   io.CheckEmpty();
 
   CBAST bast (params.size(), 1.0);
-  
+  QMap <int, int> bast_id_of_game_id;
+  int bast_id = 0;
+
   int goal = 10;
   QString last_finished_at = "1982";
 
   while (true) {
     QList <GameResult> results =
       db.GetNewGameResults (experiment_id, true, &last_finished_at);
+
     foreach (const GameResult& r, results) {
       qDebug () << "New results:" << r.ToString().c_str();
+      CHECK (bast_id_of_game_id.contains (r.id));
+      bast.OnOutcome (r.victory ? CResults::Win : CResults::Loss,
+                      bast_id_of_game_id [r.id]);
     }
+
     int unclaimed_games = db.GetUnclaimedGameCount (experiment_id);
     if (unclaimed_games < goal / 2) goal *= 2;
     qDebug() << "unclaimed / goal = " << unclaimed_games << " / " << goal;
@@ -201,8 +228,11 @@ void Admin::CLoopAddGames (Gtp::Io& io)
     add_games = add_games / 2 * 2; // parity
 
     for (int i = 0; i < add_games; i+=1) {
-      SetPvBoth ();
+      bast_id += 1;
+      //SetPvBoth ();
+      SetPvBastFirst (bast, bast_id);
       int game_id = db.AddGame (experiment_id, i%2, pv_first, pv_second);
+      bast_id_of_game_id [game_id] = bast_id;
       qDebug () << "new game; id = " << game_id;
       if (game_id < 0) {
         io.SetError ("Can't add game");

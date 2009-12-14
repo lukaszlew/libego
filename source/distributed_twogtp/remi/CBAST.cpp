@@ -108,9 +108,9 @@ bool CBAST::MaxParameter(std::vector<double> &vMax) const
 void CBAST::OnOutcome(CResults::Outcome outcome, int i)
 {
  std::map<int, CNode *>::iterator mi = mInProgress.find(i);
- assert(mi == mInProgress.end());
+ assert(mi != mInProgress.end());
  CNode *pnode = mi->second;
- assert(pnode->outcome != CResults::InProgress);
+ assert(pnode->outcome == CResults::InProgress);
  mInProgress.erase(mi);
 
  pnode->outcome = outcome;

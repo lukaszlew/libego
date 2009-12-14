@@ -3,6 +3,7 @@
 
 #include "database.hpp"
 #include "gtp.hpp"
+#include "CBAST.h"
 
 class Admin {
 public:
@@ -28,6 +29,7 @@ private:
 
   void CAddParam (Gtp::Io& io);
   void SetPvBoth ();
+  void SetPvBastFirst (CBAST& bast, int bast_id);
   void CAddGames (Gtp::Io& io);
   void CLoopAddGames (Gtp::Io& io);
 
