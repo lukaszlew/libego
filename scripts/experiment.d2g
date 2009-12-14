@@ -6,9 +6,9 @@ set_experiment_description Param test.
 set_experiment_engine 1 Libego
 set_experiment_engine 2 GnuGo
 
-add_experiment_param ucb_coeff
-add_experiment_param mcts_bias
-add_experiment_param rave_bias
+add_experiment_param ucb_coeff -1 1 id
+add_experiment_param mcts_bias -10 0 pow10
+add_experiment_param rave_bias -5 0 pow10
 
 add_experiment 9x9 
 loop_add_games

@@ -104,17 +104,23 @@ void Admin::CSetExperimentDescription (Gtp::Io& io) {
 }
 
 void Admin::CAddExperimentParam (Gtp::Io& io) {
-  QString name = QString::fromStdString (io.Read<std::string>());
-  io.CheckEmpty ();
-  experiment_params.append(name);
+  Param p;
+  p.name = QString::fromStdString (io.Read<std::string>());
+  p.min_value = io.Read<double>();
+  p.max_value = io.Read<double>();
+  p.SetFun (QString::fromStdString (io.Read<std::string>()));
+  io.CheckEmpty();
+  experiment_params.append (p);
 }
 
 void Admin::CAddExperiment (Gtp::Io& io)
 {
   QString game_setup = QString::fromStdString (io.Read<std::string>());
   io.CheckEmpty();
+  QStringList ps;
+  foreach (const Param& param, experiment_params) ps.append (param.name);
   experiment_id = db.AddExperiment (game_setup, first_engine, second_engine,
-                                    experiment_description, experiment_params);
+                                    experiment_description, ps);
   CHECK (experiment_id > 0);
   first_engine = "";
   second_engine = "";
@@ -135,9 +141,10 @@ void Admin::SetPvBastFirst (CBAST& bast, int bast_id) {
   std::vector<double> bast_v = bast.NextSample (bast_id);
   uint ii = 0;
 
-  foreach (QString param, experiment_params) {
+  foreach (Param param, experiment_params) {
     CHECK (ii < bast_v.size());
-    pv_first.append (qMakePair (param, QString::number (bast_v[ii])));
+    pv_first.append (qMakePair (param.name,
+                                QString::number (param.OfBast(bast_v[ii]))));
     qDebug () << pv_first.last();
     ii += 1;
   }

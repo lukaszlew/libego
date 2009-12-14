@@ -1,9 +1,48 @@
 #ifndef ADMIN_HPP_
 #define ADMIN_HPP_
 
+#include <cmath>
+
 #include "database.hpp"
 #include "gtp.hpp"
 #include "CBAST.h"
+
+struct Param {
+  QString name;
+  double min_value;
+  double max_value;
+  enum Function {
+    Id,
+    Pow10,
+    Log10,
+    Sqrt,
+    Square
+  } fun;
+
+  bool SetFun (QString f) {
+    if (f == "id")     { fun = Id;     return true; }
+    if (f == "pow10")  { fun = Pow10;  return true; }
+    if (f == "log10")  { fun = Log10;  return true; }
+    if (f == "sqrt")   { fun = Sqrt;   return true; }
+    if (f == "square") { fun = Square; return true; }
+    return false;
+  }
+  
+  double OfBast (double bval) {
+    double val = (max_value - min_value) * (bval + 1.0) / 2.0 + min_value;
+    switch (fun) {
+    case Pow10:  val = pow (10, val); break;
+    case Log10:  val = log10(val); break;
+    case Sqrt:   val = sqrt(val); break;
+    case Square: val = val * val; break;
+    case Id: break;
+    default: break;
+    }
+    return val;
+  }
+};
+
+
 
 class Admin {
 public:
@@ -47,7 +86,7 @@ private:
   ParamsValues pv_first, pv_second;
 
   QString experiment_description;
-  QStringList experiment_params;
+  QList <Param> experiment_params;
 
   int experiment_id;
   // (for_first_engine, param_name) -> list of values
