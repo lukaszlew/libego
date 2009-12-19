@@ -240,7 +240,7 @@ bool Admin::AddEngine (QString name, QString config, QString command_line)
 
 
 void Admin::CExtractCsv (Gtp::Io& io) {
-  QString experiment = QString::fromStdString (io.Read<std::string>());
+  int experiment_id = io.Read<int>();
   int num = io.Read<int> ();
   if (num != 1 && num != 2) {
     io.SetError ("wronge engine number");
@@ -256,8 +256,9 @@ void Admin::CExtractCsv (Gtp::Io& io) {
   }
 
   QTextStream out(&file);
-  if (!db.DumpCsv (experiment, out, num == 1)) {
-    io.SetError ("can't extract CSV");
-    return;
+  QString since = "1982";
+  QList <GameResult> results = db.GetNewGameResults (experiment_id, num == 1, &since);
+  foreach (const GameResult& r, results) {
+    io.out << r.ToString() << std::endl;
   }
 }

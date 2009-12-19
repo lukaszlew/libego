@@ -53,10 +53,6 @@ public:
                                         bool for_first,
                                         QString* last_finished_at);
 
-  bool DumpCsv (QString experiment_name,
-                QTextStream& out,
-                bool first_engine);
-
   QString settings_file_name;
   QSqlDatabase db;
 };
