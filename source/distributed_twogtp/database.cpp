@@ -223,21 +223,28 @@ int Database::GetUnclaimedGameCount (int experiment_id) {
   return count.toInt();
 }
 
-QList <GameResult> Database::GetNewGameResults (int experiment_id,
-                                                bool first_engine,
-                                                QString* last_claimed_at)
+QStringList Database::GetParams (int experiment_id, bool first_engine)
 {
   CHECK (experiment_id >= 0);
   QSqlQuery q (db);
-
-  // get params
   QStringList params;
-  CHECK (q.prepare ("SELECT param.name "
+  CHECK (q.prepare ("SELECT name "
                     "FROM param "
-                    "WHERE param.experiment_id = ?"));
+                    "WHERE experiment_id = ? "
+                    "ORDER BY id ASC"));
   q.addBindValue (experiment_id);
   CHECK (q.exec ());
   while (q.next()) params.append (q.value(0).toString());
+  return params;
+}
+
+QList <GameResult> Database::GetNewGameResults (int experiment_id,
+                                                bool first_engine,
+                                                QString* last_claimed_at,
+                                                QStringList params)
+{
+  CHECK (experiment_id >= 0);
+  QSqlQuery q (db);
 
   // Initialize game_results
   QMap <int, GameResult> game_results;

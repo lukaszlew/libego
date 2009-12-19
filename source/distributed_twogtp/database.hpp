@@ -49,9 +49,12 @@ public:
 
   int GetUnclaimedGameCount (int experiment_id);
 
+  QStringList GetParams (int experiment_id, bool first_engine);
+
   QList <GameResult> GetNewGameResults (int expeiment_id,
                                         bool for_first,
-                                        QString* last_finished_at);
+                                        QString* last_finished_at,
+                                        QStringList params);
 
   QString settings_file_name;
   QSqlDatabase db;

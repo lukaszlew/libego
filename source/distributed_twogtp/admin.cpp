@@ -164,10 +164,11 @@ void Admin::CLoopAddGames (Gtp::Io& io)
 
   int goal = 10;
   QString last_finished_at = "1982";
+  QStringList params = db.GetParams (experiment_id, true);
 
   while (true) {
     QList <GameResult> results =
-      db.GetNewGameResults (experiment_id, true, &last_finished_at);
+      db.GetNewGameResults (experiment_id, true, &last_finished_at, params);
 
     foreach (const GameResult& r, results) {
       qDebug () << "New results:" << r.ToString().c_str();
@@ -257,8 +258,11 @@ void Admin::CExtractCsv (Gtp::Io& io) {
 
   QTextStream out(&file);
   QString since = "1982";
-  QList <GameResult> results = db.GetNewGameResults (experiment_id, num == 1, &since);
+  QStringList params = db.GetParams (experiment_id, true);
+  QList <GameResult> results;
+  results = db.GetNewGameResults (experiment_id, num == 1, &since, params);
   foreach (const GameResult& r, results) {
+    // TODO print header
     io.out << r.ToString() << std::endl;
   }
 }
