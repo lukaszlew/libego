@@ -252,6 +252,15 @@ void Admin::CExtractCsv (Gtp::Io& io) {
   QString file_name  = QString::fromStdString (io.Read<std::string>());
   io.CheckEmpty();
 
+  QString since = "1982";
+  QStringList params = db.GetParams (experiment_id);
+  QList <GameResult> results;
+  results = db.GetNewGameResults (experiment_id, &since, params);
+  if (results.size () == 0) {
+    io.SetError ("no reults in this experiment");
+    return;
+  }
+
   QFile file(file_name);
   if (!file.open (QIODevice::WriteOnly | QIODevice::Text)) {
     io.SetError (qPrintable ("can't open file: " + file_name));
@@ -259,12 +268,11 @@ void Admin::CExtractCsv (Gtp::Io& io) {
   }
 
   QTextStream out(&file);
-  QString since = "1982";
-  QStringList params = db.GetParams (experiment_id);
-  QList <GameResult> results;
-  results = db.GetNewGameResults (experiment_id, &since, params);
+  // header
+  foreach (const QString &p, params) out << p << ", ";
+  out << "victory" << endl;
+  // lines
   foreach (const GameResult& r, results) {
-    // TODO print header
-    io.out << r.ToString() << std::endl;
+    out << r.ToString().c_str() << endl;
   }
 }
