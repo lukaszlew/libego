@@ -164,11 +164,18 @@ void Admin::CLoopAddGames (Gtp::Io& io)
 
   int goal = 10;
   QString last_finished_at = "1982";
-  QStringList params = db.GetParams (experiment_id, true);
+  QStringList params = db.GetParams (experiment_id);
+
+  {
+    CHECK (params.size() == experiment_params.size());
+    for (int ii = 0; ii < params.size(); ii += 1) {
+      CHECK (params[ii] == experiment_params[ii].name);
+    }
+  }
 
   while (true) {
     QList <GameResult> results =
-      db.GetNewGameResults (experiment_id, true, &last_finished_at, params);
+      db.GetNewGameResults (experiment_id, &last_finished_at, params);
 
     foreach (const GameResult& r, results) {
       qDebug () << "New results:" << r.ToString().c_str();
@@ -197,7 +204,7 @@ void Admin::CLoopAddGames (Gtp::Io& io)
       bast_id += 1;
       //SetPvBoth ();
       SetPvBastFirst (bast, bast_id);
-      int game_id = db.AddGame (experiment_id, i%2, pv_first, pv_second);
+      int game_id = db.AddGame (experiment_id, i%2, pv_first);
       bast_id_of_game_id [game_id] = bast_id;
       qDebug () << "new game; id = " << game_id;
       if (game_id < 0) {
@@ -242,11 +249,6 @@ bool Admin::AddEngine (QString name, QString config, QString command_line)
 
 void Admin::CExtractCsv (Gtp::Io& io) {
   int experiment_id = io.Read<int>();
-  int num = io.Read<int> ();
-  if (num != 1 && num != 2) {
-    io.SetError ("wronge engine number");
-    return;
-  }
   QString file_name  = QString::fromStdString (io.Read<std::string>());
   io.CheckEmpty();
 
@@ -258,9 +260,9 @@ void Admin::CExtractCsv (Gtp::Io& io) {
 
   QTextStream out(&file);
   QString since = "1982";
-  QStringList params = db.GetParams (experiment_id, true);
+  QStringList params = db.GetParams (experiment_id);
   QList <GameResult> results;
-  results = db.GetNewGameResults (experiment_id, num == 1, &since, params);
+  results = db.GetNewGameResults (experiment_id, &since, params);
   foreach (const GameResult& r, results) {
     // TODO print header
     io.out << r.ToString() << std::endl;

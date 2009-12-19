@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS game;
 DROP TABLE IF EXISTS experiment;
 DROP TABLE IF EXISTS game_setup;
 DROP TABLE IF EXISTS engine;
+DROP TABLE IF EXISTS param;
 DROP TABLE IF EXISTS engine_param;
 
 
@@ -64,14 +65,11 @@ CREATE TABLE param (
   id INTEGER PRIMARY KEY NOT NULL AUTO_INCREMENT,
   experiment_id INTEGER NOT NULL REFERENCES game (id),
   name TEXT NOT NULL
-  -- for_first INTEGER NOT NULL
 );
 
 
 CREATE TABLE engine_param (
   game_id INTEGER NOT NULL REFERENCES game (id),
   name TEXT NOT NULL,
-  value TEXT NOT NULL,
-  for_first INTEGER NOT NULL
+  value TEXT NOT NULL
 );
-
