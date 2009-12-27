@@ -23,13 +23,8 @@ public:
 
 public:
 
-  LightPlayout (Board* board_,
-                FastRandom& random_,
-                uint max_moves = kDefaultMaxMoves);
+  LightPlayout (Board* board_, FastRandom& random_);
 
-  // Look at Run() implementation in playout.cpp
-  bool Run();
-  
   // The same as Run() but stores the moves on given stack as long as possible.
   template <uint stack_size>
   bool Run (FastStack<Move, stack_size>& history);
@@ -37,7 +32,6 @@ public:
 private:
   Board* board;
   FastRandom& random;
-  uint max_moves;
 };
 
 // -----------------------------------------------------------------------------
@@ -45,14 +39,13 @@ private:
 
 template <uint stack_size> all_inline
 bool LightPlayout::Run (FastStack<Move, stack_size>& history) {
-  uint last_move = board->MoveCount() + max_moves;
   while (true) {
     if (board->BothPlayerPass ())  return true;
-    if (board->MoveCount() >= last_move) return false;
+    if (history.IsFull ()) return false;
     Player pl = board->ActPlayer ();
     Vertex v  = board->RandomLightMove (pl, random);
     board->PlayPseudoLegal (pl, v);
-    if (!history.IsFull ()) history.Push (board->LastMove());
+    history.Push (board->LastMove());
   }
 }
 
