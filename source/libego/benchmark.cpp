@@ -15,13 +15,12 @@ namespace Benchmark {
   void DoPlayouts (uint playout_cnt, NatMap<Player, uint>* win_cnt) {
     static Board playout_board;
     static FastRandom random (123);
-    LightPlayout::MoveHistory move_history;
-    LightPlayout playout (&playout_board, random);
+    FastStack <Move, Board::kArea * 2> move_history;
 
     rep (ii, playout_cnt) {
       playout_board.Load (empty_board);
       move_history.Clear();
-      if (playout.Run (move_history)) {
+      if (DoLightPlayout (playout_board, random, move_history)) {
         (*win_cnt) [playout_board.PlayoutWinner ()] ++;
       }
     }

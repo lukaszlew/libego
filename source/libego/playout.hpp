@@ -11,41 +11,18 @@
 
 #include <cmath>
 
-// mercy rule
-
-
-class LightPlayout {
-public:
-
-  static const uint kDefaultMaxMoves = Board::kArea * 2;
-
-  typedef FastStack <Move, kDefaultMaxMoves> MoveHistory;
-
-public:
-
-  LightPlayout (Board* board_, FastRandom& random_);
-
-  // The same as Run() but stores the moves on given stack as long as possible.
-  template <uint stack_size>
-  bool Run (FastStack<Move, stack_size>& history);
-
-private:
-  Board* board;
-  FastRandom& random;
-};
-
-// -----------------------------------------------------------------------------
-// internatl implementation
-
 template <uint stack_size> all_inline
-bool LightPlayout::Run (FastStack<Move, stack_size>& history) {
+bool DoLightPlayout (Board& board,
+                     FastRandom& random, 
+                     FastStack<Move, stack_size>& history)
+{
   while (true) {
-    if (board->BothPlayerPass ())  return true;
+    if (board.BothPlayerPass ())  return true;
     if (history.IsFull ()) return false;
-    Player pl = board->ActPlayer ();
-    Vertex v  = board->RandomLightMove (pl, random);
-    board->PlayPseudoLegal (pl, v);
-    history.Push (board->LastMove());
+    Player pl = board.ActPlayer ();
+    Vertex v  = board.RandomLightMove (pl, random);
+    board.PlayPseudoLegal (pl, v);
+    history.Push (board.LastMove());
   }
 }
 

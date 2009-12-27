@@ -82,15 +82,15 @@ public:
   }
     
   void do_playout (const FullBoard* base_board) {
-    Board mc_board [1];
-    mc_board->Load (base_board->GetBoard());
+    Board mc_board;
+    mc_board.Load (base_board->GetBoard());
 
-    LightPlayout playout(mc_board, random);
-    LightPlayout::MoveHistory history;
-    playout.Run (history);
+    FastStack <Move, Board::kArea * 2> history;
+    
+    if (!DoLightPlayout (mc_board, random, history)) return;
 
     uint aaf_move_count = uint (float(history.Size())*aaf_fraction);
-    float score = mc_board->PlayoutScore ();
+    float score = mc_board.PlayoutScore ();
 
     aaf_stats.update (history.Data(), aaf_move_count, score);
   }

@@ -114,7 +114,7 @@ public:
     // TODO check for pass x 2 here as well
 
     // Finish with regular playout.
-    LightPlayout (&play_board, random).Run (move_history);
+    if (!DoLightPlayout (play_board, random, move_history)) return;
     
     // Update score.
     int score = play_board.PlayoutScore();
@@ -204,5 +204,5 @@ private:
   MctsBestChildFinder best_child_finder;
   FastRandom& random;
   vector <MctsNode*> trace;               // nodes in the path
-  LightPlayout::MoveHistory move_history; // edges in the path
+  FastStack <Move, Board::kArea * 2> move_history;
 };
