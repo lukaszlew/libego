@@ -34,9 +34,6 @@ public:
   template <uint stack_size>
   bool Run (FastStack<Move, stack_size>& history);
 
-  // Plays one move according to Light policy
-  void PlayOneMove ();
-
 private:
   Board* board;
   FastRandom& random;
@@ -52,7 +49,9 @@ bool LightPlayout::Run (FastStack<Move, stack_size>& history) {
   while (true) {
     if (board->BothPlayerPass ())  return true;
     if (board->MoveCount() >= last_move) return false;
-    PlayOneMove ();
+    Player pl = board->ActPlayer ();
+    Vertex v  = board->RandomLightMove (pl, random);
+    board->PlayPseudoLegal (pl, v);
     if (!history.IsFull ()) history.Push (board->LastMove());
   }
 }

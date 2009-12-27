@@ -307,6 +307,18 @@ bool Board::IsEyelike (Move move) const {
   return IsEyelike (move.GetPlayer (), move.GetVertex());
 }
 
+Vertex Board::RandomLightMove (Player pl, FastRandom& random) {
+  uint ii_start = random.GetNextUint (EmptyVertexCount()); 
+  uint ii = ii_start;
+
+  while (true) { // TODO separate iterator
+    Vertex v = EmptyVertex (ii);
+    if (!IsEyelike (pl, v) && IsPseudoLegal (pl, v)) return v;
+    ii += 1;
+    ii &= ~(-(ii == EmptyVertexCount())); // if (ii==board->empty_v_cnt) ii=0;
+    if (ii == ii_start) return Vertex::Pass();
+  }
+}
 
 flatten all_inline
 bool Board::PlayPseudoLegal (Player player, Vertex v) { // TODO test with move

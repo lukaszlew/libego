@@ -15,30 +15,9 @@ bool LightPlayout::Run() {
     if (board->BothPlayerPass ())  return true;
     if (board->MoveCount () >= max_moves) return false;
     // if (abs(board->StoneScore ()) > 25) return mercy;
-    PlayOneMove ();
-  }
-}
-
-all_inline
-void LightPlayout::PlayOneMove () {
-  uint ii_start = random.GetNextUint (board->EmptyVertexCount()); 
-  uint ii = ii_start;
-  Player act_player = board->ActPlayer ();
-
-  while (true) { // TODO separate iterator
-    Vertex v = board->EmptyVertex (ii);
-    if (!board->IsEyelike (act_player, v) &&
-        board->IsPseudoLegal (act_player, v))
-    {
-      board->PlayPseudoLegal(act_player, v);
-      return;
-    }
-    ii += 1;
-    ii &= ~(-(ii == board->EmptyVertexCount())); // if (ii==board->empty_v_cnt) ii=0;
-    if (ii == ii_start) {
-      board->PlayPseudoLegal(act_player, Vertex::Pass());
-      return;
-    }
+    Player pl = board->ActPlayer ();
+    Vertex v  = board->RandomLightMove (pl, random);
+    board->PlayPseudoLegal (pl, v);
   }
 }
 

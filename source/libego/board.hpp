@@ -75,6 +75,9 @@ public:
   bool IsPseudoLegal (Player player, Vertex v) const;
   bool IsPseudoLegal (Move move) const;
 
+  // Returns a random light playout move. Returns pass if no light move found.
+  Vertex RandomLightMove (Player player, FastRandom& random);
+
   // Plays a move, returns false if move was large suicide.
   // Assumes IsPseudoLegal (player, v) - Do not support single stone suicides.
   bool PlayPseudoLegal (Player player, Vertex v);
