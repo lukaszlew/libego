@@ -99,6 +99,8 @@ public:
         return;
       }
 
+      if (move_history.IsFull ()) return;
+
       Player pl = play_board.ActPlayer ();
       if (!ActNode().has_all_legal_children [pl]) {
         if (ActNode().ReadyToExpand ()) {
@@ -116,7 +118,14 @@ public:
     }
 
     // Finish with regular playout.
-    if (!DoLightPlayout (play_board, random, move_history)) return;
+    while (true) {
+      if (play_board.BothPlayerPass ()) break;;
+      if (move_history.IsFull ()) return;
+      Player pl = play_board.ActPlayer ();
+      Vertex v  = play_board.RandomLightMove (pl, random);
+      play_board.PlayPseudoLegal (pl, v);
+      move_history.Push (play_board.LastMove());
+    }
     
     // Update score.
     int score = play_board.PlayoutScore();
