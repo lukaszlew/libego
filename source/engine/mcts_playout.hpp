@@ -99,17 +99,20 @@ public:
         return;
       }
 
-      if (!ActNode().has_all_legal_children [play_board.ActPlayer()]) {
+      Player pl = play_board.ActPlayer ();
+      if (!ActNode().has_all_legal_children [pl]) {
         if (ActNode().ReadyToExpand ()) {
-          ASSERT (play_board.ActPlayer() == ActNode().player.Other());
-          ActNode().EnsureAllPseudoLegalChildren (play_board.ActPlayer(), play_board);
+          ASSERT (pl == ActNode().player.Other());
+          ActNode().EnsureAllPseudoLegalChildren (pl, play_board);
           continue;
         } else {
           break;
         }
       }
 
-      if (!DoTreeMove ()) return;
+      if (!DoTreeMove (pl)) return;
+
+      move_history.Push (play_board.LastMove ());
     }
 
     // Finish with regular playout.
@@ -129,8 +132,7 @@ public:
 
 private:
 
-  bool DoTreeMove () {
-    Player pl = play_board.ActPlayer ();
+  bool DoTreeMove (Player pl) {
     MctsNode& uct_child = best_child_finder.Find (pl, ActNode());
 
     ASSERT (play_board.IsPseudoLegal (pl, uct_child.v));
@@ -146,7 +148,6 @@ private:
 
     // Update tree itreatror.
     trace.push_back (&uct_child);
-    move_history.Push (play_board.LastMove ());
     return true;
   }
 
