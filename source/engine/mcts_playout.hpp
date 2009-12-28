@@ -91,27 +91,26 @@ public:
     move_history.Push (playout_root.GetMove());
 
     // descent the MCTS tree
-    while(ActNode().has_all_legal_children [play_board.ActPlayer()]) {
+    while (true) {
+
+      if (play_board.BothPlayerPass()) {
+        // sure fast win/loss
+        UpdateTrace (play_board.TrompTaylorWinner().ToScore() * kSureWinUpdate);
+        return;
+      }
+
+      if (!ActNode().has_all_legal_children [play_board.ActPlayer()]) {
+        if (ActNode().ReadyToExpand ()) {
+          ASSERT (play_board.ActPlayer() == ActNode().player.Other());
+          ActNode().EnsureAllPseudoLegalChildren (play_board.ActPlayer(), play_board);
+          continue;
+        } else {
+          break;
+        }
+      }
+
       if (!DoTreeMove ()) return;
     }
-
-    if (play_board.BothPlayerPass()) {
-      // sure fast win/loss
-      UpdateTrace (play_board.TrompTaylorWinner().ToScore() * kSureWinUpdate);
-      return;
-    }
-    
-    // Is leaf is ready to expand ?
-    if (ActNode().stat.update_count() > 
-        Param::prior_update_count + Param::mature_update_count) {
-      Player pl = play_board.ActPlayer();
-      ASSERT (pl == ActNode().player.Other());
-
-      ActNode().EnsureAllPseudoLegalChildren (pl, play_board);
-
-      if (!DoTreeMove ()) return; // Descend one more level.
-    }
-    // TODO check for pass x 2 here as well
 
     // Finish with regular playout.
     if (!DoLightPlayout (play_board, random, move_history)) return;

@@ -51,6 +51,8 @@ public:
 
   void RemoveChild (MctsNode* child_ptr);
 
+  bool ReadyToExpand () const;
+
   void EnsureAllPseudoLegalChildren (Player pl, const Board& board);
 
   void RemoveIllegalChildren (Player pl, const FullBoard& full_board);
@@ -114,6 +116,11 @@ void MctsNode::RemoveChild (MctsNode* child_ptr) {
     }
     child++;
   }
+}
+
+bool MctsNode::ReadyToExpand () const {
+  return stat.update_count() > 
+    Param::prior_update_count + Param::mature_update_count;
 }
 
 MctsNode* MctsNode::FindChild (Move m) {
