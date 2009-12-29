@@ -26,10 +26,39 @@ const float kSureWinUpdate = 1.0; // TODO increase this
 
 // -----------------------------------------------------------------------------
 
+class Mcmc {
+public:
+  Mcmc () : move_stats (Stat()) {
+    Reset ();
+  }
+
+  void Reset () {
+    ForEachNat (Move, m) {
+      // TODO prior
+      // stat.reset      (Param::prior_update_count,
+      //                  player.SubjectiveScore (Param::prior_mean));
+      move_stats [m].reset (1.0, 0.0);
+    }
+  }
+
+  void Update (Move* tab, int n, float score) {
+    rep (ii, n) {
+      ASSERT (tab[ii].IsValid());
+      move_stats [tab[ii]].update (score);
+    }
+  }
+
+  NatMap <Move, Stat> move_stats;
+
+  static const bool kCheckAsserts = false;
+};
+
+// -----------------------------------------------------------------------------
+
 class MctsPlayout {
   static const bool kCheckAsserts = false;
 public:
-  MctsPlayout (FastRandom& random_) : random (random_) {
+  MctsPlayout (FastRandom& random_) : random (random_), mcmc (Mcmc()) {
   }
 
   void DoOnePlayout (MctsNode& playout_root, const Board& board, Player first_player) {
@@ -100,6 +129,7 @@ private:
   void UpdateTrace (int score) {
     UpdateTraceRegular (score);
     if (Param::update_rave) UpdateTraceRave (score);
+    if (Param::update_mcmc) UpdateMcmc (score);
   }
 
   void UpdateTraceRegular (float score) {
@@ -137,6 +167,15 @@ private:
     }
   }
 
+  void UpdateMcmc (float score) {
+    uint last_ii  = move_history.Size () * 7 / 8; // TODO 
+    reps (ii, 1, last_ii) {
+      Move m1 = move_history[ii];
+      ASSERT (m1.IsValid());
+      mcmc [m1] . Update (move_history.Data() + ii, last_ii - ii, score);
+    }
+  }
+
   MctsNode& ActNode() {
     ASSERT (trace.size() > 0);
     return *trace.back ();
@@ -150,4 +189,5 @@ private:
   FastRandom& random;
   vector <MctsNode*> trace;               // nodes in the path
   FastStack <Move, Board::kArea * 3> move_history;
+  NatMap <Move, Mcmc> mcmc;
 };

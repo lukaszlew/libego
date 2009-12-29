@@ -15,6 +15,8 @@ namespace Param {
   static bool  update_rave = true;
   static bool  use_rave  = true;  
 
+  static bool  update_mcmc = true;
+
   static float prior_update_count = 10.0;
   static float prior_mean = 1.0;
 
