@@ -36,6 +36,11 @@ private:
     gtp.RegisterGfx ("Mcts.ShowLastPlayout", "12", this, &MctsGtp::CShowLastPlayout);
     gtp.RegisterGfx ("Mcts.ShowLastPlayout", "16", this, &MctsGtp::CShowLastPlayout);
     gtp.RegisterGfx ("Mcts.ShowLastPlayout", "20", this, &MctsGtp::CShowLastPlayout);
+
+    gtp.RegisterGfx ("Mcts.ShowMcmc", "black %p black", this, &MctsGtp::CShowMcmc);
+    gtp.RegisterGfx ("Mcts.ShowMcmc", "black %p white", this, &MctsGtp::CShowMcmc);
+    gtp.RegisterGfx ("Mcts.ShowMcmc", "white %p black", this, &MctsGtp::CShowMcmc);
+    gtp.RegisterGfx ("Mcts.ShowMcmc", "white %p white", this, &MctsGtp::CShowMcmc);
   }
 
   void RegisterParams (Gtp::ReplWithGogui& gtp) {
@@ -133,6 +138,35 @@ private:
     int n = io.Read<int> ();
     io.CheckEmpty ();
     mcts_engine.LastPlayoutGfx(n).Report (io);
+  }
+
+  void CShowMcmc (Gtp::Io& io) {
+    Move   pre_move = io.Read<Move> ();
+    Player player   = io.Read<Player> ();
+    io.CheckEmpty ();
+
+    Gtp::GoguiGfx gfx;
+
+    Stat stat(0.0, 0.0);
+
+    ForEachNat (Vertex, v) {
+      if (mcts_engine.full_board.GetBoard().ColorAt (v) == Color::Empty () &&
+          v != pre_move.GetVertex()) {
+        Move move = Move (player, v);
+        float mean = mcts_engine.playout.mcmc [pre_move].move_stats [move].mean ();
+        stat.update (mean);
+      }
+    }
+
+    ForEachNat (Vertex, v) {
+      if (mcts_engine.full_board.GetBoard().ColorAt (v) == Color::Empty () &&
+          v != pre_move.GetVertex()) {
+        Move move = Move (player, v);
+        float mean = mcts_engine.playout.mcmc [pre_move].move_stats [move].mean ();
+        gfx.SetInfluence (v.ToGtpString (), (mean - stat.mean()) / stat.std_dev () / 4);
+      }
+    }
+    gfx.Report (io);
   }
 
   void CTimeLeft (Gtp::Io& io) {

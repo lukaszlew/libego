@@ -53,6 +53,7 @@ public:
   void ClearBoard () {
     full_board.Clear ();
     root.Reset ();
+    ForEachNat (Move, m) playout.mcmc [m].Reset ();
     logger.NewLog ();
     logger.LogLine ("clear_board");
     logger.LogLine ("komi " + ToString (full_board.GetBoard().Komi()));
@@ -79,7 +80,10 @@ public:
 
   Vertex Genmove (Player player) {
     logger.LogLine ("random_seed     #? [" + ToString (random.GetSeed ()) + "]");
-    if (Param::reset_tree_on_genmove) root.Reset ();
+    if (Param::reset_tree_on_genmove) {
+      root.Reset ();
+      ForEachNat (Move, m) playout.mcmc [m].Reset ();
+    }
 
     int playouts = Param::genmove_playouts;
     if (time_stones [player] == 0 && time_left [player] < 60.0) {

@@ -172,7 +172,7 @@ private:
     reps (ii, 1, last_ii) {
       Move m1 = move_history[ii];
       ASSERT (m1.IsValid());
-      mcmc [m1] . Update (move_history.Data() + ii, last_ii - ii, score);
+      mcmc [m1] . Update (move_history.Data() + ii, (last_ii - ii) / 6, score);
     }
   }
 
@@ -189,5 +189,6 @@ private:
   FastRandom& random;
   vector <MctsNode*> trace;               // nodes in the path
   FastStack <Move, Board::kArea * 3> move_history;
+public:
   NatMap <Move, Mcmc> mcmc;
 };
