@@ -28,7 +28,7 @@ const float kSureWinUpdate = 1.0; // TODO increase this
 
 class Mcmc {
 public:
-  Mcmc () : move_stats (Stat()) {
+  Mcmc () : move_stats (Stat()), rave_move_stats (Stat()) {
     Reset ();
   }
 
@@ -38,17 +38,21 @@ public:
       // stat.reset      (Param::prior_update_count,
       //                  player.SubjectiveScore (Param::prior_mean));
       move_stats [m].reset (1.0, 0.0);
+      rave_move_stats [m].reset (1.0, 0.0);
     }
   }
 
   void Update (Move* tab, int n, float score) {
     rep (ii, n) {
       ASSERT (tab[ii].IsValid());
-      move_stats [tab[ii]].update (score);
+      rave_move_stats [tab[ii]].update (score);
     }
+    if (n >= 3) move_stats [tab[2]].update (score);
+    if (n >= 2) move_stats [tab[1]].update (score); // TODO test it
   }
 
   NatMap <Move, Stat> move_stats;
+  NatMap <Move, Stat> rave_move_stats;
 
   static const bool kCheckAsserts = false;
 };
