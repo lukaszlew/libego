@@ -275,11 +275,11 @@ Hash Board::PositionalHash () const {
 
 bool Board::IsPseudoLegal (Player player, Vertex v) const {
   check ();
-  return
-    v == Vertex::Pass () ||
-    !nbr_cnt[v].player_cnt_is_max (player.Other()) ||
-    (!eye_is_ko (player, v) &&
-     !eye_is_suicide (v));
+  if (v == Vertex::Pass ()) return true;
+  if (color_at [v] != Color::Empty ()) return false;
+  if (!nbr_cnt[v].player_cnt_is_max (player.Other())) return true;
+  if (eye_is_ko (player, v) || eye_is_suicide (v)) return false;
+  return true;
 }
 
 
@@ -332,9 +332,6 @@ bool Board::PlayPseudoLegal (Player player, Vertex v) { // TODO test with move
     basic_play (player, Vertex::Pass ());
     return true;
   }
-
-  // TODO v.check_is_on_board ();
-  ASSERT (color_at[v] == Color::Empty ());
 
   if (nbr_cnt[v].player_cnt_is_max (player.Other())) {
     play_eye_legal (player, v); // never fails
@@ -711,8 +708,7 @@ void Board::check_no_more_legal (Player player) const { // at the end of the pla
   if (!kCheckAsserts) return;
 
   ForEachNat (Vertex, v)
-    if (color_at[v] == Color::Empty ())
-      ASSERT (IsEyelike (player, v) || IsPseudoLegal (player, v) == false);
+    ASSERT (IsPseudoLegal (player, v) == false || IsEyelike (player, v));
 }
 
 const Zobrist Board::zobrist[1] = { Zobrist () };

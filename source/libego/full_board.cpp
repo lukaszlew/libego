@@ -74,14 +74,6 @@ bool FullBoard::IsHashRepeated () {
 
 
 bool FullBoard::Play (Move move) {
-  if (move.GetVertex() == Vertex::Pass ()) {
-    PlayPseudoLegal (move);
-    return true;
-  }
-
-  if (board.ColorAt (move.GetVertex()) != Color::Empty ())
-    return false;
-
   if (board.IsPseudoLegal (move.GetPlayer(), move.GetVertex()) == false)
     return false;
 
@@ -90,7 +82,7 @@ bool FullBoard::Play (Move move) {
     return false;
   }
 
-  if (IsHashRepeated ()) {
+  if (move.GetVertex () != Vertex::Pass () && IsHashRepeated ()) {
     CHECK (Undo ());
     return false;
   }
