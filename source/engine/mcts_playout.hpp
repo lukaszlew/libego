@@ -105,7 +105,7 @@ public:
       if (!ActNode().has_all_legal_children [pl]) {
         if (ActNode().ReadyToExpand ()) {
           ASSERT (pl == ActNode().player.Other());
-          ActNode().EnsureAllPseudoLegalChildren (pl, play_board);
+          ActNode().EnsureAllLegalChildren (pl, play_board);
           continue;
         } else {
           break;
@@ -123,7 +123,7 @@ public:
       if (move_history.IsFull ()) return;
       Player pl = play_board.ActPlayer ();
       Vertex v  = play_board.RandomLightMove (pl, random);
-      play_board.PlayPseudoLegal (pl, v);
+      play_board.PlayLegal (pl, v);
       move_history.Push (play_board.LastMove());
     }
     
@@ -147,7 +147,7 @@ private:
     ASSERT (play_board.IsLegal (pl, uct_child.v));
 
     // Try to play it on the board
-    play_board.PlayPseudoLegal (pl, uct_child.v);
+    play_board.PlayLegal (pl, uct_child.v);
 
     // Update tree itreatror.
     trace.push_back (&uct_child);

@@ -165,14 +165,14 @@ private:
     Board sync_board;
     MctsNode* act_root = &root;
     BOOST_FOREACH (Move m, full_board.MoveHistory ()) {
-      act_root->EnsureAllPseudoLegalChildren (m.GetPlayer(), sync_board);
+      act_root->EnsureAllLegalChildren (m.GetPlayer(), sync_board);
       act_root = act_root->FindChild (m);
       CHECK (sync_board.IsLegal (m));
-      sync_board.PlayPseudoLegal (m);
+      sync_board.PlayLegal (m);
     }
     
     Player pl = full_board.GetBoard().ActPlayer();
-    act_root->EnsureAllPseudoLegalChildren (pl, full_board.GetBoard());
+    act_root->EnsureAllLegalChildren (pl, full_board.GetBoard());
     act_root->RemoveIllegalChildren (pl, full_board);
 
     return *act_root;

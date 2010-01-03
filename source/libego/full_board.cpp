@@ -26,9 +26,9 @@ void FullBoard::Load (const FullBoard& save_board) {
 }
 
 
-void FullBoard::PlayPseudoLegal (Move m) {
+void FullBoard::PlayLegal (Move m) {
   move_history.push_back (m);
-  board.PlayPseudoLegal (m.GetPlayer(), m.GetVertex());
+  board.PlayLegal (m.GetPlayer(), m.GetVertex());
   CHECK (m == board.LastMove());
 }
 
@@ -47,7 +47,7 @@ bool FullBoard::Undo () {
   Clear ();  // TODO maybe last_player should be preserverd as well
 
   rep (mn, game_length-1)
-    PlayPseudoLegal (replay [mn]);
+    PlayLegal (replay [mn]);
 
   return true;
 }
@@ -63,8 +63,8 @@ bool FullBoard::IsLegal (Move move) const {
 bool FullBoard::IsHashRepeated () {
   Board tmp_board;
   rep (mn, board.MoveCount()-1) {
-    tmp_board.PlayPseudoLegal (move_history[mn].GetPlayer (),
-                               move_history[mn].GetVertex ());
+    tmp_board.PlayLegal (move_history[mn].GetPlayer (),
+                         move_history[mn].GetVertex ());
     if (board.PositionalHash() == tmp_board.PositionalHash())
       return true;
   }
@@ -76,7 +76,7 @@ bool FullBoard::Play (Move move) {
   if (board.IsLegal (move.GetPlayer(), move.GetVertex()) == false)
     return false;
 
-  PlayPseudoLegal (move);
+  PlayLegal (move);
 
   if (move.GetVertex () != Vertex::Pass () && IsHashRepeated ()) {
     CHECK (Undo ());

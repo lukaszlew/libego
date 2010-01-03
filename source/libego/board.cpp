@@ -273,18 +273,6 @@ Hash Board::PositionalHash () const {
   return hash;
 }
 
-bool Board::IsPseudoLegal (Player player, Vertex v) const {
-  check ();
-  if (v == Vertex::Pass ()) return true;
-  if ((color_at [v] != Color::Empty ()) | (v == ko_v)) return false;
-
-  // check for single stone suicide
-  if (!nbr_cnt[v].player_cnt_is_max (player.Other())) return true;
-  uint cant_capture = true;
-  vertex_for_each_4_nbr (v, nbr_v, cant_capture &= (--chain_at(nbr_v).lib_cnt != 0));
-  vertex_for_each_4_nbr (v, nbr_v, chain_at(nbr_v).lib_cnt += 1);
-  return !cant_capture;
-}
 
 bool Board::IsLegal (Player player, Vertex v) const {
   if (v == Vertex::Pass ()) return true;
@@ -306,11 +294,6 @@ bool Board::IsLegal (Player player, Vertex v) const {
   vertex_for_each_4_nbr (v, nbr_v, chain_at(nbr_v).lib_cnt += 1);
 
   return not_suicide;
-}
-
-
-bool Board::IsPseudoLegal (Move move) const {
-  return IsPseudoLegal (move.GetPlayer (), move.GetVertex());
 }
 
 
@@ -352,12 +335,12 @@ Vertex Board::RandomLightMove (Player pl, FastRandom& random) {
 }
 
 flatten all_inline
-void Board::PlayPseudoLegal (Player player, Vertex v) { // TODO test with move
+void Board::PlayLegal (Player player, Vertex v) { // TODO test with move
   check ();
 
   ASSERT (player.IsValid());
   ASSERT (v.IsValid());
-  ASSERT (IsPseudoLegal (player, v));
+  ASSERT (IsLegal (player, v));
 
   if (v == Vertex::Pass ()) {
     basic_play (player, Vertex::Pass ());
@@ -368,8 +351,8 @@ void Board::PlayPseudoLegal (Player player, Vertex v) { // TODO test with move
   }
 }
 
-void Board::PlayPseudoLegal (Move move) { // TODO test with move
-  PlayPseudoLegal (move.GetPlayer (), move.GetVertex());
+void Board::PlayLegal (Move move) { // TODO test with move
+  PlayLegal (move.GetPlayer (), move.GetVertex());
 }
 
 
@@ -715,7 +698,7 @@ void Board::check_no_more_legal (Player player) const { // at the end of the pla
   if (!kCheckAsserts) return;
 
   ForEachNat (Vertex, v)
-    ASSERT (IsPseudoLegal (player, v) == false || IsEyelike (player, v));
+    ASSERT (IsLegal (player, v) == false || IsEyelike (player, v));
 }
 
 const Zobrist Board::zobrist[1] = { Zobrist () };

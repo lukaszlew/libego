@@ -53,7 +53,7 @@ public:
 
   bool ReadyToExpand () const;
 
-  void EnsureAllPseudoLegalChildren (Player pl, const Board& board);
+  void EnsureAllLegalChildren (Player pl, const Board& board);
 
   void RemoveIllegalChildren (Player pl, const FullBoard& full_board);
 
@@ -206,7 +206,7 @@ const MctsNode& MctsNode::MostExploredChild (Player pl) {
   return *best;
 }
 
-void MctsNode::EnsureAllPseudoLegalChildren (Player pl, const Board& board) {
+void MctsNode::EnsureAllLegalChildren (Player pl, const Board& board) {
   if (has_all_legal_children [pl]) return;
   empty_v_for_each_and_pass (&board, v, {
       // big suicides and superko nodes have to be removed from the tree later

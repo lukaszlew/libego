@@ -70,11 +70,8 @@ public:
   bool IsEyelike (Player player, Vertex v) const;
   bool IsEyelike (Move move) const;
 
-  // Returns false for simple ko and single stone suicide.
-  // Returns true despite bigger suicides and superko violation.
-  bool IsPseudoLegal (Player player, Vertex v) const;
-  bool IsPseudoLegal (Move move) const;
-
+  // Returns false for simple ko and suicides.
+  // Returns true despite superko violation.
   bool IsLegal (Player player, Vertex v) const;
   bool IsLegal (Move m) const;
 
@@ -82,9 +79,9 @@ public:
   Vertex RandomLightMove (Player player, FastRandom& random);
 
   // Plays a move, returns false if move was large suicide.
-  // Assumes IsPseudoLegal (player, v) - Do not support single stone suicides.
-  void PlayPseudoLegal (Player player, Vertex v);
-  void PlayPseudoLegal (Move move);
+  // Assumes IsLegal (player, v) - Do not support suicides.
+  void PlayLegal (Player player, Vertex v);
+  void PlayLegal (Move move);
 
   // Difference in (number of stones + number of eyes) of each player - komi.
   // See TrompTaylorScore.

@@ -21,7 +21,7 @@ bool DoLightPlayout (Board& board,
     if (history.IsFull ()) return false;
     Player pl = board.ActPlayer ();
     Vertex v  = board.RandomLightMove (pl, random);
-    board.PlayPseudoLegal (pl, v);
+    board.PlayLegal (pl, v);
     history.Push (board.LastMove());
   }
 }
