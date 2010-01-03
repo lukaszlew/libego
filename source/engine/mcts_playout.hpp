@@ -102,18 +102,19 @@ public:
       if (move_history.IsFull ()) return;
 
       Player pl = play_board.ActPlayer ();
+
       if (!ActNode().has_all_legal_children [pl]) {
-        if (ActNode().ReadyToExpand ()) {
-          ASSERT (pl == ActNode().player.Other());
-          ActNode().EnsureAllLegalChildren (pl, play_board);
-          continue;
-        } else {
-          break;
-        }
+        if (!ActNode().ReadyToExpand ()) break;
+        ASSERT (pl == ActNode().player.Other());
+        ActNode().EnsureAllLegalChildren (pl, play_board);
       }
 
-      if (!DoTreeMove (pl)) return;
+      MctsNode& uct_child = best_child_finder.Find (pl, ActNode());
+      trace.push_back (&uct_child);
+      Vertex v = uct_child.v;
 
+      ASSERT (play_board.IsLegal (pl, v));
+      play_board.PlayLegal (pl, v);
       move_history.Push (play_board.LastMove ());
     }
 
@@ -121,8 +122,11 @@ public:
     while (true) {
       if (play_board.BothPlayerPass ()) break;;
       if (move_history.IsFull ()) return;
+
       Player pl = play_board.ActPlayer ();
       Vertex v  = play_board.RandomLightMove (pl, random);
+
+      ASSERT (play_board.IsLegal (pl, v));
       play_board.PlayLegal (pl, v);
       move_history.Push (play_board.LastMove());
     }
@@ -140,19 +144,6 @@ public:
   }
 
 private:
-
-  bool DoTreeMove (Player pl) {
-    MctsNode& uct_child = best_child_finder.Find (pl, ActNode());
-
-    ASSERT (play_board.IsLegal (pl, uct_child.v));
-
-    // Try to play it on the board
-    play_board.PlayLegal (pl, uct_child.v);
-
-    // Update tree itreatror.
-    trace.push_back (&uct_child);
-    return true;
-  }
 
   void UpdateTrace (int score) {
     UpdateTraceRegular (score);
@@ -207,5 +198,5 @@ private:
   MctsBestChildFinder best_child_finder;
   FastRandom& random;
   vector <MctsNode*> trace;               // nodes in the path
-  FastStack <Move, Board::kArea * 2> move_history;
+  FastStack <Move, Board::kArea * 3> move_history;
 };
