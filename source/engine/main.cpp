@@ -35,6 +35,9 @@
 #include "ego.hpp"
 #include "to_string.hpp"
 
+
+static const bool kCheckAsserts = false;
+
 // local hard-include
 #include "stat.hpp"
 #include "logger.hpp"

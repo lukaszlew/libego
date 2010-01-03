@@ -39,6 +39,10 @@ public:
     return tab;
   }
 
+  const Elt* Data() const {
+    return tab;
+  }
+
   vector<Elt> AsVector () {
     vector<Elt> ret(size);
     rep (ii, size) ret[ii] = tab[ii];

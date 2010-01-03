@@ -146,26 +146,10 @@ private:
     io.CheckEmpty ();
 
     Gtp::GoguiGfx gfx;
-
-    Stat stat(0.0, 0.0);
-
-    ForEachNat (Vertex, v) {
-      if (mcts_engine.full_board.GetBoard().ColorAt (v) == Color::Empty () &&
-          v != pre_move.GetVertex()) {
-        Move move = Move (player, v);
-        float mean = mcts_engine.playout.mcmc [pre_move].move_stats [move].mean ();
-        stat.update (mean);
-      }
-    }
-
-    ForEachNat (Vertex, v) {
-      if (mcts_engine.full_board.GetBoard().ColorAt (v) == Color::Empty () &&
-          v != pre_move.GetVertex()) {
-        Move move = Move (player, v);
-        float mean = mcts_engine.playout.mcmc [pre_move].move_stats [move].mean ();
-        gfx.SetInfluence (v.ToGtpString (), (mean - stat.mean()) / stat.std_dev () / 4);
-      }
-    }
+    mcts_engine.playout.all_mcmc.FillGfx (pre_move,
+                                          player,
+                                          mcts_engine.full_board.GetBoard(),
+                                          &gfx);
     gfx.Report (io);
   }
 

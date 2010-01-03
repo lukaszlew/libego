@@ -26,6 +26,10 @@ const float kSureWinUpdate = 1.0; // TODO increase this
 
 // -----------------------------------------------------------------------------
 
+namespace Param {
+  static bool  update_mcmc = true;
+}
+
 class Mcmc {
 public:
   Mcmc () : move_stats (Stat()), rave_move_stats (Stat()) {
@@ -42,7 +46,7 @@ public:
     }
   }
 
-  void Update (Move* tab, int n, float score) {
+  void Update (const Move* tab, int n, float score) {
     rep (ii, n) {
       ASSERT (tab[ii].IsValid());
       rave_move_stats [tab[ii]].update (score);
@@ -57,12 +61,57 @@ public:
   static const bool kCheckAsserts = false;
 };
 
+class AllMcmc {
+public:
+  AllMcmc () : mcmc (Mcmc()) {
+  }
+
+  void Reset () {
+    ForEachNat (Move, m) mcmc [m].Reset ();
+  }
+
+  template <uint stack_size> 
+
+  void Update (float score, const FastStack<Move, stack_size>& history) {
+    uint last_ii  = history.Size () * 7 / 8; // TODO 
+    reps (ii, 1, last_ii) {
+      Move m1 = history[ii];
+      ASSERT (m1.IsValid());
+      mcmc [m1] . Update (history.Data() + ii, (last_ii - ii) / 6, score);
+    }
+  }
+
+
+  void FillGfx (Move pre_move, Player player, const Board& board, Gtp::GoguiGfx* gfx) {
+    Stat stat(0.0, 0.0);
+
+    ForEachNat (Vertex, v) {
+      if (board.ColorAt (v) == Color::Empty () && v != pre_move.GetVertex()) {
+        Move move = Move (player, v);
+        float mean = mcmc [pre_move].move_stats [move].mean ();
+        stat.update (mean);
+      }
+    }
+
+    ForEachNat (Vertex, v) {
+      if (board.ColorAt (v) == Color::Empty () &&
+          v != pre_move.GetVertex()) {
+        Move move = Move (player, v);
+        float mean = mcmc [pre_move].move_stats [move].mean ();
+        gfx->SetInfluence
+          (v.ToGtpString (), (mean - stat.mean()) / stat.std_dev () / 4);
+      }
+    }
+  }
+
+  NatMap <Move, Mcmc> mcmc;
+};
 // -----------------------------------------------------------------------------
 
 class MctsPlayout {
   static const bool kCheckAsserts = false;
 public:
-  MctsPlayout (FastRandom& random_) : random (random_), mcmc (Mcmc()) {
+  MctsPlayout (FastRandom& random_) : random (random_) {
   }
 
   void DoOnePlayout (MctsNode& playout_root, const Board& board, Player first_player) {
@@ -133,7 +182,7 @@ private:
   void UpdateTrace (int score) {
     UpdateTraceRegular (score);
     if (Param::update_rave) UpdateTraceRave (score);
-    if (Param::update_mcmc) UpdateMcmc (score);
+    if (Param::update_mcmc) all_mcmc.Update (score, move_history);
   }
 
   void UpdateTraceRegular (float score) {
@@ -171,15 +220,6 @@ private:
     }
   }
 
-  void UpdateMcmc (float score) {
-    uint last_ii  = move_history.Size () * 7 / 8; // TODO 
-    reps (ii, 1, last_ii) {
-      Move m1 = move_history[ii];
-      ASSERT (m1.IsValid());
-      mcmc [m1] . Update (move_history.Data() + ii, (last_ii - ii) / 6, score);
-    }
-  }
-
   MctsNode& ActNode() {
     ASSERT (trace.size() > 0);
     return *trace.back ();
@@ -194,5 +234,5 @@ private:
   vector <MctsNode*> trace;               // nodes in the path
   FastStack <Move, Board::kArea * 3> move_history;
 public:
-  NatMap <Move, Mcmc> mcmc;
+  AllMcmc all_mcmc;
 };
