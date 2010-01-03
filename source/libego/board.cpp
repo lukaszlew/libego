@@ -292,22 +292,20 @@ bool Board::IsLegal (Player player, Vertex v) const {
 
   // check for suicide
   if (nbr_cnt[v].empty_cnt () > 0) return true;
-  NatMap <Color, bool> exists_nonatari (false);
-  NatMap <Color, bool> exists_atari (false);
+  bool not_suicide = false;
 
   vertex_for_each_4_nbr (v, nbr_v, chain_at (nbr_v).lib_cnt -= 1);
 
   vertex_for_each_4_nbr (v, nbr_v, {
     bool atari = chain_at (nbr_v).lib_cnt == 0;
-    exists_atari [color_at [nbr_v]] |= atari;
-    exists_nonatari [color_at [nbr_v]] |= !atari;
+    not_suicide |=
+      color_at [nbr_v].IsPlayer () &
+      (atari != (color_at [nbr_v].ToPlayer () == player));
   });
 
   vertex_for_each_4_nbr (v, nbr_v, chain_at(nbr_v).lib_cnt += 1);
 
-  return // not suicide
-    exists_nonatari [Color::OfPlayer (player)] |
-    exists_atari [Color::OfPlayer (player.Other())];
+  return not_suicide;
 }
 
 
