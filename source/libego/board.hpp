@@ -130,8 +130,6 @@ private:
 
   Hash recalc_hash () const;
 
-  void basic_play (Player player, Vertex v);
-  void play_not_eye (Player player, Vertex v);
   void play_eye_legal (Player player, Vertex v);
 
   void update_neighbour (Player player, Vertex v, Vertex nbr_v);

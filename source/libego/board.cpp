@@ -342,12 +342,21 @@ void Board::PlayLegal (Player player, Vertex v) { // TODO test with move
   ASSERT (v.IsValid());
   ASSERT (IsLegal (player, v));
 
-  if (v == Vertex::Pass ()) {
-    basic_play (player, Vertex::Pass ());
-  } else if (nbr_cnt[v].player_cnt_is_max (player.Other())) {
-    play_eye_legal (player, v); // never fails
+  ko_v                   = Vertex::Invalid();
+  last_empty_v_cnt       = empty_v_cnt;
+  last_player            = player;
+  last_play [player]     = v;
+  move_no                += 1;
+
+  if (v == Vertex::Pass ()) return;
+
+  place_stone (player, v);
+
+  if (nbr_cnt[v].player_cnt_is_max (player.Other())) {
+    play_eye_legal (player, v);
   } else {
-    play_not_eye (player, v);
+    vertex_for_each_4_nbr (v, nbr_v, update_neighbour(player, v, nbr_v));
+    ASSERT (chain_at(v).lib_cnt != 0);
   }
 }
 
@@ -379,37 +388,16 @@ void Board::update_neighbour (Player player, Vertex v, Vertex nbr_v) {
 }
 
 
-all_inline
-void Board::play_not_eye (Player player, Vertex v) {
-  check ();
-  // TODO v.check_is_on_board ();
-  ASSERT (color_at[v] == Color::Empty ());
-
-  basic_play (player, v);
-
-  place_stone (player, v);
-
-  vertex_for_each_4_nbr (v, nbr_v, update_neighbour(player, v, nbr_v));
-
-  ASSERT (chain_at(v).lib_cnt != 0);
-}
-
-
 no_inline
 void Board::play_eye_legal (Player player, Vertex v) {
+  vertex_for_each_4_nbr (v, nbr_v, nbr_cnt [nbr_v].player_inc (player));
+
   vertex_for_each_4_nbr (v, nbr_v, chain_at(nbr_v).lib_cnt -= 1);
 
-  basic_play (player, v);
-  place_stone (player, v);
-
   vertex_for_each_4_nbr (v, nbr_v, {
-      nbr_cnt [nbr_v].player_inc (player);
-    });
-
-  vertex_for_each_4_nbr (v, nbr_v, {
-      if ((chain_at(nbr_v).lib_cnt == 0))
-        remove_chain (nbr_v);
-    });
+    if ((chain_at(nbr_v).lib_cnt == 0))
+      remove_chain (nbr_v);
+  });
 
   ASSERT (chain_at(v).lib_cnt != 0);
 
@@ -417,15 +405,6 @@ void Board::play_eye_legal (Player player, Vertex v) {
   if (last_empty_v_cnt == empty_v_cnt) {
     ko_v = empty_v [empty_v_cnt - 1]; // then ko is formed
   }
-}
-
-// Warning: has to be called before place_stone, because of hash storing
-void Board::basic_play (Player player, Vertex v) {
-  ko_v                   = Vertex::Invalid();
-  last_empty_v_cnt       = empty_v_cnt;
-  last_player            = player;
-  last_play [player]     = v;
-  move_no                += 1;
 }
 
 

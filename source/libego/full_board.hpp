@@ -21,7 +21,7 @@ public:
 
   // Play if the move is legal and return true.
   // Otherwise do not play and return false. 
-  // (forbids everything inlcuding suicide and positional superko detection).
+  // (positional superko detection).
   bool Play (Move move);
 
   // Undo move. Replays the game
