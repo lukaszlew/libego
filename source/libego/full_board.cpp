@@ -26,11 +26,10 @@ void FullBoard::Load (const FullBoard& save_board) {
 }
 
 
-bool FullBoard::PlayPseudoLegal (Move m) {
+void FullBoard::PlayPseudoLegal (Move m) {
   move_history.push_back (m);
-  bool status = board.PlayPseudoLegal (m.GetPlayer(), m.GetVertex());
+  board.PlayPseudoLegal (m.GetPlayer(), m.GetVertex());
   CHECK (m == board.LastMove());
-  return status;
 }
 
 
@@ -74,13 +73,10 @@ bool FullBoard::IsHashRepeated () {
 
 
 bool FullBoard::Play (Move move) {
-  if (board.IsPseudoLegal (move.GetPlayer(), move.GetVertex()) == false)
+  if (board.IsLegal (move.GetPlayer(), move.GetVertex()) == false)
     return false;
 
-  if (!PlayPseudoLegal (move)) {
-    CHECK (Undo ());
-    return false;
-  }
+  PlayPseudoLegal (move);
 
   if (move.GetVertex () != Vertex::Pass () && IsHashRepeated ()) {
     CHECK (Undo ());

@@ -314,6 +314,11 @@ bool Board::IsPseudoLegal (Move move) const {
 }
 
 
+bool Board::IsLegal (Move move) const {
+  return IsLegal (move.GetPlayer (), move.GetVertex());
+}
+
+
 bool Board::IsEyelike (Player player, Vertex v) const {
   ASSERT (color_at [v] == Color::Empty ());
   if (! nbr_cnt[v].player_cnt_is_max (player)) return false;
@@ -339,7 +344,7 @@ Vertex Board::RandomLightMove (Player pl, FastRandom& random) {
 
   while (true) { // TODO separate iterator
     Vertex v = EmptyVertex (ii);
-    if (!IsEyelike (pl, v) && IsPseudoLegal (pl, v)) return v;
+    if (!IsEyelike (pl, v) && IsLegal (pl, v)) return v;
     ii += 1;
     ii &= ~(-(ii == EmptyVertexCount())); // if (ii==board->empty_v_cnt) ii=0;
     if (ii == ii_start) return Vertex::Pass();
@@ -347,7 +352,7 @@ Vertex Board::RandomLightMove (Player pl, FastRandom& random) {
 }
 
 flatten all_inline
-bool Board::PlayPseudoLegal (Player player, Vertex v) { // TODO test with move
+void Board::PlayPseudoLegal (Player player, Vertex v) { // TODO test with move
   check ();
 
   ASSERT (player.IsValid());
@@ -356,19 +361,15 @@ bool Board::PlayPseudoLegal (Player player, Vertex v) { // TODO test with move
 
   if (v == Vertex::Pass ()) {
     basic_play (player, Vertex::Pass ());
-    return true;
-  }
-
-  if (nbr_cnt[v].player_cnt_is_max (player.Other())) {
+  } else if (nbr_cnt[v].player_cnt_is_max (player.Other())) {
     play_eye_legal (player, v); // never fails
-    return true;
   } else {
-    return play_not_eye (player, v);
+    play_not_eye (player, v);
   }
 }
 
-bool Board::PlayPseudoLegal (Move move) { // TODO test with move
-  return PlayPseudoLegal (move.GetPlayer (), move.GetVertex());
+void Board::PlayPseudoLegal (Move move) { // TODO test with move
+  PlayPseudoLegal (move.GetPlayer (), move.GetVertex());
 }
 
 
@@ -396,7 +397,7 @@ void Board::update_neighbour (Player player, Vertex v, Vertex nbr_v) {
 
 
 all_inline
-bool Board::play_not_eye (Player player, Vertex v) {
+void Board::play_not_eye (Player player, Vertex v) {
   check ();
   // TODO v.check_is_on_board ();
   ASSERT (color_at[v] == Color::Empty ());
@@ -407,14 +408,7 @@ bool Board::play_not_eye (Player player, Vertex v) {
 
   vertex_for_each_4_nbr (v, nbr_v, update_neighbour(player, v, nbr_v));
 
-  if (chain_at(v).lib_cnt == 0) {
-    ASSERT (last_empty_v_cnt - empty_v_cnt == 1);
-    remove_chain(v);
-    ASSERT (last_empty_v_cnt - empty_v_cnt > 0);
-    return false;
-  } else {
-    return true;
-  }
+  ASSERT (chain_at(v).lib_cnt != 0);
 }
 
 

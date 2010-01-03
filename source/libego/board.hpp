@@ -76,14 +76,15 @@ public:
   bool IsPseudoLegal (Move move) const;
 
   bool IsLegal (Player player, Vertex v) const;
+  bool IsLegal (Move m) const;
 
   // Returns a random light playout move. Returns pass if no light move found.
   Vertex RandomLightMove (Player player, FastRandom& random);
 
   // Plays a move, returns false if move was large suicide.
   // Assumes IsPseudoLegal (player, v) - Do not support single stone suicides.
-  bool PlayPseudoLegal (Player player, Vertex v);
-  bool PlayPseudoLegal (Move move);
+  void PlayPseudoLegal (Player player, Vertex v);
+  void PlayPseudoLegal (Move move);
 
   // Difference in (number of stones + number of eyes) of each player - komi.
   // See TrompTaylorScore.
@@ -133,7 +134,7 @@ private:
   Hash recalc_hash () const;
 
   void basic_play (Player player, Vertex v);
-  bool play_not_eye (Player player, Vertex v);
+  void play_not_eye (Player player, Vertex v);
   void play_eye_legal (Player player, Vertex v);
 
   void update_neighbour (Player player, Vertex v, Vertex nbr_v);

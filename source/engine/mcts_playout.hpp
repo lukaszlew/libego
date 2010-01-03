@@ -144,16 +144,10 @@ private:
   bool DoTreeMove (Player pl) {
     MctsNode& uct_child = best_child_finder.Find (pl, ActNode());
 
-    ASSERT (play_board.IsPseudoLegal (pl, uct_child.v));
+    ASSERT (play_board.IsLegal (pl, uct_child.v));
 
     // Try to play it on the board
-    if (!play_board.PlayPseudoLegal (pl, uct_child.v)) { // large suicide
-      ASSERT (!uct_child.has_all_legal_children [pl.Other()]);
-      ASSERT (uct_child.stat.update_count() == Param::prior_update_count);
-      // Remove in case of large suicide.
-      ActNode().RemoveChild (&uct_child);
-      return false;
-    }
+    play_board.PlayPseudoLegal (pl, uct_child.v);
 
     // Update tree itreatror.
     trace.push_back (&uct_child);

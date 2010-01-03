@@ -167,7 +167,8 @@ private:
     BOOST_FOREACH (Move m, full_board.MoveHistory ()) {
       act_root->EnsureAllPseudoLegalChildren (m.GetPlayer(), sync_board);
       act_root = act_root->FindChild (m);
-      CHECK (sync_board.PlayPseudoLegal (m));
+      CHECK (sync_board.IsLegal (m));
+      sync_board.PlayPseudoLegal (m);
     }
     
     Player pl = full_board.GetBoard().ActPlayer();

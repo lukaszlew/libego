@@ -16,7 +16,7 @@ namespace Benchmark {
   void DoPlayouts (uint playout_cnt, NatMap<Player, uint>* win_cnt) {
     static Board playout_board;
     static FastRandom random (123);
-    FastStack <Move, Board::kArea * 2> move_history;
+    FastStack <Move, int(Board::kArea * 2.5)> move_history;
     rep (ii, playout_cnt) {
       playout_board.Load (empty_board);
       move_history.Clear();
