@@ -276,10 +276,38 @@ Hash Board::PositionalHash () const {
 bool Board::IsPseudoLegal (Player player, Vertex v) const {
   check ();
   if (v == Vertex::Pass ()) return true;
-  if (color_at [v] != Color::Empty ()) return false;
+  if ((color_at [v] != Color::Empty ()) | (v == ko_v)) return false;
+
+  // check for single stone suicide
   if (!nbr_cnt[v].player_cnt_is_max (player.Other())) return true;
-  if (eye_is_ko (player, v) || eye_is_suicide (v)) return false;
-  return true;
+  uint cant_capture = true;
+  vertex_for_each_4_nbr (v, nbr_v, cant_capture &= (--chain_at(nbr_v).lib_cnt != 0));
+  vertex_for_each_4_nbr (v, nbr_v, chain_at(nbr_v).lib_cnt += 1);
+  return !cant_capture;
+}
+
+bool Board::IsLegal (Player player, Vertex v) const {
+  if (v == Vertex::Pass ()) return true;
+  if ((color_at [v] != Color::Empty ()) | (v == ko_v)) return false;
+
+  // check for suicide
+  if (nbr_cnt[v].empty_cnt () > 0) return true;
+  NatMap <Color, bool> exists_nonatari (false);
+  NatMap <Color, bool> exists_atari (false);
+
+  vertex_for_each_4_nbr (v, nbr_v, chain_at (nbr_v).lib_cnt -= 1);
+
+  vertex_for_each_4_nbr (v, nbr_v, {
+    bool atari = chain_at (nbr_v).lib_cnt == 0;
+    exists_atari [color_at [nbr_v]] |= atari;
+    exists_nonatari [color_at [nbr_v]] |= !atari;
+  });
+
+  vertex_for_each_4_nbr (v, nbr_v, chain_at(nbr_v).lib_cnt += 1);
+
+  return // not suicide
+    exists_nonatari [Color::OfPlayer (player)] |
+    exists_atari [Color::OfPlayer (player.Other())];
 }
 
 
@@ -346,19 +374,6 @@ bool Board::PlayPseudoLegal (Move move) { // TODO test with move
 }
 
 
-bool Board::eye_is_ko (Player player, Vertex v) const {
-  return (v == ko_v) & (player == last_player.Other());
-}
-
-
-bool Board::eye_is_suicide (Vertex v) const {
-  uint all_nbr_live = true;
-  vertex_for_each_4_nbr (v, nbr_v, all_nbr_live &= (--chain_at(nbr_v).lib_cnt != 0));
-  vertex_for_each_4_nbr (v, nbr_v, chain_at(nbr_v).lib_cnt += 1);
-  return all_nbr_live;
-}
-
-
 all_inline
 void Board::update_neighbour (Player player, Vertex v, Vertex nbr_v) {
   nbr_cnt [nbr_v].player_inc (player);
@@ -398,7 +413,7 @@ bool Board::play_not_eye (Player player, Vertex v) {
     ASSERT (last_empty_v_cnt - empty_v_cnt == 1);
     remove_chain(v);
     ASSERT (last_empty_v_cnt - empty_v_cnt > 0);
-    return  false;
+    return false;
   } else {
     return true;
   }

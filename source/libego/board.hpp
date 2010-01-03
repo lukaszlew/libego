@@ -75,6 +75,8 @@ public:
   bool IsPseudoLegal (Player player, Vertex v) const;
   bool IsPseudoLegal (Move move) const;
 
+  bool IsLegal (Player player, Vertex v) const;
+
   // Returns a random light playout move. Returns pass if no light move found.
   Vertex RandomLightMove (Player player, FastRandom& random);
 
@@ -129,9 +131,6 @@ private:
   static const bool kCheckAsserts = false;
 
   Hash recalc_hash () const;
-
-  bool eye_is_ko (Player player, Vertex v) const;
-  bool eye_is_suicide (Vertex v) const;
 
   void basic_play (Player player, Vertex v);
   bool play_not_eye (Player player, Vertex v);
