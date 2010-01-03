@@ -130,7 +130,7 @@ private:
 
   Hash recalc_hash () const;
 
-  void play_eye_legal (Player player, Vertex v);
+  void play_eye_legal (Vertex v);
 
   void update_neighbour (Player player, Vertex v, Vertex nbr_v);
   void merge_chains (Vertex v_base, Vertex v_new);
@@ -208,7 +208,6 @@ private:
   // Incremantal set of empty Vertices.
   // TODO Merge this four members into NatSet
   uint                         empty_v_cnt;
-  uint                         last_empty_v_cnt;
   Vertex                       empty_v [kArea];
   NatMap<Vertex, uint>         empty_pos;
 

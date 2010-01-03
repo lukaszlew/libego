@@ -334,6 +334,12 @@ Vertex Board::RandomLightMove (Player pl, FastRandom& random) {
   }
 }
 
+
+void Board::PlayLegal (Move move) { // TODO test with move
+  PlayLegal (move.GetPlayer (), move.GetVertex());
+}
+
+
 flatten all_inline
 void Board::PlayLegal (Player player, Vertex v) { // TODO test with move
   check ();
@@ -342,8 +348,8 @@ void Board::PlayLegal (Player player, Vertex v) { // TODO test with move
   ASSERT (v.IsValid());
   ASSERT (IsLegal (player, v));
 
+  uint last_empty_v_cnt  = empty_v_cnt;
   ko_v                   = Vertex::Invalid();
-  last_empty_v_cnt       = empty_v_cnt;
   last_player            = player;
   last_play [player]     = v;
   move_no                += 1;
@@ -353,22 +359,25 @@ void Board::PlayLegal (Player player, Vertex v) { // TODO test with move
   place_stone (player, v);
 
   if (nbr_cnt[v].player_cnt_is_max (player.Other())) {
-    play_eye_legal (player, v);
+    vertex_for_each_4_nbr (v, nbr_v, chain_at(nbr_v).lib_cnt -= 1);
+
+    play_eye_legal (v);
+    // if captured exactly one stone (and this was eye) then Ko
+    if (last_empty_v_cnt == empty_v_cnt) ko_v = empty_v [empty_v_cnt - 1];
   } else {
     vertex_for_each_4_nbr (v, nbr_v, update_neighbour(player, v, nbr_v));
-    ASSERT (chain_at(v).lib_cnt != 0);
   }
-}
 
-void Board::PlayLegal (Move move) { // TODO test with move
-  PlayLegal (move.GetPlayer (), move.GetVertex());
+  vertex_for_each_4_nbr (v, nbr_v, nbr_cnt [nbr_v].player_inc (player));
+
+  // suicide support
+  // if (chain_at(v).lib_cnt == 0) remove_chain (v);
+  ASSERT (chain_at(v).lib_cnt != 0);
 }
 
 
 all_inline
 void Board::update_neighbour (Player player, Vertex v, Vertex nbr_v) {
-  nbr_cnt [nbr_v].player_inc (player);
-
   if (!color_at [nbr_v].IsPlayer ()) return;
 
   chain_at(nbr_v).lib_cnt -= 1;
@@ -389,22 +398,11 @@ void Board::update_neighbour (Player player, Vertex v, Vertex nbr_v) {
 
 
 no_inline
-void Board::play_eye_legal (Player player, Vertex v) {
-  vertex_for_each_4_nbr (v, nbr_v, nbr_cnt [nbr_v].player_inc (player));
-
-  vertex_for_each_4_nbr (v, nbr_v, chain_at(nbr_v).lib_cnt -= 1);
-
+void Board::play_eye_legal (Vertex v) {
   vertex_for_each_4_nbr (v, nbr_v, {
     if ((chain_at(nbr_v).lib_cnt == 0))
       remove_chain (nbr_v);
   });
-
-  ASSERT (chain_at(v).lib_cnt != 0);
-
-  // if captured exactly one stone (and this was eye)
-  if (last_empty_v_cnt == empty_v_cnt) {
-    ko_v = empty_v [empty_v_cnt - 1]; // then ko is formed
-  }
 }
 
 
