@@ -26,55 +26,6 @@ const float kSureWinUpdate = 1.0; // TODO increase this
 
 // -----------------------------------------------------------------------------
 
-class MctsBestChildFinder {
-  static const bool kCheckAsserts = false;
-public:
-  MctsBestChildFinder () {
-  }
-
-  MctsNode& Find (Player pl, MctsNode& node) {
-    MctsNode* best_child = NULL;
-    float best_urgency = -100000000000000.0; // TODO infinity
-    const float log_val = log (node.stat.update_count());
-
-    ASSERT (node.has_all_legal_children [pl]);
-
-    BOOST_FOREACH (MctsNode& child, node.Children()) {
-      if (child.player != pl) continue;
-      float child_urgency = NodeSubjectiveValue (child, pl, log_val);
-      if (child_urgency > best_urgency) {
-        best_urgency = child_urgency;
-        best_child   = &child;
-      }
-    }
-
-    ASSERT (best_child != NULL); // at least pass
-    return *best_child;
-  }
-
-private:
-
-  float NodeSubjectiveValue (MctsNode& node, Player pl, float log_val) {
-    float value;
-
-    if (Param::use_rave) {
-      value = Stat::Mix (node.stat,      Param::mcts_bias,
-                         node.rave_stat, Param::rave_bias);
-    } else {
-      value = node.stat.mean ();
-    }
-
-    return
-      pl.SubjectiveScore (value) +
-      Param::uct_explore_coeff * sqrt (log_val / node.stat.update_count());
-  }
-
-private:
-  friend class MctsGtp;
-};
-
-// -----------------------------------------------------------------------------
-
 class MctsPlayout {
   static const bool kCheckAsserts = false;
 public:
@@ -92,7 +43,7 @@ public:
 
     bool tree_phase = true;
 
-    // descent the MCTS tree
+    // do the playout
     while (true) {
       if (play_board.BothPlayerPass()) break;
       if (move_history.IsFull ()) return;
@@ -141,7 +92,7 @@ private:
       ActNode().EnsureAllLegalChildren (pl, play_board);
     }
 
-    MctsNode& uct_child = best_child_finder.Find (pl, ActNode());
+    MctsNode& uct_child = ActNode().BestRaveChild (pl);
     trace.push_back (&uct_child);
     return uct_child.v;
   }
@@ -196,7 +147,6 @@ private:
   
   // playout
   Board play_board;
-  MctsBestChildFinder best_child_finder;
   FastRandom& random;
   vector <MctsNode*> trace;               // nodes in the path
   FastStack <Move, Board::kArea * 3> move_history;

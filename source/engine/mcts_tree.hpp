@@ -61,11 +61,15 @@ public:
 
   MctsNode* FindChild (Move m);
 
-  const MctsNode& MostExploredChild (Player pl);
+  const MctsNode& MostExploredChild (Player pl) const;
+
+  MctsNode& BestRaveChild (Player pl);
 
   // Other.
   
   float SubjectiveMean() const;
+
+  float SubjectiveRaveValue (Player pl, float log_val) const;
 
 public:
 
@@ -189,7 +193,7 @@ string MctsNode::RecToString (float min_visit, uint max_children) const {
   return out.str ();
 }
 
-const MctsNode& MctsNode::MostExploredChild (Player pl) {
+const MctsNode& MctsNode::MostExploredChild (Player pl) const {
   const MctsNode* best = NULL;
   float best_update_count = -1;
 
@@ -205,6 +209,28 @@ const MctsNode& MctsNode::MostExploredChild (Player pl) {
   ASSERT (best != NULL);
   return *best;
 }
+
+
+MctsNode& MctsNode::BestRaveChild (Player pl) {
+  MctsNode* best_child = NULL;
+  float best_urgency = -100000000000000.0; // TODO infinity
+  const float log_val = log (stat.update_count());
+
+  ASSERT (has_all_legal_children [pl]);
+
+  BOOST_FOREACH (MctsNode& child, Children()) {
+    if (child.player != pl) continue;
+    float child_urgency = child.SubjectiveRaveValue (pl, log_val);
+    if (child_urgency > best_urgency) {
+      best_urgency = child_urgency;
+      best_child   = &child;
+    }
+  }
+
+  ASSERT (best_child != NULL); // at least pass
+  return *best_child;
+}
+
 
 void MctsNode::EnsureAllLegalChildren (Player pl, const Board& board) {
   if (has_all_legal_children [pl]) return;
@@ -240,6 +266,21 @@ void MctsNode::Reset () {
 
 float MctsNode::SubjectiveMean () const {
   return player.SubjectiveScore (stat.mean ());
+}
+
+float MctsNode::SubjectiveRaveValue (Player pl, float log_val) const {
+  float value;
+
+  if (Param::use_rave) {
+    value = Stat::Mix (stat,      Param::mcts_bias,
+                       rave_stat, Param::rave_bias);
+  } else {
+    value = stat.mean ();
+  }
+
+  return
+    pl.SubjectiveScore (value) +
+    Param::uct_explore_coeff * sqrt (log_val / stat.update_count());
 }
 
 #endif
