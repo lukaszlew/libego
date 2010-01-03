@@ -90,53 +90,40 @@ public:
     move_history.Clear ();
     move_history.Push (playout_root.GetMove());
 
+    bool tree_phase = true;
+
     // descent the MCTS tree
     while (true) {
-
-      if (play_board.BothPlayerPass()) {
-        // sure fast win/loss
-        UpdateTrace (play_board.TrompTaylorWinner().ToScore() * kSureWinUpdate);
-        return;
-      }
-
+      if (play_board.BothPlayerPass()) break;
       if (move_history.IsFull ()) return;
 
       Player pl = play_board.ActPlayer ();
+      Vertex v;
 
-      if (!ActNode().has_all_legal_children [pl]) {
-        if (!ActNode().ReadyToExpand ()) break;
-        ASSERT (pl == ActNode().player.Other());
-        ActNode().EnsureAllLegalChildren (pl, play_board);
+      if (tree_phase) {
+        v = ChooseTreeMove (pl);
+        if (!v.IsValid()) {
+          tree_phase = false;
+          continue;
+        }
+      } else {
+        v = play_board.RandomLightMove (pl, random);
       }
-
-      MctsNode& uct_child = best_child_finder.Find (pl, ActNode());
-      trace.push_back (&uct_child);
-      Vertex v = uct_child.v;
 
       ASSERT (play_board.IsLegal (pl, v));
       play_board.PlayLegal (pl, v);
       move_history.Push (play_board.LastMove ());
     }
 
-    // Finish with regular playout.
-    while (true) {
-      if (play_board.BothPlayerPass ()) break;;
-      if (move_history.IsFull ()) return;
-
-      Player pl = play_board.ActPlayer ();
-      Vertex v  = play_board.RandomLightMove (pl, random);
-
-      ASSERT (play_board.IsLegal (pl, v));
-      play_board.PlayLegal (pl, v);
-      move_history.Push (play_board.LastMove());
+    float score;
+    if (tree_phase) {
+      score = play_board.TrompTaylorWinner().ToScore() * kSureWinUpdate;
+    } else {
+      int sc = play_board.PlayoutScore();
+      score = Player::WinnerOfBoardScore (sc).ToScore (); // +- 1
+      score += float(sc) / 10000.0; // small bonus for bigger win.
     }
-    
-    // Update score.
-    int score = play_board.PlayoutScore();
-    float squashed = Player::WinnerOfBoardScore (score).ToScore (); // +- 1
-    squashed += float(score) / 10000.0; // small bonus for bigger win.
-
-    UpdateTrace (squashed);
+    UpdateTrace (score);
   }
 
   vector<Move> LastPlayout () {
@@ -144,6 +131,20 @@ public:
   }
 
 private:
+
+  Vertex ChooseTreeMove (Player pl) {
+    if (!ActNode().has_all_legal_children [pl]) {
+      if (!ActNode().ReadyToExpand ()) {
+        return Vertex::Invalid ();
+      }
+      ASSERT (pl == ActNode().player.Other());
+      ActNode().EnsureAllLegalChildren (pl, play_board);
+    }
+
+    MctsNode& uct_child = best_child_finder.Find (pl, ActNode());
+    trace.push_back (&uct_child);
+    return uct_child.v;
+  }
 
   void UpdateTrace (int score) {
     UpdateTraceRegular (score);
