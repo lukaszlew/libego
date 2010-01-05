@@ -28,7 +28,7 @@ class MctsEngine {
 public:
   
   MctsEngine ()
-    : root (Player::White(), Vertex::Invalid()),
+    : root (Player::White(), Vertex::OfRaw (0)),
       random (TimeSeed()),
       playout(random),
       time_left (0.0),

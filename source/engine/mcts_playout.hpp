@@ -27,12 +27,13 @@ const float kSureWinUpdate = 1.0; // TODO increase this
 // -----------------------------------------------------------------------------
 
 namespace Param {
-  static bool  update_mcmc = true;
+  bool mcmc_update = true;
+  bool mcmc_update_fraction = 0.5;
 }
 
 class Mcmc {
 public:
-  Mcmc () : move_stats (Stat()), rave_move_stats (Stat()) {
+  Mcmc () : move_stats (Stat()) {
     Reset ();
   }
 
@@ -42,24 +43,24 @@ public:
       // stat.reset      (Param::prior_update_count,
       //                  player.SubjectiveScore (Param::prior_mean));
       move_stats [m].reset (1.0, 0.0);
-      rave_move_stats [m].reset (1.0, 0.0);
     }
   }
 
-  void Update (const Move* tab, int n, float score) {
-    rep (ii, n) {
-      ASSERT (tab[ii].IsValid());
-      rave_move_stats [tab[ii]].update (score);
-    }
-    if (n >= 3) move_stats [tab[2]].update (score);
-    if (n >= 2) move_stats [tab[1]].update (score); // TODO test it
+  void Update (const Move* tab, int n, float score,
+               const NatMap <Move, bool>& move_seen)
+  {
+    ASSERT (n >= 1);
+    move_stats [tab[0]].update (score); // order 1 stats
+    if (n >= 2 && !move_seen [tab[1]]) move_stats [tab[1]].update (score); 
+    if (n >= 3 && !move_seen [tab[2]]) move_stats [tab[2]].update (score);
   }
 
   NatMap <Move, Stat> move_stats;
-  NatMap <Move, Stat> rave_move_stats;
 
   static const bool kCheckAsserts = false;
 };
+
+// -----------------------------------------------------------------------------
 
 class AllMcmc {
 public:
@@ -70,14 +71,16 @@ public:
     ForEachNat (Move, m) mcmc [m].Reset ();
   }
 
-  template <uint stack_size> 
-
-  void Update (float score, const FastStack<Move, stack_size>& history) {
-    uint last_ii  = history.Size () * 7 / 8; // TODO 
-    reps (ii, 1, last_ii) {
-      Move m1 = history[ii];
-      ASSERT (m1.IsValid());
-      mcmc [m1] . Update (history.Data() + ii, (last_ii - ii) / 6, score);
+  void Update (const Move* history, uint n, float score) {
+    n *= Param::mcmc_update_fraction;
+    NatMap <Move, bool> move_seen (false);
+    rep (ii, n) {
+      Move m = history[ii];
+      if (!move_seen [m]) {
+        move_seen [m] = true;
+        ASSERT (m.IsValid());
+        mcmc [m] . Update (history + ii, n - ii, score, move_seen);
+      }
     }
   }
 
@@ -98,8 +101,8 @@ public:
           v != pre_move.GetVertex()) {
         Move move = Move (player, v);
         float mean = mcmc [pre_move].move_stats [move].mean ();
-        gfx->SetInfluence
-          (v.ToGtpString (), (mean - stat.mean()) / stat.std_dev () / 4);
+        float val = (mean - stat.mean()) / stat.std_dev () / 4;
+        gfx->SetInfluence (v.ToGtpString (), val);
       }
     }
   }
@@ -107,6 +110,10 @@ public:
   NatMap <Move, Mcmc> mcmc;
 };
 // -----------------------------------------------------------------------------
+
+namespace Param {
+  bool use_mcts_in_playout = false; // TODO true
+}
 
 class MctsPlayout {
   static const bool kCheckAsserts = false;
@@ -123,7 +130,7 @@ public:
     move_history.Clear ();
     move_history.Push (playout_root.GetMove());
 
-    bool tree_phase = true;
+    bool tree_phase = Param::use_mcts_in_playout;
 
     // do the playout
     while (true) {
@@ -182,7 +189,11 @@ private:
   void UpdateTrace (int score) {
     UpdateTraceRegular (score);
     if (Param::update_rave) UpdateTraceRave (score);
-    if (Param::update_mcmc) all_mcmc.Update (score, move_history);
+    if (Param::mcmc_update) {
+      all_mcmc.Update (move_history.Data (),
+                       move_history.Size(),
+                       play_board.PlayoutScore());
+    }
   }
 
   void UpdateTraceRegular (float score) {
