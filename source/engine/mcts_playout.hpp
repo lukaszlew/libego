@@ -29,7 +29,7 @@ const float kSureWinUpdate = 1.0; // TODO increase this
 namespace Param {
   bool mcmc_update = true;
   bool mcmc_update_fraction = 0.5;
-  float mcmc_explore_coeff = 1.0;
+  float mcmc_explore_coeff = 1000.0;
 }
 
 class Mcmc {
@@ -59,7 +59,7 @@ public:
   void RecalcValues () {
     ForEachNat (Move, m) {
       noise_factor [m] =
-        Param::mcmc_explore_coeff /
+        1.0 /
         sqrt (move_stats[m].update_count ());
       Player pl = m.GetPlayer();
       mean [m] = pl.SubjectiveScore (move_stats[m].mean ());
@@ -120,12 +120,47 @@ public:
 
   void SetNoise () {
     ForEachNat (Move, m) {
-      noise [m] = drand48 ();
+      noise [m] = drand48 () * Param::mcmc_explore_coeff;
     }
   }
 
   Move ChooseMove (const Board& board) {
     return mcmc [board.LastMove()] . ChooseMove (board.ActPlayer (), board, noise);
+  }
+
+  void MoveProbGfx (Move pre_move,
+                    Player player,
+                    const Board& board,
+                    Gtp::GoguiGfx* gfx)
+  {
+    RecalcValues();
+    const uint n = 10000;
+    NatMap <Move, float> prob (0.0);
+    float max_prob = 0.0;
+    rep (ii, n) {
+      SetNoise ();
+      Move m = mcmc [pre_move] . ChooseMove (player, board, noise);
+      prob [m] += 1.0 / n;
+    }
+
+    ForEachNat (Vertex, v) {
+      if (board.ColorAt (v) == Color::Empty () &&
+          v != pre_move.GetVertex())
+      {
+        Move m = Move (player, v);
+        max_prob = max (max_prob, prob[m]);
+      }
+    }
+
+    ForEachNat (Vertex, v) {
+      if (board.ColorAt (v) == Color::Empty () &&
+          v != pre_move.GetVertex())
+      {
+        Move m = Move (player, v);
+        gfx->SetInfluence (v.ToGtpString(), prob [m] / max_prob);
+      }
+    }
+    
   }
 
   void MoveValueGfx (Move pre_move,
@@ -196,8 +231,8 @@ public:
           continue;
         }
       } else {
-        //v = play_board.RandomLightMove (pl, random);
-        v = all_mcmc.ChooseMove (play_board).GetVertex();
+        v = play_board.RandomLightMove (pl, random);
+        //v = all_mcmc.ChooseMove (play_board).GetVertex();
       }
 
       ASSERT (play_board.IsLegal (pl, v));

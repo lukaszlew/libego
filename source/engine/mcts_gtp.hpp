@@ -38,15 +38,27 @@ private:
     gtp.RegisterGfx ("Mcts.ShowLastPlayout", "20", this, &MctsGtp::CShowLastPlayout);
 
     gtp.RegisterGfx ("Mcts.ShowMcmc", "black %p black", this, &MctsGtp::CShowMcmc);
+    gtp.RegisterGfx ("Mcts.ShowMcmcProb", "black %p black", this,
+                     &MctsGtp::CShowMcmcProb);
+
     gtp.RegisterGfx ("Mcts.ShowMcmc", "black %p white", this, &MctsGtp::CShowMcmc);
+    gtp.RegisterGfx ("Mcts.ShowMcmcProb", "black %p white", this,
+                     &MctsGtp::CShowMcmcProb);
+
     gtp.RegisterGfx ("Mcts.ShowMcmc", "white %p black", this, &MctsGtp::CShowMcmc);
+    gtp.RegisterGfx ("Mcts.ShowMcmcProb", "white %p black", this,
+                     &MctsGtp::CShowMcmcProb);
+
     gtp.RegisterGfx ("Mcts.ShowMcmc", "white %p white", this, &MctsGtp::CShowMcmc);
+    gtp.RegisterGfx ("Mcts.ShowMcmcProb", "white %p white", this,
+                     &MctsGtp::CShowMcmcProb);
   }
 
   void RegisterParams (Gtp::ReplWithGogui& gtp) {
     string cmd_search  = "Mcts.Params.Search";
     string cmd_genmove = "Mcts.Params.Genmove";
     string cmd_logger  = "Mcts.Params.Logger";
+    string cmd_mcmc    = "Mcts.Params.Mcmc";
 
     gtp.RegisterParam (cmd_search, "explore_coeff", &Param::uct_explore_coeff);
     gtp.RegisterParam (cmd_search, "bias_stat",     &Param::mcts_bias);
@@ -62,6 +74,8 @@ private:
 
     gtp.RegisterParam (cmd_logger, "is_active",     &mcts_engine.logger.is_active);
     gtp.RegisterParam (cmd_logger, "log_directory", &mcts_engine.logger.log_directory);
+
+    gtp.RegisterParam (cmd_mcmc, "explore", &Param::mcmc_explore_coeff);
 
     string d2gtp = "d2gtp-params";
     gtp.RegisterParam (d2gtp, "ucb_coeff", &Param::uct_explore_coeff);
@@ -150,6 +164,19 @@ private:
                                                player,
                                                mcts_engine.full_board.GetBoard(),
                                                &gfx);
+    gfx.Report (io);
+  }
+
+  void CShowMcmcProb (Gtp::Io& io) {
+    Move   pre_move = io.Read<Move> ();
+    Player player   = io.Read<Player> ();
+    io.CheckEmpty ();
+
+    Gtp::GoguiGfx gfx;
+    mcts_engine.playout.all_mcmc.MoveProbGfx (pre_move,
+                                              player,
+                                              mcts_engine.full_board.GetBoard(),
+                                              &gfx);
     gfx.Report (io);
   }
 
