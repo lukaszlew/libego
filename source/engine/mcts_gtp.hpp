@@ -146,10 +146,10 @@ private:
     io.CheckEmpty ();
 
     Gtp::GoguiGfx gfx;
-    mcts_engine.playout.all_mcmc.FillGfx (pre_move,
-                                          player,
-                                          mcts_engine.full_board.GetBoard(),
-                                          &gfx);
+    mcts_engine.playout.all_mcmc.MoveValueGfx (pre_move,
+                                               player,
+                                               mcts_engine.full_board.GetBoard(),
+                                               &gfx);
     gfx.Report (io);
   }
 

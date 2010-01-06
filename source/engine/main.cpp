@@ -64,6 +64,7 @@ int main(int argc, char** argv) {
   // no buffering to work well with gogui
   setbuf (stdout, NULL);
   setbuf (stderr, NULL);
+  srand48 (123);
 
   Gtp::ReplWithGogui gtp;
 

@@ -29,12 +29,12 @@ const float kSureWinUpdate = 1.0; // TODO increase this
 namespace Param {
   bool mcmc_update = true;
   bool mcmc_update_fraction = 0.5;
+  float mcmc_explore_coeff = 1.0;
 }
 
 class Mcmc {
 public:
-  Mcmc () : move_stats (Stat()) {
-    Reset ();
+  Mcmc () : move_stats (Stat()), mean (0.0), noise_factor(0.0) {
   }
 
   void Reset () {
@@ -43,6 +43,7 @@ public:
       // stat.reset      (Param::prior_update_count,
       //                  player.SubjectiveScore (Param::prior_mean));
       move_stats [m].reset (1.0, 0.0);
+      // TODO handle passes
     }
   }
 
@@ -55,20 +56,53 @@ public:
     if (n >= 3 && !move_seen [tab[2]]) move_stats [tab[2]].update (score);
   }
 
-  NatMap <Move, Stat> move_stats;
+  void RecalcValues () {
+    ForEachNat (Move, m) {
+      noise_factor [m] =
+        Param::mcmc_explore_coeff /
+        sqrt (move_stats[m].update_count ());
+      Player pl = m.GetPlayer();
+      mean [m] = pl.SubjectiveScore (move_stats[m].mean ());
+    }
+  }
 
-  static const bool kCheckAsserts = false;
+  Move ChooseMove (Player pl, const Board& board, const NatMap<Move, float>& noise) {
+    Move best_m = Move (pl, Vertex::Pass ());
+    float best_value = mean [best_m] + noise [best_m] * noise_factor [best_m];
+
+    empty_v_for_each (&board, v, {
+      if (board.IsEyelike (pl, v) || !board.IsLegal (pl, v)) continue;
+      Move m = Move (pl, v);
+      float value = mean [m] + noise [m] * noise_factor [m];
+      if (best_value < value) {
+        best_value = value;
+        best_m = m;
+      }
+    });
+
+    return best_m;
+  }
+
+  NatMap <Move, Stat> move_stats;
+  NatMap <Move, float> mean;
+  NatMap <Move, float> noise_factor;
 };
 
 // -----------------------------------------------------------------------------
 
 class AllMcmc {
 public:
-  AllMcmc () : mcmc (Mcmc()) {
+  AllMcmc () : mcmc (Mcmc()), noise (0.0) {
+    Reset ();
+    RecalcValues ();
   }
 
   void Reset () {
     ForEachNat (Move, m) mcmc [m].Reset ();
+  }
+
+  void RecalcValues () {
+    ForEachNat (Move, m) mcmc [m].RecalcValues ();
   }
 
   void Update (const Move* history, uint n, float score) {
@@ -84,8 +118,21 @@ public:
     }
   }
 
+  void SetNoise () {
+    ForEachNat (Move, m) {
+      noise [m] = drand48 ();
+    }
+  }
 
-  void FillGfx (Move pre_move, Player player, const Board& board, Gtp::GoguiGfx* gfx) {
+  Move ChooseMove (const Board& board) {
+    return mcmc [board.LastMove()] . ChooseMove (board.ActPlayer (), board, noise);
+  }
+
+  void MoveValueGfx (Move pre_move,
+                     Player player,
+                     const Board& board,
+                     Gtp::GoguiGfx* gfx)
+  {
     Stat stat(0.0, 0.0);
 
     ForEachNat (Vertex, v) {
@@ -108,6 +155,7 @@ public:
   }
 
   NatMap <Move, Mcmc> mcmc;
+  NatMap <Move, float> noise;
 };
 // -----------------------------------------------------------------------------
 
@@ -129,6 +177,7 @@ public:
     trace.push_back (&playout_root);
     move_history.Clear ();
     move_history.Push (playout_root.GetMove());
+    all_mcmc.SetNoise();
 
     bool tree_phase = Param::use_mcts_in_playout;
 
@@ -147,7 +196,8 @@ public:
           continue;
         }
       } else {
-        v = play_board.RandomLightMove (pl, random);
+        //v = play_board.RandomLightMove (pl, random);
+        v = all_mcmc.ChooseMove (play_board).GetVertex();
       }
 
       ASSERT (play_board.IsLegal (pl, v));
