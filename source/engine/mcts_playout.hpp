@@ -64,6 +64,8 @@ public:
       Player pl = m.GetPlayer();
       mean [m] = pl.SubjectiveScore (move_stats[m].mean ());
     }
+    mean [Move (Player::Black(), Vertex::Pass ())] = - 1.0E20;
+    mean [Move (Player::White(), Vertex::Pass ())] = 1.0E20;
   }
 
   Move ChooseMove (Player pl, const Board& board, const NatMap<Move, float>& noise) {
@@ -185,6 +187,8 @@ public:
         float mean = mcmc [pre_move].move_stats [move].mean ();
         float val = (mean - stat.mean()) / stat.std_dev () / 4;
         gfx->SetInfluence (v.ToGtpString (), val);
+        cerr << v.ToGtpString () << " : "
+             << mcmc [pre_move].move_stats [move].to_string () << endl;
       }
     }
   }
