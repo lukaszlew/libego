@@ -43,6 +43,7 @@ static const bool kCheckAsserts = false;
 #include "logger.hpp"
 
 #include "mcts_tree.hpp"
+#include "mcts_mcmc.hpp"
 #include "mcts_playout.hpp"
 #include "mcts_engine.hpp"
 #include "mcts_gtp.hpp"
