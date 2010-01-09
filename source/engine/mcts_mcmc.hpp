@@ -19,13 +19,8 @@ public:
     }
   }
 
-  void Update (const Move* tab, int n, float score,
-               const NatMap <Move, bool>& move_seen)
-  {
-    ASSERT (n >= 1);
-    move_stats [tab[0]].update (score); // order 1 stats
-    if (n >= 2 && !move_seen [tab[1]]) move_stats [tab[1]].update (score); 
-    if (n >= 3 && !move_seen [tab[2]]) move_stats [tab[2]].update (score);
+  void Update (Move m, float score) {
+    move_stats [m] . update (score);
   }
 
   void RecalcValues () {
@@ -82,12 +77,17 @@ public:
   void Update (const Move* history, uint n, float score) {
     n *= Param::mcmc_update_fraction;
     NatMap <Move, bool> move_seen (false);
-    rep (ii, n) {
+    rep (ii, n-2) {
       Move m = history[ii];
+      Move m2 = history [ii+1];
+      Move m3 = history [ii+2];
+      ASSERT (m.IsValid());
+      ASSERT (m2.IsValid());
+      ASSERT (m3.IsValid());
       if (!move_seen [m]) {
         move_seen [m] = true;
-        ASSERT (m.IsValid());
-        mcmc [m] . Update (history + ii, n - ii, score, move_seen);
+        if (!move_seen [m2]) mcmc [m] . Update (m2, score);
+        if (!move_seen [m3]) mcmc [m] . Update (m3, score);
       }
     }
   }
