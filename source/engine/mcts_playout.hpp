@@ -43,7 +43,6 @@ public:
     trace.push_back (&playout_root);
     move_history.Clear ();
     move_history.Push (playout_root.GetMove());
-    all_mcmc.SetNoise();
 
     bool tree_phase = Param::use_mcts_in_playout;
 

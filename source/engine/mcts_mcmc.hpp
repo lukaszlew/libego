@@ -6,7 +6,7 @@ namespace Param {
 
 class Mcmc {
 public:
-  Mcmc () : move_stats (Stat()), mean (0.0), noise_factor(0.0) {
+  Mcmc () : move_stats (Stat()), ucb(0.0) {
   }
 
   void Reset () {
@@ -15,34 +15,29 @@ public:
       // stat.reset      (Param::prior_update_count,
       //                  player.SubjectiveScore (Param::prior_mean));
       move_stats [m].reset (1.0, 0.0);
+      RecalcUcb (m);
       // TODO handle passes
     }
   }
 
+  void RecalcUcb (Move m) {
+    ucb [m] = m.GetPlayer().SubjectiveScore (move_stats [m].mean());
+    ucb [m] += Param::mcmc_explore_coeff / sqrt (move_stats [m].update_count());
+  }
+
   void Update (Move m, float score) {
     move_stats [m] . update (score);
+    RecalcUcb (m);
   }
 
-  void RecalcValues () {
-    ForEachNat (Move, m) {
-      noise_factor [m] =
-        1.0 /
-        sqrt (move_stats[m].update_count ());
-      Player pl = m.GetPlayer();
-      mean [m] = pl.SubjectiveScore (move_stats[m].mean ());
-    }
-    mean [Move (Player::Black(), Vertex::Pass ())] = - 1.0E20;
-    mean [Move (Player::White(), Vertex::Pass ())] = 1.0E20;
-  }
-
-  Move ChooseMove (Player pl, const Board& board, const NatMap<Move, float>& noise) {
+  Move ChooseMove (Player pl, const Board& board) {
     Move best_m = Move (pl, Vertex::Pass ());
-    float best_value = mean [best_m] + noise [best_m] * noise_factor [best_m];
+    float best_value = ucb [best_m];
 
     empty_v_for_each (&board, v, {
       if (board.IsEyelike (pl, v) || !board.IsLegal (pl, v)) continue;
       Move m = Move (pl, v);
-      float value = mean [m] + noise [m] * noise_factor [m];
+      float value = ucb [m];
       if (best_value < value) {
         best_value = value;
         best_m = m;
@@ -53,25 +48,19 @@ public:
   }
 
   NatMap <Move, Stat> move_stats;
-  NatMap <Move, float> mean;
-  NatMap <Move, float> noise_factor;
+  NatMap <Move, float> ucb;
 };
 
 // -----------------------------------------------------------------------------
 
 class AllMcmc {
 public:
-  AllMcmc () : mcmc (Mcmc()), noise (0.0) {
+  AllMcmc () : mcmc (Mcmc()) {
     Reset ();
-    RecalcValues ();
   }
 
   void Reset () {
     ForEachNat (Move, m) mcmc [m].Reset ();
-  }
-
-  void RecalcValues () {
-    ForEachNat (Move, m) mcmc [m].RecalcValues ();
   }
 
   void Update (const Move* history, uint n, float score) {
@@ -92,14 +81,8 @@ public:
     }
   }
 
-  void SetNoise () {
-    ForEachNat (Move, m) {
-      noise [m] = drand48 () * Param::mcmc_explore_coeff;
-    }
-  }
-
   Move ChooseMove (const Board& board) {
-    return mcmc [board.LastMove()] . ChooseMove (board.ActPlayer (), board, noise);
+    return mcmc [board.LastMove()] . ChooseMove (board.ActPlayer (), board);
   }
 
   void MoveProbGfx (Move pre_move,
@@ -107,15 +90,15 @@ public:
                     const Board& board,
                     Gtp::GoguiGfx* gfx)
   {
-    RecalcValues();
     const uint n = 10000;
     NatMap <Move, float> prob (0.0);
     float max_prob = 0.0;
     rep (ii, n) {
-      SetNoise ();
-      Move m = mcmc [pre_move] . ChooseMove (player, board, noise);
+      Move m = mcmc [pre_move] . ChooseMove (player, board); // TODO Pass ?
+      cerr << m.ToGtpString() << "; ";
       prob [m] += 1.0 / n;
     }
+    cerr << endl;
 
     ForEachNat (Vertex, v) {
       if (board.ColorAt (v) == Color::Empty () &&
@@ -147,7 +130,7 @@ public:
     ForEachNat (Vertex, v) {
       if (board.ColorAt (v) == Color::Empty () && v != pre_move.GetVertex()) {
         Move move = Move (player, v);
-        float mean = mcmc [pre_move].move_stats [move].mean ();
+        float mean = mcmc [pre_move].ucb [move];
         stat.update (mean);
       }
     }
@@ -156,7 +139,7 @@ public:
       if (board.ColorAt (v) == Color::Empty () &&
           v != pre_move.GetVertex()) {
         Move move = Move (player, v);
-        float mean = mcmc [pre_move].move_stats [move].mean ();
+        float mean = mcmc [pre_move].ucb [move];
         float val = (mean - stat.mean()) / stat.std_dev () / 4;
         gfx->SetInfluence (v.ToGtpString (), val);
         cerr << v.ToGtpString () << " : "
@@ -166,7 +149,6 @@ public:
   }
 
   NatMap <Move, Mcmc> mcmc;
-  NatMap <Move, float> noise;
 };
 // -----------------------------------------------------------------------------
 
