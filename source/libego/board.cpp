@@ -321,7 +321,7 @@ bool Board::IsEyelike (Move move) const {
   return IsEyelike (move.GetPlayer (), move.GetVertex());
 }
 
-Vertex Board::RandomLightMove (Player pl, FastRandom& random) {
+Vertex Board::RandomLightMove (Player pl, FastRandom& random) const {
   uint ii_start = random.GetNextUint (EmptyVertexCount()); 
   uint ii = ii_start;
 

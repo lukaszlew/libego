@@ -61,8 +61,13 @@ public:
           continue;
         }
       } else {
-        v = play_board.RandomLightMove (pl, random);
-        //v = all_mcmc.ChooseMove (play_board).GetVertex();
+        Move m;
+        //m = all_mcmc.Choose8Move (play_board);
+        if (m.IsValid ()) {
+          v = m.GetVertex ();
+        } else {
+          v = play_board.RandomLightMove (pl, random);
+        }
       }
 
       ASSERT (play_board.IsLegal (pl, v));

@@ -1,3 +1,16 @@
+#define for_each_8_nbr(center_v, nbr_v, block) {                \
+    Vertex nbr_v = Vertex::Invalid();                           \
+    nbr_v = center_v.N (); block;                               \
+    nbr_v = center_v.W (); block;                               \
+    nbr_v = center_v.E (); block;                               \
+    nbr_v = center_v.S (); block;                               \
+    nbr_v = center_v.NW (); block;                              \
+    nbr_v = center_v.NE (); block;                              \
+    nbr_v = center_v.SW (); block;                              \
+    nbr_v = center_v.SE (); block;                              \
+  }
+
+
 namespace Param {
   bool mcmc_update = true;
   bool mcmc_update_fraction = 0.5;
@@ -30,23 +43,24 @@ public:
     RecalcUcb (m);
   }
 
-  Move ChooseMove (Player pl, const Board& board) {
-    Move best_m = Move (pl, Vertex::Pass ());
-    float best_value = ucb [best_m];
-
-    empty_v_for_each (&board, v, {
-      if (board.IsEyelike (pl, v) || !board.IsLegal (pl, v)) continue;
-      Move m = Move (pl, v);
-      float value = ucb [m];
-      if (best_value < value) {
-        best_value = value;
-        best_m = m;
+  // may return invalid move 
+  Move Choose8Move (Player pl, const Board& board) {
+    Move best_m;
+    float best_value = - 1E20;
+    Vertex last_v = board.LastMove().GetVertex ();
+    for_each_8_nbr (last_v, nbr, {
+      if (board.IsLegal (pl, nbr) && !board.IsEyelike (pl, nbr)) {
+        Move m = Move (pl, nbr);
+        float value = ucb [m];
+        if (best_value < value) {
+          best_value = value;
+          best_m = m;
+        }
       }
     });
-
     return best_m;
   }
-
+  
   NatMap <Move, Stat> move_stats;
   NatMap <Move, float> ucb;
 };
@@ -81,8 +95,8 @@ public:
     }
   }
 
-  Move ChooseMove (const Board& board) {
-    return mcmc [board.LastMove()] . ChooseMove (board.ActPlayer (), board);
+  Move Choose8Move (const Board& board) {
+    return mcmc [board.LastMove()] . Choose8Move (board.ActPlayer (), board);
   }
 
   void MoveProbGfx (Move pre_move,
@@ -90,34 +104,10 @@ public:
                     const Board& board,
                     Gtp::GoguiGfx* gfx)
   {
-    const uint n = 10000;
-    NatMap <Move, float> prob (0.0);
-    float max_prob = 0.0;
-    rep (ii, n) {
-      Move m = mcmc [pre_move] . ChooseMove (player, board); // TODO Pass ?
-      cerr << m.ToGtpString() << "; ";
-      prob [m] += 1.0 / n;
-    }
-    cerr << endl;
-
-    ForEachNat (Vertex, v) {
-      if (board.ColorAt (v) == Color::Empty () &&
-          v != pre_move.GetVertex())
-      {
-        Move m = Move (player, v);
-        max_prob = max (max_prob, prob[m]);
-      }
-    }
-
-    ForEachNat (Vertex, v) {
-      if (board.ColorAt (v) == Color::Empty () &&
-          v != pre_move.GetVertex())
-      {
-        Move m = Move (player, v);
-        gfx->SetInfluence (v.ToGtpString(), prob [m] / max_prob);
-      }
-    }
-    
+    unused (pre_move);
+    unused (player);
+    unused (board);
+    unused (gfx);
   }
 
   void MoveValueGfx (Move pre_move,
