@@ -43,14 +43,22 @@ public:
     RecalcUcb (m);
   }
 
+  float GfxValue (Move m) const {
+    return move_stats [m].mean();
+  }
+
   // may return invalid move 
-  Move Choose8Move (Player pl, const Board& board) {
+  Move Choose8Move (Player pl, const Board& board,  const NatMap<Move, uint>& move_seen)
+  {
     Move best_m;
     float best_value = - 1E20;
     Vertex last_v = board.LastMove().GetVertex ();
     for_each_8_nbr (last_v, nbr, {
-      if (board.IsLegal (pl, nbr) && !board.IsEyelike (pl, nbr)) {
-        Move m = Move (pl, nbr);
+      Move m = Move (pl, nbr);
+      if (move_seen[m] == 0 &&
+          board.IsLegal (pl, nbr) &&
+          !board.IsEyelike (pl, nbr))
+      {
         float value = ucb [m];
         if (best_value < value) {
           best_value = value;
@@ -95,8 +103,8 @@ public:
     }
   }
 
-  Move Choose8Move (const Board& board) {
-    return mcmc [board.LastMove()] . Choose8Move (board.ActPlayer (), board);
+  Move Choose8Move (const Board& board, const NatMap<Move, uint>& move_seen) {
+    return mcmc [board.LastMove()] . Choose8Move (board.ActPlayer (), board, move_seen);
   }
 
   void MoveProbGfx (Move pre_move,
@@ -116,26 +124,28 @@ public:
                      Gtp::GoguiGfx* gfx)
   {
     Stat stat(0.0, 0.0);
+    Vertex pre_v = pre_move.GetVertex();
 
-    ForEachNat (Vertex, v) {
+    for_each_8_nbr (pre_v, v, {
       if (board.ColorAt (v) == Color::Empty () && v != pre_move.GetVertex()) {
         Move move = Move (player, v);
-        float mean = mcmc [pre_move].ucb [move];
+        float mean = mcmc [pre_move].GfxValue (move);
         stat.update (mean);
       }
-    }
+    });
 
-    ForEachNat (Vertex, v) {
+    for_each_8_nbr (pre_v, v, {
+        //ForEachNat (Vertex, v) {
       if (board.ColorAt (v) == Color::Empty () &&
           v != pre_move.GetVertex()) {
         Move move = Move (player, v);
-        float mean = mcmc [pre_move].ucb [move];
+        float mean = mcmc [pre_move].GfxValue(move);
         float val = (mean - stat.mean()) / stat.std_dev () / 4;
         gfx->SetInfluence (v.ToGtpString (), val);
         cerr << v.ToGtpString () << " : "
              << mcmc [pre_move].move_stats [move].to_string () << endl;
       }
-    }
+    });
   }
 
   NatMap <Move, Mcmc> mcmc;

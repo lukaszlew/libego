@@ -32,7 +32,7 @@ namespace Param {
 class MctsPlayout {
   static const bool kCheckAsserts = false;
 public:
-  MctsPlayout (FastRandom& random_) : random (random_) {
+  MctsPlayout (FastRandom& random_) : random (random_), move_seen (0) {
   }
 
   void DoOnePlayout (MctsNode& playout_root, const Board& board, Player first_player) {
@@ -43,6 +43,7 @@ public:
     trace.push_back (&playout_root);
     move_history.Clear ();
     move_history.Push (playout_root.GetMove());
+    move_seen.SetToZero();
 
     bool tree_phase = Param::use_mcts_in_playout;
 
@@ -62,7 +63,7 @@ public:
         }
       } else {
         Move m;
-        //m = all_mcmc.Choose8Move (play_board);
+        m = all_mcmc.Choose8Move (play_board, move_seen);
         if (m.IsValid ()) {
           v = m.GetVertex ();
         } else {
@@ -72,7 +73,9 @@ public:
 
       ASSERT (play_board.IsLegal (pl, v));
       play_board.PlayLegal (pl, v);
-      move_history.Push (play_board.LastMove ());
+      Move m = play_board.LastMove ();
+      move_history.Push (m);
+      move_seen [m] += 1;
     }
 
     float score;
@@ -164,6 +167,7 @@ private:
   FastRandom& random;
   vector <MctsNode*> trace;               // nodes in the path
   FastStack <Move, Board::kArea * 3> move_history;
+  NatMap <Move, uint> move_seen;
 public:
   AllMcmc all_mcmc;
 };
