@@ -123,7 +123,7 @@ public:
                      const Board& board,
                      Gtp::GoguiGfx* gfx)
   {
-    Stat stat(0.0, 0.0);
+    Stat stat(0.01, 0.0);
     Vertex pre_v = pre_move.GetVertex();
 
     for_each_8_nbr (pre_v, v, {

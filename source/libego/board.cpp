@@ -335,6 +335,7 @@ Vertex Board::RandomLightMove (Player pl, FastRandom& random) const {
 }
 
 
+flatten
 void Board::PlayLegal (Move move) { // TODO test with move
   PlayLegal (move.GetPlayer (), move.GetVertex());
 }

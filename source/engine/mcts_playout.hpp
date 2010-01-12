@@ -63,7 +63,7 @@ public:
         }
       } else {
         Move m;
-        m = all_mcmc.Choose8Move (play_board, move_seen);
+        //m = all_mcmc.Choose8Move (play_board, move_seen);
         if (m.IsValid ()) {
           v = m.GetVertex ();
         } else {
