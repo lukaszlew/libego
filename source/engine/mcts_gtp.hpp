@@ -37,21 +37,22 @@ private:
     gtp.RegisterGfx ("Mcts.ShowLastPlayout", "16", this, &MctsGtp::CShowLastPlayout);
     gtp.RegisterGfx ("Mcts.ShowLastPlayout", "20", this, &MctsGtp::CShowLastPlayout);
 
-    gtp.RegisterGfx ("Mcts.ShowMcmc", "black %p black", this, &MctsGtp::CShowMcmc);
-    gtp.RegisterGfx ("Mcts.ShowMcmcProb", "black %p black", this,
-                     &MctsGtp::CShowMcmcProb);
-
     gtp.RegisterGfx ("Mcts.ShowMcmc", "black %p white", this, &MctsGtp::CShowMcmc);
-    gtp.RegisterGfx ("Mcts.ShowMcmcProb", "black %p white", this,
-                     &MctsGtp::CShowMcmcProb);
-
     gtp.RegisterGfx ("Mcts.ShowMcmc", "white %p black", this, &MctsGtp::CShowMcmc);
-    gtp.RegisterGfx ("Mcts.ShowMcmcProb", "white %p black", this,
-                     &MctsGtp::CShowMcmcProb);
 
-    gtp.RegisterGfx ("Mcts.ShowMcmc", "white %p white", this, &MctsGtp::CShowMcmc);
-    gtp.RegisterGfx ("Mcts.ShowMcmcProb", "white %p white", this,
-                     &MctsGtp::CShowMcmcProb);
+    gtp.RegisterGfx ("Mcts.ShowMcmc", "black %p black # not used", this, &MctsGtp::CShowMcmc);
+    gtp.RegisterGfx ("Mcts.ShowMcmc", "white %p white # not used", this, &MctsGtp::CShowMcmc);
+
+//     gtp.RegisterGfx ("Mcts.ShowMcmcProb", "black %p white", this,
+//                      &MctsGtp::CShowMcmcProb);
+
+//     gtp.RegisterGfx ("Mcts.ShowMcmcProb", "white %p black", this,
+//                      &MctsGtp::CShowMcmcProb);
+
+//     gtp.RegisterGfx ("Mcts.ShowMcmcProb", "black %p black", this,
+//                      &MctsGtp::CShowMcmcProb);
+//     gtp.RegisterGfx ("Mcts.ShowMcmcProb", "white %p white", this,
+//                      &MctsGtp::CShowMcmcProb);
   }
 
   void RegisterParams (Gtp::ReplWithGogui& gtp) {
