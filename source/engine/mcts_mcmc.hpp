@@ -17,32 +17,9 @@ namespace Param {
   float mcmc_explore_coeff = 1000.0;
 }
 
-class Mcmc {
-public:
-  Mcmc () : move_stats (Stat()) {
-  }
-
-  void Reset () {
-    ForEachNat (Move, m) {
-      // TODO prior
-      // stat.reset      (Param::prior_update_count,
-      //                  player.SubjectiveScore (Param::prior_mean));
-      move_stats [m].reset (1.0, 0.0);
-      // TODO handle passes
-    }
-  }
-
-  void Update (Move m, float score) {
-    move_stats [m] . update (score);
-    move_stats [m] . UpdateUcb (m.GetPlayer(), Param::mcmc_explore_coeff);
-  }
-
-  float GfxValue (Move m) const {
-    return move_stats [m].mean();
-  }
-  
+struct Mcmc {
   NatMap <Move, Stat> move_stats;
-  Stat light;
+  NatMap <Player, Stat> light;
 };
 
 // -----------------------------------------------------------------------------
@@ -54,58 +31,67 @@ public:
   }
 
   void Reset () {
-    ForEachNat (Move, m) mcmc [m].Reset ();
+    ForEachNat (Move, m) {
+      // TODO prior, pass
+      ForEachNat (Move, m1) mcmc[m].move_stats [m1].reset (1.0, 0.0);
+      ForEachNat (Player, pl) mcmc[m].light[pl].reset (1.0, 0.0);    
+    }
   }
 
-  void Update (const Move* history, uint n, float score) {
-    n *= Param::mcmc_update_fraction;
-    CHECK (n >= 2);
-    NatMap <Move, bool> move_seen (false);
-    rep (ii, n-2) {
-      Move m = history[ii];
-      Move m2 = history [ii+1];
-      Move m3 = history [ii+2];
-      ASSERT (m.IsValid());
-      ASSERT (m2.IsValid());
-      ASSERT (m3.IsValid());
-      if (!move_seen [m]) {
-        move_seen [m] = true;
-        if (!move_seen [m2]) mcmc [m] . Update (m2, score);
-        if (!move_seen [m3]) mcmc [m] . Update (m3, score);
-      }
+  void NewPlayout () {
+    to_update.clear();
+    to_update_pl.clear();
+  }
+
+  void Update (float score) {
+    rep (ii, to_update.size() * Param::mcmc_update_fraction) {
+      to_update[ii] -> update (score);
+      to_update[ii] -> UpdateUcb (to_update_pl [ii], Param::mcmc_explore_coeff);
     }
   }
 
   Vertex Choose8Move (const Board& board, const NatMap<Vertex, uint>& v_seen, FastRandom& random) {
     Player pl = board.ActPlayer();
-    Vertex best_v;
+    Vertex best_v; // invalid == light move
+    float best_value = - 1E20;
+    Stat* best_stat = NULL;
 
     Vertex last_v = board.LastVertex();
-
-    if (last_v.IsValid() &&
-        last_v != Vertex::Pass () &&
-        random.GetNextUint(256) < 200)
-    {
+    if (last_v.IsValid()) {
       Mcmc& act_mcmc = mcmc [board.LastMove ()];
-      float best_value = - 1E20;
+      best_stat = &act_mcmc.light [pl];
+      if (last_v != Vertex::Pass () &&
+          random.GetNextUint(256) < 200)
+      {
 
-      for_each_8_nbr (last_v, nbr, {
-        if (v_seen[nbr] == 0 &&
-            board.IsLegal (pl, nbr) &&
-            !board.IsEyelike (pl, nbr))
-        {
-          float value = act_mcmc.move_stats [Move(pl, nbr)].Ucb();
-          if (best_value < value) {
-            best_value = value;
-            best_v = nbr;
+        for_each_8_nbr (last_v, nbr, {
+          if (v_seen[nbr] == 0 &&
+              board.IsLegal (pl, nbr) &&
+              !board.IsEyelike (pl, nbr))
+          {
+            Stat& stat = act_mcmc.move_stats [Move(pl, nbr)];
+            float value = stat.Ucb();
+            if (best_value < value) {
+              best_value = value;
+              best_v = nbr;
+              best_stat = &stat;
+            }
           }
-        }
-      });
+        });
+      }
     }
 
-    if (best_v.IsValid ()) return best_v;
+    if (!best_v.IsValid ()) {
+      best_v = board.RandomLightMove (pl, random);
+    }
 
-    return board.RandomLightMove (pl, random);
+    if (best_stat != NULL) { // TODO solve it by having
+                             // base_precondition for empty board
+      to_update.push_back (best_stat);
+      to_update_pl.push_back (pl);
+    }
+
+    return best_v;
   }
 
   void MoveProbGfx (Move pre_move,
@@ -130,17 +116,20 @@ public:
     for_each_8_nbr (pre_v, v, {
       if (board.ColorAt (v) == Color::Empty () && v != pre_move.GetVertex()) {
         Move move = Move (player, v);
-        float mean = mcmc [pre_move].GfxValue (move);
+        float mean = mcmc [pre_move].move_stats [move].mean();
         stat.update (mean);
       }
     });
+
+    cerr << "light" << " : "
+         << mcmc [pre_move].light [player].to_string () << endl;
 
     for_each_8_nbr (pre_v, v, {
         //ForEachNat (Vertex, v) {
       if (board.ColorAt (v) == Color::Empty () &&
           v != pre_move.GetVertex()) {
         Move move = Move (player, v);
-        float mean = mcmc [pre_move].GfxValue(move);
+        float mean = mcmc [pre_move].move_stats [move].mean();
         float val = (mean - stat.mean()) / stat.std_dev () / 4;
         gfx->SetInfluence (v.ToGtpString (), val);
         cerr << v.ToGtpString () << " : "
@@ -150,6 +139,8 @@ public:
   }
 
   NatMap <Move, Mcmc> mcmc;
+  vector <Stat*> to_update;
+  vector <Player> to_update_pl;
 };
 // -----------------------------------------------------------------------------
 

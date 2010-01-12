@@ -44,6 +44,7 @@ public:
     move_history.Clear ();
     move_history.Push (playout_root.GetMove());
     v_seen.SetToZero();
+    all_mcmc.NewPlayout ();
 
     bool tree_phase = Param::use_mcts_in_playout;
 
@@ -104,11 +105,7 @@ private:
   void UpdateTrace (int score) {
     UpdateTraceRegular (score);
     if (Param::update_rave) UpdateTraceRave (score);
-    if (Param::mcmc_update) {
-      all_mcmc.Update (move_history.Data (),
-                       move_history.Size(),
-                       play_board.PlayoutScore());
-    }
+    if (Param::mcmc_update) all_mcmc.Update (play_board.PlayoutScore());
   }
 
   void UpdateTraceRegular (float score) {

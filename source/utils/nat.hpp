@@ -43,7 +43,7 @@ class Nat {
 template <typename Nat, typename Elt>
 class NatMap {
  public:
-  NatMap (const Elt& init);
+  NatMap (const Elt& init = Elt());
   Elt& operator[] (Nat nat);
   const Elt& operator[] (Nat nat) const;
   void SetAll (const Elt& elt);

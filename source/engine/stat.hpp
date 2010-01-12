@@ -17,7 +17,7 @@ public:
     sample_count       = prior_count;
     sample_sum         = prior_count * prior_mean;
     square_sample_sum  = prior_count * prior_mean * prior_mean * 2.0;
-    ucb = 0.0;
+    ucb = 1.0E20;
   }
 
   void update (float sample) {
