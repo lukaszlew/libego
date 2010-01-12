@@ -19,7 +19,7 @@ namespace Param {
 
 class Mcmc {
 public:
-  Mcmc () : move_stats (Stat()), ucb(0.0) {
+  Mcmc () : move_stats (Stat()) {
   }
 
   void Reset () {
@@ -28,19 +28,13 @@ public:
       // stat.reset      (Param::prior_update_count,
       //                  player.SubjectiveScore (Param::prior_mean));
       move_stats [m].reset (1.0, 0.0);
-      RecalcUcb (m);
       // TODO handle passes
     }
   }
 
-  void RecalcUcb (Move m) {
-    ucb [m] = m.GetPlayer().SubjectiveScore (move_stats [m].mean());
-    ucb [m] += Param::mcmc_explore_coeff / sqrt (move_stats [m].update_count());
-  }
-
   void Update (Move m, float score) {
     move_stats [m] . update (score);
-    RecalcUcb (m);
+    move_stats [m] . UpdateUcb (m.GetPlayer(), Param::mcmc_explore_coeff);
   }
 
   float GfxValue (Move m) const {
@@ -48,7 +42,6 @@ public:
   }
   
   NatMap <Move, Stat> move_stats;
-  NatMap <Move, float> ucb;
 };
 
 // -----------------------------------------------------------------------------
@@ -93,7 +86,7 @@ public:
       return board.RandomLightMove (pl, random);
     }
 
-    Move last_m = board.LastMove ();
+    Mcmc& act_mcmc = mcmc [board.LastMove ()];
     Vertex best_v;
     float best_value = - 1E20;
 
@@ -102,7 +95,7 @@ public:
           board.IsLegal (pl, nbr) &&
           !board.IsEyelike (pl, nbr))
       {
-        float value = mcmc [last_m].ucb [Move(pl, nbr)];
+        float value = act_mcmc.move_stats [Move(pl, nbr)].Ucb();
         if (best_value < value) {
           best_value = value;
           best_v = nbr;
