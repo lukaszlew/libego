@@ -35,6 +35,7 @@ public:
       // TODO prior, pass
       ForEachNat (Move, m1) mcmc[m].move_stats [m1].reset (1.0, 0.0);
       ForEachNat (Player, pl) mcmc[m].light[pl].reset (1.0, 0.0);    
+      ForEachNat (Vertex, v) ownage[v].reset (0.0, 0.0);
     }
   }
 
@@ -43,10 +44,20 @@ public:
     to_update_pl.clear();
   }
 
-  void Update (float score) {
+  void Update (Board& board) {
+    float score = board.PlayoutScore ();
     rep (ii, to_update.size() * Param::mcmc_update_fraction) {
       to_update[ii] -> update (score);
       to_update[ii] -> UpdateUcb (to_update_pl [ii], Param::mcmc_explore_coeff);
+    }
+
+    ForEachNat (Vertex, v) {
+      Color c = board.ColorAt (v);
+      if (c == Color::OffBoard()) continue;
+      if (c.IsPlayer ())
+        ownage [v].update (c.ToPlayer().ToScore());
+      else 
+        ownage [v].update (board.EyeScore(v));
     }
   }
 
@@ -141,9 +152,18 @@ public:
     });
   }
 
+  void OwnageGfx (Gtp::GoguiGfx* gfx) {
+    ForEachNat (Vertex, v) {
+      if (v.IsOnBoard()) {
+        gfx->SetInfluence (v.ToGtpString (), ownage[v].mean());
+      }
+    }
+  }
+
   NatMap <Move, Mcmc> mcmc;
   vector <Stat*> to_update;
   vector <Player> to_update_pl;
+  NatMap <Vertex, Stat> ownage;
 };
 // -----------------------------------------------------------------------------
 

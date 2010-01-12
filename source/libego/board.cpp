@@ -541,14 +541,16 @@ int Board::StoneScore () const {
 }
 
 
+int Board::EyeScore (Vertex v) const {
+  return 
+    nbr_cnt[v].player_cnt_is_max (Player::Black ()) -
+    nbr_cnt[v].player_cnt_is_max (Player::White ());
+}
+
+
 int Board::PlayoutScore () const {
   int eye_score = 0;
-
-  empty_v_for_each (this, v, {
-    eye_score += nbr_cnt[v].player_cnt_is_max (Player::Black ());
-    eye_score -= nbr_cnt[v].player_cnt_is_max (Player::White ());
-  });
-
+  empty_v_for_each (this, v, eye_score += EyeScore (v));
   return StoneScore () + eye_score;
 }
 

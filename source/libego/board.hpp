@@ -108,6 +108,10 @@ public:
   // mercy heuristic.
   int StoneScore () const;
 
+  
+  // -1 if white's eye, +1 if black's eye, 0 otherwise.
+  int EyeScore (Vertex v) const;
+
   // Winner according to StoneScore.
   Player StoneWinner () const;
 

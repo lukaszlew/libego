@@ -43,6 +43,8 @@ private:
     gtp.RegisterGfx ("Mcts.ShowMcmc", "black %p black # not used", this, &MctsGtp::CShowMcmc);
     gtp.RegisterGfx ("Mcts.ShowMcmc", "white %p white # not used", this, &MctsGtp::CShowMcmc);
 
+    gtp.RegisterGfx ("McMc.Ownage", "", this, &MctsGtp::CMcmcOwnage);
+
 //     gtp.RegisterGfx ("Mcts.ShowMcmcProb", "black %p white", this,
 //                      &MctsGtp::CShowMcmcProb);
 
@@ -165,6 +167,14 @@ private:
                                                player,
                                                mcts_engine.full_board.GetBoard(),
                                                &gfx);
+    gfx.Report (io);
+  }
+
+  void CMcmcOwnage (Gtp::Io& io) {
+    io.CheckEmpty ();
+
+    Gtp::GoguiGfx gfx;
+    mcts_engine.playout.all_mcmc.OwnageGfx (&gfx);
     gfx.Report (io);
   }
 

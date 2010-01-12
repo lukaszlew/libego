@@ -105,7 +105,7 @@ private:
   void UpdateTrace (int score) {
     UpdateTraceRegular (score);
     if (Param::update_rave) UpdateTraceRave (score);
-    if (Param::mcmc_update) all_mcmc.Update (play_board.PlayoutScore());
+    if (Param::mcmc_update) all_mcmc.Update (play_board);
   }
 
   void UpdateTraceRegular (float score) {
