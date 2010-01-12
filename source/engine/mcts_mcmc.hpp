@@ -46,29 +46,6 @@ public:
   float GfxValue (Move m) const {
     return move_stats [m].mean();
   }
-
-  // may return invalid move 
-  Move Choose8Move (Player pl, const Board& board,  const NatMap<Move, uint>& move_seen)
-  {
-    Move best_m;
-    float best_value = - 1E20;
-    Vertex last_v = board.LastVertex();
-    if (!last_v.IsValid() || last_v == Vertex::Pass () ) return best_m; // invalid
-    for_each_8_nbr (last_v, nbr, {
-      Move m = Move (pl, nbr);
-      if (move_seen[m] == 0 &&
-          board.IsLegal (pl, nbr) &&
-          !board.IsEyelike (pl, nbr))
-      {
-        float value = ucb [m];
-        if (best_value < value) {
-          best_value = value;
-          best_m = m;
-        }
-      }
-    });
-    return best_m;
-  }
   
   NatMap <Move, Stat> move_stats;
   NatMap <Move, float> ucb;
@@ -105,9 +82,37 @@ public:
     }
   }
 
-  Move Choose8Move (const Board& board, const NatMap<Move, uint>& move_seen) {
-    if (!board.LastVertex().IsValid ()) return Move();
-    return mcmc [board.LastMove()] . Choose8Move (board.ActPlayer (), board, move_seen);
+  Vertex Choose8Move (const Board& board, const NatMap<Vertex, uint>& v_seen, FastRandom& random) {
+    Player pl = board.ActPlayer();
+    Vertex last_v = board.LastVertex();
+
+    if (!last_v.IsValid() ||
+        last_v == Vertex::Pass () ||
+        random.GetNextUint(256) < 50)
+    {
+      return board.RandomLightMove (pl, random);
+    }
+
+    Move last_m = board.LastMove ();
+    Vertex best_v;
+    float best_value = - 1E20;
+
+    for_each_8_nbr (last_v, nbr, {
+      if (v_seen[nbr] == 0 &&
+          board.IsLegal (pl, nbr) &&
+          !board.IsEyelike (pl, nbr))
+      {
+        float value = mcmc [last_m].ucb [Move(pl, nbr)];
+        if (best_value < value) {
+          best_value = value;
+          best_v = nbr;
+        }
+      }
+    });
+
+    if (best_v.IsValid ()) return best_v;
+
+    return board.RandomLightMove (pl, random);
   }
 
   void MoveProbGfx (Move pre_move,
