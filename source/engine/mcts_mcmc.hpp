@@ -57,12 +57,13 @@ public:
     Stat* best_stat = NULL;
 
     Vertex last_v = board.LastVertex();
-    if (last_v.IsValid()) {
-      Mcmc& act_mcmc = mcmc [board.LastMove ()];
-      best_stat = &act_mcmc.light [pl];
-      if (last_v != Vertex::Pass () &&
-          random.GetNextUint(256) < 200)
+    if (last_v.IsValid() &&
+        v_seen [last_v] == 1 && // only once played so far
+        last_v != Vertex::Pass () &&
+        random.GetNextUint(1024) < 800)
       {
+        Mcmc& act_mcmc = mcmc [board.LastMove ()];
+        best_stat = &act_mcmc.light [pl];
 
         for_each_8_nbr (last_v, nbr, {
           if (v_seen[nbr] == 0 &&
@@ -79,16 +80,18 @@ public:
           }
         });
       }
-    }
 
+  
     if (!best_v.IsValid ()) {
       best_v = board.RandomLightMove (pl, random);
     }
 
     if (best_stat != NULL) { // TODO solve it by having
                              // base_precondition for empty board
-      to_update.push_back (best_stat);
-      to_update_pl.push_back (pl);
+      if (v_seen [best_v] == 0) {
+        to_update.push_back (best_stat);
+        to_update_pl.push_back (pl);
+      }
     }
 
     return best_v;
