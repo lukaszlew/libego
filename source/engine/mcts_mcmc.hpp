@@ -42,6 +42,7 @@ public:
   }
   
   NatMap <Move, Stat> move_stats;
+  Stat light;
 };
 
 // -----------------------------------------------------------------------------
@@ -77,31 +78,30 @@ public:
 
   Vertex Choose8Move (const Board& board, const NatMap<Vertex, uint>& v_seen, FastRandom& random) {
     Player pl = board.ActPlayer();
+    Vertex best_v;
+
     Vertex last_v = board.LastVertex();
 
-    if (!last_v.IsValid() ||
-        last_v == Vertex::Pass () ||
-        random.GetNextUint(256) < 50)
+    if (last_v.IsValid() &&
+        last_v != Vertex::Pass () &&
+        random.GetNextUint(256) < 200)
     {
-      return board.RandomLightMove (pl, random);
-    }
+      Mcmc& act_mcmc = mcmc [board.LastMove ()];
+      float best_value = - 1E20;
 
-    Mcmc& act_mcmc = mcmc [board.LastMove ()];
-    Vertex best_v;
-    float best_value = - 1E20;
-
-    for_each_8_nbr (last_v, nbr, {
-      if (v_seen[nbr] == 0 &&
-          board.IsLegal (pl, nbr) &&
-          !board.IsEyelike (pl, nbr))
-      {
-        float value = act_mcmc.move_stats [Move(pl, nbr)].Ucb();
-        if (best_value < value) {
-          best_value = value;
-          best_v = nbr;
+      for_each_8_nbr (last_v, nbr, {
+        if (v_seen[nbr] == 0 &&
+            board.IsLegal (pl, nbr) &&
+            !board.IsEyelike (pl, nbr))
+        {
+          float value = act_mcmc.move_stats [Move(pl, nbr)].Ucb();
+          if (best_value < value) {
+            best_value = value;
+            best_v = nbr;
+          }
         }
-      }
-    });
+      });
+    }
 
     if (best_v.IsValid ()) return best_v;
 
