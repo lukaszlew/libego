@@ -40,10 +40,11 @@ private:
     gtp.RegisterGfx ("Mcts.ShowMcmc", "black %p white", this, &MctsGtp::CShowMcmc);
     gtp.RegisterGfx ("Mcts.ShowMcmc", "white %p black", this, &MctsGtp::CShowMcmc);
 
-    gtp.RegisterGfx ("Mcts.ShowMcmc", "black %p black # not used", this, &MctsGtp::CShowMcmc);
-    gtp.RegisterGfx ("Mcts.ShowMcmc", "white %p white # not used", this, &MctsGtp::CShowMcmc);
+//     gtp.RegisterGfx ("Mcts.ShowMcmc", "black %p black # not used", this, &MctsGtp::CShowMcmc);
+//     gtp.RegisterGfx ("Mcts.ShowMcmc", "white %p white # not used", this, &MctsGtp::CShowMcmc);
 
     gtp.RegisterGfx ("McMc.Ownage", "", this, &MctsGtp::CMcmcOwnage);
+    gtp.RegisterGfx ("McMc.Reset", "", this, &MctsGtp::CMcmcReset);
 
 //     gtp.RegisterGfx ("Mcts.ShowMcmcProb", "black %p white", this,
 //                      &MctsGtp::CShowMcmcProb);
@@ -61,7 +62,11 @@ private:
     string cmd_search  = "Mcts.Params.Search";
     string cmd_genmove = "Mcts.Params.Genmove";
     string cmd_logger  = "Mcts.Params.Logger";
-    string cmd_mcmc    = "Mcts.Params.Mcmc";
+    string cmd_mcmc    = "McMc.Params";
+
+    gtp.RegisterParam (cmd_mcmc, "update_fraction", &Param::mcmc_update_fraction);
+    gtp.RegisterParam (cmd_mcmc, "explore_coeff",   &Param::mcmc_explore_coeff);
+    gtp.RegisterParam (cmd_mcmc, "prob_8_nbr",      &Param::mcmc_prob_8_nbr);
 
     gtp.RegisterParam (cmd_search, "explore_coeff", &Param::uct_explore_coeff);
     gtp.RegisterParam (cmd_search, "bias_stat",     &Param::mcts_bias);
@@ -77,8 +82,6 @@ private:
 
     gtp.RegisterParam (cmd_logger, "is_active",     &mcts_engine.logger.is_active);
     gtp.RegisterParam (cmd_logger, "log_directory", &mcts_engine.logger.log_directory);
-
-    gtp.RegisterParam (cmd_mcmc, "explore", &Param::mcmc_explore_coeff);
 
     string d2gtp = "d2gtp-params";
     gtp.RegisterParam (d2gtp, "ucb_coeff", &Param::uct_explore_coeff);
@@ -176,6 +179,11 @@ private:
     Gtp::GoguiGfx gfx;
     mcts_engine.playout.all_mcmc.OwnageGfx (&gfx);
     gfx.Report (io);
+  }
+
+  void CMcmcReset (Gtp::Io& io) {
+    io.CheckEmpty ();
+    mcts_engine.playout.all_mcmc.Reset ();
   }
 
   void CShowMcmcProb (Gtp::Io& io) {

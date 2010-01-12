@@ -13,8 +13,9 @@
 
 namespace Param {
   bool mcmc_update = true;
-  bool mcmc_update_fraction = 0.5;
+  float mcmc_update_fraction = 0.5;
   float mcmc_explore_coeff = 1000.0;
+  float mcmc_prob_8_nbr = 0.8;
 }
 
 struct Mcmc {
@@ -42,6 +43,7 @@ public:
   void NewPlayout () {
     to_update.clear();
     to_update_pl.clear();
+    prob_8mcmc_1024 = 1024 * Param::mcmc_prob_8_nbr;
   }
 
   void Update (Board& board) {
@@ -71,7 +73,7 @@ public:
     if (last_v.IsValid() &&
         v_seen [last_v] == 1 && // only once played so far
         last_v != Vertex::Pass () &&
-        random.GetNextUint(1024) < 800)
+        random.GetNextUint(1024) < prob_8mcmc_1024)
       {
         Mcmc& act_mcmc = mcmc [board.LastMove ()];
         best_stat = &act_mcmc.light [pl];
@@ -164,6 +166,7 @@ public:
   vector <Stat*> to_update;
   vector <Player> to_update_pl;
   NatMap <Vertex, Stat> ownage;
+  uint prob_8mcmc_1024;
 };
 // -----------------------------------------------------------------------------
 
