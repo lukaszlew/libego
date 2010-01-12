@@ -51,7 +51,6 @@ public:
     while (true) {
       if (play_board.BothPlayerPass()) break;
       if (move_history.IsFull ()) return;
-
       Player pl = play_board.ActPlayer ();
       Vertex v;
 
@@ -63,7 +62,9 @@ public:
         }
       } else {
         Move m;
-        //m = all_mcmc.Choose8Move (play_board, move_seen);
+        if (random.GetNextUint(256) < 200) { // probability of playing nbr mcmc move
+          m = all_mcmc.Choose8Move (play_board, move_seen);
+        }
         if (m.IsValid ()) {
           v = m.GetVertex ();
         } else {
@@ -74,6 +75,7 @@ public:
       ASSERT (play_board.IsLegal (pl, v));
       play_board.PlayLegal (pl, v);
       Move m = play_board.LastMove ();
+      ASSERT (m.IsValid());
       move_history.Push (m);
       move_seen [m] += 1;
     }

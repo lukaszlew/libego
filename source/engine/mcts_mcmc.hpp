@@ -52,7 +52,8 @@ public:
   {
     Move best_m;
     float best_value = - 1E20;
-    Vertex last_v = board.LastMove().GetVertex ();
+    Vertex last_v = board.LastVertex();
+    if (!last_v.IsValid() || last_v == Vertex::Pass () ) return best_m; // invalid
     for_each_8_nbr (last_v, nbr, {
       Move m = Move (pl, nbr);
       if (move_seen[m] == 0 &&
@@ -87,6 +88,7 @@ public:
 
   void Update (const Move* history, uint n, float score) {
     n *= Param::mcmc_update_fraction;
+    CHECK (n >= 2);
     NatMap <Move, bool> move_seen (false);
     rep (ii, n-2) {
       Move m = history[ii];
@@ -104,6 +106,7 @@ public:
   }
 
   Move Choose8Move (const Board& board, const NatMap<Move, uint>& move_seen) {
+    if (!board.LastVertex().IsValid ()) return Move();
     return mcmc [board.LastMove()] . Choose8Move (board.ActPlayer (), board, move_seen);
   }
 
