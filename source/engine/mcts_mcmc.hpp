@@ -91,22 +91,17 @@ public:
         });
       }
 
-    if (!best_v.IsValid ()) {
-      best_v = board.RandomLightMove (pl, random);
-    } 
-
-    if (last_v.IsValid() &&
-        v_seen [last_v] == 1 &&
-        v_seen [best_v] == 0)
-    {
-      Mcmc& act_mcmc = mcmc [board.LastMove ()];
-      to_update.push_back (&act_mcmc.move_stats [Move(pl, best_v)]);
-      to_update_pl.push_back (pl);
-    }
-
     return best_v;
   }
 
+  void MovePlayed (Move m_pre, Move m, const NatMap<Vertex, uint>& v_seen) {
+    if (v_seen [m_pre.GetVertex ()] != 1) return;
+    if (v_seen [m    .GetVertex ()] != 0) return;
+    Mcmc& act_mcmc = mcmc [m_pre];
+    to_update.push_back (&act_mcmc.move_stats [m]);
+    to_update_pl.push_back (m.GetPlayer ());
+  }
+  
   void MoveProbGfx (Move pre_move,
                     Player player,
                     const Board& board,

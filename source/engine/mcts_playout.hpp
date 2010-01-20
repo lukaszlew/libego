@@ -65,6 +65,14 @@ public:
         v = all_mcmc.Choose8Move (play_board, v_seen, random);
       }
 
+      if (!v.IsValid ()) {
+        v = play_board.RandomLightMove (pl, random);
+      } 
+
+      if (play_board.LastVertex().IsValid()) {
+        all_mcmc.MovePlayed (play_board.LastMove (), Move (pl, v), v_seen);
+      }
+
       ASSERT (play_board.IsLegal (pl, v));
       play_board.PlayLegal (pl, v);
       move_history.push_back (Move(pl, v));
