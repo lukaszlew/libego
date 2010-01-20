@@ -67,7 +67,6 @@ public:
     Player pl = board.ActPlayer();
     Vertex best_v; // invalid == light move
     float best_value = - 1E20;
-    Stat* best_stat = NULL;
 
     Vertex last_v = board.LastVertex();
     if (last_v.IsValid() &&
@@ -76,7 +75,6 @@ public:
         random.GetNextUint(1024) < prob_8mcmc_1024)
       {
         Mcmc& act_mcmc = mcmc [board.LastMove ()];
-        best_stat = &act_mcmc.light [pl];
 
         for_each_8_nbr (last_v, nbr, {
           if (v_seen[nbr] == 0 &&
@@ -88,23 +86,22 @@ public:
             if (best_value < value) {
               best_value = value;
               best_v = nbr;
-              best_stat = &stat;
             }
           }
         });
       }
 
-  
     if (!best_v.IsValid ()) {
       best_v = board.RandomLightMove (pl, random);
-    }
+    } 
 
-    if (best_stat != NULL) { // TODO solve it by having
-                             // base_precondition for empty board
-      if (v_seen [best_v] == 0) {
-        to_update.push_back (best_stat);
-        to_update_pl.push_back (pl);
-      }
+    if (last_v.IsValid() &&
+        v_seen [last_v] == 1 &&
+        v_seen [best_v] == 0)
+    {
+      Mcmc& act_mcmc = mcmc [board.LastMove ()];
+      to_update.push_back (&act_mcmc.move_stats [Move(pl, best_v)]);
+      to_update_pl.push_back (pl);
     }
 
     return best_v;
