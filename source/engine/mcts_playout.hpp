@@ -41,8 +41,8 @@ public:
     play_board.SetActPlayer (first_player);
     trace.clear();
     trace.push_back (&playout_root);
-    move_history.Clear ();
-    move_history.Push (playout_root.GetMove());
+    move_history.clear ();
+    move_history.push_back (playout_root.GetMove());
     v_seen.SetToZero();
     all_mcmc.NewPlayout ();
 
@@ -51,7 +51,7 @@ public:
     // do the playout
     while (true) {
       if (play_board.BothPlayerPass()) break;
-      if (move_history.IsFull ()) return;
+      if (move_history.size() >= 3*Board::kArea) return;
       Player pl = play_board.ActPlayer ();
       Vertex v;
 
@@ -67,7 +67,7 @@ public:
 
       ASSERT (play_board.IsLegal (pl, v));
       play_board.PlayLegal (pl, v);
-      move_history.Push (Move(pl, v));
+      move_history.push_back (Move(pl, v));
       v_seen [v] += 1;
     }
 
@@ -83,7 +83,7 @@ public:
   }
 
   vector<Move> LastPlayout () {
-    return move_history.AsVector ();
+    return move_history;
   }
 
 private:
@@ -118,7 +118,7 @@ private:
     // TODO configure rave blocking through options
 
 
-    uint last_ii  = move_history.Size () * 7 / 8; // TODO 
+    uint last_ii  = move_history.size () * 7 / 8; // TODO 
 
     rep (act_ii, trace.size()) {
       // Mark moves that should be updated in RAVE children of: trace [act_ii]
@@ -155,7 +155,7 @@ private:
   Board play_board;
   FastRandom& random;
   vector <MctsNode*> trace;               // nodes in the path
-  FastStack <Move, Board::kArea * 3> move_history;
+  vector <Move> move_history;
   NatMap <Vertex, uint> v_seen;
 public:
   AllMcmc all_mcmc;
