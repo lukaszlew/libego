@@ -32,8 +32,6 @@ void Worker::Run ()
 
 void StartPlayer (GtpProcess& p, DbGame& db_game, bool first) {
   DbEngine& db_player = first ? db_game.first : db_game.second;
-  QList <QPair<QString, QString> >& player_params
-    = first ? db_game.first_params : db_game.second_params;
   //QString& config = black ? db_game.black_gtp_config : db_game.white_gtp_config;
 
   qDebug() << "---------------------------------------------------------";
@@ -52,11 +50,11 @@ void StartPlayer (GtpProcess& p, DbGame& db_game, bool first) {
     CHECK (!p.TryCommand (line).isNull());
   }
 
-  if (!player_params.isEmpty())
+  if (first)
   {
     CHECK (p.TryCommand ("known_command d2gtp-params") == "true");
     QPair<QString, QString> param;
-    foreach (param, player_params) {
+    foreach (param, db_game.first_params) {
       QString cmd = "d2gtp-params " + param.first + " " + param.second;
       qDebug () << cmd.toLatin1().data();
       CHECK (p.TryCommand (cmd) != QVariant());

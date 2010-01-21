@@ -31,10 +31,18 @@ include_directories (${libego_SOURCE_DIR}/libgtp)
 link_directories    (${libego_BINARY_DIR}/libgtp)
 
 # -----------------------------------------------------------------------------
+# Remi's BAST optimizer
+
+add_subdirectory (remi)
+include_directories (remi)
+link_directories    (remi)
+
+
+# -----------------------------------------------------------------------------
 # distributed_twogtp
 
 add_executable (distributed_twogtp
   main.cpp database.cpp gtp_process.cpp admin.cpp worker.cpp)
 
-target_link_libraries (distributed_twogtp utils ego gtp ${QT_LIBRARIES})
+target_link_libraries (distributed_twogtp utils ego gtp remi ${QT_LIBRARIES})
 install (TARGETS distributed_twogtp ${INSTALL_TARGETS_DEFAULT_ARGS})

@@ -42,20 +42,17 @@ public:
   void CloseAllExperiments ();
 
   int AddGame (int experiment_id, bool first_is_black,
-               const ParamsValues& pv_first,
-               const ParamsValues& pv_second);
+               const ParamsValues& pv_first);
 
-  bool AddGameParam (int game_id, bool for_first ,QString name, QString value);
+  bool AddGameParam (int game_id, QString name, QString value);
 
   int GetUnclaimedGameCount (int experiment_id);
 
-  QList <GameResult> GetNewGameResults (int expeiment_id,
-                                        bool for_first,
-                                        QString* last_finished_at);
+  QStringList GetParams (int experiment_id);
 
-  bool DumpCsv (QString experiment_name,
-                QTextStream& out,
-                bool first_engine);
+  QList <GameResult> GetNewGameResults (int expeiment_id,
+                                        QString* last_finished_at,
+                                        QStringList params);
 
   QString settings_file_name;
   QSqlDatabase db;
@@ -92,7 +89,6 @@ public:
   DbEngine first;
   DbEngine second;
   QList <QPair<QString, QString> > first_params;
-  QList <QPair<QString, QString> > second_params;
 };
 
 #endif

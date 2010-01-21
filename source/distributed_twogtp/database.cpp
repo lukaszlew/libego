@@ -165,8 +165,7 @@ void Database::CloseAllExperiments ()
 
 
 int Database::AddGame (int experiment_id, bool first_is_black,
-                       const ParamsValues& pv_first,
-                       const ParamsValues& pv_second)
+                       const ParamsValues& pv_first)
 {
   QSqlQuery q (db);
   QString query = 
@@ -185,26 +184,23 @@ int Database::AddGame (int experiment_id, bool first_is_black,
   int id = q.lastInsertId().toInt();
   CHECK (id > 0);
   QPair<QString, QString> pv;
-  foreach (pv, pv_first)  AddGameParam (id, true,  pv.first, pv.second);
-  foreach (pv, pv_second) AddGameParam (id, false, pv.first, pv.second);
+  foreach (pv, pv_first)  AddGameParam (id, pv.first, pv.second);
   return id;
 }
 
 bool Database::AddGameParam (int game_id,
-                             bool for_first,
                              QString name,
                              QString value)
 {
   QSqlQuery q (db);
   CHECK (q.prepare (
-    "INSERT INTO engine_param (game_id, name, value, for_first) "
-    "VALUES (?, ?, ?, ?)"
+    "INSERT INTO engine_param (game_id, name, value) "
+    "VALUES (?, ?, ?)"
   ));
 
   q.addBindValue (game_id);
   q.addBindValue (name);
   q.addBindValue (value);
-  q.addBindValue (for_first);
   CHECK (q.exec ());
   return true;
 }
@@ -223,21 +219,27 @@ int Database::GetUnclaimedGameCount (int experiment_id) {
   return count.toInt();
 }
 
-QList <GameResult> Database::GetNewGameResults (int experiment_id,
-                                                bool first_engine,
-                                                QString* last_claimed_at)
+QStringList Database::GetParams (int experiment_id)
 {
   CHECK (experiment_id >= 0);
   QSqlQuery q (db);
-
-  // get params
   QStringList params;
-  CHECK (q.prepare ("SELECT param.name "
+  CHECK (q.prepare ("SELECT name "
                     "FROM param "
-                    "WHERE param.experiment_id = ?"));
+                    "WHERE experiment_id = ? "
+                    "ORDER BY id ASC"));
   q.addBindValue (experiment_id);
   CHECK (q.exec ());
   while (q.next()) params.append (q.value(0).toString());
+  return params;
+}
+
+QList <GameResult> Database::GetNewGameResults (int experiment_id,
+                                                QString* last_claimed_at,
+                                                QStringList params)
+{
+  CHECK (experiment_id >= 0);
+  QSqlQuery q (db);
 
   // Initialize game_results
   QMap <int, GameResult> game_results;
@@ -252,7 +254,7 @@ QList <GameResult> Database::GetNewGameResults (int experiment_id,
   while (q.next()) {
     int id = q.value(0).toInt();
     game_results [id].id = id;
-    game_results [id].victory = q.value(1).toInt() == first_engine;
+    game_results [id].victory = q.value(1).toInt();
     *last_claimed_at = q.value(2).toString();
   }
 
@@ -260,7 +262,7 @@ QList <GameResult> Database::GetNewGameResults (int experiment_id,
   foreach (int game_id, game_results.keys()) {
     GameResult& res = game_results [game_id];
     res.params.resize (params.size());
-    CHECK (q.prepare ("SELECT name, value, for_first "
+    CHECK (q.prepare ("SELECT name, value "
                        "FROM engine_param "
                        "WHERE game_id = ?"));
     q.addBindValue (game_id);
@@ -268,10 +270,9 @@ QList <GameResult> Database::GetNewGameResults (int experiment_id,
     while (q.next()) {
       QString name   = q.record().value ("name").toString();
       QString value  = q.record().value ("value").toString();
-      bool for_first = q.record().value ("for_first").toInt();
 
       int i = params.indexOf (name);
-      if (i == -1 || first_engine != for_first) continue;
+      if (i == -1) continue;
 
       bool ok = false;
       res.params [i] = value.toDouble(&ok);
@@ -282,69 +283,6 @@ QList <GameResult> Database::GetNewGameResults (int experiment_id,
   return game_results.values();
 }
 
-bool Database::DumpCsv (QString experiment_name,
-                        QTextStream& out,
-                        bool first_engine)
-{
-  QSqlQuery q (db);
-  CHECK(false); // TODO use GetGameResults
-  // get param list 
-  CHECK (q.prepare ("SELECT param.name "
-                    "FROM experiment "
-                    "JOIN param ON param.experiment_id = experiment.id "
-                    "WHERE experiment.name = ? "));
-  q.addBindValue (experiment_name);
-  CHECK (q.exec ());
-
-  QStringList params;
-  while (q.next()) params.append (q.value(0).toString());
-    
-  out << "game.id, ";
-  foreach (QString s, params) {
-    out << s << ", ";
-  }
-  out << "first_won" << endl;
-
-  CHECK (q.prepare ("SELECT game.id, game.first_won "
-                    "FROM experiment "
-                    "JOIN game ON game.experiment_id = experiment.id "
-                    "WHERE experiment.name = ? AND game.first_won IS NOT NULL"));
-  q.addBindValue (experiment_name);
-  CHECK (q.exec ());  
-
-  while (q.next ()) {
-    int game_id = q.value (0).toInt();
-    int first_won = q.value (1).toInt();
-
-    QVector<QString> param_values (params.size());
-
-    //qDebug () << "A " << game_id << " " << first_won;
-    QSqlQuery q2 (db);
-    CHECK (q2.prepare ("SELECT name, value, for_first "
-                       "FROM engine_param "
-                       "WHERE game_id = ?"));
-    q2.addBindValue (game_id);
-    CHECK (q2.exec ());
-    while (q2.next()) {
-      QString name   = q2.record().value ("name").toString();
-      bool for_first = q2.record().value ("for_first").toInt();
-      QString value  = q2.record().value ("value").toString();
-
-      int i = params.indexOf (name);
-      if (i == -1 || first_engine != for_first) continue;
-
-      param_values [i] = value;
-    }
-
-
-    out << game_id << ", ";
-    foreach (QString s, param_values) {
-      out << s << ", ";
-    }
-    out << first_won << "\n";
-  }
-  return true;
-}
 
 // -----------------------------------------------------------------------------
 
@@ -412,9 +350,8 @@ bool DbGame::GetUnclaimed (QSqlDatabase db) {
   first.Get (db, first_id);
   second.Get (db, second_id);
   first_params.clear();
-  second_params.clear();
 
-  CHECK (q.prepare ("SELECT name, value, for_first "
+  CHECK (q.prepare ("SELECT name, value "
                     "FROM engine_param "
                     "WHERE game_id = ?"));
   q.addBindValue (id);
@@ -425,11 +362,7 @@ bool DbGame::GetUnclaimed (QSqlDatabase db) {
     QString param_value = q.record().value ("value").toString();
     CHECK (param_name != QString());
     CHECK (param_value != QString());
-    if (q.record().value ("for_first").toInt()) {
-      first_params.append (qMakePair (param_name, param_value));
-    } else {
-      second_params.append (qMakePair (param_name, param_value));
-    }
+    first_params.append (qMakePair (param_name, param_value));
   }
   
   return true;
