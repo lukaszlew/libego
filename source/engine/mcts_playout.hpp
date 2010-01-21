@@ -26,7 +26,7 @@ const float kSureWinUpdate = 1.0; // TODO increase this
 // -----------------------------------------------------------------------------
 
 namespace Param {
-  bool use_mcts_in_playout = false; // TODO true
+  bool use_mcts_in_playout = true; // TODO true
 }
 
 class MctsPlayout {

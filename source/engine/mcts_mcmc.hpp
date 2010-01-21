@@ -12,6 +12,7 @@
 
 
 namespace Param {
+  bool mcmc_use    = false;
   bool mcmc_update = true;
   float mcmc_update_fraction = 0.5;
   float mcmc_explore_coeff = 1000.0;
@@ -64,6 +65,8 @@ public:
   }
 
   Vertex Choose8Move (const Board& board, const NatMap<Vertex, uint>& v_seen, FastRandom& random) {
+    if (!Param::mcmc_use) return Vertex::Invalid();
+
     Player pl = board.ActPlayer();
     Vertex best_v; // invalid == light move
     float best_value = - 1E20;

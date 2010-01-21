@@ -64,6 +64,8 @@ private:
     string cmd_logger  = "Mcts.Params.Logger";
     string cmd_mcmc    = "McMc.Params";
 
+    gtp.RegisterParam (cmd_mcmc, "update",          &Param::mcmc_update);
+    gtp.RegisterParam (cmd_mcmc, "use",             &Param::mcmc_use);
     gtp.RegisterParam (cmd_mcmc, "update_fraction", &Param::mcmc_update_fraction);
     gtp.RegisterParam (cmd_mcmc, "explore_coeff",   &Param::mcmc_explore_coeff);
     gtp.RegisterParam (cmd_mcmc, "prob_8_nbr",      &Param::mcmc_prob_8_nbr);
