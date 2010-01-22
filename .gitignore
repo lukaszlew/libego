@@ -2,3 +2,4 @@ build/*
 bin/*
 log/*
 lib/*
+twogtp/2010-*

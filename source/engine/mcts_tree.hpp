@@ -20,7 +20,7 @@ namespace Param {
 
   static float mature_update_count = 10.0;
 
-  static float resign_mean = -0.95;
+  static float resign_mean = -0.90;
   static float genmove_playouts = 100000;
   static bool reset_tree_on_genmove = true; // TODO memory problems 
 };
