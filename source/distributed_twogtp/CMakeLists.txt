@@ -6,6 +6,7 @@ set_cxx_flags (FALSE)
 find_package (Qt4)
 
 if (NOT QT_FOUND)
+  message("\nWarning: Qt4 not found, d2g will not be build.\n")
   return()
 endif()
 
@@ -39,10 +40,20 @@ link_directories    (remi)
 
 
 # -----------------------------------------------------------------------------
-# distributed_twogtp
+# d2g-worker
 
-add_executable (distributed_twogtp
-  main.cpp database.cpp gtp_process.cpp admin.cpp worker.cpp)
+add_executable (d2g-worker
+  d2g-worker.cpp database.cpp gtp_process.cpp worker.cpp)
 
-target_link_libraries (distributed_twogtp utils ego gtp remi ${QT_LIBRARIES})
-install (TARGETS distributed_twogtp ${INSTALL_TARGETS_DEFAULT_ARGS})
+target_link_libraries (d2g-worker utils ego gtp remi ${QT_LIBRARIES})
+install (TARGETS d2g-worker ${INSTALL_TARGETS_DEFAULT_ARGS})
+
+# -----------------------------------------------------------------------------
+# d2g-admin
+
+add_executable (d2g-admin
+  d2g-admin.cpp database.cpp gtp_process.cpp admin.cpp)
+
+target_link_libraries (d2g-admin utils ego gtp remi ${QT_LIBRARIES})
+install (TARGETS d2g-admin ${INSTALL_TARGETS_DEFAULT_ARGS})
+
