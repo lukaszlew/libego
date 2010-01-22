@@ -332,6 +332,7 @@ bool Board::PlayPseudoLegal (Player player, Vertex v) { // TODO test with move
   }
 }
 
+flatten
 bool Board::PlayPseudoLegal (Move move) { // TODO test with move
   return PlayPseudoLegal (move.GetPlayer (), move.GetVertex());
 }
