@@ -33,10 +33,19 @@ public:
       Player pl = play_board.ActPlayer ();
       Vertex v  = Vertex::Any ();
 
-      //v = mcmc.Choose8Move (play_board, play_count, random);
-      if (v == Vertex::Any ()) v = ChooseTreeMove (pl);
-      if (v == Vertex::Any ()) v = ChooseLocalMove ();
-      if (v == Vertex::Any ()) v = play_board.RandomLightMove (pl, random);
+
+      if (tree_phase && v == Vertex::Any ())
+        v = ChooseTreeMove (pl);
+
+      // if (Param::mcmc_use && v == Vertex::Any ()) + randomization
+      //   v = mcmc.Choose8Move (play_board, play_count, random);
+
+      // if (v = Vertex::Any () && random.GetNextUint (1024) < 128)
+      if (v == Vertex::Any ())
+        v = ChooseLocalMove ();
+
+      if (v == Vertex::Any ())
+        v = play_board.RandomLightMove (pl, random);
 
       Move prev_move = play_board.LastMove ();
 
@@ -67,7 +76,6 @@ public:
 private:
 
   Vertex ChooseTreeMove (Player pl) {
-    if (!tree_phase) return Vertex::Any ();
     if (!ActNode().has_all_legal_children [pl]) {
       if (!ActNode().ReadyToExpand ()) {
         tree_phase = false;
@@ -84,7 +92,6 @@ private:
   }
   
   Vertex ChooseLocalMove () {
-    //if (random.GetNextUint (1024) < 128) return Vertex::Any ();
     Vertex last_v = play_board.LastVertex ();
     Player pl = play_board.ActPlayer ();
 
