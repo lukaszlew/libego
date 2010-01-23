@@ -114,6 +114,7 @@ Vertex Vertex::SE() const { return S().E(); }
 string Vertex::ToGtpString() const {
   if (*this == Invalid()) return "invalid";
   if (*this == Pass())    return "pass";
+  if (*this == Any())     return "any";
 
   return
     Coord::ColumnToGtpString (GetColumn()) +
