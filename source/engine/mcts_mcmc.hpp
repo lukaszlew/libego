@@ -47,22 +47,23 @@ public:
     prob_8mcmc_1024 = 1024 * Param::mcmc_prob_8_nbr;
   }
 
-  void Update (Board& board) {
-    float score = board.PlayoutScore ();
+  void Update (float score) {
+    //void Update (Board& board) {
+    //float score = board.PlayoutScore ();
     rep (ii, to_update.size() * Param::mcmc_update_fraction) {
       to_update[ii] -> update (score);
       to_update[ii] -> UpdateUcb (to_update_pl [ii], Param::mcmc_explore_coeff);
     }
-
-    ForEachNat (Vertex, v) {
-      Color c = board.ColorAt (v);
-      if (c == Color::OffBoard()) continue;
-      if (c.IsPlayer ())
-        ownage [v].update (c.ToPlayer().ToScore());
-      else 
-        ownage [v].update (board.EyeScore(v));
-    }
   }
+//     ForEachNat (Vertex, v) {
+//       Color c = board.ColorAt (v);
+//       if (c == Color::OffBoard()) continue;
+//       if (c.IsPlayer ())
+//         ownage [v].update (c.ToPlayer().ToScore());
+//       else 
+//         ownage [v].update (board.EyeScore(v));
+//     }
+//  }
 
   Vertex Choose8Move (const Board& board, const NatMap<Vertex, uint>& play_count) {
     Player pl = board.ActPlayer();

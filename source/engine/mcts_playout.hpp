@@ -58,6 +58,7 @@ public:
       mcmc.MovePlayed (prev_move, last_move, play_count);
     }
 
+    // TODO game replay i update wszystkich modeli
     float score;
     if (tree_phase) {
       score = play_board.TrompTaylorWinner().ToScore() * kSureWinUpdate;
@@ -114,7 +115,7 @@ private:
   void UpdateTrace (int score) {
     UpdateTraceRegular (score);
     if (Param::update_rave) UpdateTraceRave (score);
-    if (Param::mcmc_update) mcmc.Update (play_board);
+    if (Param::mcmc_update) mcmc.Update (score);
   }
 
   void UpdateTraceRegular (float score) {
