@@ -1,2 +1,2 @@
-Mcts.Params.Genmove playouts 100000
+Mcts.Params.Genmove playouts 10000
 Mcts.Params.Genmove seed 123
