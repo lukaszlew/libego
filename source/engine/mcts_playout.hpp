@@ -1,25 +1,3 @@
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
- *                                                                           *
- *  This file is part of Library of Effective GO routines - EGO library      *
- *                                                                           *
- *  Copyright 2006 and onwards, Lukasz Lew                                   *
- *                                                                           *
- *  EGO library is free software; you can redistribute it and/or modify      *
- *  it under the terms of the GNU General Public License as published by     *
- *  the Free Software Foundation; either version 2 of the License, or        *
- *  (at your option) any later version.                                      *
- *                                                                           *
- *  EGO library is distributed in the hope that it will be useful,           *
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of           *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            *
- *  GNU General Public License for more details.                             *
- *                                                                           *
- *  You should have received a copy of the GNU General Public License        *
- *  along with EGO library; if not, write to the Free Software               *
- *  Foundation, Inc., 51 Franklin St, Fifth Floor,                           *
- *  Boston, MA  02110-1301  USA                                              *
- *                                                                           *
-\* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 const float kSureWinUpdate = 1.0; // TODO increase this
 
@@ -32,7 +10,7 @@ namespace Param {
 class MctsPlayout {
   static const bool kCheckAsserts = false;
 public:
-  MctsPlayout (FastRandom& random_) : random (random_), v_seen (0) {
+  MctsPlayout (FastRandom& random_) : random (random_) {
   }
 
   void DoOnePlayout (MctsNode& playout_root, const Board& board, Player first_player) {
@@ -43,7 +21,7 @@ public:
     trace.push_back (&playout_root);
     move_history.clear ();
     move_history.push_back (playout_root.GetMove());
-    v_seen.SetToZero();
+    play_count.SetToZero();
     mcmc.NewPlayout ();
 
     tree_phase = Param::use_mcts_in_playout;
@@ -55,18 +33,20 @@ public:
       Player pl = play_board.ActPlayer ();
       Vertex v  = Vertex::Any ();
 
-      //v = mcmc.Choose8Move (play_board, v_seen, random);
+      //v = mcmc.Choose8Move (play_board, play_count, random);
       if (v == Vertex::Any ()) v = ChooseTreeMove (pl);
       if (v == Vertex::Any ()) v = ChooseLocalMove ();
       if (v == Vertex::Any ()) v = play_board.RandomLightMove (pl, random);
 
-      // TODO simplify this, add tree
-      mcmc.MovePlayed (play_board.LastMove (), Move (pl, v), v_seen);
+      Move prev_move = play_board.LastMove ();
 
       ASSERT (play_board.IsLegal (pl, v));
       play_board.PlayLegal (pl, v);
       move_history.push_back (Move(pl, v));
-      v_seen [v] += 1;
+      play_count [v] += 1;
+
+      Move last_move = play_board.LastMove ();
+      mcmc.MovePlayed (prev_move, last_move, play_count);
     }
 
     float score;
@@ -178,7 +158,7 @@ private:
   FastRandom& random;
   vector <MctsNode*> trace;               // nodes in the path
   vector <Move> move_history;
-  NatMap <Vertex, uint> v_seen;
+  NatMap <Vertex, uint> play_count;
   bool tree_phase;
 public:
   Mcmc mcmc;

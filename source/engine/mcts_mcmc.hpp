@@ -64,7 +64,7 @@ public:
     }
   }
 
-  Vertex Choose8Move (const Board& board, const NatMap<Vertex, uint>& v_seen, FastRandom& random) {
+  Vertex Choose8Move (const Board& board, const NatMap<Vertex, uint>& play_count, FastRandom& random) {
     if (!Param::mcmc_use) return Vertex::Any();
 
     Player pl = board.ActPlayer();
@@ -73,14 +73,14 @@ public:
 
     Vertex last_v = board.LastVertex();
     if (last_v != Vertex::Any () &&
-        v_seen [last_v] == 1 && // only once played so far
+        play_count [last_v] == 1 && // only once played so far
         last_v != Vertex::Pass () &&
         random.GetNextUint(1024) < prob_8mcmc_1024)
       {
         McmcNode& act_mcmc = mcmc [board.LastMove ()];
 
         for_each_8_nbr (last_v, nbr, {
-          if (v_seen[nbr] == 0 &&
+          if (play_count[nbr] == 0 &&
               board.IsLegal (pl, nbr) &&
               !board.IsEyelike (pl, nbr))
           {
@@ -97,9 +97,9 @@ public:
     return best_v;
   }
 
-  void MovePlayed (Move m_pre, Move m, const NatMap<Vertex, uint>& v_seen) {
-    if (v_seen [m_pre.GetVertex ()] != 1) return;
-    if (v_seen [m    .GetVertex ()] != 0) return;
+  void MovePlayed (Move m_pre, Move m, const NatMap<Vertex, uint>& play_count) {
+    if (play_count [m_pre.GetVertex ()] != 1) return;
+    if (play_count [m    .GetVertex ()] != 0) return;
     McmcNode& act_mcmc = mcmc [m_pre];
     to_update.push_back (&act_mcmc.move_stats [m]);
     to_update_pl.push_back (m.GetPlayer ());
