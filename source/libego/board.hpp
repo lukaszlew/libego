@@ -22,10 +22,10 @@ public:
   // Return color of board vertex
   Color ColorAt (Vertex v) const;
 
-  // Returs array of Vertices that are empty.
+  // Returs ith empty Vertex.
   Vertex EmptyVertex (uint ii) const;
 
-  // Length of the array return by EmptyVertices()
+  // Number of Empty board Vertices.
   uint EmptyVertexCount () const;
 
   // Returns player on move.
@@ -48,7 +48,7 @@ public:
   // Positional hash (just color of stones)
   Hash PositionalHash () const;
 
-  // Returns vertex forbidden by simple ko rule or Vertex::Invalid()
+  // Returns vertex forbidden by simple ko rule or Vertex::Any()
   Vertex KoVertex () const;
 
   // Gets the komi value. Positive means adventage for white.

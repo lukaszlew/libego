@@ -4,6 +4,9 @@
 
 #include "player.hpp"
 
+Player::Player () : Nat<Player> () { 
+}
+
 Player::Player (uint raw) : Nat<Player> (raw) { 
 }
 

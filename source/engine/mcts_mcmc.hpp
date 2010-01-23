@@ -1,5 +1,5 @@
 #define for_each_8_nbr(center_v, nbr_v, block) {                \
-    Vertex nbr_v = Vertex::Invalid();                           \
+    Vertex nbr_v;                                               \
     nbr_v = center_v.N (); block;                               \
     nbr_v = center_v.W (); block;                               \
     nbr_v = center_v.E (); block;                               \
@@ -65,14 +65,14 @@ public:
   }
 
   Vertex Choose8Move (const Board& board, const NatMap<Vertex, uint>& v_seen, FastRandom& random) {
-    if (!Param::mcmc_use) return Vertex::Invalid();
+    if (!Param::mcmc_use) return Vertex::Any();
 
     Player pl = board.ActPlayer();
-    Vertex best_v; // invalid == light move
+    Vertex best_v = Vertex::Any(); // any == light move
     float best_value = - 1E20;
 
     Vertex last_v = board.LastVertex();
-    if (last_v.IsValid() &&
+    if (last_v != Vertex::Any () &&
         v_seen [last_v] == 1 && // only once played so far
         last_v != Vertex::Pass () &&
         random.GetNextUint(1024) < prob_8mcmc_1024)

@@ -53,17 +53,15 @@ public:
       if (play_board.BothPlayerPass()) break;
       if (move_history.size() >= 3*Board::kArea) return;
       Player pl = play_board.ActPlayer ();
-      Vertex v  = Vertex::Invalid ();
+      Vertex v  = Vertex::Any ();
 
       //v = mcmc.Choose8Move (play_board, v_seen, random);
-      if (!v.IsValid ()) v = ChooseTreeMove (pl);
-      if (!v.IsValid ()) v = ChooseLocalMove ();
-      if (!v.IsValid ()) v = play_board.RandomLightMove (pl, random);
+      if (v == Vertex::Any ()) v = ChooseTreeMove (pl);
+      if (v == Vertex::Any ()) v = ChooseLocalMove ();
+      if (v == Vertex::Any ()) v = play_board.RandomLightMove (pl, random);
 
       // TODO simplify this, add tree
-      if (play_board.LastVertex().IsValid()) {
-        mcmc.MovePlayed (play_board.LastMove (), Move (pl, v), v_seen);
-      }
+      mcmc.MovePlayed (play_board.LastMove (), Move (pl, v), v_seen);
 
       ASSERT (play_board.IsLegal (pl, v));
       play_board.PlayLegal (pl, v);
@@ -89,11 +87,11 @@ public:
 private:
 
   Vertex ChooseTreeMove (Player pl) {
-    if (!tree_phase) return Vertex::Invalid ();
+    if (!tree_phase) return Vertex::Any ();
     if (!ActNode().has_all_legal_children [pl]) {
       if (!ActNode().ReadyToExpand ()) {
         tree_phase = false;
-        return Vertex::Invalid ();
+        return Vertex::Any ();
       }
       ASSERT (pl == ActNode().player.Other());
       ActNode().EnsureAllLegalChildren (pl, play_board);
@@ -101,17 +99,17 @@ private:
 
     MctsNode& uct_child = ActNode().BestRaveChild (pl);
     trace.push_back (&uct_child);
-    ASSERT (uct_child.v.IsValid());
+    ASSERT (uct_child.v != Vertex::Any());
     return uct_child.v;
   }
   
   Vertex ChooseLocalMove () {
-    //if (random.GetNextUint (1024) < 128) return Vertex ();
+    //if (random.GetNextUint (1024) < 128) return Vertex::Any ();
     Vertex last_v = play_board.LastVertex ();
     Player pl = play_board.ActPlayer ();
 
-    if (!last_v.IsValid () || last_v == Vertex::Pass ())
-      return Vertex::Invalid ();
+    if (last_v == Vertex::Any () || last_v == Vertex::Pass ())
+      return Vertex::Any ();
 
     FastStack <Vertex, 8> tab;
     for_each_8_nbr (last_v, v, {
@@ -120,7 +118,7 @@ private:
       } 
     });
     
-    if (tab.Size() <= 0) return Vertex::Invalid ();
+    if (tab.Size() <= 0) return Vertex::Any ();
 
     uint i = random.GetNextUint (tab.Size());
     return tab[i];

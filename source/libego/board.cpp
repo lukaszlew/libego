@@ -11,7 +11,7 @@
 
 // TODO    center_v.check_is_on_board ();
 #define vertex_for_each_4_nbr(center_v, nbr_v, block) { \
-    Vertex nbr_v = Vertex::Invalid();                   \
+    Vertex nbr_v;                                       \
     nbr_v = center_v.N (); block;                       \
     nbr_v = center_v.W (); block;                       \
     nbr_v = center_v.E (); block;                       \
@@ -20,7 +20,7 @@
 
 // TODO center_v.check_is_on_board ();
 #define vertex_for_each_diag_nbr(center_v, nbr_v, block) {      \
-    Vertex nbr_v = Vertex::Invalid();                           \
+    Vertex nbr_v;                                               \
     nbr_v = center_v.NW (); block;                              \
     nbr_v = center_v.NE (); block;                              \
     nbr_v = center_v.SW (); block;                              \
@@ -167,11 +167,11 @@ void Board::Clear () {
   empty_v_cnt = 0;
   ForEachNat (Player, pl) {
     player_v_cnt [pl] = 0;
-    last_play [pl]    = Vertex::Invalid();
+    last_play [pl]    = Vertex::Any();
   }
   move_no      = 0;
   last_player  = Player::White (); // act player is other
-  ko_v         = Vertex::Invalid();
+  ko_v         = Vertex::Any();
   ForEachNat (Vertex, v) {
     color_at      [v] = Color::OffBoard ();
     nbr_cnt       [v] = NbrCounter::Empty();
@@ -212,18 +212,8 @@ Hash Board::recalc_hash () const {
   return new_hash;
 }
 
-
-Board::Board () :
-  color_at (Color::OffBoard()),
-  last_player (Player::White()),
-  last_play (Vertex::Invalid()),
-  player_v_cnt (0),
-  chain_next_v (Vertex::Invalid()),
-  chain_id (Vertex::Invalid()),
-  chain (Chain ()),
-  nbr_cnt (NbrCounter()),
-  empty_pos (0)
-{
+// TODO remove stupid initializers
+Board::Board () {
   Clear ();
   SetKomi (6.5);
 }
@@ -350,7 +340,7 @@ void Board::PlayLegal (Player player, Vertex v) { // TODO test with move
   ASSERT (IsLegal (player, v));
 
   uint last_empty_v_cnt  = empty_v_cnt;
-  ko_v                   = Vertex::Invalid();
+  ko_v                   = Vertex::Any();
   last_player            = player;
   last_play [player]     = v;
   move_no                += 1;
