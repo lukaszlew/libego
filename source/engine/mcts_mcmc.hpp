@@ -21,12 +21,12 @@ namespace Param {
 
 struct McmcNode {
   NatMap <Move, Stat> move_stats;
-  NatMap <Player, Stat> light;
+  //  NatMap <Player, Stat> light;
 };
 
 struct Trace {
-  Move m_pre;
-  Move m;
+  Move m1;
+  Move m0;
 };
 
 // -----------------------------------------------------------------------------
@@ -38,12 +38,14 @@ public:
   }
 
   void Reset () {
-    ForEachNat (Move, m) {
-      // TODO prior, pass
-      // TODO prior randomization here!
-      ForEachNat (Move, m1) mcmc[m].move_stats [m1].reset (1.0, 0.0);
-      ForEachNat (Player, pl) mcmc[m].light[pl].reset (1.0, 0.0);    
+    // TODO prior, pass
+    // TODO prior randomization here!
+    ForEachNat (Move, m1) {
+      ForEachNat (Move, m0) {
+        mcmc[m1].move_stats [m0].reset (1.0, 0.0);
+      }
     }
+    //ForEachNat (Player, pl) mcmc[m].light[pl].reset (1.0, 0.0);    
   }
 
   void NewPlayout () {
@@ -53,11 +55,11 @@ public:
 
   void Update (float score) {
     rep (ii, to_update.size() * Param::mcmc_update_fraction) {
-      McmcNode& node = mcmc [to_update[ii].m_pre];
-      Move m = to_update[ii].m;
-      Stat& s = node.move_stats [m];
+      Move m0 = to_update[ii].m0;
+      Move m1 = to_update[ii].m1;
+      Stat& s = mcmc [m1].move_stats [m0];
       s.update (score);
-      s.UpdateUcb (m.GetPlayer (), Param::mcmc_explore_coeff);
+      s.UpdateUcb (m0.GetPlayer (), Param::mcmc_explore_coeff);
     }
   }
 
@@ -91,12 +93,12 @@ public:
     return best_v;
   }
 
-  void MovePlayed (Move m_pre, Move m, const NatMap<Vertex, uint>& play_count) {
-    if (play_count [m_pre.GetVertex ()] != 1) return;
-    if (play_count [m    .GetVertex ()] != 1) return;
+  void MovePlayed (Move m1, Move m0, const NatMap<Vertex, uint>& play_count) {
+    if (play_count [m1.GetVertex ()] != 1) return;
+    if (play_count [m0.GetVertex ()] != 1) return;
     Trace t;
-    t.m_pre = m_pre;
-    t.m = m;
+    t.m1 = m1;
+    t.m0 = m0;
     to_update.push_back (t);
   }
   
@@ -127,8 +129,8 @@ public:
       }
     });
 
-    cerr << "light" << " : "
-         << mcmc [pre_move].light [player].to_string () << endl;
+//     cerr << "light" << " : "
+//          << mcmc [pre_move].light [player].to_string () << endl;
 
     for_each_8_nbr (pre_v, v, {
         //ForEachNat (Vertex, v) {
