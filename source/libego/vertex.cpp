@@ -43,7 +43,11 @@ Vertex::Vertex (uint raw) : Nat <Vertex> (raw) {
 }
 
 Vertex Vertex::Pass() {
-  return Vertex (0); // TODO change it
+  return Vertex (kBound - 2);
+}
+
+Vertex Vertex::Any() {
+  return Vertex (kBound - 1);
 }
 
 Vertex Vertex::OfCoords (int row, int column) {

@@ -26,6 +26,7 @@ public:
   explicit Vertex() {}; // TODO remove it
 
   static Vertex Pass();
+  static Vertex Any(); // NatMap doesn't work with Invalid
 
   static Vertex OfCoords (int row, int column);
   static Vertex OfGtpString (const std::string& s);
@@ -54,7 +55,8 @@ public:
 
   // Other.
 
-  static const uint kBound = (board_size + 2) * (board_size + 2);
+  static const uint kBound = (board_size + 2) * (board_size + 2) + 2;
+  // board with guards + pass + any
 
 private:
   friend class Nat <Vertex>;
