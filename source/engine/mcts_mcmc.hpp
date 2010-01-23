@@ -12,10 +12,10 @@
 
 
 namespace Param {
-  bool mcmc_use    = false;
+  bool mcmc_use    = true;
   bool mcmc_update = true;
   float mcmc_update_fraction = 0.5;
-  float mcmc_explore_coeff = 1000.0;
+  float mcmc_explore_coeff = 10.0;
   float mcmc_prob_8_nbr = 0.8;
 }
 
@@ -62,7 +62,6 @@ public:
   }
 
   Vertex Choose8Move (const Board& board, const NatMap<Vertex, uint>& play_count) {
-    Player pl = board.ActPlayer();
     Vertex last_v = board.LastVertex();
 
     if (last_v == Vertex::Any ())  return Vertex::Any ();
@@ -72,6 +71,7 @@ public:
     Vertex best_v = Vertex::Any(); // any == light move
     float best_value = - 1E20;
     McmcNode& act_mcmc = mcmc [board.LastMove ()];
+    Player pl = board.ActPlayer();
         
     // TODO to jest za sztywne, 8 sasiadow
     for_each_8_nbr (last_v, nbr, {

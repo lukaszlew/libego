@@ -1,20 +1,17 @@
 #!/bin/sh
 
-if test $# -ne 2; then
-  echo "Usage: $0 GAME_NO PROC_NO"
+if test $# -ne 4; then
+  echo "Usage: $0 GAME_NO PROC_NO ENGINE_BLACK ENGINE_WHITE"
   exit 1
 fi
 
 GAME_NO="$1"
 PROC_NO="$2"
-
+BLACK="$(readlink -f "$3")"
+WHITE="$(readlink -f "$4")"
 
 DIR=`date "+%F/%T"`
 
-BIN="$(readlink -f ../bin)"
-
-LIBEGO=" ${BIN}/engine \"Mcts.Params.Genmove playouts 10000\" gtp"
-GNUGO="  ${BIN}/gnugo-3.8 --mode gtp --chinese-rules --capture-all-dead --positional-superko --level=0"
 
 mkdir -p "${DIR}"
 cd "${DIR}"
@@ -27,8 +24,8 @@ for i in `seq ${PROC_NO}`; do
         -alternate \
         -referee "${GNUGO}" \
         -games "${GAME_NO}" \
-        -black "${LIBEGO}" \
-        -white "${GNUGO}" \
+        -black "${BLACK}" \
+        -white "${WHITE}" \
         -sgffile "p${i}" \
         &
 done

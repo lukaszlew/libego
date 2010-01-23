@@ -1,5 +1,7 @@
 build/*
-bin/*
+bin/engine
+bin/fuego-0.4
+bin/gnugo-3.8
+bin/mogo-3
 log/*
-lib/*
 twogtp/2010-*
