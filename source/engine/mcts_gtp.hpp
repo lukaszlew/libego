@@ -168,10 +168,10 @@ private:
     io.CheckEmpty ();
 
     Gtp::GoguiGfx gfx;
-    mcts_engine.playout.all_mcmc.MoveValueGfx (pre_move,
-                                               player,
-                                               mcts_engine.full_board.GetBoard(),
-                                               &gfx);
+    mcts_engine.playout.mcmc.MoveValueGfx (pre_move,
+                                           player,
+                                           mcts_engine.full_board.GetBoard(),
+                                           &gfx);
     gfx.Report (io);
   }
 
@@ -179,13 +179,13 @@ private:
     io.CheckEmpty ();
 
     Gtp::GoguiGfx gfx;
-    mcts_engine.playout.all_mcmc.OwnageGfx (&gfx);
+    mcts_engine.playout.mcmc.OwnageGfx (&gfx);
     gfx.Report (io);
   }
 
   void CMcmcReset (Gtp::Io& io) {
     io.CheckEmpty ();
-    mcts_engine.playout.all_mcmc.Reset ();
+    mcts_engine.playout.mcmc.Reset ();
   }
 
   void CShowMcmcProb (Gtp::Io& io) {
@@ -194,10 +194,10 @@ private:
     io.CheckEmpty ();
 
     Gtp::GoguiGfx gfx;
-    mcts_engine.playout.all_mcmc.MoveProbGfx (pre_move,
-                                              player,
-                                              mcts_engine.full_board.GetBoard(),
-                                              &gfx);
+    mcts_engine.playout.mcmc.MoveProbGfx (pre_move,
+                                          player,
+                                          mcts_engine.full_board.GetBoard(),
+                                          &gfx);
     gfx.Report (io);
   }
 

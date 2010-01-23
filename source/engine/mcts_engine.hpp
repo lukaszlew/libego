@@ -53,7 +53,7 @@ public:
   void ClearBoard () {
     full_board.Clear ();
     root.Reset ();
-    playout.all_mcmc.Reset ();
+    playout.mcmc.Reset ();
     logger.NewLog ();
     logger.LogLine ("clear_board");
     logger.LogLine ("komi " + ToString (full_board.GetBoard().Komi()));
@@ -82,7 +82,7 @@ public:
     logger.LogLine ("random_seed     #? [" + ToString (random.GetSeed ()) + "]");
     if (Param::reset_tree_on_genmove) {
       root.Reset ();
-      playout.all_mcmc.Reset ();
+      playout.mcmc.Reset ();
     }
 
     int playouts = Param::genmove_playouts;

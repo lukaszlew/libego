@@ -44,7 +44,7 @@ public:
     move_history.clear ();
     move_history.push_back (playout_root.GetMove());
     v_seen.SetToZero();
-    all_mcmc.NewPlayout ();
+    mcmc.NewPlayout ();
 
     tree_phase = Param::use_mcts_in_playout;
 
@@ -55,14 +55,14 @@ public:
       Player pl = play_board.ActPlayer ();
       Vertex v  = Vertex::Invalid ();
 
-      //v = all_mcmc.Choose8Move (play_board, v_seen, random);
+      //v = mcmc.Choose8Move (play_board, v_seen, random);
       if (!v.IsValid ()) v = ChooseTreeMove (pl);
       if (!v.IsValid ()) v = ChooseLocalMove ();
       if (!v.IsValid ()) v = play_board.RandomLightMove (pl, random);
 
       // TODO simplify this, add tree
       if (play_board.LastVertex().IsValid()) {
-        all_mcmc.MovePlayed (play_board.LastMove (), Move (pl, v), v_seen);
+        mcmc.MovePlayed (play_board.LastMove (), Move (pl, v), v_seen);
       }
 
       ASSERT (play_board.IsLegal (pl, v));
@@ -129,7 +129,7 @@ private:
   void UpdateTrace (int score) {
     UpdateTraceRegular (score);
     if (Param::update_rave) UpdateTraceRave (score);
-    if (Param::mcmc_update) all_mcmc.Update (play_board);
+    if (Param::mcmc_update) mcmc.Update (play_board);
   }
 
   void UpdateTraceRegular (float score) {
@@ -183,5 +183,5 @@ private:
   NatMap <Vertex, uint> v_seen;
   bool tree_phase;
 public:
-  AllMcmc all_mcmc;
+  Mcmc mcmc;
 };

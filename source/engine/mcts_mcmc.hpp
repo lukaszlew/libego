@@ -19,16 +19,16 @@ namespace Param {
   float mcmc_prob_8_nbr = 0.8;
 }
 
-struct Mcmc {
+struct McmcNode {
   NatMap <Move, Stat> move_stats;
   NatMap <Player, Stat> light;
 };
 
 // -----------------------------------------------------------------------------
 
-class AllMcmc {
+class Mcmc {
 public:
-  AllMcmc () : mcmc (Mcmc()) {
+  Mcmc () {
     Reset ();
   }
 
@@ -77,7 +77,7 @@ public:
         last_v != Vertex::Pass () &&
         random.GetNextUint(1024) < prob_8mcmc_1024)
       {
-        Mcmc& act_mcmc = mcmc [board.LastMove ()];
+        McmcNode& act_mcmc = mcmc [board.LastMove ()];
 
         for_each_8_nbr (last_v, nbr, {
           if (v_seen[nbr] == 0 &&
@@ -100,7 +100,7 @@ public:
   void MovePlayed (Move m_pre, Move m, const NatMap<Vertex, uint>& v_seen) {
     if (v_seen [m_pre.GetVertex ()] != 1) return;
     if (v_seen [m    .GetVertex ()] != 0) return;
-    Mcmc& act_mcmc = mcmc [m_pre];
+    McmcNode& act_mcmc = mcmc [m_pre];
     to_update.push_back (&act_mcmc.move_stats [m]);
     to_update_pl.push_back (m.GetPlayer ());
   }
@@ -157,7 +157,7 @@ public:
     }
   }
 
-  NatMap <Move, Mcmc> mcmc;
+  NatMap <Move, McmcNode> mcmc;
   vector <Stat*> to_update;
   vector <Player> to_update_pl;
   NatMap <Vertex, Stat> ownage;
