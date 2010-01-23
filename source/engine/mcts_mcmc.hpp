@@ -24,6 +24,11 @@ struct McmcNode {
   NatMap <Player, Stat> light;
 };
 
+struct Trace {
+  Move m_pre;
+  Move m;
+};
+
 // -----------------------------------------------------------------------------
 
 class Mcmc {
@@ -35,35 +40,26 @@ public:
   void Reset () {
     ForEachNat (Move, m) {
       // TODO prior, pass
+      // TODO prior randomization here!
       ForEachNat (Move, m1) mcmc[m].move_stats [m1].reset (1.0, 0.0);
       ForEachNat (Player, pl) mcmc[m].light[pl].reset (1.0, 0.0);    
-      ForEachNat (Vertex, v) ownage[v].reset (0.0, 0.0);
     }
   }
 
   void NewPlayout () {
     to_update.clear();
-    to_update_pl.clear();
     prob_8mcmc_1024 = 1024 * Param::mcmc_prob_8_nbr;
   }
 
   void Update (float score) {
-    //void Update (Board& board) {
-    //float score = board.PlayoutScore ();
     rep (ii, to_update.size() * Param::mcmc_update_fraction) {
-      to_update[ii] -> update (score);
-      to_update[ii] -> UpdateUcb (to_update_pl [ii], Param::mcmc_explore_coeff);
+      McmcNode& node = mcmc [to_update[ii].m_pre];
+      Move m = to_update[ii].m;
+      Stat& s = node.move_stats [m];
+      s.update (score);
+      s.UpdateUcb (m.GetPlayer (), Param::mcmc_explore_coeff);
     }
   }
-//     ForEachNat (Vertex, v) {
-//       Color c = board.ColorAt (v);
-//       if (c == Color::OffBoard()) continue;
-//       if (c.IsPlayer ())
-//         ownage [v].update (c.ToPlayer().ToScore());
-//       else 
-//         ownage [v].update (board.EyeScore(v));
-//     }
-//  }
 
   Vertex Choose8Move (const Board& board, const NatMap<Vertex, uint>& play_count) {
     Player pl = board.ActPlayer();
@@ -98,9 +94,10 @@ public:
   void MovePlayed (Move m_pre, Move m, const NatMap<Vertex, uint>& play_count) {
     if (play_count [m_pre.GetVertex ()] != 1) return;
     if (play_count [m    .GetVertex ()] != 1) return;
-    McmcNode& act_mcmc = mcmc [m_pre];
-    to_update.push_back (&act_mcmc.move_stats [m]);
-    to_update_pl.push_back (m.GetPlayer ());
+    Trace t;
+    t.m_pre = m_pre;
+    t.m = m;
+    to_update.push_back (t);
   }
   
   void MoveProbGfx (Move pre_move,
@@ -147,18 +144,8 @@ public:
     });
   }
 
-  void OwnageGfx (Gtp::GoguiGfx* gfx) {
-    ForEachNat (Vertex, v) {
-      if (v.IsOnBoard()) {
-        gfx->SetInfluence (v.ToGtpString (), ownage[v].mean());
-      }
-    }
-  }
-
   NatMap <Move, McmcNode> mcmc;
-  vector <Stat*> to_update;
-  vector <Player> to_update_pl;
-  NatMap <Vertex, Stat> ownage;
+  vector <Trace> to_update;
   uint prob_8mcmc_1024;
 };
 // -----------------------------------------------------------------------------

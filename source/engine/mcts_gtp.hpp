@@ -179,7 +179,7 @@ private:
     io.CheckEmpty ();
 
     Gtp::GoguiGfx gfx;
-    mcts_engine.playout.mcmc.OwnageGfx (&gfx);
+    //mcts_engine.playout.mcmc.OwnageGfx (&gfx);
     gfx.Report (io);
   }
 
