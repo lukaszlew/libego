@@ -487,6 +487,11 @@ Move Board::LastMove() const {
   return Move (LastPlayer(), LastVertex());
 }
 
+Move Board::LastMove2() const {
+  Player pl = ActPlayer ();
+  return Move (pl, last_play [pl]);
+}
+
 bool Board::BothPlayerPass () const {
   return
     (last_play [Player::Black ()] == Vertex::Pass ()) &

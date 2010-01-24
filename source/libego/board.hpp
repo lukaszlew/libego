@@ -38,6 +38,7 @@ public:
   Vertex LastVertex () const;
 
   Move LastMove () const;
+  Move LastMove2 () const;
 
   // Return number of already played moves.
   uint MoveCount () const;

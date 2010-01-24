@@ -49,7 +49,9 @@ public:
         v = play_board.RandomLightMove (pl, random);
       }
 
+      Move m2 = play_board.LastMove2 ();
       Move m1 = play_board.LastMove ();
+      CHECK (m2.IsValid());
       CHECK (m1.IsValid());
 
       ASSERT (play_board.IsLegal (pl, v));
@@ -59,7 +61,7 @@ public:
 
       Move m0 = play_board.LastMove ();
       CHECK (m0.IsValid());
-      mcmc.MovePlayed (m1, m0, play_count);
+      mcmc.MovePlayed (m2, m1, m0, play_count);
     }
 
     // TODO game replay i update wszystkich modeli

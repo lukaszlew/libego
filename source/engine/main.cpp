@@ -75,7 +75,7 @@ int main(int argc, char** argv) {
   gtp.RegisterStatic("protocol_version", "2");
   gtp.Register ("benchmark", Cbenchmark);
 
-  MctsEngine mcts_engine;
+  MctsEngine& mcts_engine = *(new MctsEngine);
   MctsGtp mcts_gtp (gtp, mcts_engine);
 
   reps (ii, 1, argc) {

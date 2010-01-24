@@ -12,6 +12,7 @@
 
 
 struct Trace {
+  Move m2;
   Move m1;
   Move m0;
 };
@@ -27,9 +28,11 @@ public:
   void Reset () {
     // TODO prior, pass
     // TODO prior randomization here!
-    ForEachNat (Move, m1) {
-      ForEachNat (Move, m0) {
-        ms2[m1][m0].reset (1.0, 0.0);
+    ForEachNat (Move, m2) {
+      ForEachNat (Move, m1) {
+        ForEachNat (Move, m0) {
+          ms3[m2][m1][m0].reset (1.0, 0.0);
+        }
       }
     }
   }
@@ -41,28 +44,38 @@ public:
 
   void Update (float score) {
     rep (ii, to_update.size() * Param::mcmc_update_fraction) {
-      Move m0 = to_update[ii].m0;
+      Move m2 = to_update[ii].m2;
       Move m1 = to_update[ii].m1;
-      Stat& s = ms2 [m1] [m0];
+      Move m0 = to_update[ii].m0;
+      ASSERT (m2.IsValid());
+      ASSERT (m1.IsValid());
+      ASSERT (m0.IsValid());
+
+      Stat& s = ms3 [m2] [m1] [m0];
       s.update (score);
       s.UpdateUcb (m0.GetPlayer (), Param::mcmc_explore_coeff);
     }
   }
 
   Vertex Choose8Move (const Board& board, const NatMap<Vertex, uint>& play_count) {
+    Move m2 = board.LastMove2 ();
+    Move m1 = board.LastMove ();
+
     Vertex last_v = board.LastVertex();
 
     if (last_v == Vertex::Any ())  return Vertex::Any ();
     if (last_v == Vertex::Pass ()) return Vertex::Any ();
-    if (play_count [last_v] != 1)  return Vertex::Any ();
+    if (play_count [m2.GetVertex ()] > 1) return Vertex::Any ();
+    if (play_count [m1.GetVertex ()] > 1) return Vertex::Any ();
 
     Vertex best_v = Vertex::Any(); // any == light move
     float best_value = - 1E20;
-    MS1& my_ms1 = ms2 [board.LastMove ()];
+    MS1& my_ms1 = ms3 [m2] [m1];
     Player pl = board.ActPlayer();
         
-    // TODO to jest za sztywne, 8 sasiadow
-    for_each_8_nbr (last_v, nbr, {
+
+    ForEachNat (Vertex, nbr) {
+      //for_each_8_nbr (last_v, nbr, {
       if (play_count[nbr] == 0 &&
           board.IsLegal (pl, nbr) &&
           !board.IsEyelike (pl, nbr))
@@ -74,15 +87,17 @@ public:
           best_v = nbr;
         }
       }
-    });
+    }//);
 
     return best_v;
   }
 
-  void MovePlayed (Move m1, Move m0, const NatMap<Vertex, uint>& play_count) {
-    if (play_count [m1.GetVertex ()] != 1) return;
-    if (play_count [m0.GetVertex ()] != 1) return;
+  void MovePlayed (Move m2, Move m1, Move m0, const NatMap<Vertex, uint>& play_count) {
+    if (play_count [m2.GetVertex ()] > 1) return;
+    if (play_count [m1.GetVertex ()] > 1) return;
+    if (play_count [m0.GetVertex ()] > 1) return;
     Trace t;
+    t.m2 = m2;
     t.m1 = m1;
     t.m0 = m0;
     to_update.push_back (t);
@@ -99,38 +114,40 @@ public:
     unused (gfx);
   }
 
-  void MoveValueGfx (Move pre_move,
-                     Player player,
-                     const Board& board,
-                     Gtp::GoguiGfx* gfx)
+  void MoveValueGfx (const Board& board, Gtp::GoguiGfx* gfx)
   {
-    Stat stat(0.01, 0.0);
-    Vertex pre_v = pre_move.GetVertex();
+    Stat stat(0.0, 0.0);
+    stat.update (-1);
+    stat.update (1);
 
-    for_each_8_nbr (pre_v, v, {
-      if (board.ColorAt (v) == Color::Empty () && v != pre_move.GetVertex()) {
-        Move move = Move (player, v);
-        float mean = ms2 [pre_move] [move].mean();
+    MS1& my_ms1 = ms3 [board.LastMove2 ()] [board.LastMove ()];
+    Player pl = board.ActPlayer ();
+
+    ForEachNat (Vertex, v) {
+      if (board.ColorAt (v) == Color::Empty ()) {
+        Move m = Move (pl, v);
+        if (my_ms1 [m].update_count() == 1) continue;
+        float mean = my_ms1 [m].mean();
         stat.update (mean);
       }
-    });
-
-    for_each_8_nbr (pre_v, v, {
-      if (board.ColorAt (v) == Color::Empty () &&
-          v != pre_move.GetVertex()) {
-        Move move = Move (player, v);
-        float mean = ms2 [pre_move] [move].mean();
+    }
+    ForEachNat (Vertex, v) {
+      if (board.ColorAt (v) == Color::Empty ()) {
+        Move m = Move (pl, v);
+        if (my_ms1 [m].update_count() == 1) continue;
+        float mean = my_ms1 [m].mean();
         float val = (mean - stat.mean()) / stat.std_dev () / 3;
         gfx->SetInfluence (v.ToGtpString (), val);
         cerr << v.ToGtpString () << " : "
-             << ms2 [pre_move] [move].to_string () << endl;
+             << my_ms1 [m].to_string () << endl;
       }
-    });
+    }
   }
 
   typedef NatMap <Move, Stat> MS1;
-  typedef NatMap <Move, MS1> MS2;
-  MS2 ms2;
+  typedef NatMap <Move, MS1>  MS2;
+  typedef NatMap <Move, MS2>  MS3;
+  MS3 ms3;
 
   vector <Trace> to_update;
   uint prob_8mcmc_1024;

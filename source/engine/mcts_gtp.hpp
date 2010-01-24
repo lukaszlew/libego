@@ -37,8 +37,7 @@ private:
     gtp.RegisterGfx ("Mcts.ShowLastPlayout", "16", this, &MctsGtp::CShowLastPlayout);
     gtp.RegisterGfx ("Mcts.ShowLastPlayout", "20", this, &MctsGtp::CShowLastPlayout);
 
-    gtp.RegisterGfx ("Mcts.ShowMcmc", "black %p white", this, &MctsGtp::CShowMcmc);
-    gtp.RegisterGfx ("Mcts.ShowMcmc", "white %p black", this, &MctsGtp::CShowMcmc);
+    gtp.RegisterGfx ("Mcts.ShowMcmc", "", this, &MctsGtp::CShowMcmc);
 
 //     gtp.RegisterGfx ("Mcts.ShowMcmc", "black %p black # not used", this, &MctsGtp::CShowMcmc);
 //     gtp.RegisterGfx ("Mcts.ShowMcmc", "white %p white # not used", this, &MctsGtp::CShowMcmc);
@@ -164,15 +163,10 @@ private:
   }
 
   void CShowMcmc (Gtp::Io& io) {
-    Move   pre_move = io.Read<Move> ();
-    Player player   = io.Read<Player> ();
     io.CheckEmpty ();
 
     Gtp::GoguiGfx gfx;
-    mcts_engine.playout.mcmc.MoveValueGfx (pre_move,
-                                           player,
-                                           mcts_engine.full_board.GetBoard(),
-                                           &gfx);
+    mcts_engine.playout.mcmc.MoveValueGfx (mcts_engine.full_board.GetBoard(), &gfx);
     gfx.Report (io);
   }
 
