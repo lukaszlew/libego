@@ -39,6 +39,7 @@
 static const bool kCheckAsserts = false;
 
 // local hard-include
+#include "param.hpp"
 #include "stat.hpp"
 #include "logger.hpp"
 

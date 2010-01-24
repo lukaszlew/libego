@@ -59,28 +59,29 @@ private:
   }
 
   void RegisterParams (Gtp::ReplWithGogui& gtp) {
-    string cmd_search  = "Mcts.Params.Search";
-    string cmd_genmove = "Mcts.Params.Genmove";
-    string cmd_logger  = "Mcts.Params.Logger";
-    string cmd_mcmc    = "McMc.Params";
+    string cmd_tree  = "Params.Tree";
+    string cmd_mcmc    = "Params.McMc";
+    string cmd_genmove = "Params";
+    string cmd_logger  = "Params.Logger";
 
-    gtp.RegisterParam (cmd_mcmc, "update",          &Param::mcmc_update);
-    gtp.RegisterParam (cmd_mcmc, "use",             &Param::mcmc_use);
+    gtp.RegisterParam (cmd_genmove, "use_tree",     &Param::use_mcts_tree);
+    gtp.RegisterParam (cmd_genmove, "use_mcmc",     &Param::mcmc_use);
+    gtp.RegisterParam (cmd_genmove, "update_mcmc",  &Param::mcmc_update);
+    gtp.RegisterParam (cmd_genmove, "playouts",     &Param::genmove_playouts);
+    gtp.RegisterParam (cmd_genmove, "seed",         &mcts_engine.random.seed);
+    gtp.RegisterParam (cmd_genmove, "resign_mean",  &Param::resign_mean);
+
+    gtp.RegisterParam (cmd_tree, "explore_coeff", &Param::uct_explore_coeff);
+    gtp.RegisterParam (cmd_tree, "bias_stat",     &Param::mcts_bias);
+    gtp.RegisterParam (cmd_tree, "bias_rave",     &Param::mcts_bias);
+    gtp.RegisterParam (cmd_tree, "use_rave",      &Param::use_rave);
+    gtp.RegisterParam (cmd_tree, "update_rave",   &Param::update_rave);
+    gtp.RegisterParam (cmd_tree, "mature_at",     &Param::mature_update_count);
+    gtp.RegisterParam (cmd_tree, "reset_tree",    &Param::reset_tree_on_genmove);
+
     gtp.RegisterParam (cmd_mcmc, "update_fraction", &Param::mcmc_update_fraction);
     gtp.RegisterParam (cmd_mcmc, "explore_coeff",   &Param::mcmc_explore_coeff);
     gtp.RegisterParam (cmd_mcmc, "prob_8_nbr",      &Param::mcmc_prob_8_nbr);
-
-    gtp.RegisterParam (cmd_search, "explore_coeff", &Param::uct_explore_coeff);
-    gtp.RegisterParam (cmd_search, "bias_stat",     &Param::mcts_bias);
-    gtp.RegisterParam (cmd_search, "bias_rave",     &Param::mcts_bias);
-    gtp.RegisterParam (cmd_search, "use_rave",      &Param::use_rave);
-    gtp.RegisterParam (cmd_search, "update_rave",   &Param::update_rave);
-    gtp.RegisterParam (cmd_search, "mature_at",     &Param::mature_update_count);
-
-    gtp.RegisterParam (cmd_genmove, "resign_mean",  &Param::resign_mean);
-    gtp.RegisterParam (cmd_genmove, "playouts",     &Param::genmove_playouts);
-    gtp.RegisterParam (cmd_genmove, "reset_tree",   &Param::reset_tree_on_genmove);
-    gtp.RegisterParam (cmd_genmove, "seed",         &mcts_engine.random.seed);
 
     gtp.RegisterParam (cmd_logger, "is_active",     &mcts_engine.logger.is_active);
     gtp.RegisterParam (cmd_logger, "log_directory", &mcts_engine.logger.log_directory);

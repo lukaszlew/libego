@@ -3,10 +3,6 @@ const float kSureWinUpdate = 1.0; // TODO increase this
 
 // -----------------------------------------------------------------------------
 
-namespace Param {
-  bool use_mcts_in_playout = true; // TODO true
-}
-
 class MctsPlayout {
   static const bool kCheckAsserts = false;
 public:
@@ -24,7 +20,7 @@ public:
     play_count.SetToZero();
     mcmc.NewPlayout ();
 
-    tree_phase = Param::use_mcts_in_playout;
+    tree_phase = Param::use_mcts_tree;
 
     // do the playout
     while (true) {
@@ -53,15 +49,17 @@ public:
         v = play_board.RandomLightMove (pl, random);
       }
 
-      Move prev_move = play_board.LastMove ();
+      Move m1 = play_board.LastMove ();
+      CHECK (m1.IsValid());
 
       ASSERT (play_board.IsLegal (pl, v));
       play_board.PlayLegal (pl, v);
       move_history.push_back (Move(pl, v));
       play_count [v] += 1;
 
-      Move last_move = play_board.LastMove ();
-      mcmc.MovePlayed (prev_move, last_move, play_count);
+      Move m0 = play_board.LastMove ();
+      CHECK (m0.IsValid());
+      mcmc.MovePlayed (m1, m0, play_count);
     }
 
     // TODO game replay i update wszystkich modeli

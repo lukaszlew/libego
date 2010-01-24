@@ -11,14 +11,6 @@
   }
 
 
-namespace Param {
-  bool mcmc_use    = true;
-  bool mcmc_update = true;
-  float mcmc_update_fraction = 0.5;
-  float mcmc_explore_coeff = 10.0;
-  float mcmc_prob_8_nbr = 0.8;
-}
-
 struct Trace {
   Move m1;
   Move m0;
