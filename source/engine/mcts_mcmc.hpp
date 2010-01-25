@@ -6,11 +6,13 @@ public:
   }
 
   void Reset () {
-    // TODO prior randomization here!
+    // TODO prior randomization here!, optimizm/exploration
     ForEachNat (Move, m2) {
       ForEachNat (Move, m1) {
         ForEachNat (Move, m0) {
-          ms3[m2][m1][m0].reset (1.0, 0.0);
+          float optimism = m0.GetPlayer().SubjectiveScore (1.0);
+          ms3[m2][m1][m0].reset (10.0, optimism);
+          ms3_rave[m2][m1][m0].reset (10.0, optimism);
         }
       }
     }
@@ -30,7 +32,8 @@ public:
     play_count [m1.GetVertex()] += 1;
     play_count [Vertex::Any()] = 1; // beginning of the game is Any*2
 
-    reps (ii, 1, history.size() * Param::mcmc_update_fraction) {
+    uint last_ii = history.size() * Param::mcmc_update_fraction;
+    reps (ii, 1, last_ii) {
       Move m0 = history[ii];
       play_count [m0.GetVertex()] += 1;
       if (play_count [m2.GetVertex()] == 1 &&
@@ -41,6 +44,13 @@ public:
         s.update (score);
         s.UpdateUcb (m0.GetPlayer (), Param::mcmc_explore_coeff);
       }
+
+      MS1& ms1_rave = ms3_rave [m2] [m1];
+      reps (jj, ii, last_ii) {
+        Move mr = history[jj];
+        ms1_rave [mr] . update (score);
+      }
+
       m2 = m1;
       m1 = m0;
     }
@@ -60,6 +70,7 @@ public:
     Vertex best_v = Vertex::Any(); // any == light move
     float best_value = - 1E20;
     MS1& my_ms1 = ms3 [m2] [m1];
+    MS1& my_ms1_rave = ms3_rave [m2] [m1];
     Player pl = board.ActPlayer();
         
     ForEachNat (Vertex, nbr) {
@@ -67,8 +78,13 @@ public:
           board.IsLegal (pl, nbr) &&
           !board.IsEyelike (pl, nbr))
       {
-        Stat& stat = my_ms1 [Move(pl, nbr)];
-        float value = stat.Ucb();
+        //        Stat& stat = my_ms1 [Move(pl, nbr)];
+        //        float value = stat.Ucb();
+        Move m =  Move(pl, nbr);
+        float value = Stat::Mix (my_ms1 [m],      Param::mcts_bias,
+                                 my_ms1_rave [m], Param::rave_bias);
+        if (pl == Player::White()) value = -value;
+
         if (best_value < value) {
           best_value = value;
           best_v = nbr;
@@ -86,6 +102,7 @@ public:
     stat.update (1);
 
     MS1& my_ms1 = ms3 [board.LastMove2 ()] [board.LastMove ()];
+    MS1& my_ms1_rave = ms3_rave [board.LastMove2 ()] [board.LastMove ()];
     Player pl = board.ActPlayer ();
 
     ForEachNat (Vertex, v) {
@@ -104,7 +121,11 @@ public:
         float val = (mean - stat.mean()) / stat.std_dev () / 3;
         gfx->SetInfluence (v.ToGtpString (), val);
         cerr << v.ToGtpString () << " : "
-             << my_ms1 [m].to_string () << endl;
+             << my_ms1 [m].to_string () << " ++ "
+             << my_ms1_rave [m].to_string () << " -> "
+             << Stat::Mix (my_ms1 [m],      Param::mcts_bias,
+                           my_ms1_rave [m], Param::rave_bias)
+             << endl;
       }
     }
   }
@@ -113,4 +134,5 @@ public:
   typedef NatMap <Move, MS1>  MS2;
   typedef NatMap <Move, MS2>  MS3;
   MS3 ms3;
+  MS3 ms3_rave;
 };
