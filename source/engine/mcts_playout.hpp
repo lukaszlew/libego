@@ -61,7 +61,6 @@ public:
 
       Move m0 = play_board.LastMove ();
       CHECK (m0.IsValid());
-      mcmc.MovePlayed (m2, m1, m0, play_count);
     }
 
     // TODO game replay i update wszystkich modeli
@@ -73,7 +72,12 @@ public:
       score = Player::WinnerOfBoardScore (sc).ToScore (); // +- 1
       score += float(sc) / 10000.0; // small bonus for bigger win.
     }
-    UpdateTrace (score);
+
+    // update models
+    UpdateTraceRegular (score);
+    if (Param::update_rave) UpdateTraceRave (score);
+    ASSERT (board.LastMove() == move_history[0]); // TODO remove it
+    if (Param::mcmc_update) mcmc.Update (score, board.LastMove2(), move_history);
   }
 
   vector<Move> LastPlayout () {
@@ -116,12 +120,6 @@ private:
 
     uint i = random.GetNextUint (tab.Size());
     return tab[i];
-  }
-
-  void UpdateTrace (int score) {
-    UpdateTraceRegular (score);
-    if (Param::update_rave) UpdateTraceRave (score);
-    if (Param::mcmc_update) mcmc.Update (score);
   }
 
   void UpdateTraceRegular (float score) {

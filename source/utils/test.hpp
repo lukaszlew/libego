@@ -14,7 +14,7 @@ void TestFail (const char* msg, const char* file, int line, const char* pf);
 #define QQ(x) cerr << x << flush;
 
 // Debug print with expresion equation.
-#define QQEE(x) cerr << #x << " = " << x << endl << flush;
+#define WW(x) cerr << #x << " = " << x << endl << flush;
 
 // Automatic progam failure with report.
 #define FAIL(msg) (TestFail (msg, __FILE__, __LINE__, __PRETTY_FUNCTION__), exit(0))

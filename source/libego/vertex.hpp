@@ -63,4 +63,17 @@ private:
   explicit Vertex (uint raw);
 };
 
+#define for_each_8_nbr(center_v, nbr_v, block) {                \
+    Vertex nbr_v;                                               \
+    nbr_v = center_v.N (); block;                               \
+    nbr_v = center_v.W (); block;                               \
+    nbr_v = center_v.E (); block;                               \
+    nbr_v = center_v.S (); block;                               \
+    nbr_v = center_v.NW (); block;                              \
+    nbr_v = center_v.NE (); block;                              \
+    nbr_v = center_v.SW (); block;                              \
+    nbr_v = center_v.SE (); block;                              \
+  }
+
+// -----------------------------------------------------------------------------
 #endif
