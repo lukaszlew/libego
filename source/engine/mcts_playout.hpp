@@ -20,7 +20,7 @@ public:
     play_count.SetToZero();
     mcmc.NewPlayout ();
 
-    tree_phase = Param::use_mcts_tree;
+    tree_phase = Param::tree_use;
 
     // do the playout
     while (true) {
@@ -75,7 +75,7 @@ public:
 
     // update models
     UpdateTraceRegular (score);
-    if (Param::update_rave) UpdateTraceRave (score);
+    if (Param::tree_rave_update) UpdateTraceRave (score);
     ASSERT (board.LastMove() == move_history[0]); // TODO remove it
     if (Param::mcmc_update) mcmc.Update (score, board.LastMove2(), move_history);
   }

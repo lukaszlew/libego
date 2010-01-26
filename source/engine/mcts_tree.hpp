@@ -129,10 +129,8 @@ string MctsNode::ToString() const {
     << v.ToGtpString() << " " 
     << stat.to_string() << " "
     << rave_stat.to_string() << " -> "
-    << Stat::Mix (stat,
-                  Param::mcts_bias,
-                  rave_stat,
-                  Param::rave_bias)
+    << Stat::Mix (stat,      Param::tree_stat_bias,
+                  rave_stat, Param::tree_rave_bias)
     // << " - ("  << stat.precision (Param::mcts_bias) << " : "
     // << stat.precision (Param::rave_bias) << ")"
     // << Stat::SlowMix (stat,
@@ -254,16 +252,16 @@ float MctsNode::SubjectiveMean () const {
 float MctsNode::SubjectiveRaveValue (Player pl, float log_val) const {
   float value;
 
-  if (Param::use_rave) {
-    value = Stat::Mix (stat,      Param::mcts_bias,
-                       rave_stat, Param::rave_bias);
+  if (Param::tree_rave_use) {
+    value = Stat::Mix (stat,      Param::tree_stat_bias,
+                       rave_stat, Param::tree_rave_bias);
   } else {
     value = stat.mean ();
   }
 
   return
     pl.SubjectiveScore (value) +
-    Param::uct_explore_coeff * sqrt (log_val / stat.update_count());
+    Param::tree_explore_coeff * sqrt (log_val / stat.update_count());
 }
 
 #endif

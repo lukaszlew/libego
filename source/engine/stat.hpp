@@ -121,15 +121,17 @@ struct Stat2 {
   Stat stat;
   Stat rave;
 
-  float Mix () const {
-    return Stat::Mix (stat, Param::mcts_bias,
-                      rave, Param::rave_bias) + 0.1 / sqrt(stat.update_count ());
+  float McmcMix () const {
+    return
+      Stat::Mix (stat, Param::mcmc_stat_bias,
+                 rave, Param::mcmc_rave_bias) +
+      Param::mcmc_explore_coeff / sqrt(stat.update_count ());
   }
 
   string ToString () const {
     ostringstream out;
     out << stat.to_string () << " ++ " << rave.to_string ()
-        << " -> " << Mix ();
+        << " -> " << McmcMix ();
     return out.str();
   }
 

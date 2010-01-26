@@ -94,7 +94,7 @@ public:
           !board.IsEyelike (pl, nbr))
       {
         Move m =  Move(pl, nbr);
-        float value = my_ms1 [m].Mix();
+        float value = my_ms1 [m].McmcMix();
         if (pl == Player::White()) value = -value;
 
         if (best_value < value) {
@@ -113,9 +113,6 @@ public:
     float max_v = -1E20;
     float min_v = 1E20;
 
-    //Param::rave_bias *= 20;
-    
-
     CHECK (level == 1 || level == 2);
     MS1& my_ms1 =
       level == 1 ? 
@@ -127,7 +124,7 @@ public:
     ForEachNat (Vertex, v) {
       if (board.ColorAt (v) == Color::Empty () && board.IsLegal (pl, v)) {
         Move m = Move (pl, v);
-        float mean = my_ms1 [m].Mix();
+        float mean = my_ms1 [m].McmcMix();
         max_v = max (max_v, mean);
         min_v = min (min_v, mean);
       }
@@ -140,7 +137,7 @@ public:
     ForEachNat (Vertex, v) {
       if (board.ColorAt (v) == Color::Empty ()) {
         Move m = Move (pl, v);
-        float mean = my_ms1 [m].Mix();
+        float mean = my_ms1 [m].McmcMix();
         float val = (mean - min_v) / (max_v - min_v) * 2 - 1;
         gfx->SetInfluence (v.ToGtpString (), val);
         cerr << v.ToGtpString () << " : "
@@ -148,8 +145,6 @@ public:
              << endl;
       }
     }
-
-    //Param::rave_bias /= 20;
   }
 
 
