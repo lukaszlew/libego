@@ -55,7 +55,7 @@ void Logger::NewLog () {
     bfile::create_directories (path);
     if (bfile::exists (filename)) {
       uint i = 1;
-      while (!bfile::exists (filename + ToString(i))) i += 1;
+      while (bfile::exists (filename + ToString(i))) i += 1;
       filename = filename + ToString(i);
     }
   } catch (std::exception e) { return; }

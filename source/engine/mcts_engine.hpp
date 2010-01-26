@@ -79,11 +79,12 @@ public:
   }
 
   Vertex Genmove (Player player) {
-    logger.LogLine ("random_seed     #? [" + ToString (random.GetSeed ()) + "]");
     if (Param::reset_tree_on_genmove) {
       root.Reset ();
     }
     playout.mcmc.Reset ();
+
+    logger.LogLine ("param.other seed " + ToString (random.GetSeed ()));
 
     int playouts = Param::genmove_playouts;
     if (time_stones [player] == 0 && time_left [player] < 60.0) {
@@ -103,7 +104,9 @@ public:
     }
     logger.LogLine ("reg_genmove " + player.ToGtpString() +
                     "   #? [" + v.ToGtpString() + "]");
-    logger.LogLine ("play " + Move (player, v).ToGtpString());
+    logger.LogLine ("play " + Move (player, v).ToGtpString() + 
+                    " # move " +
+                    ToString(full_board.GetBoard().MoveCount()));
     logger.LogLine ("");
     return v;
   }

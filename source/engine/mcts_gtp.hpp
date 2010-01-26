@@ -52,6 +52,9 @@ private:
 
     gtp.RegisterParam (other, "genmove_playouts",     &Param::genmove_playouts);
     gtp.RegisterParam (other, "local_use",            &Param::use_local);
+    gtp.RegisterParam (other, "seed",                 &mcts_engine.random.seed);
+    gtp.RegisterParam (other, "logger_is_active",     &mcts_engine.logger.is_active);
+    gtp.RegisterParam (other, "logger_directory",     &mcts_engine.logger.log_directory);
 
     gtp.RegisterParam (tree, "use",             &Param::tree_use);
     gtp.RegisterParam (tree, "explore_coeff",   &Param::tree_explore_coeff);
@@ -70,10 +73,7 @@ private:
     gtp.RegisterParam (mcmc, "explore_coeff",   &Param::mcmc_explore_coeff);
 
 
-//     gtp.RegisterParam (cmd2, "logger_is_active",     &mcts_engine.logger.is_active);
-//     gtp.RegisterParam (cmd2, "logger_directory",     &mcts_engine.logger.log_directory);
 
-//     gtp.RegisterParam (cmd2, "seed",               &mcts_engine.random.seed);
 //     gtp.RegisterParam (cmd2, "resign_mean",        &Param::resign_mean);
 
 //     string d2gtp = "d2gtp-params";
