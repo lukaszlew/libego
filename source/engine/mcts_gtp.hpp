@@ -64,6 +64,7 @@ private:
     gtp.RegisterParam (mcmc, "update",          &Param::mcmc_update);
     gtp.RegisterParam (mcmc, "update_fraction", &Param::mcmc_update_fraction);
     gtp.RegisterParam (mcmc, "use",             &Param::mcmc_use);
+    gtp.RegisterParam (mcmc, "max_depth",       &Param::mcmc_max_depth);
     gtp.RegisterParam (mcmc, "stat_bias",       &Param::mcmc_stat_bias);
     gtp.RegisterParam (mcmc, "rave_bias",       &Param::mcmc_rave_bias);
     gtp.RegisterParam (mcmc, "explore_coeff",   &Param::mcmc_explore_coeff);

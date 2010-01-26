@@ -12,6 +12,7 @@ namespace Param {
   bool  mcmc_update = false;
   float mcmc_update_fraction = 0.5;
   bool  mcmc_use    = false;
+  uint  mcmc_max_depth = 20;
   float mcmc_stat_bias = 0.0;
   float mcmc_rave_bias = 0.01;
   float mcmc_explore_coeff = 0.0;

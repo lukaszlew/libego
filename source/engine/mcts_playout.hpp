@@ -34,8 +34,9 @@ public:
         v = ChooseTreeMove (pl);
 
       // TODO cutoff at half game
-      if (Param::mcmc_use && v == Vertex::Any () &&
-          random.GetNextUint (1024) < 950)
+      if (Param::mcmc_use &&
+          v == Vertex::Any () &&
+          move_history.size() < Param::mcmc_max_depth)
       {
         v = mcmc.Choose8Move (play_board, play_count);
       }
