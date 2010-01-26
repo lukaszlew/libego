@@ -41,7 +41,7 @@ public:
       }
 
       // if (v = Vertex::Any () && random.GetNextUint (1024) < 128)
-      if (v == Vertex::Any ()) {
+      if (Param::use_local && v == Vertex::Any ()) {
         v = ChooseLocalMove ();
       }
 

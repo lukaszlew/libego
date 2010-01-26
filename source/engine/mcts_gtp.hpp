@@ -65,6 +65,7 @@ private:
 
     gtp.RegisterParam (cmd_genmove, "use_tree",     &Param::use_mcts_tree);
     gtp.RegisterParam (cmd_genmove, "use_mcmc",     &Param::mcmc_use);
+    gtp.RegisterParam (cmd_genmove, "use_local",    &Param::use_local);
     gtp.RegisterParam (cmd_genmove, "update_mcmc",  &Param::mcmc_update);
     gtp.RegisterParam (cmd_genmove, "playouts",     &Param::genmove_playouts);
     gtp.RegisterParam (cmd_genmove, "seed",         &mcts_engine.random.seed);

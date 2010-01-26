@@ -115,4 +115,24 @@ private:
   float ucb;
 };
 
+// -----------------------------------------------------------------------------
+
+struct Stat2 {
+  Stat stat;
+  Stat rave;
+
+  float Mix () const {
+    return Stat::Mix (stat, Param::mcts_bias,
+                      rave, Param::rave_bias) + 0.1 / sqrt(stat.update_count ());
+  }
+
+  string ToString () const {
+    ostringstream out;
+    out << stat.to_string () << " ++ " << rave.to_string ()
+        << " -> " << Mix ();
+    return out.str();
+  }
+
+};
+
 #endif

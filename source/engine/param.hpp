@@ -14,6 +14,7 @@ namespace Param {
   float rave_bias = 0.001;
   bool  update_rave = true;
   bool  use_rave  = true;  
+  bool  use_local  = true;  
 
   float prior_update_count = 10.0;
   float prior_mean = 1.0;
