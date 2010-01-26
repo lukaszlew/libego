@@ -16,6 +16,14 @@ public:
         }
       }
     }
+
+    ForEachNat (Move, m1) {
+      ForEachNat (Move, m0) {
+        float optimism = m0.GetPlayer().SubjectiveScore (1.0);
+        ms2 [m1][m0].stat.reset (10.0, optimism);
+        ms2 [m1][m0].rave.reset (10.0, optimism);
+      }
+    }
   }
 
   void NewPlayout () {
@@ -42,14 +50,21 @@ public:
         Stat2& s2 = ms3 [m2] [m1] [m0];
         s2.stat.update (score);
         s2.stat.UpdateUcb (m0.GetPlayer (), Param::mcmc_explore_coeff);
-      }
 
-      MS1& ms1 = ms3 [m2] [m1];
-      reps (jj, ii, last_ii) {
-        Move mr = history[jj];
-        if (play_count [mr.GetVertex()] == 0) {
-          ms1 [mr] . rave . update (score);
+        Stat2& s2b = ms2 [m1] [m0];
+        s2b.stat.update (score);
+        s2b.stat.UpdateUcb (m0.GetPlayer (), Param::mcmc_explore_coeff);
+
+        MS1& ms1 = ms3 [m2] [m1];
+        MS1& ms1b = ms2 [m1];
+        reps (jj, ii, last_ii) {
+          Move mr = history[jj];
+          if (play_count [mr.GetVertex()] == 0) {
+            ms1  [mr] . rave . update (score);
+            ms1b [mr] . rave . update (score);
+          }
         }
+
       }
 
       play_count [m0.GetVertex()] += 1;
@@ -69,7 +84,8 @@ public:
 
     Vertex best_v = Vertex::Any(); // any == light move
     float best_value = - 1E20;
-    MS1& my_ms1 = ms3 [m2] [m1];
+    //MS1& my_ms1 = ms3 [m2] [m1];
+    MS1& my_ms1 = ms2 [m1];
     Player pl = board.ActPlayer();
         
     ForEachNat (Vertex, nbr) {
@@ -91,13 +107,18 @@ public:
     return best_v;
   }
 
-  void MoveValueGfx (const Board& board, Gtp::GoguiGfx* gfx)
+  void MoveValueGfx (const Board& board, Gtp::GoguiGfx* gfx, int level)
   {
     Stat stat(0.0, 0.0);
     stat.update (-1);
     stat.update (1);
 
-    MS1& my_ms1 = ms3 [board.LastMove2 ()] [board.LastMove ()];
+    CHECK (level == 1 || level == 2);
+    MS1& my_ms1 =
+      level == 1 ? 
+      ms2 [board.LastMove ()] :
+      ms3 [board.LastMove2 ()] [board.LastMove ()];
+      ;
     Player pl = board.ActPlayer ();
 
     ForEachNat (Vertex, v) {
@@ -123,5 +144,7 @@ public:
   typedef NatMap <Move, Stat2> MS1;
   typedef NatMap <Move, MS1>  MS2;
   typedef NatMap <Move, MS2>  MS3;
+
   MS3 ms3;
+  MS2 ms2;
 };

@@ -19,42 +19,30 @@ private:
     gtp.Register ("showboard",    this, &MctsGtp::Cshowboard);
     gtp.Register ("time_left",    this, &MctsGtp::CTimeLeft);
 
-    gtp.RegisterGfx ("Mcts.DoPlayouts",      "1", this, &MctsGtp::CDoPlayouts);
-    gtp.RegisterGfx ("Mcts.DoPlayouts",     "10", this, &MctsGtp::CDoPlayouts);
-    gtp.RegisterGfx ("Mcts.DoPlayouts",    "100", this, &MctsGtp::CDoPlayouts);
-    gtp.RegisterGfx ("Mcts.DoPlayouts",   "1000", this, &MctsGtp::CDoPlayouts);
-    gtp.RegisterGfx ("Mcts.DoPlayouts",  "10000", this, &MctsGtp::CDoPlayouts);
-    gtp.RegisterGfx ("Mcts.DoPlayouts", "100000", this, &MctsGtp::CDoPlayouts);
+    gtp.RegisterGfx ("DoPlayouts",      "1", this, &MctsGtp::CDoPlayouts);
+    gtp.RegisterGfx ("DoPlayouts",     "10", this, &MctsGtp::CDoPlayouts);
+    gtp.RegisterGfx ("DoPlayouts",    "100", this, &MctsGtp::CDoPlayouts);
+    gtp.RegisterGfx ("DoPlayouts",   "1000", this, &MctsGtp::CDoPlayouts);
+    gtp.RegisterGfx ("DoPlayouts",  "10000", this, &MctsGtp::CDoPlayouts);
+    gtp.RegisterGfx ("DoPlayouts", "100000", this, &MctsGtp::CDoPlayouts);
 
-    gtp.RegisterGfx ("Mcts.ShowTree",    "0 4", this, &MctsGtp::CShowTree);
-    gtp.RegisterGfx ("Mcts.ShowTree",   "10 4", this, &MctsGtp::CShowTree);
-    gtp.RegisterGfx ("Mcts.ShowTree",  "100 4", this, &MctsGtp::CShowTree);
-    gtp.RegisterGfx ("Mcts.ShowTree", "1000 4", this, &MctsGtp::CShowTree);
+    gtp.RegisterGfx ("Mcts.Show",    "0 4", this, &MctsGtp::CShowTree);
+    gtp.RegisterGfx ("Mcts.Show",   "10 4", this, &MctsGtp::CShowTree);
+    gtp.RegisterGfx ("Mcts.Show",  "100 4", this, &MctsGtp::CShowTree);
+    gtp.RegisterGfx ("Mcts.Show", "1000 4", this, &MctsGtp::CShowTree);
 
-    gtp.RegisterGfx ("Mcts.ShowLastPlayout",  "4", this, &MctsGtp::CShowLastPlayout);
-    gtp.RegisterGfx ("Mcts.ShowLastPlayout",  "8", this, &MctsGtp::CShowLastPlayout);
-    gtp.RegisterGfx ("Mcts.ShowLastPlayout", "12", this, &MctsGtp::CShowLastPlayout);
-    gtp.RegisterGfx ("Mcts.ShowLastPlayout", "16", this, &MctsGtp::CShowLastPlayout);
-    gtp.RegisterGfx ("Mcts.ShowLastPlayout", "20", this, &MctsGtp::CShowLastPlayout);
+    gtp.RegisterGfx ("ShowLastPlayout",  "4", this, &MctsGtp::CShowLastPlayout);
+    gtp.RegisterGfx ("ShowLastPlayout",  "8", this, &MctsGtp::CShowLastPlayout);
+    gtp.RegisterGfx ("ShowLastPlayout", "12", this, &MctsGtp::CShowLastPlayout);
+    gtp.RegisterGfx ("ShowLastPlayout", "16", this, &MctsGtp::CShowLastPlayout);
+    gtp.RegisterGfx ("ShowLastPlayout", "20", this, &MctsGtp::CShowLastPlayout);
 
-    gtp.RegisterGfx ("Mcts.ShowMcmc", "", this, &MctsGtp::CShowMcmc);
-
-//     gtp.RegisterGfx ("Mcts.ShowMcmc", "black %p black # not used", this, &MctsGtp::CShowMcmc);
-//     gtp.RegisterGfx ("Mcts.ShowMcmc", "white %p white # not used", this, &MctsGtp::CShowMcmc);
 
     gtp.RegisterGfx ("McMc.Ownage", "", this, &MctsGtp::CMcmcOwnage);
     gtp.RegisterGfx ("McMc.Reset", "", this, &MctsGtp::CMcmcReset);
+    gtp.RegisterGfx ("McMc.Show", "1", this, &MctsGtp::CShowMcmc);
+    gtp.RegisterGfx ("McMc.Show", "2", this, &MctsGtp::CShowMcmc);
 
-//     gtp.RegisterGfx ("Mcts.ShowMcmcProb", "black %p white", this,
-//                      &MctsGtp::CShowMcmcProb);
-
-//     gtp.RegisterGfx ("Mcts.ShowMcmcProb", "white %p black", this,
-//                      &MctsGtp::CShowMcmcProb);
-
-//     gtp.RegisterGfx ("Mcts.ShowMcmcProb", "black %p black", this,
-//                      &MctsGtp::CShowMcmcProb);
-//     gtp.RegisterGfx ("Mcts.ShowMcmcProb", "white %p white", this,
-//                      &MctsGtp::CShowMcmcProb);
   }
 
   void RegisterParams (Gtp::ReplWithGogui& gtp) {
@@ -164,10 +152,15 @@ private:
   }
 
   void CShowMcmc (Gtp::Io& io) {
+    int level = io.Read<int> ();
     io.CheckEmpty ();
+    if (level != 1 && level != 2) {
+      io.SetError ("bad level");
+      return;
+    }
 
     Gtp::GoguiGfx gfx;
-    mcts_engine.playout.mcmc.MoveValueGfx (mcts_engine.full_board.GetBoard(), &gfx);
+    mcts_engine.playout.mcmc.MoveValueGfx (mcts_engine.full_board.GetBoard(), &gfx, level);
     gfx.Report (io);
   }
 

@@ -82,8 +82,8 @@ public:
     logger.LogLine ("random_seed     #? [" + ToString (random.GetSeed ()) + "]");
     if (Param::reset_tree_on_genmove) {
       root.Reset ();
-      playout.mcmc.Reset ();
     }
+    playout.mcmc.Reset ();
 
     int playouts = Param::genmove_playouts;
     if (time_stones [player] == 0 && time_left [player] < 60.0) {

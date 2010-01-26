@@ -5,10 +5,10 @@ if test $# -ne 4; then
   exit 1
 fi
 
-GAME_NO="$1"
-PROC_NO="$2"
-BLACK="$(readlink -f "$3")"
-WHITE="$(readlink -f "$4")"
+BLACK="$(readlink -f "$1")"
+WHITE="$(readlink -f "$2")"
+GAME_NO="$3"
+PROC_NO="$4"
 
 DIR=`date "+%F/%T"`
 
