@@ -109,9 +109,12 @@ public:
 
   void MoveValueGfx (const Board& board, Gtp::GoguiGfx* gfx, int level)
   {
-    Stat stat(0.0, 0.0);
-    stat.update (-1);
-    stat.update (1);
+
+    float max_v = -1E20;
+    float min_v = 1E20;
+
+    //Param::rave_bias *= 20;
+    
 
     CHECK (level == 1 || level == 2);
     MS1& my_ms1 =
@@ -122,24 +125,33 @@ public:
     Player pl = board.ActPlayer ();
 
     ForEachNat (Vertex, v) {
-      if (board.ColorAt (v) == Color::Empty ()) {
+      if (board.ColorAt (v) == Color::Empty () && board.IsLegal (pl, v)) {
         Move m = Move (pl, v);
         float mean = my_ms1 [m].Mix();
-        stat.update (mean);
+        max_v = max (max_v, mean);
+        min_v = min (min_v, mean);
       }
     }
+
+    ostringstream out;
+    out << "\"range: " << min_v << " ... " << max_v << "\"";
+    gfx->SetStatusBar (out.str());
+
     ForEachNat (Vertex, v) {
       if (board.ColorAt (v) == Color::Empty ()) {
         Move m = Move (pl, v);
         float mean = my_ms1 [m].Mix();
-        float val = (mean - stat.mean()) / stat.std_dev ();
+        float val = (mean - min_v) / (max_v - min_v) * 2 - 1;
         gfx->SetInfluence (v.ToGtpString (), val);
         cerr << v.ToGtpString () << " : "
              << my_ms1 [m].ToString()
              << endl;
       }
     }
+
+    //Param::rave_bias /= 20;
   }
+
 
   typedef NatMap <Move, Stat2> MS1;
   typedef NatMap <Move, MS1>  MS2;
