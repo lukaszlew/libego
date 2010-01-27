@@ -148,6 +148,12 @@ public:
                      Gtp::GoguiGfx::circle);
     }
 
+    rep (ii, playout.mcmc_moves.size()) {
+      gfx.SetSymbol (playout.mcmc_moves[ii].GetVertex().ToGtpString(),
+                     Gtp::GoguiGfx::triangle);
+    }
+
+
     return gfx;
   }
 

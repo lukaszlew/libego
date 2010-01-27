@@ -23,6 +23,7 @@ public:
     tree_phase = Param::tree_use;
     tree_move_count = 0;
     mcmc_move_count = 0;
+    mcmc_moves.clear();
 
     // do the playout
     while (true) {
@@ -48,6 +49,7 @@ public:
       {
         v = mcmc.Choose8Move (play_board, play_count);
         mcmc_move_count += 1;
+        mcmc_moves.push_back (Move(pl, v));
       }
 
       // if (v = Vertex::Any () && random.GetNextUint (1024) < 128)
@@ -182,8 +184,9 @@ private:
   vector <Move> move_history;
   NatMap <Vertex, uint> play_count;
   bool tree_phase;
-  uint tree_move_count;
-  uint mcmc_move_count;
 public:
   Mcmc mcmc;
+  uint tree_move_count;
+  uint mcmc_move_count;
+  vector<Move> mcmc_moves;
 };
