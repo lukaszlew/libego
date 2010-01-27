@@ -57,6 +57,7 @@ private:
     gtp.RegisterParam (other, "logger_directory",     &mcts_engine.logger.log_directory);
 
     gtp.RegisterParam (tree, "use",             &Param::tree_use);
+    gtp.RegisterParam (tree, "max_moves",       &Param::tree_max_moves);
     gtp.RegisterParam (tree, "explore_coeff",   &Param::tree_explore_coeff);
     gtp.RegisterParam (tree, "rave_update",     &Param::tree_rave_update);
     gtp.RegisterParam (tree, "rave_use",        &Param::tree_rave_use);
@@ -67,7 +68,7 @@ private:
     gtp.RegisterParam (mcmc, "update",          &Param::mcmc_update);
     gtp.RegisterParam (mcmc, "update_fraction", &Param::mcmc_update_fraction);
     gtp.RegisterParam (mcmc, "use",             &Param::mcmc_use);
-    gtp.RegisterParam (mcmc, "max_depth",       &Param::mcmc_max_depth);
+    gtp.RegisterParam (mcmc, "max_moves",       &Param::mcmc_max_moves);
     gtp.RegisterParam (mcmc, "stat_bias",       &Param::mcmc_stat_bias);
     gtp.RegisterParam (mcmc, "rave_bias",       &Param::mcmc_rave_bias);
     gtp.RegisterParam (mcmc, "explore_coeff",   &Param::mcmc_explore_coeff);

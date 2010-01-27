@@ -3,6 +3,7 @@ namespace Param {
   bool  use_local  = true;  
 
   bool  tree_use = true;
+  uint  tree_max_moves   = 200;
   float tree_explore_coeff = 0.0;
   bool  tree_rave_update = true;
   bool  tree_rave_use    = true;  
@@ -12,7 +13,7 @@ namespace Param {
   bool  mcmc_update = false;
   float mcmc_update_fraction = 0.5;
   bool  mcmc_use    = false;
-  uint  mcmc_max_depth = 20;
+  uint  mcmc_max_moves = 4;
   float mcmc_stat_bias = 0.0;
   float mcmc_rave_bias = 0.01;
   float mcmc_explore_coeff = 0.0;

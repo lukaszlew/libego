@@ -21,6 +21,8 @@ public:
     mcmc.NewPlayout ();
 
     tree_phase = Param::tree_use;
+    tree_move_count = 0;
+    mcmc_move_count = 0;
 
     // do the playout
     while (true) {
@@ -30,15 +32,22 @@ public:
       Vertex v  = Vertex::Any ();
 
 
-      if (tree_phase && v == Vertex::Any ())
+      if (tree_phase &&
+          v == Vertex::Any () &&
+          tree_move_count < Param::tree_max_moves)
+      {
         v = ChooseTreeMove (pl);
+        tree_move_count += 1;
+      }
+      
 
       // TODO cutoff at half game
       if (Param::mcmc_use &&
           v == Vertex::Any () &&
-          move_history.size() < Param::mcmc_max_depth)
+          mcmc_move_count < Param::mcmc_max_moves)
       {
         v = mcmc.Choose8Move (play_board, play_count);
+        mcmc_move_count += 1;
       }
 
       // if (v = Vertex::Any () && random.GetNextUint (1024) < 128)
@@ -173,6 +182,8 @@ private:
   vector <Move> move_history;
   NatMap <Vertex, uint> play_count;
   bool tree_phase;
+  uint tree_move_count;
+  uint mcmc_move_count;
 public:
   Mcmc mcmc;
 };
