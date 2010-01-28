@@ -43,6 +43,7 @@ private:
     gtp.RegisterGfx ("McMc.Show", "1", this, &MctsGtp::CShowMcmc);
     gtp.RegisterGfx ("McMc.Show", "2", this, &MctsGtp::CShowMcmc);
 
+    gtp.RegisterGfx ("Model.Show", "%s", this, &MctsGtp::CModelShow);
   }
 
   void RegisterParams (Gtp::ReplWithGogui& gtp) {
@@ -165,6 +166,12 @@ private:
     Gtp::GoguiGfx gfx;
     mcts_engine.playout.mcmc.MoveValueGfx (mcts_engine.full_board.GetBoard(), &gfx, level);
     gfx.Report (io);
+  }
+
+  void CModelShow (Gtp::Io& io) {
+    double min_visit = io.Read<double> ();
+    io.CheckEmpty ();
+    cerr << mcts_engine.playout.model.root->RecToString (min_visit) << endl;
   }
 
   void CMcmcOwnage (Gtp::Io& io) {

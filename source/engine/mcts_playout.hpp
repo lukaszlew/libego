@@ -25,6 +25,8 @@ public:
     mcmc_move_count = 0;
     mcmc_moves.clear();
 
+    model.NewPlayout();
+
     // do the playout
     while (true) {
       if (play_board.BothPlayerPass()) break;
@@ -61,18 +63,17 @@ public:
         v = play_board.RandomLightMove (pl, random);
       }
 
-      Move m2 = play_board.LastMove2 ();
-      Move m1 = play_board.LastMove ();
-      CHECK (m2.IsValid());
-      CHECK (m1.IsValid());
+      Move m = Move (pl, v);
 
+      ASSERT (v.IsValid());
       ASSERT (play_board.IsLegal (pl, v));
       play_board.PlayLegal (pl, v);
-      move_history.push_back (Move(pl, v));
+      move_history.push_back (m);
       play_count [v] += 1;
-
-      Move m0 = play_board.LastMove ();
-      CHECK (m0.IsValid());
+      
+      if (Param::model_update && play_count [v] == 1) {
+        model.NewMove (m);
+      }
     }
 
     // TODO game replay i update wszystkich modeli
@@ -87,9 +88,20 @@ public:
 
     // update models
     UpdateTraceRegular (score);
-    if (Param::tree_rave_update) UpdateTraceRave (score);
+
+    if (Param::tree_rave_update) {
+      UpdateTraceRave (score);
+    }
+
     ASSERT (board.LastMove() == move_history[0]); // TODO remove it
-    if (Param::mcmc_update) mcmc.Update (score, board.LastMove2(), move_history);
+
+    if (Param::mcmc_update) {
+      mcmc.Update (score, board.LastMove2(), move_history);
+    }
+
+    if (Param::model_update) {
+      model.Update (score);
+    }
   }
 
   vector<Move> LastPlayout () {
@@ -189,4 +201,6 @@ public:
   uint tree_move_count;
   uint mcmc_move_count;
   vector<Move> mcmc_moves;
+
+  M::Model model;
 };

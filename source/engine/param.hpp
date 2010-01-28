@@ -18,7 +18,8 @@ namespace Param {
   float mcmc_rave_bias = 0.01;
   float mcmc_explore_coeff = 0.0;
 
-
+  float model_mature_at = 100.0;
+  bool  model_update = true;
 
   float prior_update_count = 10.0;
   float prior_mean = 1.0;
