@@ -12,8 +12,8 @@
 namespace Coord {
   bool IsOk (int coord);
 
-  std::string RowToGtpString (int row);
-  std::string ColumnToGtpString (int column);
+  std::string RowToGtpString (uint row);
+  std::string ColumnToGtpString (uint column);
   int RowOfGtpInt (int r);
   int ColumnOfGtpChar (char c);
 }

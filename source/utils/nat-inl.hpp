@@ -6,6 +6,9 @@
 #define NAT_INL_H_
 
 #include "test.hpp"
+#include <cmath>
+#include <iostream>
+
 
 template <class T>
 T Nat<T>::OfRaw (uint raw) {
@@ -87,6 +90,26 @@ void NatMap <Nat, Elt>::SetAll (const Elt& elt) {
 template <typename Nat, typename Elt>
 void NatMap <Nat, Elt>::SetToZero () { 
   memset (tab, '\0', sizeof (tab)); 
+}
+
+template <typename Nat, typename Elt>
+void NatMap <Nat, Elt>::Scale (Elt min_val, Elt max_val) {
+  Elt min_all = 1E20;
+  Elt max_all = -1E20;
+
+  ForEachNat (Nat, nat) {
+    Elt val = (*this) [nat];
+    if (std::isnan (val)) continue;
+    min_all = min (min_all, val);
+    max_all = max (max_all, val);
+  }
+
+  std::cerr << "Scale: " << min_all << " .. " << max_all << endl;
+  ForEachNat (Nat, nat) {
+    Elt& elt = (*this) [nat];
+    elt = (elt - min_all) / (max_all - min_all);
+    elt = elt * (max_val - min_val) + min_val;
+  }
 }
 
 #endif

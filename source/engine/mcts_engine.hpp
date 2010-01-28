@@ -29,8 +29,9 @@ public:
   
   MctsEngine ()
     : root (Player::White(), Vertex::Any ()),
+      model (full_board),
       random (TimeSeed()),
-      playout(random),
+      playout(random, model),
       time_left (0.0),
       time_stones (-1),
       playouts_per_second (50000)
@@ -202,8 +203,9 @@ private:
   // logging
   Logger logger;
   
-  // tree
+  // models
   MctsNode root;
+  M::Model model;
   
   // playout
   FastRandom random;

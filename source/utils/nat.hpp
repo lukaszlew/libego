@@ -48,6 +48,7 @@ class NatMap {
   const Elt& operator[] (Nat nat) const;
   void SetAll (const Elt& elt);
   void SetToZero (); // Assumes POD of Elt, uses memcpy.
+  void Scale (Elt min_val, Elt max_val);
 
  private:
   Elt tab [Nat::kBound];

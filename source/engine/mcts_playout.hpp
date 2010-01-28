@@ -6,7 +6,7 @@ const float kSureWinUpdate = 1.0; // TODO increase this
 class MctsPlayout {
   static const bool kCheckAsserts = false;
 public:
-  MctsPlayout (FastRandom& random_) : random (random_) {
+  MctsPlayout (FastRandom& random, M::Model& model) : random (random), model (model) {
   }
 
   void DoOnePlayout (MctsNode& playout_root, const Board& board, Player first_player) {
@@ -26,6 +26,9 @@ public:
     mcmc_moves.clear();
 
     model.NewPlayout();
+    model.NewMove (play_board.LastMove2());
+    model.NewMove (play_board.LastMove());
+    // TODO setup nonempty as played once already
 
     // do the playout
     while (true) {
@@ -202,5 +205,5 @@ public:
   uint mcmc_move_count;
   vector<Move> mcmc_moves;
 
-  M::Model model;
+  M::Model& model;
 };

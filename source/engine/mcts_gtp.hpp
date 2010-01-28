@@ -5,6 +5,7 @@ public:
   {
     RegisterCommands (gtp);
     RegisterParams (gtp);
+    mcts_engine.model.RegisterInGtp (gtp);
   }
 
 private:
@@ -44,11 +45,13 @@ private:
     gtp.RegisterGfx ("McMc.Show", "2", this, &MctsGtp::CShowMcmc);
 
     gtp.RegisterGfx ("Model.Show", "%s", this, &MctsGtp::CModelShow);
+
   }
 
   void RegisterParams (Gtp::ReplWithGogui& gtp) {
     string tree  = "param.tree";
     string mcmc  = "param.mcmc";
+    string model = "param.model";
     string other = "param.other";
 
     gtp.RegisterParam (other, "genmove_playouts",     &Param::genmove_playouts);
@@ -73,6 +76,10 @@ private:
     gtp.RegisterParam (mcmc, "stat_bias",       &Param::mcmc_stat_bias);
     gtp.RegisterParam (mcmc, "rave_bias",       &Param::mcmc_rave_bias);
     gtp.RegisterParam (mcmc, "explore_coeff",   &Param::mcmc_explore_coeff);
+
+    gtp.RegisterParam (model, "mature_at",          &Param::model_mature_at);
+    gtp.RegisterParam (model, "update",             &Param::model_update);
+    gtp.RegisterParam (model, "act_node_min_visit", &Param::model_act_node_min_visit);
 
 
 

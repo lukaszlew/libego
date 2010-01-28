@@ -1,3 +1,5 @@
+const double NaN = std::numeric_limits<double>::quiet_NaN();
+
 namespace M {
 
 // -----------------------------------------------------------------------------
@@ -69,6 +71,7 @@ struct Node {
 
 
   void AddChildren () {
+    CHECK (mature == false);
     ForEachNat (Move, m) {
       CHECK (children [m] == NULL);
       if (!m.GetVertex().IsOnBoard()) continue;
@@ -78,11 +81,17 @@ struct Node {
   }
 
 
-  string ToString () {
+  string ToString (bool full = false) {
+    ostringstream out;
+    if (full) {
+      vector <Move> path = Path();
+      rep(ii, path.size()) out << path[ii].ToGtpString() << ", ";
+    }
+
     return
-      last_move.ToGtpString() + ";  S: " +
-      stat.ToString() + "  R: " +
-      rave.ToString();
+      out.str () + 
+      ";  S: " + stat.ToString() +
+      ";  R: " + rave.ToString();
   }
 
 
@@ -90,6 +99,9 @@ struct Node {
     return a->PrintValue() > b->PrintValue();
   }
 
+  double Value () {
+    return rave.Mean (); // TODO RAVE
+  }
 
   double PrintValue () {
     return stat.N();
@@ -127,6 +139,14 @@ struct Node {
     }
   }
 
+  vector<Move> Path () {
+    vector<Move> path;
+    if (parent == NULL) return path;
+    path = parent->Path();
+    path.push_back (last_move);
+    return path;
+  }
+
   bool mature;
   Node* parent;
   uint depth;
@@ -144,7 +164,7 @@ struct Node {
 
 struct Model {
 
-  Model () {
+  Model (FullBoard& board) : board (board) {
     root = new Node (NULL, Move(Player::White(), Vertex::Any()));
   }
 
@@ -196,21 +216,83 @@ struct Model {
     rep (ii, to_update_rave.size()) {
       to_update_rave[ii]->rave.Update (result);
     }
-    // TODO expand
   }
 
-  string ToString () {
-    return "";
+
+  Node* ActNode (const vector <Move>& history) {
+    Node* longest = NULL;
+    for (uint start = history.size() - 1; start < history.size(); start -= 1) {
+      Node* act = root;
+      reps (suffix_ii, start, history.size()) {
+        Move m = history [suffix_ii];
+        act = act->children [m];
+        if (act == NULL || act->stat.N() < Param::model_act_node_min_visit) {
+          CHECK (longest != NULL);
+          return longest;
+        }
+      }
+      longest = act;
+    }
+    CHECK (longest != NULL);
+    return longest;
   }
+
+
+  // TODO history remove
+  void FillValues (NatMap<Vertex, double>& values, const vector <Move>& history, Player pl) {
+    Node* act = ActNode (history);
+
+    cerr << "Act node: " << act->ToString(true) << endl;
+
+    ForEachNat (Vertex, v) {
+      Move m = Move (pl, v);
+      Node* child = act->children [m];
+      if (child == NULL) {
+        values [v] = NaN;
+      } else {
+        values [v] = child->Value ();
+      }
+    }
+  }
+
+
+  void RegisterInGtp (Gtp::ReplWithGogui& gtp) {
+    gtp.RegisterGfx ("Model.Values", "", this, &Model::GtpShowValues);
+    gtp.RegisterGfx ("Model.Values", "", this, &Model::GtpShowValues);
+  }
+
+  void GtpShowValues (Gtp::Io& io) {
+    io.CheckEmpty ();
+    Player pl = board.GetBoard().ActPlayer ();
+
+    NatMap <Vertex, double> values;
+    FillValues (values, board.MoveHistory(), pl);
+    ForEachNat (Vertex, v) {
+      if (!board.GetBoard().IsLegal(pl, v)) {
+        values [v] = NaN;
+      }
+    }
+
+    values.Scale (-1.0, 1.0);
+    
+    Gtp::GoguiGfx gfx;
+    ForEachNat (Vertex, v) {
+      if (v.IsOnBoard()) 
+        gfx.SetInfluence (v.ToGtpString(), values[v]);
+    }
+    gfx.Report(io);
+  }
+
     
   Node* root;
   vector <Node*> active;         // * seq
   vector <Node*> to_update_stat; // * seq *
   vector <Node*> to_update_rave; // * seq[:-1] * seq[-1] *
-
   vector <Node*> tmp;
+
+  FullBoard& board;
 };
 
 // -----------------------------------------------------------------------------
-
+//TODO better board.
 }

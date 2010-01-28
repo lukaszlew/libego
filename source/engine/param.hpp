@@ -20,6 +20,7 @@ namespace Param {
 
   float model_mature_at = 100.0;
   bool  model_update = true;
+  float model_act_node_min_visit = 200.0;
 
   float prior_update_count = 10.0;
   float prior_mean = 1.0;
