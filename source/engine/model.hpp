@@ -85,13 +85,17 @@ struct Node {
     ostringstream out;
     if (full) {
       vector <Move> path = Path();
-      rep(ii, path.size()) out << path[ii].ToGtpString() << ", ";
+      rep(ii, path.size()) {
+        out << path[ii].ToGtpString() << " ";
+      }
+    } else {
+      out << last_move.ToGtpString();
     }
 
     return
       out.str () + 
-      ";  S: " + stat.ToString() +
-      ";  R: " + rave.ToString();
+      "   S: " + stat.ToString() +
+      "   R: " + rave.ToString();
   }
 
 
@@ -239,8 +243,9 @@ struct Model {
 
 
   // TODO history remove
-  void FillValues (NatMap<Vertex, double>& values, const vector <Move>& history, Player pl) {
-    Node* act = ActNode (history);
+  void FillValues (NatMap<Vertex, double>& values) {
+    Node* act = ActNode (board.MoveHistory ());
+    Player pl = board.GetBoard().ActPlayer ();
 
     cerr << "Act node: " << act->ToString(true) << endl;
 
@@ -257,8 +262,14 @@ struct Model {
 
 
   void RegisterInGtp (Gtp::ReplWithGogui& gtp) {
-    gtp.RegisterGfx ("Model.Values", "", this, &Model::GtpShowValues);
-    gtp.RegisterGfx ("Model.Values", "", this, &Model::GtpShowValues);
+    gtp.RegisterGfx ("model.values", "", this, &Model::GtpShowValues);
+    gtp.RegisterGfx ("model.values", "", this, &Model::GtpShowValues);
+    gtp.RegisterGfx ("model.show_tree", "%s", this, &Model::GtpModelShow);
+
+    string model = "model.param";
+    gtp.RegisterParam (model, "mature_at",          &Param::model_mature_at);
+    gtp.RegisterParam (model, "update",             &Param::model_update);
+    gtp.RegisterParam (model, "act_node_min_visit", &Param::model_act_node_min_visit);
   }
 
   void GtpShowValues (Gtp::Io& io) {
@@ -266,13 +277,13 @@ struct Model {
     Player pl = board.GetBoard().ActPlayer ();
 
     NatMap <Vertex, double> values;
-    FillValues (values, board.MoveHistory(), pl);
+
+    FillValues (values);
     ForEachNat (Vertex, v) {
       if (!board.GetBoard().IsLegal(pl, v)) {
         values [v] = NaN;
       }
     }
-
     values.Scale (-1.0, 1.0);
     
     Gtp::GoguiGfx gfx;
@@ -284,6 +295,13 @@ struct Model {
   }
 
     
+  void GtpModelShow (Gtp::Io& io) {
+    double min_visit = io.Read<double> ();
+    io.CheckEmpty ();
+    Node* act = ActNode (board.MoveHistory());
+    cerr << act->RecToString (min_visit) << endl;
+  }
+
   Node* root;
   vector <Node*> active;         // * seq
   vector <Node*> to_update_stat; // * seq *
