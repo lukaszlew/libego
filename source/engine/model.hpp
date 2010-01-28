@@ -15,9 +15,10 @@ namespace Param {
 // -----------------------------------------------------------------------------
 
 struct Stat {
-  Stat () {
+  Stat (bool maximize_) {
     n = 0.0;
     sum = 0.0;
+    maximize = maximize_;
   }
 
   double Mean () {
@@ -48,52 +49,7 @@ struct Stat {
 private:
   double n;
   double sum;
-};
-
-// -----------------------------------------------------------------------------
-
-// bistat nie ma sensu bo nie mozna tak mixowac
-
-struct Bistat {
-  Stat stat;
-  Stat rave;
-  double mix;
-  double prob;
   bool maximize;
-
-  Bistat (bool maximize_) {
-    mix = 0.0;
-    prob = 1.0;
-    maximize = maximize_;
-    CHECK (false);
-  }
-
-  double N () {
-    double stat_n = stat.N ();
-    double rave_n = stat.N (Param::max_rave_n);
-    return stat_n + rave_n;
-  }
-
-  void Recalc () {
-    double stat_n = stat.N ();
-    double rave_n = stat.N (Param::max_rave_n);
-    double n = stat_n + rave_n;
-
-    mix = (stat.Mean() * stat_n + rave.Mean() * rave_n) / n;
-    if (!maximize) mix = -mix;
-    mix += Param::explore_coeff / sqrt(n);
-    prob = exp (Param::boltzmann_constant * mix);
-  }
-
-  string ToString () {
-    ostringstream out;
-    out
-      << "   S: " << stat.ToString()
-      << "   R: " << rave.ToString()
-      << "   M: " << mix;
-    return out.str();
-  }
-
 };
 
 // -----------------------------------------------------------------------------
@@ -104,8 +60,7 @@ struct Bistat {
 struct Node {
 
   Node (Node* parent_, Move last_move_)
-    : bistat (last_move_.GetPlayer() == Player::White()) // next will
-                                                         // be black
+    : stat (last_move_.GetPlayer() == Player::Black())
   {
     parent = parent_;
     last_move = last_move_;
@@ -152,7 +107,7 @@ struct Node {
     }
 
     return
-      out.str () + bistat.ToString();
+      out.str () + stat.ToString();
   }
 
 
@@ -161,12 +116,11 @@ struct Node {
   }
 
   double Value () {
-    bistat.Recalc();
-    return bistat.prob; // TODO RAVE
+    return stat.N(); // TODO RAVE
   }
 
   double PrintValue () {
-    return bistat.N();
+    return stat.N();
   }
 
   string RecToString (uint n) {
@@ -205,7 +159,7 @@ struct Node {
   Move last_move;
 
   NatMap <Move, Node*> children;
-  Bistat bistat;
+  Stat stat;
 };
 
 // -----------------------------------------------------------------------------
@@ -262,20 +216,18 @@ struct Model {
   void Update (double result) {
     rep (ii, to_update_stat.size()) {
       Node* n = to_update_stat[ii];
-      n->bistat.stat.Update (result);
-      if (n->bistat.stat.N() >= Param::mature_at && !n->mature) {
+      n->stat.Update (result);
+      if (n->stat.N() >= Param::mature_at && !n->mature) {
         n->AddChildren ();
       }
-      n->bistat.Recalc();
     }
 
     rep (ii, to_update_rave.size()) {
       Node* n = to_update_rave[ii];
-      n->bistat.rave.Update (result);
-      n->bistat.Recalc();
+      n->stat.Update (result);
     }
   }
-
+  // TODO to update rave use Null
 
   Node* ActNode (const vector <Move>& history) {
     Node* longest = NULL;
@@ -284,7 +236,7 @@ struct Model {
       reps (suffix_ii, start, history.size()) {
         Move m = history [suffix_ii];
         act = act->children [m];
-        if (act == NULL || act->bistat.N() < Param::act_node_min_n) {
+        if (act == NULL || act->stat.N() < Param::act_node_min_n) {
           CHECK (longest != NULL);
           return longest;
         }

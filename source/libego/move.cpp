@@ -33,6 +33,7 @@ Vertex Move::GetVertex () {
 }
 
 string Move::ToGtpString () {
+  if (*this == Null()) return "*";
   return
     GetPlayer().ToGtpString() + " " +
     GetVertex().ToGtpString();
