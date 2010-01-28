@@ -6,7 +6,7 @@ namespace Param {
   bool   update = true;
 
   double expand_at_n = 100.0;
-  uint   expand_max_stars = 2;
+  uint   expand_max_nulls = 2;
 
   double max_rave_n = 1000.0;
   double explore_coeff = 0.0;
@@ -69,10 +69,10 @@ struct Node {
     null_child = NULL;
     if (parent != NULL) {
       depth = parent->depth + 1;
-      stars_on_path = parent->stars_on_path + (last_move == Move::Null());
+      nulls_on_path = parent->nulls_on_path + (last_move == Move::Null());
     } else {
       depth = 0;
-      stars_on_path = 0;
+      nulls_on_path = 0;
     }
     expanded = false;
     activate_count = 0;
@@ -95,7 +95,7 @@ struct Node {
   void Activated () {
     if (!expanded &&
         activate_count >= Param::expand_at_n &&
-        stars_on_path < Param::expand_max_stars)
+        nulls_on_path < Param::expand_max_nulls)
     {
       ForEachNat (Move, m) {
         CHECK (children [m] == NULL);
@@ -176,7 +176,7 @@ struct Node {
   bool expanded;
   Node* parent;
   uint depth;
-  uint stars_on_path;
+  uint nulls_on_path;
   Move last_move;
   uint activate_count;
 
@@ -202,13 +202,13 @@ struct Model {
     root = new Node (NULL, board.GetBoard().LastMove());
     root->activate_count += Param::expand_at_n;
     sync_board_move_no = board.MoveHistory().size();
-    // TODO add children to root by default including childrens to star
+    // TODO add children to root by default including childrens to null
   }
 
 
   bool SyncWithBoard () {
     active.clear();
-    AddNonStarToActive (root);
+    AddNonNullToActive (root);
 
     const vector <Move>& history = board.MoveHistory();
     if (sync_board_move_no > history.size()) {
@@ -231,15 +231,15 @@ struct Model {
       ASSERT (old != NULL);
       if (old->last_move == Move::Null ())
         Activate (old, 0);
-      AddNonStarToActive (old->children [m]);
+      AddNonNullToActive (old->children [m]);
     }
   }
 
 
-  void AddNonStarToActive (Node* n) {
+  void AddNonNullToActive (Node* n) {
     Activate (n);
     if (n != NULL) {
-      CHECK (n->last_move != Move::Null ()); // no double stars should happen
+      CHECK (n->last_move != Move::Null ()); // no double nulls should happen
       Activate (n->null_child);
     }
   }
@@ -287,7 +287,7 @@ struct Model {
     gtp.RegisterParam (model, "update",             &Param::update);
 
     gtp.RegisterParam (model, "expand_at_n",        &Param::expand_at_n);
-    gtp.RegisterParam (model, "expand_max_stars",   &Param::expand_max_stars);
+    gtp.RegisterParam (model, "expand_max_nulls",   &Param::expand_max_nulls);
 
     gtp.RegisterParam (model, "max_rave_n",         &Param::max_rave_n);
     gtp.RegisterParam (model, "explore_coeff",      &Param::explore_coeff);
@@ -336,7 +336,6 @@ struct Model {
 
   vector <Node*> active;
   vector <Node*> old_active;
-
 
   FullBoard& board;
 };
