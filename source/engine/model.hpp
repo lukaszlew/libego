@@ -60,7 +60,7 @@ private:
 
 struct Node {
 
-  Node (Node* parent_, Move last_move_)
+  Node (Node* parent_, Move last_move_, bool add_null_child = true)
     : stat (last_move_.GetPlayer() == Player::Black())
   {
     parent = parent_;
@@ -69,13 +69,17 @@ struct Node {
     null_child = NULL;
     if (parent != NULL) {
       depth = parent->depth + 1;
-      nulls_on_path = parent->nulls_on_path + (last_move == Move::Null());
+      nulls_on_path = parent->nulls_on_path;
     } else {
       depth = 0;
       nulls_on_path = 0;
     }
     expanded = false;
     activate_count = 0;
+    if (add_null_child) {
+      null_child = new Node (this, Move::Null(), false);
+      null_child->nulls_on_path += 1;
+    }
   }
 
 
@@ -92,21 +96,21 @@ struct Node {
     }
   }
 
-  void Activated () {
-    if (!expanded &&
-        activate_count >= Param::expand_at_n &&
-        nulls_on_path < Param::expand_max_nulls)
-    {
-      ForEachNat (Move, m) {
-        CHECK (children [m] == NULL);
-        if (m != Move::Null () && m.GetVertex().IsOnBoard()) {
-          children [m] = new Node (this, m);
-        }
+  void TryExpand () {
+    activate_count += 1;
+    
+    if (expanded ||
+        activate_count < Param::expand_at_n ||
+        nulls_on_path >= Param::expand_max_nulls) return;
+
+    ForEachNat (Move, m) {
+      CHECK (children [m] == NULL);
+      if (m != Move::Null () && m.GetVertex().IsOnBoard()) {
+        children [m] = new Node (this, m);
       }
-      null_child =  new Node (this, Move::Null());
-      null_child->activate_count += Param::expand_at_n;
-      expanded = true;
     }
+
+    expanded = true;
   }
 
   // PRINTING
@@ -116,16 +120,14 @@ struct Node {
     if (full) {
       vector <Move> path = Path();
       rep(ii, path.size()) {
-        out << path[ii].ToGtpString();
-        if (ii < path.size() - 1)
-          out << ", ";
+        out << "[" << path[ii].ToGtpString() << "] ";
       }
     } else {
       out << last_move.ToGtpString();
     }
 
-    out << " (" << activate_count << ")"
-        << "   S: " << stat.ToString();
+    out << " A: " << activate_count << " "
+        << " S: " << stat.ToString();
 
     return out.str ();
   }
@@ -208,7 +210,8 @@ struct Model {
 
   bool SyncWithBoard () {
     active.clear();
-    AddNonNullToActive (root);
+    AddActive (root);
+    AddActive (root->null_child);
 
     const vector <Move>& history = board.MoveHistory();
     if (sync_board_move_no > history.size()) {
@@ -223,32 +226,31 @@ struct Model {
 
 
   void NewMove (Move m) {
+    CHECK (active.size () > 0);
     old_active.swap (active); // old_active = active;
     active.clear();
     
     rep (ii, old_active.size()) {
       Node* old = old_active[ii];
       ASSERT (old != NULL);
-      if (old->last_move == Move::Null ())
-        Activate (old, 0);
-      AddNonNullToActive (old->children [m]);
+
+      // stars don't get deleted
+      if (old->null_child == NULL) {
+        active.push_back (old);
+      }
+
+      Node* child = old->children [m];
+      if (child != NULL) {
+        AddActive (child);
+        AddActive (child->null_child);
+      }
     }
   }
 
-
-  void AddNonNullToActive (Node* n) {
-    Activate (n);
-    if (n != NULL) {
-      CHECK (n->last_move != Move::Null ()); // no double nulls should happen
-      Activate (n->null_child);
-    }
-  }
-
-  void Activate (Node* n, int inc = 1) {
-    if (n == NULL) return;
+  void AddActive (Node* n) {
+    CHECK (n != NULL);
     active.push_back (n);
-    n->activate_count += inc;
-    n->Activated ();
+    n->TryExpand();
   }
 
   void Update (double result) {
