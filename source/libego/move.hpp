@@ -19,7 +19,6 @@ public:
 
   Move () {}                           // TODO remove it
   Move (Player player, Vertex vertex); // Asserts valid player and vertex.
-  static Move Null ();
   static Move OfGtpString (const std::string& s);
   static Move OfGtpStream (std::istream& s);
 
@@ -32,7 +31,7 @@ public:
 
   // Other.
 
-  const static uint kBound = (Vertex::kBound << 1) + 1;
+  const static uint kBound = Vertex::kBound << 1;
 
 private:
   friend class Nat <Move>;

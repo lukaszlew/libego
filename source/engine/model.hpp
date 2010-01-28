@@ -77,7 +77,9 @@ struct Node {
     expanded = false;
     activate_count = 0;
     if (add_null_child) {
-      null_child = new Node (this, Move::Null(), false);
+      // null move is a *sequence* of any player
+      Move null_move = Move (last_move.GetPlayer().Other(), Vertex::Any());
+      null_child = new Node (this, null_move, false);
       null_child->nulls_on_path += 1;
     }
   }
@@ -105,7 +107,7 @@ struct Node {
 
     ForEachNat (Move, m) {
       CHECK (children [m] == NULL);
-      if (m != Move::Null () && m.GetVertex().IsOnBoard()) {
+      if (m.GetVertex().IsOnBoard()) {
         children [m] = new Node (this, m);
       }
     }
