@@ -18,21 +18,22 @@ Move Move::Null () {
   return OfRaw (kBound - 1);
 }
 
-Move Move::OtherPlayer () {
+Move Move::OtherPlayer () const {
+  ASSERT (*this != Null());
   return Move::OfRaw (GetRaw() ^ 0x1);
 };
 
-Player Move::GetPlayer () { 
+Player Move::GetPlayer () const {
   ASSERT (*this != Null());
   return Player::OfRaw (GetRaw() & 0x1);
 }
 
-Vertex Move::GetVertex () { 
+Vertex Move::GetVertex () const { 
   ASSERT (*this != Null());
   return Vertex::OfRaw (GetRaw() >> 1) ; 
 }
 
-string Move::ToGtpString () {
+string Move::ToGtpString () const {
   if (*this == Null()) return "*";
   return
     GetPlayer().ToGtpString() + " " +

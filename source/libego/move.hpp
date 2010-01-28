@@ -25,10 +25,10 @@ public:
 
   // Utilities.
 
-  Player GetPlayer ();
-  Vertex GetVertex ();
-  Move OtherPlayer ();
-  std::string ToGtpString ();
+  Player GetPlayer () const;
+  Vertex GetVertex () const;
+  Move OtherPlayer () const;
+  std::string ToGtpString () const;
 
   // Other.
 

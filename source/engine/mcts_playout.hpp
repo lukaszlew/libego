@@ -25,9 +25,7 @@ public:
     mcmc_move_count = 0;
     mcmc_moves.clear();
 
-    model.NewPlayout();
-    model.NewMove (play_board.LastMove2());
-    model.NewMove (play_board.LastMove());
+    if (!model.SyncWithBoard ()) return; // TODO return false
     // TODO setup nonempty as played once already
 
     // do the playout

@@ -4,12 +4,13 @@ namespace M {
 
 namespace Param {
   bool   update = true;
+
+  double expand_at_n = 100.0;
+  uint   expand_max_stars = 2;
+
   double max_rave_n = 1000.0;
   double explore_coeff = 0.0;
   double boltzmann_constant = 0.0;
-  double mature_at = 100.0;
-  double act_node_min_n = 200.0;
-
 }
 
 // -----------------------------------------------------------------------------
@@ -54,8 +55,8 @@ private:
 
 // -----------------------------------------------------------------------------
 
-// TODO Expand, backker, move selector, gfx display
-// TODO priors na Expand
+// TODO back links for performance
+// TODO optimistic priors na Expand
 
 struct Node {
 
@@ -67,10 +68,13 @@ struct Node {
     children.SetToZero();
     if (parent != NULL) {
       depth = parent->depth + 1;
+      stars_on_path = parent->stars_on_path + (last_move == Move::Null());
     } else {
       depth = 0;
+      stars_on_path = 0;
     }
-    mature = false;
+    expanded = false;
+    activate_count = 0;
   }
 
 
@@ -83,40 +87,46 @@ struct Node {
     }
   }
 
-
-  void AddChildren () {
-    CHECK (mature == false);
-    ForEachNat (Move, m) {
-      CHECK (children [m] == NULL);
-      if (!m.GetVertex().IsOnBoard()) continue;
-      children [m] = new Node (this, m);
+  void Activated () {
+    if (!expanded &&
+        activate_count >= Param::expand_at_n &&
+        stars_on_path < Param::expand_max_stars)
+    {
+      ForEachNat (Move, m) {
+        CHECK (children [m] == NULL);
+        if (m == Move::Null () || m.GetVertex().IsOnBoard()) {
+          children [m] = new Node (this, m);
+        }
+      }
+      children [Move::Null ()]->activate_count += Param::expand_at_n;
+      expanded = true;
     }
-    mature = true;
   }
 
+  // PRINTING
 
   string ToString (bool full = false) {
     ostringstream out;
     if (full) {
       vector <Move> path = Path();
       rep(ii, path.size()) {
-        out << path[ii].ToGtpString() << " ";
+        out << path[ii].ToGtpString();
+        if (ii < path.size() - 1)
+          out << ", ";
       }
     } else {
       out << last_move.ToGtpString();
     }
 
-    return
-      out.str () + stat.ToString();
+    out << " (" << activate_count << ")"
+        << "   S: " << stat.ToString();
+
+    return out.str ();
   }
 
 
   static bool PrintCmp (Node* a, Node* b) {
     return a->PrintValue() > b->PrintValue();
-  }
-
-  double Value () {
-    return stat.N(); // TODO RAVE
   }
 
   double PrintValue () {
@@ -153,10 +163,12 @@ struct Node {
     return path;
   }
 
-  bool mature;
+  bool expanded;
   Node* parent;
   uint depth;
+  uint stars_on_path;
   Move last_move;
+  uint activate_count;
 
   NatMap <Move, Node*> children;
   Stat stat;
@@ -164,163 +176,159 @@ struct Node {
 
 // -----------------------------------------------------------------------------
 
-// TODO filter duplicates
 // IDEA moze dla kazdego ruchu ograniczyc liczbe active'ow
 
 struct Model {
 
   Model (FullBoard& board) : board (board) {
-    root = new Node (NULL, Move(Player::White(), Vertex::Any()));
+    root = NULL;
+    Reset ();
   }
+
 
   void Reset () {
-    delete root;
-    root = new Node (NULL, Move(Player::White(), Vertex::Any()));
+    if (root != NULL) delete root;
+    root = new Node (NULL, board.GetBoard().LastMove());
+    root->activate_count += Param::expand_at_n;
+    sync_board_move_no = board.MoveHistory().size();
+    // TODO add children to root by default including childrens to star
   }
 
-  void NewPlayout () {
-    active.clear();
-    to_update_stat.clear();
-    to_update_rave.clear();
 
-    active.push_back (root);
-    to_update_stat.push_back (root);
-    to_update_rave.push_back (root);
+  bool SyncWithBoard () {
+    active.clear();
+    AddNonStarToActive (root);
+
+    const vector <Move>& history = board.MoveHistory();
+    if (sync_board_move_no > history.size()) {
+      cerr << "Warning: can't sync with board, too much undo." << endl;
+      return false;
+    }
+    reps (ii, sync_board_move_no, history.size()) {
+      NewMove (history[ii]);
+    }
+    return true;
   }
 
 
   void NewMove (Move m) {
-    tmp.swap (active); // tmp = active;
+    old_active.swap (active); // old_active = active;
     active.clear();
-
-    // this loop has to be before next one
-    rep (ii, to_update_stat.size()) {
-      Node* n = to_update_stat[ii];
-      Node* child = n->children [m];
-      if (child == NULL) continue;
-      to_update_rave.push_back (child);
+    
+    rep (ii, old_active.size()) {
+      Node* old = old_active[ii];
+      ASSERT (old != NULL);
+      if (old->last_move == Move::Null ())
+        Activate (old, 0);
+      AddNonStarToActive (old->children [m]);
     }
-
-    rep (ii, tmp.size()) {
-      Node* active_node = tmp[ii];
-
-      Node* child = active_node->children[m];
-      if (child == NULL) continue;
-      active.push_back (child);
-      to_update_stat.push_back (child);
-    }
-    active.push_back (root);
   }
-    
-    
+
+
+  void AddNonStarToActive (Node* n) {
+    Activate (n);
+    if (n != NULL) {
+      CHECK (n->last_move != Move::Null ()); // no double stars should happen
+      Activate (n->children [Move::Null ()]);
+    }
+  }
+
+  void Activate (Node* n, int inc = 1) {
+    if (n == NULL) return;
+    active.push_back (n);
+    n->activate_count += inc;
+    n->Activated ();
+  }
+
   void Update (double result) {
-    rep (ii, to_update_stat.size()) {
-      Node* n = to_update_stat[ii];
-      n->stat.Update (result);
-      if (n->stat.N() >= Param::mature_at && !n->mature) {
-        n->AddChildren ();
-      }
-    }
-
-    rep (ii, to_update_rave.size()) {
-      Node* n = to_update_rave[ii];
-      n->stat.Update (result);
+    rep (ii, active.size()) {
+      active[ii]->stat.Update (result);
     }
   }
-  // TODO to update rave use Null
-
-  Node* ActNode (const vector <Move>& history) {
-    Node* longest = NULL;
-    for (uint start = history.size() - 1; start < history.size(); start -= 1) {
-      Node* act = root;
-      reps (suffix_ii, start, history.size()) {
-        Move m = history [suffix_ii];
-        act = act->children [m];
-        if (act == NULL || act->stat.N() < Param::act_node_min_n) {
-          CHECK (longest != NULL);
-          return longest;
-        }
-      }
-      longest = act;
-    }
-    CHECK (longest != NULL);
-    return longest;
-  }
 
 
-  // TODO history remove
-  void FillValues (NatMap<Vertex, double>& values) {
-    Node* act = ActNode (board.MoveHistory ());
-    Player pl = board.GetBoard().ActPlayer ();
+//   void FillValues (NatMap<Vertex, double>& values) {
+//     SyncWithBoard ();
+//     Player pl = board.GetBoard().ActPlayer ();
 
-    cerr << "Act node: " << act->ToString(true) << endl;
+//     //cerr << "Act node: " << act->ToString(true) << endl;
 
-    ForEachNat (Vertex, v) {
-      Move m = Move (pl, v);
-      Node* child = act->children [m];
-      if (child == NULL) {
-        values [v] = NaN;
-      } else {
-        values [v] = child->Value ();
-      }
-    }
-  }
+//     ForEachNat (Vertex, v) {
+//       Move m = Move (pl, v);
+//       Node* child = act->children [m];
+//       if (child == NULL) {
+//         values [v] = NaN;
+//       } else {
+//         values [v] = child->Value ();
+//       }
+//     }
+//   }
 
 
   void RegisterInGtp (Gtp::ReplWithGogui& gtp) {
-    gtp.RegisterGfx ("model.values", "", this, &Model::GtpShowValues);
-    gtp.RegisterGfx ("model.values", "", this, &Model::GtpShowValues);
-    gtp.RegisterGfx ("model.show_tree", "4", this, &Model::GtpModelShowTree);
-    gtp.RegisterGfx ("model.show_tree", "8", this, &Model::GtpModelShowTree);
+//     gtp.RegisterGfx ("model.values", "", this, &Model::GtpShowValues);
+//     gtp.RegisterGfx ("model.values", "", this, &Model::GtpShowValues);
+    gtp.RegisterGfx ("model.active_nodes", "", this, &Model::GtpActiveNodes);
+    gtp.RegisterGfx ("model.reset",        "", this, &Model::GtpReset);
 
     string model = "model.param";
-    gtp.RegisterParam (model, "mature_at",          &Param::mature_at);
+
     gtp.RegisterParam (model, "update",             &Param::update);
-    gtp.RegisterParam (model, "act_node_min_n",     &Param::act_node_min_n);
-    gtp.RegisterParam (model, "boltzmann_constant", &Param::boltzmann_constant);
-    gtp.RegisterParam (model, "explore_coeff",      &Param::explore_coeff);
+
+    gtp.RegisterParam (model, "expand_at_n",        &Param::expand_at_n);
+    gtp.RegisterParam (model, "expand_max_stars",   &Param::expand_max_stars);
+
     gtp.RegisterParam (model, "max_rave_n",         &Param::max_rave_n);
+    gtp.RegisterParam (model, "explore_coeff",      &Param::explore_coeff);
+    gtp.RegisterParam (model, "boltzmann_constant", &Param::boltzmann_constant);
   }
 
-  void GtpShowValues (Gtp::Io& io) {
-    io.CheckEmpty ();
-    Player pl = board.GetBoard().ActPlayer ();
+//   void GtpShowValues (Gtp::Io& io) {
+//     io.CheckEmpty ();
+//     Player pl = board.GetBoard().ActPlayer ();
 
-    NatMap <Vertex, double> values;
+//     NatMap <Vertex, double> values;
 
-    FillValues (values);
-    ForEachNat (Vertex, v) {
-      if (!board.GetBoard().IsLegal(pl, v)) {
-        values [v] = NaN;
-      }
-    }
-    values.ScalePositive ();
+//     FillValues (values);
+//     ForEachNat (Vertex, v) {
+//       if (!board.GetBoard().IsLegal(pl, v)) {
+//         values [v] = NaN;
+//       }
+//     }
+//     values.ScalePositive ();
     
-    Gtp::GoguiGfx gfx;
-    ForEachNat (Vertex, v) {
-      if (v.IsOnBoard()) 
-        gfx.SetInfluence (v.ToGtpString(), values[v]);
+//     Gtp::GoguiGfx gfx;
+//     ForEachNat (Vertex, v) {
+//       if (v.IsOnBoard()) 
+//         gfx.SetInfluence (v.ToGtpString(), values[v]);
+//     }
+//     gfx.Report(io);
+//   }
+
+    
+  void GtpActiveNodes (Gtp::Io& io) {
+    io.CheckEmpty ();
+    if (!SyncWithBoard ()) return;
+    io.out << endl;
+    rep (ii, active.size()) {
+      io.out << active[ii]->ToString (true) << endl;
     }
-    gfx.Report(io);
   }
 
-    
-  void GtpModelShowTree (Gtp::Io& io) {
-    double min_visit = io.Read<double> ();
+  void GtpReset (Gtp::Io& io) {
     io.CheckEmpty ();
-    Node* act = ActNode (board.MoveHistory());
-    cerr << act->RecToString (min_visit) << endl;
+    Reset();
   }
 
   Node* root;
-  vector <Node*> active;         // * seq
-  vector <Node*> to_update_stat; // * seq *
-  vector <Node*> to_update_rave; // * seq[:-1] * seq[-1] *
-  vector <Node*> tmp;
+  uint sync_board_move_no;
+
+  vector <Node*> active;
+  vector <Node*> old_active;
+
 
   FullBoard& board;
 };
 
 // -----------------------------------------------------------------------------
-//TODO better board.
 }
