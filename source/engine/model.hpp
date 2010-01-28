@@ -66,6 +66,7 @@ struct Node {
     parent = parent_;
     last_move = last_move_;
     children.SetToZero();
+    null_child = NULL;
     if (parent != NULL) {
       depth = parent->depth + 1;
       stars_on_path = parent->stars_on_path + (last_move == Move::Null());
@@ -85,6 +86,10 @@ struct Node {
         children[m] = NULL;
       }
     }
+    if (null_child != NULL) {
+      delete null_child;
+      null_child = NULL;
+    }
   }
 
   void Activated () {
@@ -94,11 +99,12 @@ struct Node {
     {
       ForEachNat (Move, m) {
         CHECK (children [m] == NULL);
-        if (m == Move::Null () || m.GetVertex().IsOnBoard()) {
+        if (m != Move::Null () && m.GetVertex().IsOnBoard()) {
           children [m] = new Node (this, m);
         }
       }
-      children [Move::Null ()]->activate_count += Param::expand_at_n;
+      null_child =  new Node (this, Move::Null());
+      null_child->activate_count += Param::expand_at_n;
       expanded = true;
     }
   }
@@ -139,6 +145,10 @@ struct Node {
     out << ToString() << endl;
 
     vector <Node*> nodes;
+
+    if (null_child != NULL) // TODO sure?
+      nodes.push_back (null_child);
+
     ForEachNat (Move, m) {
       Node* c = children [m];
       if (c == NULL) continue;
@@ -171,6 +181,7 @@ struct Node {
   uint activate_count;
 
   NatMap <Move, Node*> children;
+  Node* null_child;
   Stat stat;
 };
 
@@ -229,7 +240,7 @@ struct Model {
     Activate (n);
     if (n != NULL) {
       CHECK (n->last_move != Move::Null ()); // no double stars should happen
-      Activate (n->children [Move::Null ()]);
+      Activate (n->null_child);
     }
   }
 
