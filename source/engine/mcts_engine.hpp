@@ -127,6 +127,7 @@ public:
 
   void DoNPlayouts (uint n, Player first_player) {
     MctsNode& act_root = FindRoot ();
+    model.SyncWithBoard();
     rep (ii, n) {
       playout.DoOnePlayout (act_root, full_board.GetBoard(), first_player);
     }

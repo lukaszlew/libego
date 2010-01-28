@@ -16,7 +16,10 @@ namespace Param {
 // -----------------------------------------------------------------------------
 
 struct Stat {
-  Stat (bool maximize_) {
+  Stat () {
+  }
+
+  void Reset (bool maximize_) {
     n = 0.0;
     sum = 0.0;
     maximize = maximize_;
@@ -43,7 +46,7 @@ struct Stat {
 
   string ToString () {
     char buf [100];
-    sprintf (buf, "%+3.3f(%5.0f)", Mean(), N());
+    sprintf (buf, "%+3.3f(%6.0f)", Mean(), N());
     return string (buf);
   }
 
@@ -60,12 +63,18 @@ private:
 
 struct Node {
 
-  Node (Node* parent_, Move last_move_, bool add_null_child = true)
-    : stat (last_move_.GetPlayer() == Player::Black())
+  Node () {
+    null_child = NULL;
+    children = NULL;
+  }
+
+
+  void Reset (Node* parent_, Move last_move_, bool add_null_child = true)
   {
+    stat.Reset (last_move_.GetPlayer() == Player::Black());
     parent = parent_;
     last_move = last_move_;
-    children.SetToZero();
+    children = NULL;
     null_child = NULL;
     if (parent != NULL) {
       depth = parent->depth + 1;
@@ -79,18 +88,17 @@ struct Node {
     if (add_null_child) {
       // null move is a *sequence* of any player
       Move null_move = Move (last_move.GetPlayer().Other(), Vertex::Any());
-      null_child = new Node (this, null_move, false);
+      null_child = new Node();
+      null_child->Reset (this, null_move, false);
       null_child->nulls_on_path += 1;
     }
   }
 
 
   ~Node () {
-    ForEachNat (Move, m) {
-      if (children [m] != NULL) {
-        delete children [m];
-        children[m] = NULL;
-      }
+    if (children != NULL) {
+      delete children;
+      children = NULL;
     }
     if (null_child != NULL) {
       delete null_child;
@@ -105,31 +113,42 @@ struct Node {
         activate_count < Param::expand_at_n ||
         nulls_on_path >= Param::expand_max_nulls) return;
 
+    CHECK (children == NULL);
+    children = new NatMap<Move, Node>;
+
     ForEachNat (Move, m) {
-      CHECK (children [m] == NULL);
-      if (m.GetVertex().IsOnBoard()) {
-        children [m] = new Node (this, m);
-      }
+      Child (m) -> Reset (this, m);
     }
 
     expanded = true;
+  }
+
+  Node* Child (Move m) {
+    CHECK (children != NULL);
+    return &(*children) [m];
   }
 
   // PRINTING
 
   string ToString (bool full = false) {
     ostringstream out;
+
+    out << " A: " << setw(7) << activate_count << " "
+        << " S: " << stat.ToString() << " ";
+
     if (full) {
       vector <Move> path = Path();
       rep(ii, path.size()) {
-        out << "[" << path[ii].ToGtpString() << "] ";
+        out << (
+                path[ii].GetVertex() == Vertex::Any() ?
+                "[****] " :
+                "[" + path[ii].ToGtpString() + "] "
+                );
       }
     } else {
       out << last_move.ToGtpString();
     }
 
-    out << " A: " << activate_count << " "
-        << " S: " << stat.ToString();
 
     return out.str ();
   }
@@ -154,8 +173,8 @@ struct Node {
       nodes.push_back (null_child);
 
     ForEachNat (Move, m) {
-      Node* c = children [m];
-      if (c == NULL) continue;
+      if (children == NULL) continue;
+      Node* c = Child (m);
       nodes.push_back (c);
     }
 
@@ -184,7 +203,7 @@ struct Node {
   Move last_move;
   uint activate_count;
 
-  NatMap <Move, Node*> children;
+  NatMap <Move, Node>* children;
   Node* null_child;
   Stat stat;
 };
@@ -203,7 +222,8 @@ struct Model {
 
   void Reset () {
     if (root != NULL) delete root;
-    root = new Node (NULL, board.GetBoard().LastMove());
+    root = new Node ();
+    root->Reset (NULL, board.GetBoard().LastMove());
     root->activate_count += Param::expand_at_n;
     sync_board_move_no = board.MoveHistory().size();
     // TODO add children to root by default including childrens to null
@@ -241,10 +261,9 @@ struct Model {
         active.push_back (old);
       }
 
-      Node* child = old->children [m];
-      if (child != NULL) {
-        AddActive (child);
-        AddActive (child->null_child);
+      if (old->children != NULL) {
+        AddActive (old->Child(m));
+        AddActive (old->Child(m)->null_child);
       }
     }
   }
