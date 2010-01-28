@@ -112,4 +112,21 @@ void NatMap <Nat, Elt>::Scale (Elt min_val, Elt max_val) {
   }
 }
 
+template <typename Nat, typename Elt>
+void NatMap <Nat, Elt>::ScalePositive () {
+  Elt max_elt = 0.0;
+
+  ForEachNat (Nat, nat) {
+    Elt val = (*this) [nat];
+    if (std::isnan (val)) continue;
+    CHECK (max_elt >= 0.0);
+    max_elt = max (max_elt, val);
+  }
+
+  std::cerr << "Scale by:" << max_elt << endl;
+  ForEachNat (Nat, nat) {
+    (*this) [nat] /= max_elt;
+  }
+}
+
 #endif

@@ -2,6 +2,16 @@ const double NaN = std::numeric_limits<double>::quiet_NaN();
 
 namespace M {
 
+namespace Param {
+  bool   update = true;
+  double max_rave_n = 1000.0;
+  double explore_coeff = 0.0;
+  double boltzmann_constant = 0.0;
+  double mature_at = 100.0;
+  double act_node_min_n = 200.0;
+
+}
+
 // -----------------------------------------------------------------------------
 
 struct Stat {
@@ -42,12 +52,61 @@ private:
 
 // -----------------------------------------------------------------------------
 
+// bistat nie ma sensu bo nie mozna tak mixowac
+
+struct Bistat {
+  Stat stat;
+  Stat rave;
+  double mix;
+  double prob;
+  bool maximize;
+
+  Bistat (bool maximize_) {
+    mix = 0.0;
+    prob = 1.0;
+    maximize = maximize_;
+    CHECK (false);
+  }
+
+  double N () {
+    double stat_n = stat.N ();
+    double rave_n = stat.N (Param::max_rave_n);
+    return stat_n + rave_n;
+  }
+
+  void Recalc () {
+    double stat_n = stat.N ();
+    double rave_n = stat.N (Param::max_rave_n);
+    double n = stat_n + rave_n;
+
+    mix = (stat.Mean() * stat_n + rave.Mean() * rave_n) / n;
+    if (!maximize) mix = -mix;
+    mix += Param::explore_coeff / sqrt(n);
+    prob = exp (Param::boltzmann_constant * mix);
+  }
+
+  string ToString () {
+    ostringstream out;
+    out
+      << "   S: " << stat.ToString()
+      << "   R: " << rave.ToString()
+      << "   M: " << mix;
+    return out.str();
+  }
+
+};
+
+// -----------------------------------------------------------------------------
+
 // TODO Expand, backker, move selector, gfx display
 // TODO priors na Expand
 
 struct Node {
 
-  Node (Node* parent_, Move last_move_) {
+  Node (Node* parent_, Move last_move_)
+    : bistat (last_move_.GetPlayer() == Player::White()) // next will
+                                                         // be black
+  {
     parent = parent_;
     last_move = last_move_;
     children.SetToZero();
@@ -93,9 +152,7 @@ struct Node {
     }
 
     return
-      out.str () + 
-      "   S: " + stat.ToString() +
-      "   R: " + rave.ToString();
+      out.str () + bistat.ToString();
   }
 
 
@@ -104,17 +161,15 @@ struct Node {
   }
 
   double Value () {
-    return rave.Mean (); // TODO RAVE
+    bistat.Recalc();
+    return bistat.prob; // TODO RAVE
   }
 
   double PrintValue () {
-    return stat.N();
-//     return 
-//       last_move.GetPlayer().SubjectiveScore(stat.Mean()) +
-//       1.0 / sqrt (stat.N());
+    return bistat.N();
   }
 
-  string RecToString (double stat_min_n) {
+  string RecToString (uint n) {
     ostringstream out;
     rep (ii, depth) out << "  "; // indent
     out << ToString() << endl;
@@ -123,24 +178,17 @@ struct Node {
     ForEachNat (Move, m) {
       Node* c = children [m];
       if (c == NULL) continue;
-      if (c->PrintValue() < stat_min_n) continue;
       nodes.push_back (c);
     }
 
     sort(nodes.begin(), nodes.end(), PrintCmp);
 
-    rep (ii, nodes.size()){
-      out << nodes[ii]->RecToString (stat_min_n);
+    rep (ii, min (n, uint(nodes.size()))) {
+      uint new_n = max(0u, n-ii);
+      out << nodes[ii]->RecToString (new_n);
     }
 
     return out.str();
-  }
-
-  void UpdateStat (double result) {
-    stat.Update (result);
-    if (stat.N() >= Param::model_mature_at && !mature) {
-      AddChildren ();
-    }
   }
 
   vector<Move> Path () {
@@ -157,8 +205,7 @@ struct Node {
   Move last_move;
 
   NatMap <Move, Node*> children;
-  Stat stat; // *, m1, m2, m3, last_move, *
-  Stat rave; // *, m1, m2, m3, *, last_move, *
+  Bistat bistat;
 };
 
 // -----------------------------------------------------------------------------
@@ -214,11 +261,18 @@ struct Model {
     
   void Update (double result) {
     rep (ii, to_update_stat.size()) {
-      to_update_stat[ii]->UpdateStat (result);
+      Node* n = to_update_stat[ii];
+      n->bistat.stat.Update (result);
+      if (n->bistat.stat.N() >= Param::mature_at && !n->mature) {
+        n->AddChildren ();
+      }
+      n->bistat.Recalc();
     }
 
     rep (ii, to_update_rave.size()) {
-      to_update_rave[ii]->rave.Update (result);
+      Node* n = to_update_rave[ii];
+      n->bistat.rave.Update (result);
+      n->bistat.Recalc();
     }
   }
 
@@ -230,7 +284,7 @@ struct Model {
       reps (suffix_ii, start, history.size()) {
         Move m = history [suffix_ii];
         act = act->children [m];
-        if (act == NULL || act->stat.N() < Param::model_act_node_min_visit) {
+        if (act == NULL || act->bistat.N() < Param::act_node_min_n) {
           CHECK (longest != NULL);
           return longest;
         }
@@ -264,12 +318,16 @@ struct Model {
   void RegisterInGtp (Gtp::ReplWithGogui& gtp) {
     gtp.RegisterGfx ("model.values", "", this, &Model::GtpShowValues);
     gtp.RegisterGfx ("model.values", "", this, &Model::GtpShowValues);
-    gtp.RegisterGfx ("model.show_tree", "%s", this, &Model::GtpModelShow);
+    gtp.RegisterGfx ("model.show_tree", "4", this, &Model::GtpModelShowTree);
+    gtp.RegisterGfx ("model.show_tree", "8", this, &Model::GtpModelShowTree);
 
     string model = "model.param";
-    gtp.RegisterParam (model, "mature_at",          &Param::model_mature_at);
-    gtp.RegisterParam (model, "update",             &Param::model_update);
-    gtp.RegisterParam (model, "act_node_min_visit", &Param::model_act_node_min_visit);
+    gtp.RegisterParam (model, "mature_at",          &Param::mature_at);
+    gtp.RegisterParam (model, "update",             &Param::update);
+    gtp.RegisterParam (model, "act_node_min_n",     &Param::act_node_min_n);
+    gtp.RegisterParam (model, "boltzmann_constant", &Param::boltzmann_constant);
+    gtp.RegisterParam (model, "explore_coeff",      &Param::explore_coeff);
+    gtp.RegisterParam (model, "max_rave_n",         &Param::max_rave_n);
   }
 
   void GtpShowValues (Gtp::Io& io) {
@@ -284,7 +342,7 @@ struct Model {
         values [v] = NaN;
       }
     }
-    values.Scale (-1.0, 1.0);
+    values.ScalePositive ();
     
     Gtp::GoguiGfx gfx;
     ForEachNat (Vertex, v) {
@@ -295,7 +353,7 @@ struct Model {
   }
 
     
-  void GtpModelShow (Gtp::Io& io) {
+  void GtpModelShowTree (Gtp::Io& io) {
     double min_visit = io.Read<double> ();
     io.CheckEmpty ();
     Node* act = ActNode (board.MoveHistory());

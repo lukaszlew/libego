@@ -74,7 +74,7 @@ public:
       move_history.push_back (m);
       play_count [v] += 1;
       
-      if (Param::model_update && play_count [v] == 1) {
+      if (M::Param::update && play_count [v] == 1) {
         model.NewMove (m);
       }
     }
@@ -102,7 +102,7 @@ public:
       mcmc.Update (score, board.LastMove2(), move_history);
     }
 
-    if (Param::model_update) {
+    if (M::Param::update) {
       model.Update (score);
     }
   }

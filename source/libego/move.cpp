@@ -14,15 +14,21 @@ Move::Move (Player player, Vertex vertex)
 Move::Move (int raw) : Nat<Move> (raw) {
 }
 
+Move Move::Null () {
+  return OfRaw (kBound - 1);
+}
+
 Move Move::OtherPlayer () {
   return Move::OfRaw (GetRaw() ^ 0x1);
 };
 
 Player Move::GetPlayer () { 
+  ASSERT (*this != Null());
   return Player::OfRaw (GetRaw() & 0x1);
 }
 
 Vertex Move::GetVertex () { 
+  ASSERT (*this != Null());
   return Vertex::OfRaw (GetRaw() >> 1) ; 
 }
 
