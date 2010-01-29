@@ -343,8 +343,13 @@ struct Model {
     vector <Node*> act = active;
     sort (act.begin(), act.end(), Node::PrintCmp); 
     rep (ii, act.size()) {
-      (act[ii]->stat.N() == 0.0 ? cerr : io.out)
-        << act[ii]->ToString (true) << endl;
+      Node* n = act[ii];
+      bool ok =
+        n->stat.N() > 0.0 &&
+        n->children != NULL &&
+        n->null_child == NULL;
+      ostream& out = ok ? io.out : cerr;
+      out << act[ii]->ToString (true) << endl;
     }
   }
 
