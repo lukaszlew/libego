@@ -6,7 +6,7 @@ namespace Param {
   bool   update = true;
 
   double expand_at_n = 100.0;
-  uint   expand_max_nulls = 2;
+  uint   expand_max_nulls = 3;
 
   double max_rave_n = 1000.0;
   double explore_coeff = 0.0;
@@ -83,7 +83,6 @@ struct Node {
       depth = 0;
       nulls_on_path = 0;
     }
-    expanded = false;
     activate_count = 0;
     if (add_null_child) {
       // null move is a *sequence* of any player
@@ -109,7 +108,7 @@ struct Node {
   void TryExpand () {
     activate_count += 1;
     
-    if (expanded ||
+    if (children != NULL ||
         activate_count < Param::expand_at_n ||
         nulls_on_path >= Param::expand_max_nulls) return;
 
@@ -119,8 +118,6 @@ struct Node {
     ForEachNat (Move, m) {
       Child (m) -> Reset (this, m);
     }
-
-    expanded = true;
   }
 
   Node* Child (Move m) {
@@ -196,7 +193,6 @@ struct Node {
     return path;
   }
 
-  bool expanded;
   Node* parent;
   uint depth;
   uint nulls_on_path;
@@ -344,8 +340,11 @@ struct Model {
     io.CheckEmpty ();
     if (!SyncWithBoard ()) return;
     io.out << endl;
-    rep (ii, active.size()) {
-      io.out << active[ii]->ToString (true) << endl;
+    vector <Node*> act = active;
+    sort (act.begin(), act.end(), Node::PrintCmp); 
+    rep (ii, act.size()) {
+      (act[ii]->stat.N() == 0.0 ? cerr : io.out)
+        << act[ii]->ToString (true) << endl;
     }
   }
 
