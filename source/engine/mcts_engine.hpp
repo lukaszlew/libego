@@ -179,7 +179,7 @@ private:
   MctsNode& FindRoot () {
     Board sync_board;
     MctsNode* act_root = &root;
-    BOOST_FOREACH (Move m, full_board.MoveHistory ()) {
+    BOOST_FOREACH (Move m, full_board.Moves ()) {
       act_root->EnsureAllLegalChildren (m.GetPlayer(), sync_board);
       act_root = act_root->FindChild (m);
       CHECK (sync_board.IsLegal (m));

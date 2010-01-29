@@ -40,7 +40,7 @@ public:
   void Load (const FullBoard& save_board);
 
   // Returns list of played moves.
-  const vector<Move>& MoveHistory () const; // TODO rename all to CamelCase
+  const vector<Move>& Moves () const; // TODO rename all to CamelCase
 
 private:
   void PlayLegal (Move move);
@@ -48,7 +48,7 @@ private:
 
 private:
   Board board;
-  vector<Move> move_history;
+  vector<Move> moves;
 };
 
 #endif

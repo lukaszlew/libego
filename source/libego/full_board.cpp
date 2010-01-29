@@ -8,7 +8,7 @@
 void FullBoard::Clear() {
   // move_no = 0;
   board.Clear();
-  move_history.clear();
+  moves.clear();
 }
 
 
@@ -22,12 +22,12 @@ bool FullBoard::SetBoardSize (uint size) {
 
 void FullBoard::Load (const FullBoard& save_board) {
   board.Load (save_board.GetBoard());
-  move_history = save_board.move_history;
+  moves = save_board.moves;
 }
 
 
 void FullBoard::PlayLegal (Move m) {
-  move_history.push_back (m);
+  moves.push_back (m);
   board.PlayLegal (m.GetPlayer(), m.GetVertex());
   CHECK (m == board.LastMove());
 }
@@ -42,7 +42,7 @@ bool FullBoard::Undo () {
     return false;
 
   rep (mn, game_length-1)
-    replay.push_back (move_history [mn]);
+    replay.push_back (moves [mn]);
 
   Clear ();  // TODO maybe last_player should be preserverd as well
 
@@ -63,8 +63,8 @@ bool FullBoard::IsLegal (Move move) const {
 bool FullBoard::IsHashRepeated () {
   Board tmp_board;
   rep (mn, board.MoveCount()-1) {
-    tmp_board.PlayLegal (move_history[mn].GetPlayer (),
-                         move_history[mn].GetVertex ());
+    tmp_board.PlayLegal (moves[mn].GetPlayer (),
+                         moves[mn].GetVertex ());
     if (board.PositionalHash() == tmp_board.PositionalHash())
       return true;
   }
@@ -91,6 +91,6 @@ const Board& FullBoard::GetBoard() const {
   return board;
 }
 
-const vector<Move>& FullBoard::MoveHistory () const {
-  return move_history;
+const vector<Move>& FullBoard::Moves () const {
+  return moves;
 }

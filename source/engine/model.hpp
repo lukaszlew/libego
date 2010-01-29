@@ -1,4 +1,4 @@
-const double NaN = std::numeric_limits<double>::quiet_NaN();
+//const double NaN = std::numeric_limits<double>::quiet_NaN();
 
 namespace M {
 
@@ -221,7 +221,7 @@ struct Model {
     root = new Node ();
     root->Reset (NULL, board.GetBoard().LastMove());
     root->activate_count += Param::expand_at_n;
-    sync_board_move_no = board.MoveHistory().size();
+    sync_board_move_no = board.Moves().size();
     // TODO add children to root by default including childrens to null
   }
 
@@ -231,7 +231,7 @@ struct Model {
     AddActive (root);
     AddActive (root->null_child);
 
-    const vector <Move>& history = board.MoveHistory();
+    const vector <Move>& history = board.Moves();
     if (sync_board_move_no > history.size()) {
       cerr << "Warning: can't sync with board, too much undo." << endl;
       return false;
