@@ -42,6 +42,8 @@ public:
   // Returns list of played moves.
   const vector<Move>& Moves () const; // TODO rename all to CamelCase
 
+  uint PlayCount (Vertex v) const;
+
 private:
   void PlayLegal (Move move);
   bool IsHashRepeated ();
@@ -49,6 +51,7 @@ private:
 private:
   Board board;
   vector<Move> moves;
+  NatMap<Vertex, uint> play_count;
 };
 
 #endif

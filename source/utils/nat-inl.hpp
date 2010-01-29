@@ -88,7 +88,7 @@ void NatMap <Nat, Elt>::SetAll (const Elt& elt) {
 }
 
 template <typename Nat, typename Elt>
-void NatMap <Nat, Elt>::SetToZero () { 
+void NatMap <Nat, Elt>::SetAllToZero () { 
   memset (tab, '\0', sizeof (tab)); 
 }
 
@@ -127,6 +127,11 @@ void NatMap <Nat, Elt>::ScalePositive () {
   ForEachNat (Nat, nat) {
     (*this) [nat] /= max_elt;
   }
+}
+
+template <typename Nat, typename Elt>
+void NatMap <Nat, Elt>::Load (const NatMap& other) {
+  memcpy(this, &other, sizeof(NatMap));
 }
 
 #endif

@@ -37,7 +37,7 @@ public:
     Move m1 = history[0];
 
     NatMap<Vertex, uint> play_count; // TODO unify RAVE; set 1 on nonempty
-    play_count.SetToZero ();
+    play_count.SetAllToZero ();
     play_count [m2.GetVertex()] += 1;
     play_count [m1.GetVertex()] += 1;
     play_count [Vertex::Any()] = 1; // beginning of the game is Any*2

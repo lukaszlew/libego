@@ -17,7 +17,7 @@ public:
     trace.push_back (&playout_root);
     move_history.clear ();
     move_history.push_back (playout_root.GetMove());
-    play_count.SetToZero();
+    play_count.SetAllToZero();
     mcmc.NewPlayout ();
 
     tree_phase = Param::tree_use;

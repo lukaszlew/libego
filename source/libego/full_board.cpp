@@ -9,6 +9,7 @@ void FullBoard::Clear() {
   // move_no = 0;
   board.Clear();
   moves.clear();
+  play_count.SetAllToZero ();
 }
 
 
@@ -23,12 +24,15 @@ bool FullBoard::SetBoardSize (uint size) {
 void FullBoard::Load (const FullBoard& save_board) {
   board.Load (save_board.GetBoard());
   moves = save_board.moves;
+  play_count.Load (save_board.play_count);
 }
 
 
 void FullBoard::PlayLegal (Move m) {
   moves.push_back (m);
-  board.PlayLegal (m.GetPlayer(), m.GetVertex());
+  Vertex v =  m.GetVertex();
+  play_count [v] += 1;
+  board.PlayLegal (m.GetPlayer(), v);
   CHECK (m == board.LastMove());
 }
 
@@ -91,6 +95,12 @@ const Board& FullBoard::GetBoard() const {
   return board;
 }
 
+
 const vector<Move>& FullBoard::Moves () const {
   return moves;
+}
+
+
+uint FullBoard::PlayCount (Vertex v) const {
+  return play_count [v];
 }
