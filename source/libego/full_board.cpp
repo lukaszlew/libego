@@ -5,20 +5,22 @@
 #include "full_board.hpp"
 
 
-void FullBoard::Clear() {
+void FullBoard::Clear () {
   Board::Clear();
   moves.clear();
 }
 
-
-
-bool FullBoard::SetBoardSize (uint size) {
-  return size == board_size;
+void FullBoard::Load (const FullBoard& save_board) {
+  Board::Load (save_board);
+  moves = save_board.moves;
 }
 
-void FullBoard::Load (const FullBoard& save_board) {
-  Board::Load (save_board.GetBoard());
-  moves = save_board.moves;
+
+flatten
+void FullBoard::PlayLegal (Player pl, Vertex v) {
+  ASSERT (IsLegal (pl, v));
+  moves.push_back (Move (pl, v));
+  Board::PlayLegal (pl, v);
 }
 
 
@@ -30,20 +32,14 @@ void FullBoard::PlayLegal (Move m) {
 
 
 bool FullBoard::Undo () {
-  vector<Move> replay;
+  ASSERT (MoveCount() == moves.size());
+  if (MoveCount () == 0) return false;
 
-  uint game_length = Board::MoveCount ();
+  vector<Move> replay = moves;
+  Clear ();
 
-  if (game_length == 0)
-    return false;
-
-  rep (mn, game_length-1)
-    replay.push_back (moves [mn]);
-
-  Clear ();  // TODO maybe last_player should be preserverd as well
-
-  rep (mn, game_length-1)
-    PlayLegal (replay [mn]);
+  rep (ii, replay.size() - 1)
+    PlayLegal (replay [ii]);
 
   return true;
 }
@@ -51,9 +47,11 @@ bool FullBoard::Undo () {
 
 bool FullBoard::IsReallyLegal (Move move) const {
   if (IsLegal (move) == false) return false;
-  // pass would repeat the hash
+
+  // Pass would repeat the hash.
   if (move.GetVertex () == Vertex::Pass ()) return true;
 
+  // Check for superko.
   FullBoard tmp;
   tmp.Load (*this);
   tmp.PlayLegal (move);
@@ -63,19 +61,12 @@ bool FullBoard::IsReallyLegal (Move move) const {
 
 bool FullBoard::IsHashRepeated () {
   Board tmp_board;
-  rep (mn, Board::MoveCount()-1) {
+  rep (mn, MoveCount()-1) {
     tmp_board.PlayLegal (moves[mn]);
-    if (Board::PositionalHash() == tmp_board.PositionalHash())
+    if (PositionalHash() == tmp_board.PositionalHash())
       return true;
   }
   return false;
-}
-
-
-
-
-const Board& FullBoard::GetBoard() const {
-  return *this;
 }
 
 

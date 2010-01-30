@@ -219,7 +219,7 @@ struct Model {
   void Reset () {
     if (root != NULL) delete root;
     root = new Node ();
-    root->Reset (NULL, board.GetBoard().LastMove());
+    root->Reset (NULL, board.LastMove());
     root->activate_count += Param::expand_at_n;
     sync_board_move_no = board.Moves().size();
     // TODO add children to root by default including childrens to null

@@ -83,7 +83,7 @@ public:
     
   void do_playout (const FullBoard* base_board) {
     Board mc_board;
-    mc_board.Load (base_board->GetBoard());
+    mc_board.Load (*base_board);
 
     FastStack <Move, Board::kArea * 2> history;
     
@@ -109,7 +109,7 @@ public:
     Gtp::GoguiGfx gfx;
 
     ForEachNat (Vertex, v) {
-      if (board->GetBoard().ColorAt (v) == Color::Empty ()) {
+      if (board->ColorAt (v) == Color::Empty ()) {
         gfx.SetInfluence(v.ToGtpString (),
                          aaf_stats.norm_mean_given_move (Move(player, v)) /
                          influence_scale

@@ -43,7 +43,7 @@ public:
   }
 
   void SetKomi (float komi) {
-    float old_komi = full_board.GetBoard().Komi ();
+    float old_komi = full_board.Komi ();
     full_board.SetKomi (komi);
     if (komi != old_komi) {
       logger.LogLine("komi "+ToString(komi));
@@ -57,7 +57,7 @@ public:
     playout.mcmc.Reset ();
     logger.NewLog ();
     logger.LogLine ("clear_board");
-    logger.LogLine ("komi " + ToString (full_board.GetBoard().Komi()));
+    logger.LogLine ("komi " + ToString (full_board.Komi()));
     logger.LogLine ("");
   }
 
@@ -110,13 +110,13 @@ public:
                     "   #? [" + v.ToGtpString() + "]");
     logger.LogLine ("play " + Move (player, v).ToGtpString() + 
                     " # move " +
-                    ToString(full_board.GetBoard().MoveCount()));
+                    ToString(full_board.MoveCount()));
     logger.LogLine ("");
     return v;
   }
 
   string BoardAsciiArt () {
-    return full_board.GetBoard().ToAsciiArt();
+    return full_board.ToAsciiArt();
   }
 
   string TreeAsciiArt (float min_updates, float max_children) {
@@ -125,14 +125,14 @@ public:
   }
 
   void DoNPlayouts (uint n) {
-    DoNPlayouts (n, full_board.GetBoard().ActPlayer());
+    DoNPlayouts (n, full_board.ActPlayer());
   }
 
   void DoNPlayouts (uint n, Player first_player) {
     MctsNode& act_root = FindRoot ();
     model.SyncWithBoard();
     rep (ii, n) {
-      playout.DoOnePlayout (act_root, full_board.GetBoard(), first_player);
+      playout.DoOnePlayout (act_root, full_board, first_player);
     }
   }
 
@@ -189,8 +189,8 @@ private:
       sync_board.PlayLegal (m);
     }
     
-    Player pl = full_board.GetBoard().ActPlayer();
-    act_root->EnsureAllLegalChildren (pl, full_board.GetBoard());
+    Player pl = full_board.ActPlayer();
+    act_root->EnsureAllLegalChildren (pl, full_board);
     act_root->RemoveIllegalChildren (pl, full_board);
 
     return *act_root;

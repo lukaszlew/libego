@@ -165,7 +165,7 @@ private:
     }
 
     Gtp::GoguiGfx gfx;
-    mcts_engine.playout.mcmc.MoveValueGfx (mcts_engine.full_board.GetBoard(), &gfx, level);
+    mcts_engine.playout.mcmc.MoveValueGfx (mcts_engine.full_board, &gfx, level);
     gfx.Report (io);
   }
 
@@ -190,7 +190,7 @@ private:
     Gtp::GoguiGfx gfx;
 //     mcts_engine.playout.mcmc.MoveProbGfx (pre_move,
 //                                           player,
-//                                           mcts_engine.full_board.GetBoard(),
+//                                           mcts_engine.full_board,
 //                                           &gfx);
     gfx.Report (io);
   }

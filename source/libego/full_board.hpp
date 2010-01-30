@@ -13,6 +13,7 @@
 
 class FullBoard : public Board {
 public:
+
   // Clears the board.
   void Clear();
 
@@ -21,31 +22,24 @@ public:
   bool IsReallyLegal (Move move) const;
 
   // Play the move. Assert it is legal.
+  void PlayLegal (Player pl, Vertex v);
   void PlayLegal (Move move);
 
   // Undo move. Replays the game
   bool Undo ();
 
-  // Get underlying fast board implementation.
-  const Board& GetBoard() const;
-
-  // Sets komi value.
-  bool SetBoardSize (uint size);
-
   // Loads position (and history) from other board.
   void Load (const FullBoard& save_board);
 
   // Returns list of played moves.
-  const vector<Move>& Moves () const; // TODO rename all to CamelCase
-
-  uint PlayCount (Vertex v) const;
+  const vector<Move>& Moves () const;
 
 private:
-  static const bool kCheckAsserts = false;
 
   bool IsHashRepeated ();
 
-private:
+  static const bool kCheckAsserts = false;
+
   vector<Move> moves;
 };
 
