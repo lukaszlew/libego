@@ -9,15 +9,14 @@ public:
   MctsPlayout (FastRandom& random, M::Model& model) : random (random), model (model) {
   }
 
-  void DoOnePlayout (MctsNode& playout_root, const Board& board, Player first_player) {
+  void DoOnePlayout (MctsNode& playout_root, const Board& base_board, Player first_player) {
     // Prepare simulation board and tree iterator.
-    play_board.Load (board);
+    play_board.Load (base_board);
     play_board.SetActPlayer (first_player);
     trace.clear();
     trace.push_back (&playout_root);
     move_history.clear ();
     move_history.push_back (playout_root.GetMove());
-    play_count.SetAllToZero();
     mcmc.NewPlayout ();
 
     tree_phase = Param::tree_use;
@@ -53,7 +52,7 @@ public:
           v == Vertex::Any () &&
           mcmc_move_count < Param::mcmc_max_moves)
       {
-        v = mcmc.Choose8Move (play_board, play_count);
+        v = mcmc.Choose8Move (play_board);
         mcmc_move_count += 1;
         mcmc_moves.push_back (Move(pl, v));
       }
@@ -73,9 +72,8 @@ public:
       ASSERT (play_board.IsLegal (pl, v));
       play_board.PlayLegal (pl, v);
       move_history.push_back (m);
-      play_count [v] += 1;
       
-      if (M::Param::update && play_count [v] == 1) {
+      if (M::Param::update && play_board.PlayCount (v) == 1) {
         model.NewMove (m);
       }
     }
@@ -97,10 +95,11 @@ public:
       UpdateTraceRave (score);
     }
 
-    ASSERT (board.LastMove() == move_history[0]); // TODO remove it
+    //ASSERT (board.LastMove() == move_history[0]); // TODO remove it
 
     if (Param::mcmc_update) {
-      mcmc.Update (score, board.LastMove2(), move_history);
+      // TODO remove stupid LastMove2
+      mcmc.Update (score, base_board.LastMove2(), move_history);
     }
 
     if (M::Param::update) {
@@ -198,7 +197,6 @@ private:
   FastRandom& random;
   vector <MctsNode*> trace;               // nodes in the path
   vector <Move> move_history;
-  NatMap <Vertex, uint> play_count;
   bool tree_phase;
 public:
   Mcmc mcmc;

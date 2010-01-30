@@ -43,6 +43,9 @@ public:
   // Return number of already played moves.
   uint MoveCount () const;
 
+  // Number of moves played at a particular location.
+  uint PlayCount (Vertex v) const;
+
   // Returns true if both players pass.
   bool BothPlayerPass () const;
 

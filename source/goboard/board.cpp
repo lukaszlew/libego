@@ -228,6 +228,12 @@ uint RawBoard::MoveCount () const {
   return move_no;
 }
 
+
+uint RawBoard::PlayCount (Vertex v) const {
+  return play_count [v];
+}
+
+
 Vertex RawBoard::EmptyVertex (uint ii) const {
   ASSERT (ii < EmptyVertexCount());
   return empty_v [ii];

@@ -75,14 +75,14 @@ public:
     }
   }
 
-  Vertex Choose8Move (const Board& board, const NatMap<Vertex, uint>& play_count) {
+  Vertex Choose8Move (const Board& board) {
     Move m2 = board.LastMove2 ();
     Move m1 = board.LastMove ();
 
     Vertex last_v = board.LastVertex();
 
-    if (play_count [m2.GetVertex ()] > 1) return Vertex::Any ();
-    if (play_count [m1.GetVertex ()] > 1) return Vertex::Any ();
+    if (board.PlayCount (m2.GetVertex ()) > 1) return Vertex::Any ();
+    if (board.PlayCount (m1.GetVertex ()) > 1) return Vertex::Any ();
 
     Vertex best_v = Vertex::Any(); // any == light move
     float best_value = - 1E20;
@@ -91,7 +91,7 @@ public:
     Player pl = board.ActPlayer();
         
     ForEachNat (Vertex, nbr) {
-      if (play_count[nbr] == 0 &&
+      if (board.PlayCount (nbr) == 0 &&
           board.IsLegal (pl, nbr) &&
           !board.IsEyelike (pl, nbr))
       {
