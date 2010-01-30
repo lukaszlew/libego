@@ -5,7 +5,7 @@
 #ifndef NAT_H_
 #define NAT_H_
 
-#include "uint.hpp"
+#include "utils.hpp"
 
 // -----------------------------------------------------------------------------
 // For a use case look in player.h

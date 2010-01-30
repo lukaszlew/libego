@@ -4,8 +4,6 @@
 
 #include "ego.hpp"
 
-#include "utils.cpp"
-
 #include "fast_timer.cpp"
 #include "fast_random.cpp"
 

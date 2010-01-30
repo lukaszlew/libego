@@ -8,6 +8,9 @@
 #include <sstream>
 #include <string>
 
+typedef unsigned int uint;
+typedef unsigned long long uint64;
+
 using namespace std;
 
 //TODO rename to ignore
@@ -34,5 +37,6 @@ using namespace std;
 #define all_inline  __attribute__((always_inline))
 
 #endif //_MSC_VER
+
 
 #endif
