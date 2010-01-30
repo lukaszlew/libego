@@ -6,6 +6,13 @@ const float kSureWinUpdate = 1.0; // TODO increase this
 struct TT {
   vector <MctsNode*> trace;               // nodes in the path
   vector <Move> move_history;
+  
+  void Reset (MctsNode& playout_root) {
+    trace.clear();
+    trace.push_back (&playout_root);
+    move_history.clear ();
+    move_history.push_back (playout_root.GetMove());
+  }
 };
 
 class MctsPlayout {
@@ -18,11 +25,8 @@ public:
     // Prepare simulation board and tree iterator.
     play_board.Load (base_board);
     play_board.SetActPlayer (first_player);
-    tt.trace.clear();
-    tt.trace.push_back (&playout_root);
-    tt.move_history.clear ();
-    tt.move_history.push_back (playout_root.GetMove());
     mcmc.NewPlayout ();
+    tt.Reset (playout_root);
 
     tree_phase = Param::tree_use;
     tree_move_count = 0;
