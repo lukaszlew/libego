@@ -51,7 +51,6 @@ static const bool kCheckAsserts = false;
 #include "mcts_engine.hpp"
 #include "mcts_gtp.hpp"
 
-#include "experiments.cpp"
 
 // TODO automatize through CMake (and add git SHA1)
 #ifndef VERSION
