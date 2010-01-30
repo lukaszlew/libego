@@ -16,7 +16,7 @@ include (SetCxxFlags)
 # Add subdirectories.
 
 add_subdirectory (utils)
-add_subdirectory (libgtp)
-add_subdirectory (libego)
+add_subdirectory (gtp)
+add_subdirectory (goboard)
 add_subdirectory (engine)
 add_subdirectory (distributed_twogtp)
