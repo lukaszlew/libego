@@ -25,25 +25,21 @@ public:
     while (true) {
       if (play_board.BothPlayerPass()) break;
       if (play_board.MoveCount() >= 3*Board::kArea) return;
-      Player pl = play_board.ActPlayer ();
-      Vertex v  = Vertex::Any ();
 
-      if (v == Vertex::Any ()) v = tt.ChooseMove (play_board);
-      if (v == Vertex::Any ()) v = mcmc.ChooseMove (play_board);
-      if (v == Vertex::Any ()) v = ChooseLocalMove ();
-      if (v == Vertex::Any ()) v = play_board.RandomLightMove (pl, random);
+      Move m = Move::Invalid ();
 
-      Move m = Move (pl, v);
+      if (!m.IsValid()) m = tt.ChooseMove (play_board);
+      if (!m.IsValid()) m = mcmc.ChooseMove (play_board);
+      if (!m.IsValid()) m = ChooseLocalMove ();
+      if (!m.IsValid()) m = play_board.RandomLightMove (random);
 
-      ASSERT (v.IsValid());
-      ASSERT (play_board.IsLegal (pl, v));
-      play_board.PlayLegal (pl, v);
+      play_board.PlayLegal (m);
 
       tt.NewMove (m);
       
       playout_moves.push_back (m);
       
-      if (M::Param::update && play_board.PlayCount (v) == 1) {
+      if (M::Param::update && play_board.PlayCount (m.GetVertex()) == 1) {
         model.NewMove (m);
       }
     }
@@ -83,13 +79,13 @@ public:
 private:
 
   // TODO policy randomization
-  Vertex ChooseLocalMove () {
-    if (!Param::use_local) return Vertex::Any();
+  Move ChooseLocalMove () {
+    if (!Param::use_local) return Move::Invalid();
     Vertex last_v = play_board.LastVertex ();
     Player pl = play_board.ActPlayer ();
 
     if (last_v == Vertex::Any () || last_v == Vertex::Pass ())
-      return Vertex::Any ();
+      return Move::Invalid();
 
     FastStack <Vertex, 8> tab;
     for_each_8_nbr (last_v, v, {
@@ -98,10 +94,10 @@ private:
       } 
     });
     
-    if (tab.Size() <= 0) return Vertex::Any ();
+    if (tab.Size() <= 0) return Move::Invalid();
 
     uint i = random.GetNextUint (tab.Size());
-    return tab[i];
+    return Move (pl, tab[i]);
   }
 
 private:

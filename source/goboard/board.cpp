@@ -331,6 +331,11 @@ Vertex RawBoard::RandomLightMove (Player pl, FastRandom& random) const {
   }
 }
 
+Move RawBoard::RandomLightMove (FastRandom& random) const {
+  Player pl = ActPlayer();
+  return Move (pl, RandomLightMove (pl, random));
+}
+
 
 flatten
 void RawBoard::PlayLegal (Move move) { // TODO test with move

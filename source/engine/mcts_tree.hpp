@@ -318,17 +318,17 @@ struct TT {
     move_history.push_back (m);
   }
 
-  Vertex ChooseMove (Board& play_board) {
+  Move ChooseMove (Board& play_board) {
     Player pl = play_board.ActPlayer();
 
     if (!tree_phase || tree_move_count >= Param::tree_max_moves) {
-      return Vertex::Any();
+      return Move::Invalid();
     }
 
     if (!ActNode().has_all_legal_children [pl]) {
       if (!ActNode().ReadyToExpand ()) {
         tree_phase = false;
-        return Vertex::Any ();
+        return Move::Invalid();
       }
       ASSERT (pl == ActNode().player.Other());
       ActNode().EnsureAllLegalChildren (pl, play_board);
@@ -338,7 +338,7 @@ struct TT {
     trace.push_back (&uct_child);
     ASSERT (uct_child.v != Vertex::Any());
     tree_move_count += 1;
-    return uct_child.v;
+    return Move (pl, uct_child.v);
   }
   
   void UpdateTraceRegular (float score) {

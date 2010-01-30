@@ -78,9 +78,9 @@ public:
   }
 
   // TODO cutoff at half game
-  Vertex ChooseMove (const Board& board) {
+  Move ChooseMove (const Board& board) {
     if (!Param::mcmc_use || move_count >= Param::mcmc_max_moves) {
-      return Vertex::Any ();
+      return Move::Invalid();
     }
 
     Move m2 = board.LastMove2 ();
@@ -88,8 +88,8 @@ public:
 
     Vertex last_v = board.LastVertex();
 
-    if (board.PlayCount (m2.GetVertex ()) > 1) return Vertex::Any ();
-    if (board.PlayCount (m1.GetVertex ()) > 1) return Vertex::Any ();
+    if (board.PlayCount (m2.GetVertex ()) > 1) return Move::Invalid();
+    if (board.PlayCount (m1.GetVertex ()) > 1) return Move::Invalid();
 
     Vertex best_v = Vertex::Any(); // any == light move
     float best_value = - 1E20;
@@ -116,7 +116,7 @@ public:
     CHECK (best_v != Vertex::Any());
     move_count += 1;
     moves.push_back (Move(pl, best_v));
-    return best_v;
+    return Move (pl, best_v);
   }
 
   void MoveValueGfx (const Board& board, Gtp::GoguiGfx* gfx, int level)

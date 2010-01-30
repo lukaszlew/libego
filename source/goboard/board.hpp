@@ -81,6 +81,7 @@ public:
 
   // Returns a random light playout move. Returns pass if no light move found.
   Vertex RandomLightMove (Player player, FastRandom& random) const;
+  Move RandomLightMove (FastRandom& random) const;
 
   // Plays a move, returns false if move was large suicide.
   // Assumes IsLegal (player, v) - Do not support suicides.
