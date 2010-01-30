@@ -7,16 +7,22 @@ struct TT {
   vector <MctsNode*> trace;               // nodes in the path
   vector <Move> move_history;
   bool tree_phase;
-  
+  uint tree_move_count;
+
   void Reset (MctsNode& playout_root) {
     trace.clear();
     trace.push_back (&playout_root);
     move_history.clear ();
     move_history.push_back (playout_root.GetMove());
     tree_phase = Param::tree_use;
+    tree_move_count = 0;
   }
 
   Vertex ChooseTreeMove (Board& play_board, Player pl) {
+    if (!tree_phase || tree_move_count >= Param::tree_max_moves) {
+      return Vertex::Any();
+    }
+
     if (!ActNode().has_all_legal_children [pl]) {
       if (!ActNode().ReadyToExpand ()) {
         tree_phase = false;
@@ -29,12 +35,17 @@ struct TT {
     MctsNode& uct_child = ActNode().BestRaveChild (pl);
     trace.push_back (&uct_child);
     ASSERT (uct_child.v != Vertex::Any());
+    tree_move_count += 1;
     return uct_child.v;
   }
   
   void UpdateTraceRegular (float score) {
     BOOST_FOREACH (MctsNode* node, trace) {
       node->stat.update (score);
+    }
+
+    if (Param::tree_rave_update) {
+      UpdateTraceRave (score);
     }
   }
 
@@ -88,7 +99,6 @@ public:
     mcmc.NewPlayout ();
     tt.Reset (playout_root);
 
-    tree_move_count = 0;
     mcmc_move_count = 0;
     mcmc_moves.clear();
 
@@ -101,17 +111,13 @@ public:
     // do the playout
     while (true) {
       if (play_board.BothPlayerPass()) break;
-      if (tt.move_history.size() >= 3*Board::kArea) return;
+      if (play_board.MoveCount() >= 3*Board::kArea) return;
       Player pl = play_board.ActPlayer ();
       Vertex v  = Vertex::Any ();
 
 
-      if (tt.tree_phase &&
-          v == Vertex::Any () &&
-          tree_move_count < Param::tree_max_moves)
-      {
+      if (v == Vertex::Any ()) {
         v = tt.ChooseTreeMove (play_board, pl);
-        tree_move_count += 1;
       }
       
 
@@ -158,10 +164,6 @@ public:
 
     // update models
     tt.UpdateTraceRegular (score);
-
-    if (Param::tree_rave_update) {
-      tt.UpdateTraceRave (score);
-    }
 
     //ASSERT (board.LastMove() == move_history[0]); // TODO remove it
 
@@ -210,7 +212,6 @@ private:
   TT tt;
 public:
   Mcmc mcmc;
-  uint tree_move_count;
   uint mcmc_move_count;
   vector<Move> mcmc_moves;
 
