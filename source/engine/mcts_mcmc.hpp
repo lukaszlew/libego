@@ -34,6 +34,7 @@ public:
   }
 
   void Update (float score, Move pre2, Move pre1, const vector<Move>& history) {
+    if (!Param::mcmc_update) return;
     if (history.size() < 1) return;
     Move m2 = pre2;
     Move m1 = pre1;

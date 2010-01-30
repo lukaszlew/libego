@@ -244,6 +244,8 @@ struct Model {
 
 
   void NewMove (Move m) {
+    if (!Param::update || board.PlayCount (m.GetVertex()) != 1) return;
+
     CHECK (active.size () > 0);
     old_active.swap (active); // old_active = active;
     active.clear();
@@ -271,6 +273,8 @@ struct Model {
   }
 
   void Update (double result) {
+    if (!Param::update) return;
+
     rep (ii, active.size()) {
       active[ii]->stat.Update (result);
     }

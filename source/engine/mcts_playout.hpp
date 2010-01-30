@@ -39,37 +39,24 @@ public:
       
       playout_moves.push_back (m);
       
-      if (M::Param::update && play_board.PlayCount (m.GetVertex()) == 1) {
-        model.NewMove (m);
-      }
+      model.NewMove (m);
     }
+    
+    double score = Score (tt.tree_phase);
 
-    // TODO game replay i update wszystkich modeli
-    float score;
-    if (tt.tree_phase) {
-      score = play_board.TrompTaylorWinner().ToScore() * kSureWinUpdate;
-    } else {
-      int sc = play_board.PlayoutScore();
-      score = Player::WinnerOfBoardScore (sc).ToScore (); // +- 1
-      score += float(sc) / 10000.0; // small bonus for bigger win.
-    }
 
     // update models
     tt.UpdateTraceRegular (score);
 
-    //ASSERT (board.LastMove() == move_history[0]); // TODO remove it
 
-    if (Param::mcmc_update) {
-      // TODO remove stupid LastMove2
-      mcmc.Update (score,
-                   base_board.LastMove2(),
-                   base_board.LastMove(),
-                   playout_moves);
-    }
+    // TODO remove stupid LastMove2
+    mcmc.Update (score,
+                 base_board.LastMove2(),
+                 base_board.LastMove(),
+                 playout_moves);
 
-    if (M::Param::update) {
-      model.Update (score);
-    }
+    model.Update (score);
+
   }
 
   vector<Move> LastPlayout () {
@@ -77,6 +64,19 @@ public:
   }
 
 private:
+
+  double Score (bool accurate) {
+    // TODO game replay i update wszystkich modeli
+    double score;
+    if (accurate) {
+      score = play_board.TrompTaylorWinner().ToScore() * kSureWinUpdate;
+    } else {
+      int sc = play_board.PlayoutScore();
+      score = Player::WinnerOfBoardScore (sc).ToScore (); // +- 1
+      score += double(sc) / 10000.0; // small bonus for bigger win.
+    }
+    return score;
+  }
 
   // TODO policy randomization
   Move ChooseLocalMove () {
