@@ -131,7 +131,8 @@ public:
     MctsNode& act_root = tree.FindRoot (full_board);
     model.SyncWithBoard();
     rep (ii, n) {
-      playout.DoOnePlayout (act_root, full_board, first_player);
+      tt.Reset (act_root);
+      playout.DoOnePlayout (tt, full_board, first_player);
     }
   }
 
@@ -193,6 +194,7 @@ private:
   // models
   M::Model model;
   Tree tree;
+  TT tt;
   
   // playout
   FastRandom random;

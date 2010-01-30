@@ -7,12 +7,11 @@ public:
   MctsPlayout (FastRandom& random, M::Model& model) : random (random), model (model) {
   }
 
-  void DoOnePlayout (MctsNode& playout_root, const Board& base_board, Player first_player) {
+  void DoOnePlayout (TT& tt, const Board& base_board, Player first_player) {
     // Prepare simulation board and tree iterator.
     play_board.Load (base_board);
     play_board.SetActPlayer (first_player);
     mcmc.NewPlayout ();
-    tt.Reset (playout_root);
     playout_moves.clear();
 
 
@@ -127,7 +126,6 @@ private:
   // playout
   Board play_board;
   FastRandom& random;
-  TT tt;
   vector<Move> playout_moves;
 
 public:
