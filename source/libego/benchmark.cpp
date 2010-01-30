@@ -10,13 +10,13 @@
 
 namespace Benchmark {
 
-  static const Board empty_board;
+  static const RawBoard empty_board;
   int move_count = 0;
 
   void DoPlayouts (uint playout_cnt, NatMap<Player, uint>* win_cnt) {
-    static Board playout_board;
+    static RawBoard playout_board;
     static FastRandom random (123);
-    FastStack <Move, Board::kArea * 3> move_history;
+    FastStack <Move, RawBoard::kArea * 3> move_history;
     rep (ii, playout_cnt) {
       playout_board.Load (empty_board);
       move_history.Clear();
@@ -30,7 +30,7 @@ namespace Benchmark {
     // This is for a stupid g++ to force aligning(?)
     // I will buy a bear to somebody who explains 
     // why its removeal drops performance by more than 5%.
-    Board::AlignHack (playout_board);
+    RawBoard::AlignHack (playout_board);
   }
 
   string Run (uint playout_cnt) {

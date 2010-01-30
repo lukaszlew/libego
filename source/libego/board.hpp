@@ -10,11 +10,11 @@
 #include "color.hpp"
 
 
-class Board {
+class RawBoard {
 public:
 
   // Constructs empty board.
-  Board ();
+  RawBoard ();
 
   // -------------------------------------------------------
   // Quesring board state
@@ -62,7 +62,7 @@ public:
   // Fast playout functions
 
   // Loads save_board into this board.
-  void Load (const Board& save_board);
+  void Load (const RawBoard& save_board);
 
   // Sets player on move. Play-undo will forget this set.(use pass)
   void SetActPlayer (Player);
@@ -222,8 +222,45 @@ private:
 
 public:
   // This function does nothing. Read comment in benchmark.cpp.
-  static void AlignHack(Board&);
+  static void AlignHack(RawBoard&);
 };
+
+// -----------------------------------------------------------------------------
+
+class Board : public RawBoard {
+public:
+
+  // Clears the board.
+  void Clear();
+
+  // Returns legality of move. Implemented by calling Play on a board copy.
+  // Includes positional superko detection.
+  // Very slow.
+  bool IsReallyLegal (Move move) const;
+
+  // Play the move. Assert it is legal.
+  void PlayLegal (Player pl, Vertex v);
+  void PlayLegal (Move move);
+
+  // Undo move.
+  // Very slow.
+  bool Undo ();
+
+  // Loads position (and history) from other board.
+  void Load (const Board& save_board);
+
+  // Returns list of played moves.
+  const vector<Move>& Moves () const;
+
+private:
+
+  bool IsHashRepeated ();
+
+  static const bool kCheckAsserts = false;
+
+  vector<Move> moves;
+};
+
 
 #define empty_v_for_each(board, vv, i) {                                \
     Vertex vv = Vertex::Invalid();                                      \

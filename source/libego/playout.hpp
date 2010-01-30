@@ -12,7 +12,7 @@
 #include <cmath>
 
 template <uint stack_size> all_inline
-bool DoLightPlayout (Board& board,
+bool DoLightPlayout (RawBoard& board,
                      FastRandom& random, 
                      FastStack<Move, stack_size>& history)
 {

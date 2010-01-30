@@ -16,7 +16,6 @@
 
 #include "hash.cpp"
 #include "board.cpp"
-#include "full_board.cpp"
 
 #include "playout.cpp"
 #include "benchmark.cpp"

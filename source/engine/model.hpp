@@ -210,7 +210,7 @@ struct Node {
 
 struct Model {
 
-  Model (FullBoard& board) : board (board) {
+  Model (Board& board) : board (board) {
     root = NULL;
     Reset ();
   }
@@ -364,7 +364,7 @@ struct Model {
   vector <Node*> active;
   vector <Node*> old_active;
 
-  FullBoard& board;
+  Board& board;
 };
 
 // -----------------------------------------------------------------------------

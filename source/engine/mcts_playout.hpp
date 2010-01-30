@@ -25,7 +25,10 @@ public:
     mcmc_move_count = 0;
     mcmc_moves.clear();
 
-    if (!model.SyncWithBoard ()) return; // TODO return false
+    if (M::Param::update) {
+      // TODO this is too costly if model not in sync
+      if (!model.SyncWithBoard ()) return; // TODO return false
+    }
     // TODO setup nonempty as played once already
 
     // do the playout

@@ -38,7 +38,7 @@ public:
 
   void EnsureAllLegalChildren (Player pl, const Board& board);
 
-  void RemoveIllegalChildren (Player pl, const FullBoard& full_board);
+  void RemoveIllegalChildren (Player pl, const Board& full_board);
 
   // Child finding.
 
@@ -223,7 +223,7 @@ void MctsNode::EnsureAllLegalChildren (Player pl, const Board& board) {
   has_all_legal_children [pl] = true;
 }
 
-void MctsNode::RemoveIllegalChildren (Player pl, const FullBoard& full_board) {
+void MctsNode::RemoveIllegalChildren (Player pl, const Board& full_board) {
   ASSERT (has_all_legal_children [pl]);
 
   ChildrenList::iterator child = children.begin();

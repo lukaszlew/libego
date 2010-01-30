@@ -53,7 +53,7 @@ public:
 class AllAsFirst {
 public:
   FastRandom  random;
-  FullBoard*  board;
+  Board*      board;
   AafStats    aaf_stats;
   uint        playout_no;
   float       aaf_fraction;
@@ -62,7 +62,7 @@ public:
   bool        progress_dots;
 
 public:
-  AllAsFirst (Gtp::ReplWithGogui& gtp, FullBoard& board_)
+  AllAsFirst (Gtp::ReplWithGogui& gtp, Board& board_)
   : random (123), board (&board_)
   { 
     playout_no       = 50000;
@@ -81,7 +81,7 @@ public:
     gtp.RegisterParam ("AAF.params", "20_progress_dots", &progress_dots);
   }
     
-  void do_playout (const FullBoard* base_board) {
+  void do_playout (const Board* base_board) {
     Board mc_board;
     mc_board.Load (*base_board);
 

@@ -202,7 +202,7 @@ private:
   friend class Mcts::Judge;
 
   // base board
-  FullBoard full_board;
+  Board full_board;
 
   // logging
   Logger logger;
