@@ -29,6 +29,8 @@ public:
   }
 
   void NewPlayout () {
+    move_count = 0;
+    moves.clear();
   }
 
   void Update (float score, Move pre, const vector<Move>& history) {
@@ -106,6 +108,9 @@ public:
       }
     }
 
+    CHECK (best_v != Vertex::Any());
+    move_count += 1;
+    moves.push_back (Move(pl, best_v));
     return best_v;
   }
 
@@ -156,4 +161,8 @@ public:
 
   MS3 ms3;
   MS2 ms2;
+  
+  uint move_count;
+  vector<Move> moves;
+
 };
