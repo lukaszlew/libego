@@ -305,11 +305,6 @@ struct Tree {
 // TODO merge with tree
 
 struct TT {
-  vector <MctsNode*> trace;               // nodes in the path
-  vector <Move> move_history;
-  bool tree_phase;
-  uint tree_move_count;
-
   void Reset (MctsNode& playout_root) {
     trace.clear();
     trace.push_back (&playout_root);
@@ -317,6 +312,10 @@ struct TT {
     move_history.push_back (playout_root.GetMove());
     tree_phase = Param::tree_use;
     tree_move_count = 0;
+  }
+
+  void NewMove (Move m) {
+    move_history.push_back (m);
   }
 
   Vertex ChooseTreeMove (Board& play_board, Player pl) {
@@ -385,6 +384,12 @@ struct TT {
   }
 
 
+private:
+  vector <MctsNode*> trace;               // nodes in the path
+  vector <Move> move_history;
+  uint tree_move_count;
+public:
+  bool tree_phase;
 };
 
 

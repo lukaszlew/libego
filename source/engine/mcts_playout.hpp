@@ -13,6 +13,7 @@ public:
     play_board.SetActPlayer (first_player);
     mcmc.NewPlayout ();
     tt.Reset (playout_root);
+    playout_moves.clear();
 
 
     if (M::Param::update) {
@@ -56,7 +57,10 @@ public:
       ASSERT (v.IsValid());
       ASSERT (play_board.IsLegal (pl, v));
       play_board.PlayLegal (pl, v);
-      tt.move_history.push_back (m);
+
+      tt.NewMove (m);
+      
+      playout_moves.push_back (m);
       
       if (M::Param::update && play_board.PlayCount (v) == 1) {
         model.NewMove (m);
@@ -80,7 +84,10 @@ public:
 
     if (Param::mcmc_update) {
       // TODO remove stupid LastMove2
-      mcmc.Update (score, base_board.LastMove2(), tt.move_history);
+      mcmc.Update (score,
+                   base_board.LastMove2(),
+                   base_board.LastMove(),
+                   playout_moves);
     }
 
     if (M::Param::update) {
@@ -89,7 +96,7 @@ public:
   }
 
   vector<Move> LastPlayout () {
-    return tt.move_history;
+    return playout_moves;
   }
 
 private:
@@ -121,6 +128,8 @@ private:
   Board play_board;
   FastRandom& random;
   TT tt;
+  vector<Move> playout_moves;
+
 public:
   Mcmc mcmc;
 

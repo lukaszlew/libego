@@ -33,10 +33,10 @@ public:
     moves.clear();
   }
 
-  void Update (float score, Move pre, const vector<Move>& history) {
+  void Update (float score, Move pre2, Move pre1, const vector<Move>& history) {
     if (history.size() < 1) return;
-    Move m2 = pre;
-    Move m1 = history[0];
+    Move m2 = pre2;
+    Move m1 = pre1;
 
     NatMap<Vertex, uint> play_count; // TODO unify RAVE; set 1 on nonempty
     play_count.SetAllToZero ();
@@ -45,7 +45,7 @@ public:
     play_count [Vertex::Any()] = 1; // beginning of the game is Any*2
 
     uint last_ii = history.size() * Param::mcmc_update_fraction;
-    reps (ii, 1, last_ii) {
+    reps (ii, 0, last_ii) {
       Move m0 = history[ii];
       if (play_count [m2.GetVertex()] == 1 &&
           play_count [m1.GetVertex()] == 1 &&
