@@ -104,14 +104,15 @@ public:
     if (v != Vertex::Invalid ()) {
       CHECK (full_board.IsReallyLegal (Move (player, v)));
       full_board.PlayLegal (Move (player, v));
-    }
 
-    logger.LogLine ("reg_genmove " + player.ToGtpString() +
-                    "   #? [" + v.ToGtpString() + "]");
-    logger.LogLine ("play " + Move (player, v).ToGtpString() + 
-                    " # move " +
-                    ToString(full_board.MoveCount()));
-    logger.LogLine ("");
+      logger.LogLine ("reg_genmove " + player.ToGtpString() +
+                      "   #? [" + v.ToGtpString() + "]");
+      logger.LogLine ("play " + Move (player, v).ToGtpString() + 
+                      " # move " +
+                      ToString(full_board.MoveCount()));
+      logger.LogLine ("");
+
+    }
     return v;
   }
 

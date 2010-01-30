@@ -2,6 +2,7 @@
 SCRIPT_DIR="$(readlink -f $(dirname "$0"))"
 
 "${SCRIPT_DIR}"/engine \
+    "param.other seed 123" \
     "param.other genmove_playouts 10000" \
     \
     "param.tree use 1" \
