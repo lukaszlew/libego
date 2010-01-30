@@ -318,7 +318,9 @@ struct TT {
     move_history.push_back (m);
   }
 
-  Vertex ChooseTreeMove (Board& play_board, Player pl) {
+  Vertex ChooseMove (Board& play_board) {
+    Player pl = play_board.ActPlayer();
+
     if (!tree_phase || tree_move_count >= Param::tree_max_moves) {
       return Vertex::Any();
     }

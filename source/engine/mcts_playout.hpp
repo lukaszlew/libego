@@ -28,28 +28,10 @@ public:
       Player pl = play_board.ActPlayer ();
       Vertex v  = Vertex::Any ();
 
-
-      if (v == Vertex::Any ()) {
-        v = tt.ChooseTreeMove (play_board, pl);
-      }
-      
-
-      // TODO cutoff at half game
-      if (Param::mcmc_use &&
-          v == Vertex::Any () &&
-          mcmc.move_count < Param::mcmc_max_moves)
-      {
-        v = mcmc.Choose8Move (play_board);
-      }
-
-      // if (v = Vertex::Any () && random.GetNextUint (1024) < 128)
-      if (Param::use_local && v == Vertex::Any ()) {
-        v = ChooseLocalMove ();
-      }
-
-      if (v == Vertex::Any ()) {
-        v = play_board.RandomLightMove (pl, random);
-      }
+      if (v == Vertex::Any ()) v = tt.ChooseMove (play_board);
+      if (v == Vertex::Any ()) v = mcmc.ChooseMove (play_board);
+      if (v == Vertex::Any ()) v = ChooseLocalMove ();
+      if (v == Vertex::Any ()) v = play_board.RandomLightMove (pl, random);
 
       Move m = Move (pl, v);
 
@@ -100,7 +82,9 @@ public:
 
 private:
 
+  // TODO policy randomization
   Vertex ChooseLocalMove () {
+    if (!Param::use_local) return Vertex::Any();
     Vertex last_v = play_board.LastVertex ();
     Player pl = play_board.ActPlayer ();
 

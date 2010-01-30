@@ -77,7 +77,12 @@ public:
     }
   }
 
-  Vertex Choose8Move (const Board& board) {
+  // TODO cutoff at half game
+  Vertex ChooseMove (const Board& board) {
+    if (!Param::mcmc_use || move_count >= Param::mcmc_max_moves) {
+      return Vertex::Any ();
+    }
+
     Move m2 = board.LastMove2 ();
     Move m1 = board.LastMove ();
 
