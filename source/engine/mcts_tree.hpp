@@ -264,4 +264,39 @@ float MctsNode::SubjectiveRaveValue (Player pl, float log_val) const {
     Param::tree_explore_coeff * sqrt (log_val / stat.update_count());
 }
 
+// -----------------------------------------------------------------------------
+
+struct Tree {
+  Tree () :
+    root (Player::White(), Vertex::Any ())
+  {
+  }
+
+  void Reset () {
+    root.Reset ();
+  }
+
+  MctsNode& FindRoot (const Board& board) {
+    Board sync_board;
+    MctsNode* act_root = &root;
+    BOOST_FOREACH (Move m, board.Moves ()) {
+      act_root->EnsureAllLegalChildren (m.GetPlayer(), sync_board);
+      act_root = act_root->FindChild (m);
+      CHECK (sync_board.IsLegal (m));
+      sync_board.PlayLegal (m);
+    }
+    
+    Player pl = board.ActPlayer();
+    act_root->EnsureAllLegalChildren (pl, board);
+    act_root->RemoveIllegalChildren (pl, board);
+
+    return *act_root;
+  }
+
+
+  MctsNode root;
+};
+
+
+
 #endif

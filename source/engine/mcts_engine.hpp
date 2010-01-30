@@ -27,14 +27,13 @@ namespace Mcts {
 class MctsEngine {
 public:
   
-  MctsEngine ()
-    : root (Player::White(), Vertex::Any ()),
-      model (full_board),
-      random (TimeSeed()),
-      playout(random, model),
-      time_left (0.0),
-      time_stones (-1),
-      playouts_per_second (50000)
+  MctsEngine () :
+    model (full_board),
+    random (TimeSeed()),
+    playout(random, model),
+    time_left (0.0),
+    time_stones (-1),
+    playouts_per_second (50000)
   {
   }
 
@@ -53,7 +52,7 @@ public:
 
   void ClearBoard () {
     full_board.Clear ();
-    root.Reset ();
+    tree.Reset ();
     playout.mcmc.Reset ();
     logger.NewLog ();
     logger.LogLine ("clear_board");
@@ -82,7 +81,7 @@ public:
 
   Vertex Genmove (Player player) {
     if (Param::reset_tree_on_genmove) {
-      root.Reset ();
+      tree.Reset ();
     }
     playout.mcmc.Reset ();
 
@@ -121,8 +120,7 @@ public:
   }
 
   string TreeAsciiArt (float min_updates, float max_children) {
-    MctsNode& act_root = FindRoot ();
-    return act_root.RecToString (min_updates, max_children);
+    return tree.FindRoot (full_board).RecToString (min_updates, max_children);
   }
 
   void DoNPlayouts (uint n) {
@@ -130,7 +128,7 @@ public:
   }
 
   void DoNPlayouts (uint n, Player first_player) {
-    MctsNode& act_root = FindRoot ();
+    MctsNode& act_root = tree.FindRoot (full_board);
     model.SyncWithBoard();
     rep (ii, n) {
       playout.DoOnePlayout (act_root, full_board, first_player);
@@ -171,7 +169,7 @@ public:
 private:
 
   Vertex BestMove (Player pl) {
-    MctsNode& act_root = FindRoot ();
+    MctsNode& act_root = tree.FindRoot (full_board);
     const MctsNode& best_node = act_root.MostExploredChild (pl);
 
     return
@@ -180,22 +178,6 @@ private:
       best_node.v;
   }
 
-  MctsNode& FindRoot () {
-    Board sync_board;
-    MctsNode* act_root = &root;
-    BOOST_FOREACH (Move m, full_board.Moves ()) {
-      act_root->EnsureAllLegalChildren (m.GetPlayer(), sync_board);
-      act_root = act_root->FindChild (m);
-      CHECK (sync_board.IsLegal (m));
-      sync_board.PlayLegal (m);
-    }
-    
-    Player pl = full_board.ActPlayer();
-    act_root->EnsureAllLegalChildren (pl, full_board);
-    act_root->RemoveIllegalChildren (pl, full_board);
-
-    return *act_root;
-  }
 
 
 private:
@@ -209,8 +191,8 @@ private:
   Logger logger;
   
   // models
-  MctsNode root;
   M::Model model;
+  Tree tree;
   
   // playout
   FastRandom random;
