@@ -62,8 +62,9 @@ public:
   }
 
   bool Play (Move move) {
-    bool ok = full_board.Play (move);
+    bool ok = full_board.IsReallyLegal (move);
     if (ok) {
+      full_board.PlayLegal (move);
       logger.LogLine ("play " + move.ToGtpString());
       logger.LogLine ("");
     }
@@ -101,8 +102,10 @@ public:
     Vertex v = BestMove (player);
 
     if (v != Vertex::Invalid ()) {
-      CHECK (full_board.Play (Move (player, v)));
+      CHECK (full_board.IsReallyLegal (Move (player, v)));
+      full_board.PlayLegal (Move (player, v));
     }
+
     logger.LogLine ("reg_genmove " + player.ToGtpString() +
                     "   #? [" + v.ToGtpString() + "]");
     logger.LogLine ("play " + Move (player, v).ToGtpString() + 

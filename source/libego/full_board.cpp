@@ -52,7 +52,7 @@ bool FullBoard::Undo () {
 bool FullBoard::IsReallyLegal (Move move) const {
   FullBoard tmp;
   tmp.Load (*this);
-  return tmp.Play (move);
+  return tmp.TryPlay (move);
 }
 
 
@@ -68,7 +68,7 @@ bool FullBoard::IsHashRepeated () {
 }
 
 
-bool FullBoard::Play (Move move) {
+bool FullBoard::TryPlay (Move move) {
   if (Board::IsLegal (move.GetPlayer(), move.GetVertex()) == false)
     return false;
 
