@@ -50,17 +50,21 @@ bool FullBoard::Undo () {
 
 
 bool FullBoard::IsReallyLegal (Move move) const {
+  if (IsLegal (move) == false) return false;
+  // pass would repeat the hash
+  if (move.GetVertex () == Vertex::Pass ()) return true;
+
   FullBoard tmp;
   tmp.Load (*this);
-  return tmp.TryPlay (move);
+  tmp.PlayLegal (move);
+  return !tmp.IsHashRepeated ();
 }
 
 
 bool FullBoard::IsHashRepeated () {
   Board tmp_board;
   rep (mn, Board::MoveCount()-1) {
-    tmp_board.PlayLegal (moves[mn].GetPlayer (),
-                         moves[mn].GetVertex ());
+    tmp_board.PlayLegal (moves[mn]);
     if (Board::PositionalHash() == tmp_board.PositionalHash())
       return true;
   }
@@ -68,19 +72,6 @@ bool FullBoard::IsHashRepeated () {
 }
 
 
-bool FullBoard::TryPlay (Move move) {
-  if (Board::IsLegal (move.GetPlayer(), move.GetVertex()) == false)
-    return false;
-
-  PlayLegal (move);
-
-  if (move.GetVertex () != Vertex::Pass () && IsHashRepeated ()) {
-    CHECK (Undo ());
-    return false;
-  }
-
-  return true;
-}
 
 
 const Board& FullBoard::GetBoard() const {

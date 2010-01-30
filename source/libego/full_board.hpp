@@ -16,9 +16,11 @@ public:
   // Clears the board.
   void Clear();
 
-  // Returns legality of move. Implemented by calling Play on a FullBoard copy.
+  // Returns legality of move. Implemented by calling Play on a board copy.
+  // Includes positional superko detection.
   bool IsReallyLegal (Move move) const;
 
+  // Play the move. Assert it is legal.
   void PlayLegal (Move move);
 
   // Undo move. Replays the game
@@ -39,10 +41,6 @@ public:
   uint PlayCount (Vertex v) const;
 
 private:
-  // Play if the move is legal and return true.
-  // Otherwise do not play and return false. 
-  // (positional superko detection).
-  bool TryPlay (Move move);
   static const bool kCheckAsserts = false;
 
   bool IsHashRepeated ();
