@@ -3,6 +3,11 @@ const float kSureWinUpdate = 1.0; // TODO increase this
 
 // -----------------------------------------------------------------------------
 
+struct TT {
+  vector <MctsNode*> trace;               // nodes in the path
+  vector <Move> move_history;
+};
+
 class MctsPlayout {
   static const bool kCheckAsserts = false;
 public:
@@ -13,10 +18,10 @@ public:
     // Prepare simulation board and tree iterator.
     play_board.Load (base_board);
     play_board.SetActPlayer (first_player);
-    trace.clear();
-    trace.push_back (&playout_root);
-    move_history.clear ();
-    move_history.push_back (playout_root.GetMove());
+    tt.trace.clear();
+    tt.trace.push_back (&playout_root);
+    tt.move_history.clear ();
+    tt.move_history.push_back (playout_root.GetMove());
     mcmc.NewPlayout ();
 
     tree_phase = Param::tree_use;
@@ -33,7 +38,7 @@ public:
     // do the playout
     while (true) {
       if (play_board.BothPlayerPass()) break;
-      if (move_history.size() >= 3*Board::kArea) return;
+      if (tt.move_history.size() >= 3*Board::kArea) return;
       Player pl = play_board.ActPlayer ();
       Vertex v  = Vertex::Any ();
 
@@ -71,7 +76,7 @@ public:
       ASSERT (v.IsValid());
       ASSERT (play_board.IsLegal (pl, v));
       play_board.PlayLegal (pl, v);
-      move_history.push_back (m);
+      tt.move_history.push_back (m);
       
       if (M::Param::update && play_board.PlayCount (v) == 1) {
         model.NewMove (m);
@@ -99,7 +104,7 @@ public:
 
     if (Param::mcmc_update) {
       // TODO remove stupid LastMove2
-      mcmc.Update (score, base_board.LastMove2(), move_history);
+      mcmc.Update (score, base_board.LastMove2(), tt.move_history);
     }
 
     if (M::Param::update) {
@@ -108,7 +113,7 @@ public:
   }
 
   vector<Move> LastPlayout () {
-    return move_history;
+    return tt.move_history;
   }
 
 private:
@@ -124,7 +129,7 @@ private:
     }
 
     MctsNode& uct_child = ActNode().BestRaveChild (pl);
-    trace.push_back (&uct_child);
+    tt.trace.push_back (&uct_child);
     ASSERT (uct_child.v != Vertex::Any());
     return uct_child.v;
   }
@@ -150,7 +155,7 @@ private:
   }
 
   void UpdateTraceRegular (float score) {
-    BOOST_FOREACH (MctsNode* node, trace) {
+    BOOST_FOREACH (MctsNode* node, tt.trace) {
       node->stat.update (score);
     }
   }
@@ -159,9 +164,9 @@ private:
     // TODO configure rave blocking through options
 
 
-    uint last_ii  = move_history.size () * 7 / 8; // TODO 
+    uint last_ii  = tt.move_history.size () * 7 / 8; // TODO 
 
-    rep (act_ii, trace.size()) {
+    rep (act_ii, tt.trace.size()) {
       // Mark moves that should be updated in RAVE children of: trace [act_ii]
       NatMap <Move, bool> do_update (false);
       NatMap <Move, bool> do_update_set_to (true);
@@ -169,14 +174,14 @@ private:
       // TODO this is the slow and too-fixed part
       // TODO Change it to weighting with flexible masking.
       reps (jj, act_ii+1, last_ii) {
-        Move m = move_history [jj];
+        Move m = tt.move_history [jj];
         do_update [m] = do_update_set_to [m];
         do_update_set_to [m] = false;
         do_update_set_to [m.OtherPlayer()] = false;
       }
 
       // Do the update.
-      BOOST_FOREACH (MctsNode& child, trace[act_ii]->Children()) {
+      BOOST_FOREACH (MctsNode& child, tt.trace[act_ii]->Children()) {
         if (do_update [child.GetMove()]) {
           child.rave_stat.update (score);
         }
@@ -185,8 +190,8 @@ private:
   }
 
   MctsNode& ActNode() {
-    ASSERT (trace.size() > 0);
-    return *trace.back ();
+    ASSERT (tt.trace.size() > 0);
+    return *tt.trace.back ();
   }
 
 private:
@@ -195,8 +200,7 @@ private:
   // playout
   Board play_board;
   FastRandom& random;
-  vector <MctsNode*> trace;               // nodes in the path
-  vector <Move> move_history;
+  TT tt;
   bool tree_phase;
 public:
   Mcmc mcmc;
