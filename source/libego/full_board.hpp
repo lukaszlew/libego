@@ -11,13 +11,13 @@
 // All functions in this class are ineffictient and should not be used
 // for performance tasks. Use Board instead.
 
-class FullBoard {
+class FullBoard : public Board {
 public:
   // Clears the board.
   void Clear();
 
   // Returns legality of move. Implemented by calling Play on a FullBoard copy.
-  bool IsLegal (Move move) const;
+  bool IsReallyLegal (Move move) const;
 
   // Play if the move is legal and return true.
   // Otherwise do not play and return false. 
@@ -31,9 +31,6 @@ public:
   const Board& GetBoard() const;
 
   // Sets komi value.
-  void SetKomi (float fkomi);
-
-  // Sets komi value.
   bool SetBoardSize (uint size);
 
   // Loads position (and history) from other board.
@@ -45,13 +42,13 @@ public:
   uint PlayCount (Vertex v) const;
 
 private:
+  static const bool kCheckAsserts = false;
+
   void PlayLegal (Move move);
   bool IsHashRepeated ();
 
 private:
-  Board board;
   vector<Move> moves;
-  NatMap<Vertex, uint> play_count;
 };
 
 #endif

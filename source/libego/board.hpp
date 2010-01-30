@@ -216,6 +216,8 @@ private:
   Vertex                       empty_v [kArea];
   NatMap<Vertex, uint>         empty_pos;
 
+  NatMap<Vertex, uint>         play_count;
+
   static const Zobrist zobrist[1];
 
 public:

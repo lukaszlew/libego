@@ -6,41 +6,33 @@
 
 
 void FullBoard::Clear() {
-  // move_no = 0;
-  board.Clear();
+  Board::Clear();
   moves.clear();
-  play_count.SetAllToZero ();
 }
 
 
-void FullBoard::SetKomi (float fkomi) {
-  board.SetKomi(fkomi);
-}
 
 bool FullBoard::SetBoardSize (uint size) {
   return size == board_size;
 }
 
 void FullBoard::Load (const FullBoard& save_board) {
-  board.Load (save_board.GetBoard());
+  Board::Load (save_board.GetBoard());
   moves = save_board.moves;
-  play_count.Load (save_board.play_count);
 }
 
 
 void FullBoard::PlayLegal (Move m) {
+  ASSERT (IsLegal (m));
   moves.push_back (m);
-  Vertex v =  m.GetVertex();
-  play_count [v] += 1;
-  board.PlayLegal (m.GetPlayer(), v);
-  CHECK (m == board.LastMove());
+  Board::PlayLegal (m);
 }
 
 
 bool FullBoard::Undo () {
   vector<Move> replay;
 
-  uint game_length = board.MoveCount ();
+  uint game_length = Board::MoveCount ();
 
   if (game_length == 0)
     return false;
@@ -57,7 +49,7 @@ bool FullBoard::Undo () {
 }
 
 
-bool FullBoard::IsLegal (Move move) const {
+bool FullBoard::IsReallyLegal (Move move) const {
   FullBoard tmp;
   tmp.Load (*this);
   return tmp.Play (move);
@@ -66,10 +58,10 @@ bool FullBoard::IsLegal (Move move) const {
 
 bool FullBoard::IsHashRepeated () {
   Board tmp_board;
-  rep (mn, board.MoveCount()-1) {
+  rep (mn, Board::MoveCount()-1) {
     tmp_board.PlayLegal (moves[mn].GetPlayer (),
                          moves[mn].GetVertex ());
-    if (board.PositionalHash() == tmp_board.PositionalHash())
+    if (Board::PositionalHash() == tmp_board.PositionalHash())
       return true;
   }
   return false;
@@ -77,7 +69,7 @@ bool FullBoard::IsHashRepeated () {
 
 
 bool FullBoard::Play (Move move) {
-  if (board.IsLegal (move.GetPlayer(), move.GetVertex()) == false)
+  if (Board::IsLegal (move.GetPlayer(), move.GetVertex()) == false)
     return false;
 
   PlayLegal (move);
@@ -92,15 +84,10 @@ bool FullBoard::Play (Move move) {
 
 
 const Board& FullBoard::GetBoard() const {
-  return board;
+  return *this;
 }
 
 
 const vector<Move>& FullBoard::Moves () const {
   return moves;
-}
-
-
-uint FullBoard::PlayCount (Vertex v) const {
-  return play_count [v];
 }

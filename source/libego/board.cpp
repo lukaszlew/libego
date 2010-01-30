@@ -174,6 +174,7 @@ void Board::Clear () {
   ko_v         = Vertex::Any();
   ForEachNat (Vertex, v) {
     color_at      [v] = Color::OffBoard ();
+    play_count    [v] = 0;
     nbr_cnt       [v] = NbrCounter::Empty();
     chain_next_v  [v] = v;
     chain_id      [v] = v;      // TODO is it needed, is it used?
@@ -441,6 +442,7 @@ void Board::place_stone (Player pl, Vertex v) {
   hash ^= zobrist->OfPlayerVertex (pl, v);
   player_v_cnt[pl]++;
   color_at[v] = Color::OfPlayer (pl);
+  play_count[v] += 1;
 
   empty_v_cnt--;
   empty_pos [empty_v [empty_v_cnt]] = empty_pos [v];
