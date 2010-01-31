@@ -2,14 +2,12 @@
 // Copyright 2006 and onwards, Lukasz Lew
 //
 
-// -----------------------------------------------------------------------------
-
 class Engine {
 public:
   
   Engine () :
     random (TimeSeed()),
-    playout(random)
+    playout (full_board, random)
   {
   }
 
@@ -102,7 +100,7 @@ public:
     MctsNode& act_root = playout.mcts.FindRoot (full_board);
     rep (ii, n) {
       playout.mcts.NewPlayout (act_root);
-      playout.DoOnePlayout (full_board, first_player);
+      playout.DoOnePlayout (first_player);
     }
   }
 

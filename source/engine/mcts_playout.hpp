@@ -1,13 +1,16 @@
-
-const float kSureWinUpdate = 1.0; // TODO increase this
+//
+// Copyright 2006 and onwards, Lukasz Lew
+//
 
 class MctsPlayout {
-  static const bool kCheckAsserts = false;
 public:
-  MctsPlayout (FastRandom& random) : random (random) {
+
+  MctsPlayout (const Board& base_board, FastRandom& random) :
+    base_board (base_board),
+    random (random) {
   }
  
-  void DoOnePlayout (const Board& base_board, Player first_player) {
+  void DoOnePlayout (Player first_player) {
     // Prepare simulation board and tree iterator.
     play_board.Load (base_board);
     play_board.SetActPlayer (first_player);
@@ -62,7 +65,7 @@ private:
     // TODO game replay i update wszystkich modeli
     double score;
     if (accurate) {
-      score = play_board.TrompTaylorWinner().ToScore() * kSureWinUpdate;
+      score = play_board.TrompTaylorWinner().ToScore();
     } else {
       int sc = play_board.PlayoutScore();
       score = Player::WinnerOfBoardScore (sc).ToScore (); // +- 1
@@ -96,11 +99,14 @@ private:
 private:
   friend class MctsGtp;
   
+  const Board& base_board;
+
   // playout
   Board play_board;
   FastRandom& random;
   vector<Move> playout_moves;
 
+  static const bool kCheckAsserts = false;
 public:
   Mcts mcts;
   Mcmc mcmc;
