@@ -74,7 +74,8 @@ public:
   }
 
   string MctsAsciiArt (float min_updates, float max_children) {
-    return playout.mcts.FindRoot (full_board).RecToString (min_updates, max_children);
+    playout.mcts.Sync (full_board);
+    return playout.mcts.AsciiArt (min_updates, max_children);
   }
 
 

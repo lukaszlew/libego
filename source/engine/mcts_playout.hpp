@@ -22,20 +22,15 @@ public:
 
     DoNPlayouts (playouts);
 
-    MctsNode& act_root = mcts.FindRoot (base_board);
-    const MctsNode& best_node = act_root.MostExploredChild (player);
-
-    return
-      best_node.SubjectiveMean() < Param::resign_mean ?
-      Move::Invalid() :
-      Move (player, best_node.v);
+    mcts.Sync (base_board);
+    return mcts.BestMove (player);
   }
 
 
   void DoNPlayouts (uint n) {
-    MctsNode& act_root = mcts.FindRoot (base_board);
+    mcts.Sync (base_board);
     rep (ii, n) {
-      mcts.NewPlayout (act_root);
+      mcts.NewPlayout ();
       DoOnePlayout ();
     }
   }

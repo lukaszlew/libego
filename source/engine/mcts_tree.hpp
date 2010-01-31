@@ -270,15 +270,16 @@ struct Mcts {
   Mcts () :
     root (Player::White(), Vertex::Any ())
   {
+    act_root = &root;
   }
 
   void Reset () {
     root.Reset ();
   }
 
-  MctsNode& FindRoot (const Board& board) {
+  void Sync (const Board& board) {
     Board sync_board;
-    MctsNode* act_root = &root;
+    act_root = &root;
     BOOST_FOREACH (Move m, board.Moves ()) {
       act_root->EnsureAllLegalChildren (m.GetPlayer(), sync_board);
       act_root = act_root->FindChild (m);
@@ -289,16 +290,29 @@ struct Mcts {
     Player pl = board.ActPlayer();
     act_root->EnsureAllLegalChildren (pl, board);
     act_root->RemoveIllegalChildren (pl, board);
-
-    return *act_root;
   }
 
 
-  void NewPlayout (MctsNode& playout_root) {
+  Move BestMove (Player player) {
+    const MctsNode& best_node = act_root->MostExploredChild (player);
+
+    return
+      best_node.SubjectiveMean() < Param::resign_mean ?
+      Move::Invalid() :
+      Move (player, best_node.v);
+  }
+
+
+  string AsciiArt (double min_updates, double max_children) {
+    return act_root->RecToString (min_updates, max_children);
+  }
+
+
+  void NewPlayout () {
     trace.clear();
-    trace.push_back (&playout_root);
+    trace.push_back (act_root);
     move_history.clear ();
-    move_history.push_back (playout_root.GetMove());
+    move_history.push_back (act_root->GetMove());
     tree_phase = Param::tree_use;
     tree_move_count = 0;
   }
@@ -378,7 +392,7 @@ struct Mcts {
 private:
 
   MctsNode root;
-
+  MctsNode* act_root;
 
   vector <MctsNode*> trace;               // nodes in the path
   vector <Move> move_history;
