@@ -185,7 +185,13 @@ private:
   };
 
   struct Chain {
-    mutable uint lib_cnt; // TODO move this out.
+    mutable uint lib_cnt;
+    mutable uint lib_sum;
+    mutable uint lib_sum2;
+    void AddLib (Vertex v);
+    void SubLib (Vertex v);
+    void Merge (const Chain& other);
+    bool IsCaptured () const;
   };
 
   Chain& chain_at (Vertex v);

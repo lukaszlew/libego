@@ -116,6 +116,30 @@ const uint RawBoard::NbrCounter::player_inc_tab [Player::kBound] = {
 
 // -----------------------------------------------------------------------------
 
+void RawBoard::Chain::AddLib (Vertex v) {
+  uint r = v.GetRaw();
+  lib_cnt += 1;
+//   lib_sum += r;
+//   lib_sum2 += r*r;
+}
+
+void RawBoard::Chain::SubLib (Vertex v) {
+  uint r = v.GetRaw();
+  lib_cnt -= 1;
+//   lib_sum -= r;
+//   lib_sum2 -= r*r;
+}
+
+void RawBoard::Chain::Merge (const RawBoard::Chain& other) {
+  lib_cnt += other.lib_cnt;
+}
+
+bool RawBoard::Chain::IsCaptured () const {
+  return lib_cnt == 0;
+}
+
+// -----------------------------------------------------------------------------
+
 
 string RawBoard::ToAsciiArt (Vertex mark_v) const {
   ostringstream out;
@@ -362,7 +386,7 @@ void RawBoard::PlayLegal (Player player, Vertex v) { // TODO test with move
   place_stone (player, v);
 
   if (nbr_cnt[v].player_cnt_is_max (player.Other())) {
-    vertex_for_each_4_nbr (v, nbr_v, chain_at(nbr_v).lib_cnt -= 1);
+    vertex_for_each_4_nbr (v, nbr_v, chain_at(nbr_v).SubLib (v));
 
     play_eye_legal (v);
     // if captured exactly one stone (and this was eye) then Ko
@@ -374,8 +398,8 @@ void RawBoard::PlayLegal (Player player, Vertex v) { // TODO test with move
   vertex_for_each_4_nbr (v, nbr_v, nbr_cnt [nbr_v].player_inc (player));
 
   // suicide support
-  // if (chain_at(v).lib_cnt == 0) remove_chain (v);
-  ASSERT (chain_at(v).lib_cnt != 0);
+  // if (chain_at(v).IsCaptured ()) remove_chain (v);
+  ASSERT (!chain_at(v).IsCaptured());
 }
 
 
@@ -383,10 +407,10 @@ all_inline
 void RawBoard::update_neighbour (Player player, Vertex v, Vertex nbr_v) {
   if (!color_at [nbr_v].IsPlayer ()) return;
 
-  chain_at(nbr_v).lib_cnt -= 1;
+  chain_at(nbr_v).SubLib (v);
 
   if (color_at [nbr_v] != Color::OfPlayer (player)) { // same color of groups
-    if (chain_at(nbr_v).lib_cnt == 0)
+    if (chain_at(nbr_v).IsCaptured ())
       remove_chain (nbr_v);
   } else {
     if (chain_id [nbr_v] != chain_id [v]) {
@@ -403,14 +427,14 @@ void RawBoard::update_neighbour (Player player, Vertex v, Vertex nbr_v) {
 no_inline
 void RawBoard::play_eye_legal (Vertex v) {
   vertex_for_each_4_nbr (v, nbr_v, {
-    if ((chain_at(nbr_v).lib_cnt == 0))
+    if ((chain_at(nbr_v).IsCaptured ()))
       remove_chain (nbr_v);
   });
 }
 
 
 void RawBoard::merge_chains (Vertex v_base, Vertex v_new) {
-  chain_at(v_base).lib_cnt += chain_at(v_new).lib_cnt;
+  chain_at(v_base).Merge (chain_at(v_new));
 
   Vertex act_v = v_new;
   do {
@@ -438,7 +462,7 @@ void RawBoard::remove_chain (Vertex v) {
   do {
     vertex_for_each_4_nbr (act_v, nbr_v, {
       nbr_cnt [nbr_v].player_dec (old_color.ToPlayer());
-      chain_at(nbr_v).lib_cnt += 1;
+      chain_at(nbr_v).AddLib (act_v);
     });
 
     Vertex tmp_v = act_v;
@@ -462,7 +486,7 @@ void RawBoard::place_stone (Player pl, Vertex v) {
   ASSERT (chain_next_v[v] == v);
 
   chain_id [v] = v;
-  chain_at(v).lib_cnt = nbr_cnt[v].empty_cnt ();
+  chain_at(v).lib_cnt = nbr_cnt[v].empty_cnt (); // TODO incremental
 }
 
 
@@ -647,7 +671,7 @@ void RawBoard::check_chain_at () const {
     // TODO what about off_board and empty?
     if (color_at [v].IsPlayer ()) {
 
-      ASSERT (chain[chain_id[v]].lib_cnt != 0);
+      ASSERT (!chain_at(v).IsCaptured ());
 
       vertex_for_each_4_nbr (v, nbr_v, {
           if (color_at[v] == color_at[nbr_v])
