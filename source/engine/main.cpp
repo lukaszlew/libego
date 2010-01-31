@@ -47,6 +47,7 @@ static const bool kCheckAsserts = false;
 #include "mcts_tree.hpp"
 #include "mcts_mcmc.hpp"
 #include "mcts_playout.hpp"
+#include "time_control.hpp"
 #include "engine.hpp"
 #include "mcts_gtp.hpp"
 
@@ -75,7 +76,7 @@ int main(int argc, char** argv) {
   gtp.RegisterStatic("protocol_version", "2");
   gtp.Register ("benchmark", Cbenchmark);
 
-  Engine& engine = *(new Engine);
+  Engine& engine = *(new Engine(gtp));
   MctsGtp mcts_gtp (gtp, engine);
 
   reps (ii, 1, argc) {

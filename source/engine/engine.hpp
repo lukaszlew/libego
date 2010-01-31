@@ -2,15 +2,15 @@
 // Copyright 2006 and onwards, Lukasz Lew
 //
 
+// -----------------------------------------------------------------------------
+
 class Engine {
 public:
   
-  Engine () :
+  Engine (Gtp::ReplWithGogui& gtp) :
     random (TimeSeed()),
     playout(random),
-    time_left (0.0),
-    time_stones (-1),
-    playouts_per_second (10000)
+    time_control (gtp)
   {
   }
 
@@ -64,13 +64,8 @@ public:
 
     logger.LogLine ("param.other seed " + ToString (random.GetSeed ()));
 
-    int playouts = Param::genmove_playouts;
-    if (time_stones [player] == 0 && time_left [player] < 60.0) {
-      playouts = min (playouts,
-                      int (time_left [player] / 30.0 * playouts_per_second));
-      playouts = max (playouts, 1000);
-    }
-    //cerr << "Playouts: " << playouts << endl;
+    int playouts = time_control.PlayoutCount (player);
+
     DoNPlayouts (playouts, player);
 
     //cerr << mcts.ToString (show_mcts_min_updates, show_mcts_max_children) << endl;
@@ -138,11 +133,6 @@ public:
     return gfx;
   }
 
-  void TimeLeft (Player pl, float seconds, int stones) {
-    time_left [pl] = seconds;
-    time_stones [pl] = stones;
-  }
-
 private:
 
   Vertex BestMove (Player pl) {
@@ -170,7 +160,5 @@ private:
   FastRandom random;
   MctsPlayout playout;
 
-  NatMap <Player, float> time_left;
-  NatMap <Player, int>   time_stones;
-  float playouts_per_second;
+  TimeControl time_control;
 };
