@@ -5,7 +5,6 @@ public:
   {
     RegisterCommands (gtp);
     RegisterParams (gtp);
-    mcts_engine.model.RegisterInGtp (gtp);
   }
 
 private:

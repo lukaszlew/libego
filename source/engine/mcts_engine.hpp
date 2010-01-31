@@ -25,9 +25,8 @@ class MctsEngine {
 public:
   
   MctsEngine () :
-    model (full_board),
     random (TimeSeed()),
-    playout(random, model),
+    playout(random),
     time_left (0.0),
     time_stones (-1),
     playouts_per_second (10000)
@@ -186,9 +185,6 @@ private:
   // logging
   Logger logger;
   
-  // models
-  M::Model model;
-
   // playout
   FastRandom random;
   MctsPlayout playout;

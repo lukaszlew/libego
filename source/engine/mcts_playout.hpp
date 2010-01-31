@@ -4,7 +4,7 @@ const float kSureWinUpdate = 1.0; // TODO increase this
 class MctsPlayout {
   static const bool kCheckAsserts = false;
 public:
-  MctsPlayout (FastRandom& random, M::Model& model) : random (random), model (model) {
+  MctsPlayout (FastRandom& random) : random (random) {
   }
  
   void DoOnePlayout (const Board& base_board, Player first_player) {
@@ -15,10 +15,6 @@ public:
     playout_moves.clear();
 
 
-    if (M::Param::update) {
-      // TODO this is too costly if model not in sync
-      if (!model.SyncWithBoard ()) return; // TODO return false
-    }
     // TODO setup nonempty as played once already
 
     // do the playout
@@ -39,7 +35,6 @@ public:
       
       playout_moves.push_back (m);
       
-      model.NewMove (m);
     }
     
     double score = Score (mcts.tree_phase);
@@ -54,8 +49,6 @@ public:
                  base_board.LastMove2(),
                  base_board.LastMove(),
                  playout_moves);
-
-    model.Update (score);
 
   }
 
@@ -112,5 +105,4 @@ public:
   Mcts mcts;
   Mcmc mcmc;
 
-  M::Model& model;
 };

@@ -46,7 +46,6 @@ static const bool kCheckAsserts = false;
 
 #include "mcts_tree.hpp"
 #include "mcts_mcmc.hpp"
-#include "model.hpp"
 #include "mcts_playout.hpp"
 #include "mcts_engine.hpp"
 #include "mcts_gtp.hpp"
