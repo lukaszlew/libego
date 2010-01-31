@@ -51,7 +51,7 @@ private:
 
     gtp.RegisterParam (other, "genmove_playouts",     &Param::genmove_playouts);
     gtp.RegisterParam (other, "local_use",            &Param::use_local);
-    gtp.RegisterParam (other, "seed",                 &mcts_engine.random.seed);
+    gtp.RegisterParam (other, "seed",                 &mcts_engine.playout.random.seed);
     gtp.RegisterParam (other, "logger_is_active",     &mcts_engine.logger.is_active);
     gtp.RegisterParam (other, "logger_directory",     &mcts_engine.logger.log_directory);
 

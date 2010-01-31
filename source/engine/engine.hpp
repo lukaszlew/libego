@@ -5,11 +5,7 @@
 class Engine {
 public:
   
-  Engine () :
-    random (TimeSeed()),
-    playout (full_board, random)
-  {
-  }
+  Engine () : playout (full_board) { }
 
   bool SetBoardSize (uint board_size) {
     return board_size == ::board_size;
@@ -54,9 +50,10 @@ public:
   }
 
   Move Genmove (Player player) {
-    logger.LogLine ("param.other seed " + ToString (random.GetSeed ()));
+    logger.LogLine ("param.other seed " + ToString (playout.random.GetSeed ()));
     
-    Move m = playout.Genmove (player);
+    full_board.SetActPlayer (player);
+    Move m = playout.Genmove ();
 
     if (m.IsValid ()) {
       CHECK (full_board.IsReallyLegal (m));
@@ -122,7 +119,6 @@ private:
   Logger logger;
   
   // playout
-  FastRandom random;
   MctsPlayout playout;
 
 };
