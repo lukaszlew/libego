@@ -189,7 +189,7 @@ private:
     mutable uint lib_cnt;
     uint lib_sum;
     uint lib_sum2;
-    uint _padding;
+    uint size;
 
     void Reset ();
     void ResetOffBoard ();

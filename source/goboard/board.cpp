@@ -127,12 +127,14 @@ void RawBoard::Chain::ResetOffBoard () {
   lib_cnt  = 2; // this is needed to not try to remove offboard guards
   lib_sum  = 1;
   lib_sum2 = 1;
+  size = 100;
 }
 
 void RawBoard::Chain::Reset () {
   lib_cnt  = 0;
   lib_sum  = 0;
   lib_sum2 = 0;
+  size = 1;
 }
 
 
@@ -159,6 +161,7 @@ void RawBoard::Chain::Merge (const RawBoard::Chain& other) {
   lib_cnt  += other.lib_cnt;
   lib_sum  += other.lib_sum;
   lib_sum2 += other.lib_sum2;
+  size += other.size;
 }
 
 bool RawBoard::Chain::IsCaptured () const {
@@ -449,7 +452,7 @@ void RawBoard::update_neighbour (Player player, Vertex v, Vertex nbr_v) {
       remove_chain (nbr_v);
   } else {
     if (chain_id [nbr_v] != chain_id [v]) {
-      if (chain_at(v).lib_cnt > chain_at(nbr_v).lib_cnt) {
+      if (chain_at(v).size > chain_at(nbr_v).size) {
         merge_chains (v, nbr_v);
       } else {
         merge_chains (nbr_v, v);
@@ -565,7 +568,7 @@ bool RawBoard::BothPlayerPass () const {
     (last_play [Player::White ()] == Vertex::Pass ());
 }
 
-int RawBoard::TrompTaylorScore() const {
+int RawBoard::TrompTaylorScore() const { // TODO make it efficient
   NatMap<Player, int> score (0);
 
   ForEachNat (Player, pl) {
@@ -627,6 +630,16 @@ Player RawBoard::PlayoutWinner () const {
 }
 
 
+RawBoard::Chain& RawBoard::chain_at (Vertex v) {
+  return chain[chain_id[v]];
+}
+
+const RawBoard::Chain& RawBoard::chain_at (Vertex v) const {
+  return chain[chain_id[v]];
+}
+
+// -----------------------------------------------------------------------------
+
 void RawBoard::check_empty_v () const {
   if (!kCheckAsserts) return;
 
@@ -652,16 +665,6 @@ void RawBoard::check_empty_v () const {
   ForEachNat (Player, pl)
     ASSERT (exp_player_v_cnt [pl] == player_v_cnt [pl]);
 }
-
-RawBoard::Chain& RawBoard::chain_at (Vertex v) {
-  return chain[chain_id[v]];
-}
-
-const RawBoard::Chain& RawBoard::chain_at (Vertex v) const {
-  return chain[chain_id[v]];
-}
-
-// -----------------------------------------------------------------------------
 
 void RawBoard::check_hash () const {
   ASSERT (hash == recalc_hash ());
@@ -747,12 +750,6 @@ const Zobrist RawBoard::zobrist[1] = { Zobrist () };
 
 #undef vertex_for_each_4_nbr
 #undef vertex_for_each_diag_nbr
-
-
-void RawBoard::AlignHack (RawBoard& board) {
-  int xxx = board.komi_inverse;
-  unused(xxx);
-}
 
 
 // -----------------------------------------------------------------------------
