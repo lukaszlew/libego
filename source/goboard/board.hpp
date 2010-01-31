@@ -198,6 +198,7 @@ private:
     void SubLib (Vertex v);
     void Merge (const Chain& other);
     bool IsCaptured () const;
+    bool IsInAtari () const;
   };
 
   Chain& chain_at (Vertex v);

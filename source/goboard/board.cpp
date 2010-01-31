@@ -165,6 +165,11 @@ bool RawBoard::Chain::IsCaptured () const {
   return lib_cnt == 0;
 }
 
+bool RawBoard::Chain::IsInAtari () const {
+  return lib_cnt * lib_sum2 == lib_sum * lib_sum;
+}
+
+
 // -----------------------------------------------------------------------------
 
 
@@ -415,7 +420,10 @@ void RawBoard::PlayLegal (Player player, Vertex v) { // TODO test with move
   if (nbr_cnt[v].player_cnt_is_max (player.Other())) {
     vertex_for_each_4_nbr (v, nbr_v, chain_at(nbr_v).SubLib (v));
 
-    play_eye_legal (v);
+    vertex_for_each_4_nbr (v, nbr_v, {
+      if ((chain_at(nbr_v).IsCaptured ()))
+        remove_chain (nbr_v);
+    });
     // if captured exactly one stone (and this was eye) then Ko
     if (last_empty_v_cnt == empty_v_cnt) ko_v = empty_v [empty_v_cnt - 1];
   } else {
@@ -448,15 +456,6 @@ void RawBoard::update_neighbour (Player player, Vertex v, Vertex nbr_v) {
       }
     }
   }
-}
-
-
-no_inline
-void RawBoard::play_eye_legal (Vertex v) {
-  vertex_for_each_4_nbr (v, nbr_v, {
-    if ((chain_at(nbr_v).IsCaptured ()))
-      remove_chain (nbr_v);
-  });
 }
 
 
