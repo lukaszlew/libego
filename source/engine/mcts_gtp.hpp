@@ -32,16 +32,10 @@ private:
     gtp.RegisterGfx ("ShowLastPlayout", "20", this, &MctsGtp::CShowLastPlayout);
 
 
-    gtp.RegisterGfx ("McMc.Ownage", "", this, &MctsGtp::CMcmcOwnage);
-    gtp.RegisterGfx ("McMc.Reset", "", this, &MctsGtp::CMcmcReset);
-    gtp.RegisterGfx ("McMc.Show", "1", this, &MctsGtp::CShowMcmc);
-    gtp.RegisterGfx ("McMc.Show", "2", this, &MctsGtp::CShowMcmc);
-
   }
 
   void RegisterParams () {
     string tree  = "param.tree";
-    string mcmc  = "param.mcmc";
     string other = "param.other";
 
     gtp.RegisterParam (other, "genmove_playouts",     &Param::genmove_playouts);
@@ -57,27 +51,6 @@ private:
     gtp.RegisterParam (tree, "rave_use",        &Param::tree_rave_use);
     gtp.RegisterParam (tree, "stat_bias",       &Param::tree_stat_bias);
     gtp.RegisterParam (tree, "rave_bias",       &Param::tree_rave_bias);
-
-
-    gtp.RegisterParam (mcmc, "update",          &Param::mcmc_update);
-    gtp.RegisterParam (mcmc, "update_fraction", &Param::mcmc_update_fraction);
-    gtp.RegisterParam (mcmc, "use",             &Param::mcmc_use);
-    gtp.RegisterParam (mcmc, "max_moves",       &Param::mcmc_max_moves);
-    gtp.RegisterParam (mcmc, "stat_bias",       &Param::mcmc_stat_bias);
-    gtp.RegisterParam (mcmc, "rave_bias",       &Param::mcmc_rave_bias);
-    gtp.RegisterParam (mcmc, "explore_coeff",   &Param::mcmc_explore_coeff);
-
-
-
-
-//     gtp.RegisterParam (cmd2, "resign_mean",        &Param::resign_mean);
-
-//     string d2gtp = "d2gtp-params";
-//     gtp.RegisterParam (d2gtp, "ucb_coeff", &Param::uct_explore_coeff);
-//     gtp.RegisterParam (d2gtp, "mcts_bias", &Param::mcts_bias);
-//     gtp.RegisterParam (d2gtp, "rave_bias", &Param::rave_bias);
-//     gtp.RegisterParam (d2gtp, "mature_at", &Param::mature_update_count);
-//     gtp.RegisterParam (d2gtp, "playouts_per_genmove", &Param::genmove_playouts);
   }
 
   void Cclear_board (Gtp::Io& io) {
@@ -141,46 +114,6 @@ private:
     io.CheckEmpty ();
     mcts_engine.LastPlayoutGfx(n).Report (io);
   }
-
-  void CShowMcmc (Gtp::Io& io) {
-    int level = io.Read<int> ();
-    io.CheckEmpty ();
-    if (level != 1 && level != 2) {
-      io.SetError ("bad level");
-      return;
-    }
-
-    Gtp::GoguiGfx gfx;
-    mcts_engine.playout.mcmc.MoveValueGfx (mcts_engine.full_board, &gfx, level);
-    gfx.Report (io);
-  }
-
-  void CMcmcOwnage (Gtp::Io& io) {
-    io.CheckEmpty ();
-
-    Gtp::GoguiGfx gfx;
-    //mcts_engine.playout.mcmc.OwnageGfx (&gfx);
-    gfx.Report (io);
-  }
-
-  void CMcmcReset (Gtp::Io& io) {
-    io.CheckEmpty ();
-    mcts_engine.playout.mcmc.Reset ();
-  }
-
-  void CShowMcmcProb (Gtp::Io& io) {
-    Move   pre_move = io.Read<Move> ();
-    Player player   = io.Read<Player> ();
-    io.CheckEmpty ();
-
-    Gtp::GoguiGfx gfx;
-//     mcts_engine.playout.mcmc.MoveProbGfx (pre_move,
-//                                           player,
-//                                           mcts_engine.full_board,
-//                                           &gfx);
-    gfx.Report (io);
-  }
-
 
 private:
   Engine& mcts_engine;

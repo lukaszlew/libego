@@ -13,12 +13,10 @@ public:
 
   void Reset () {
     mcts.Reset ();
-    mcmc.Reset ();
   }
  
   Move Genmove () {
     if (Param::reset_tree_on_genmove) mcts.Reset ();
-    mcmc.Reset ();
 
     Player player = base_board.ActPlayer ();
 
@@ -42,7 +40,6 @@ public:
   void DoOnePlayout () {
     // Prepare simulation board and tree iterator.
     play_board.Load (base_board);
-    mcmc.NewPlayout ();
     playout_moves.clear();
 
 
@@ -56,7 +53,6 @@ public:
       Move m = Move::Invalid ();
 
       if (!m.IsValid()) m = mcts.ChooseMove (play_board);
-      if (!m.IsValid()) m = mcmc.ChooseMove (play_board);
       if (!m.IsValid()) m = ChooseLocalMove ();
       if (!m.IsValid()) m = play_board.RandomLightMove (random);
 
@@ -73,14 +69,6 @@ public:
 
     // update models
     mcts.UpdateTraceRegular (score);
-
-
-    // TODO remove stupid LastMove2
-    mcmc.Update (score,
-                 base_board.LastMove2(),
-                 base_board.LastMove(),
-                 playout_moves);
-
   }
 
 
@@ -136,7 +124,6 @@ private:
 
   static const bool kCheckAsserts = false;
   Mcts mcts;
-  Mcmc mcmc;
 
 public:
   friend class MctsGtp;
