@@ -20,9 +20,6 @@
  *  Boston, MA  02110-1301  USA                                              *
  *                                                                           *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-namespace Mcts {
-  class Judge;
-}
 
 class MctsEngine {
 public:
@@ -33,7 +30,7 @@ public:
     playout(random, model),
     time_left (0.0),
     time_stones (-1),
-    playouts_per_second (50000)
+    playouts_per_second (10000)
   {
   }
 
@@ -129,9 +126,8 @@ public:
 
   void DoNPlayouts (uint n, Player first_player) {
     MctsNode& act_root = tree.FindRoot (full_board);
-    model.SyncWithBoard();
     rep (ii, n) {
-      tt.Reset (act_root);
+      tt.NewPlayout (act_root);
       playout.DoOnePlayout (tt, full_board, first_player);
     }
   }
@@ -183,7 +179,6 @@ private:
 
 private:
   friend class MctsGtp;
-  friend class Mcts::Judge;
 
   // base board
   Board full_board;
@@ -195,7 +190,7 @@ private:
   M::Model model;
   Tree tree;
   TT tt;
-  
+
   // playout
   FastRandom random;
   MctsPlayout playout;

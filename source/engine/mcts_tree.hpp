@@ -305,7 +305,7 @@ struct Tree {
 // TODO merge with tree
 
 struct TT {
-  void Reset (MctsNode& playout_root) {
+  void NewPlayout (MctsNode& playout_root) {
     trace.clear();
     trace.push_back (&playout_root);
     move_history.clear ();
