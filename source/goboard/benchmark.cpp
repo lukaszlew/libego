@@ -5,32 +5,27 @@
 #include "benchmark.hpp"
 
 #include "fast_timer.hpp"
-#include "playout.hpp"
 #include "utils.hpp"
 
 namespace Benchmark {
 
-  static const RawBoard empty_board;
-  int move_count = 0;
+  uint move_count = 0;
+  RawBoard empty_board;
+  RawBoard board;
+  FastRandom random (123);
 
   void DoPlayouts (uint playout_cnt, NatMap<Player, uint>* win_cnt) {
-    static RawBoard playout_board;
-    static FastRandom random (123);
-    FastStack <Move, RawBoard::kArea * 3> move_history;
     rep (ii, playout_cnt) {
-      playout_board.Load (empty_board);
-      move_history.Clear();
-      if (DoLightPlayout (playout_board, random, move_history)) {
-        (*win_cnt) [playout_board.PlayoutWinner ()] ++;
-        move_count += move_history.Size();
+      board.Load (empty_board);
+      while (!board.BothPlayerPass ()) {
+        Player pl = board.ActPlayer ();
+        Vertex v  = board.RandomLightMove (pl, random);
+        board.PlayLegal (pl, v);
       }
-    }
 
-    // This line does nothing, ignore it.
-    // This is for a stupid g++ to force aligning(?)
-    // I will buy a bear to somebody who explains 
-    // why its removeal drops performance by more than 5%.
-    RawBoard::AlignHack (playout_board);
+      (*win_cnt) [board.PlayoutWinner ()] ++;
+      move_count += board.MoveCount();
+    }
   }
 
   string Run (uint playout_cnt) {
@@ -58,8 +53,7 @@ namespace Benchmark {
         << 1000000.0 / cc_per_playout  << " kpps/GHz (clock independent)" << endl
         << win_cnt [Player::Black ()] << "/" << win_cnt [Player::White ()]
         << " (black wins / white wins)" << endl
-        << "AVG moves/playout = " << move_count / playouts_finished << endl
-        << "too long playouts = " << playout_cnt - playouts_finished << endl;
+        << "AVG moves/playout = " << move_count / playouts_finished << endl;
 
     return ret.str();
   }

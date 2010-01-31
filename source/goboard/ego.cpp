@@ -15,5 +15,4 @@
 #include "hash.cpp"
 #include "board.cpp"
 
-#include "playout.cpp"
 #include "benchmark.cpp"
