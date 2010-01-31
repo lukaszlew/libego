@@ -12,8 +12,8 @@
 namespace Coord {
   bool IsOk (int coord);
 
-  std::string RowToGtpString (int row);
-  std::string ColumnToGtpString (int column);
+  std::string RowToGtpString (uint row);
+  std::string ColumnToGtpString (uint column);
   int RowOfGtpInt (int r);
   int ColumnOfGtpChar (char c);
 }
@@ -26,6 +26,7 @@ public:
   explicit Vertex() {}; // TODO remove it
 
   static Vertex Pass();
+  static Vertex Any(); // NatMap doesn't work with Invalid
 
   static Vertex OfCoords (int row, int column);
   static Vertex OfGtpString (const std::string& s);
@@ -54,11 +55,25 @@ public:
 
   // Other.
 
-  static const uint kBound = (board_size + 2) * (board_size + 2);
+  static const uint kBound = (board_size + 2) * (board_size + 2) + 2;
+  // board with guards + pass + any
 
 private:
   friend class Nat <Vertex>;
   explicit Vertex (uint raw);
 };
 
+#define for_each_8_nbr(center_v, nbr_v, block) {                \
+    Vertex nbr_v;                                               \
+    nbr_v = center_v.N (); block;                               \
+    nbr_v = center_v.W (); block;                               \
+    nbr_v = center_v.E (); block;                               \
+    nbr_v = center_v.S (); block;                               \
+    nbr_v = center_v.NW (); block;                              \
+    nbr_v = center_v.NE (); block;                              \
+    nbr_v = center_v.SW (); block;                              \
+    nbr_v = center_v.SE (); block;                              \
+  }
+
+// -----------------------------------------------------------------------------
 #endif

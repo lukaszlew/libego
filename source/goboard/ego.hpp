@@ -8,7 +8,6 @@
 #include "utils.hpp"
 #include "nat.hpp"
 
-#include "fast_pool.hpp"
 #include "fast_timer.hpp"
 #include "fast_random.hpp"
 #include "fast_stack.hpp"
@@ -20,7 +19,6 @@
 
 #include "hash.hpp"
 #include "board.hpp"
-#include "full_board.hpp"
 
 #include "playout.hpp"
 #include "benchmark.hpp"

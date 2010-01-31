@@ -17,6 +17,7 @@ public:
     sample_count       = prior_count;
     sample_sum         = prior_count * prior_mean;
     square_sample_sum  = prior_count * prior_mean * prior_mean * 2.0;
+    ucb = 1.0E20;
   }
 
   void update (float sample) {
@@ -50,6 +51,15 @@ public:
 
   float precision (float bias = 0.0) const {
     return 1.0 / (variance() / update_count () + bias);
+  }
+
+  void UpdateUcb (Player pl, float explore_coeff) {
+    ucb = pl.SubjectiveScore (mean());
+    ucb += explore_coeff / sqrt (update_count());
+  }
+
+  float Ucb () {
+    return ucb;
   }
 
   static float SlowMix (const Stat& stat1, float b1, const Stat& stat2, float b2) {
@@ -102,6 +112,29 @@ private:
   float sample_count;
   float sample_sum;
   float square_sample_sum;
+  float ucb;
+};
+
+// -----------------------------------------------------------------------------
+
+struct Stat2 {
+  Stat stat;
+  Stat rave;
+
+  float McmcMix () const {
+    return
+      Stat::Mix (stat, Param::mcmc_stat_bias,
+                 rave, Param::mcmc_rave_bias) +
+      Param::mcmc_explore_coeff / sqrt(stat.update_count ());
+  }
+
+  string ToString () const {
+    ostringstream out;
+    out << stat.to_string () << " ++ " << rave.to_string ()
+        << " -> " << McmcMix ();
+    return out.str();
+  }
+
 };
 
 #endif

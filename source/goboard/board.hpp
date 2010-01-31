@@ -10,11 +10,11 @@
 #include "color.hpp"
 
 
-class Board {
+class RawBoard {
 public:
 
   // Constructs empty board.
-  Board ();
+  RawBoard ();
 
   // -------------------------------------------------------
   // Quesring board state
@@ -22,10 +22,10 @@ public:
   // Return color of board vertex
   Color ColorAt (Vertex v) const;
 
-  // Returs array of Vertices that are empty.
+  // Returs ith empty Vertex.
   Vertex EmptyVertex (uint ii) const;
 
-  // Length of the array return by EmptyVertices()
+  // Number of Empty board Vertices.
   uint EmptyVertexCount () const;
 
   // Returns player on move.
@@ -38,9 +38,13 @@ public:
   Vertex LastVertex () const;
 
   Move LastMove () const;
+  Move LastMove2 () const;
 
   // Return number of already played moves.
   uint MoveCount () const;
+
+  // Number of moves played at a particular location.
+  uint PlayCount (Vertex v) const;
 
   // Returns true if both players pass.
   bool BothPlayerPass () const;
@@ -48,7 +52,7 @@ public:
   // Positional hash (just color of stones)
   Hash PositionalHash () const;
 
-  // Returns vertex forbidden by simple ko rule or Vertex::Invalid()
+  // Returns vertex forbidden by simple ko rule or Vertex::Any()
   Vertex KoVertex () const;
 
   // Gets the komi value. Positive means adventage for white.
@@ -61,7 +65,7 @@ public:
   // Fast playout functions
 
   // Loads save_board into this board.
-  void Load (const Board& save_board);
+  void Load (const RawBoard& save_board);
 
   // Sets player on move. Play-undo will forget this set.(use pass)
   void SetActPlayer (Player);
@@ -70,15 +74,19 @@ public:
   bool IsEyelike (Player player, Vertex v) const;
   bool IsEyelike (Move move) const;
 
-  // Returns false for simple ko and single stone suicide.
-  // Returns true despite bigger suicides and superko violation.
-  bool IsPseudoLegal (Player player, Vertex v) const;
-  bool IsPseudoLegal (Move move) const;
+  // Returns false for simple ko and suicides.
+  // Returns true despite superko violation.
+  bool IsLegal (Player player, Vertex v) const;
+  bool IsLegal (Move m) const;
+
+  // Returns a random light playout move. Returns pass if no light move found.
+  Vertex RandomLightMove (Player player, FastRandom& random) const;
+  Move RandomLightMove (FastRandom& random) const;
 
   // Plays a move, returns false if move was large suicide.
-  // Assumes IsPseudoLegal (player, v) - Do not support single stone suicides.
-  bool PlayPseudoLegal (Player player, Vertex v);
-  bool PlayPseudoLegal (Move move);
+  // Assumes IsLegal (player, v) - Do not support suicides.
+  void PlayLegal (Player player, Vertex v);
+  void PlayLegal (Move move);
 
   // Difference in (number of stones + number of eyes) of each player - komi.
   // See TrompTaylorScore.
@@ -105,6 +113,10 @@ public:
   // mercy heuristic.
   int StoneScore () const;
 
+  
+  // -1 if white's eye, +1 if black's eye, 0 otherwise.
+  int EyeScore (Vertex v) const;
+
   // Winner according to StoneScore.
   Player StoneWinner () const;
 
@@ -127,12 +139,7 @@ private:
 
   Hash recalc_hash () const;
 
-  bool eye_is_ko (Player player, Vertex v) const;
-  bool eye_is_suicide (Vertex v) const;
-
-  void basic_play (Player player, Vertex v);
-  bool play_not_eye (Player player, Vertex v);
-  void play_eye_legal (Player player, Vertex v);
+  void play_eye_legal (Vertex v);
 
   void update_neighbour (Player player, Vertex v, Vertex nbr_v);
   void merge_chains (Vertex v_base, Vertex v_new);
@@ -210,16 +217,54 @@ private:
   // Incremantal set of empty Vertices.
   // TODO Merge this four members into NatSet
   uint                         empty_v_cnt;
-  uint                         last_empty_v_cnt;
   Vertex                       empty_v [kArea];
   NatMap<Vertex, uint>         empty_pos;
+
+  NatMap<Vertex, uint>         play_count;
 
   static const Zobrist zobrist[1];
 
 public:
   // This function does nothing. Read comment in benchmark.cpp.
-  static void AlignHack(Board&);
+  static void AlignHack(RawBoard&);
 };
+
+// -----------------------------------------------------------------------------
+
+class Board : public RawBoard {
+public:
+
+  // Clears the board.
+  void Clear();
+
+  // Returns legality of move. Implemented by calling Play on a board copy.
+  // Includes positional superko detection.
+  // Very slow.
+  bool IsReallyLegal (Move move) const;
+
+  // Play the move. Assert it is legal.
+  void PlayLegal (Player pl, Vertex v);
+  void PlayLegal (Move move);
+
+  // Undo move.
+  // Very slow.
+  bool Undo ();
+
+  // Loads position (and history) from other board.
+  void Load (const Board& save_board);
+
+  // Returns list of played moves.
+  const vector<Move>& Moves () const;
+
+private:
+
+  bool IsHashRepeated ();
+
+  static const bool kCheckAsserts = false;
+
+  vector<Move> moves;
+};
+
 
 #define empty_v_for_each(board, vv, i) {                                \
     Vertex vv = Vertex::Invalid();                                      \

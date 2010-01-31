@@ -27,6 +27,7 @@
 #include <cmath>
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <vector>
 
@@ -35,16 +36,22 @@
 #include "ego.hpp"
 #include "to_string.hpp"
 
+Gtp::ReplWithGogui gtp;
+
+static const bool kCheckAsserts = false;
+
 // local hard-include
+#include "param.hpp"
 #include "stat.hpp"
 #include "logger.hpp"
 
+#include "time_control.hpp"
 #include "mcts_tree.hpp"
+#include "mcts_mcmc.hpp"
 #include "mcts_playout.hpp"
-#include "mcts_engine.hpp"
+#include "engine.hpp"
 #include "mcts_gtp.hpp"
 
-#include "experiments.cpp"
 
 // TODO automatize through CMake (and add git SHA1)
 #ifndef VERSION
@@ -61,16 +68,16 @@ int main(int argc, char** argv) {
   // no buffering to work well with gogui
   setbuf (stdout, NULL);
   setbuf (stderr, NULL);
+  srand48 (123);
 
-  Gtp::ReplWithGogui gtp;
 
   gtp.RegisterStatic("name", "Libego");
   gtp.RegisterStatic("version", STRING(VERSION));
   gtp.RegisterStatic("protocol_version", "2");
   gtp.Register ("benchmark", Cbenchmark);
 
-  MctsEngine mcts_engine;
-  MctsGtp mcts_gtp (gtp, mcts_engine);
+  Engine& engine = *(new Engine());
+  MctsGtp mcts_gtp (engine);
 
   reps (ii, 1, argc) {
     if (ii == argc-1 && string (argv[ii]) == "gtp") continue;

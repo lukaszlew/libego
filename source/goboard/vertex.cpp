@@ -15,11 +15,13 @@ namespace Coord {
     return static_cast <uint> (coord) < board_size; 
   }
 
-  string RowToGtpString (int row) {
+  string RowToGtpString (uint row) {
+    CHECK (row < board_size);
     return ToString (board_size - row);
   }
 
-  string ColumnToGtpString (int column) {
+  string ColumnToGtpString (uint column) {
+    CHECK (column < board_size);
     return ToString (col_tab [column]);
   }
 
@@ -43,7 +45,11 @@ Vertex::Vertex (uint raw) : Nat <Vertex> (raw) {
 }
 
 Vertex Vertex::Pass() {
-  return Vertex (0); // TODO change it
+  return Vertex (kBound - 2);
+}
+
+Vertex Vertex::Any() {
+  return Vertex (kBound - 1);
 }
 
 Vertex Vertex::OfCoords (int row, int column) {
@@ -110,7 +116,9 @@ Vertex Vertex::SE() const { return S().E(); }
 string Vertex::ToGtpString() const {
   if (*this == Invalid()) return "invalid";
   if (*this == Pass())    return "pass";
+  if (*this == Any())     return "any";
 
+  CHECK (IsOnBoard ());
   return
     Coord::ColumnToGtpString (GetColumn()) +
     Coord::RowToGtpString    (GetRow());

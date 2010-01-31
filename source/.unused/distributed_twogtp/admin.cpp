@@ -11,6 +11,8 @@
 #include "gtp_process.hpp"
 #include "test.hpp"
 
+#include "CBAST.h"
+
 #include "admin.hpp"
 
 Admin::Admin (Database& db) : db (db)
@@ -46,10 +48,7 @@ void Admin::Run ()
   gtp.Register ("add_experiment", this, &Admin::CAddExperiment);
   gtp.Register ("close_all_experiments", this, &Admin::CCloseAllExperiments);
 
-  gtp.Register ("add_param", this, &Admin::CAddParam);
-
   gtp.Register ("loop_add_games", this, &Admin::CLoopAddGames);
-  gtp.Register ("add_games",      this, &Admin::CAddGames);
 
   gtp.Register ("extract_csv", this, &Admin::CExtractCsv);
 
@@ -105,22 +104,28 @@ void Admin::CSetExperimentDescription (Gtp::Io& io) {
 }
 
 void Admin::CAddExperimentParam (Gtp::Io& io) {
-  QString name = QString::fromStdString (io.Read<std::string>());
-  io.CheckEmpty ();
-  experiment_params.append(name);
+  Param p;
+  p.name = QString::fromStdString (io.Read<std::string>());
+  p.min_value = io.Read<double>();
+  p.max_value = io.Read<double>();
+  p.SetFun (QString::fromStdString (io.Read<std::string>()));
+  io.CheckEmpty();
+  experiment_params.append (p);
 }
 
 void Admin::CAddExperiment (Gtp::Io& io)
 {
   QString game_setup = QString::fromStdString (io.Read<std::string>());
   io.CheckEmpty();
+  QStringList ps;
+  foreach (const Param& param, experiment_params) ps.append (param.name);
   experiment_id = db.AddExperiment (game_setup, first_engine, second_engine,
-                                    experiment_description, experiment_params);
+                                    experiment_description, ps);
   CHECK (experiment_id > 0);
   first_engine = "";
   second_engine = "";
   experiment_description = "";
-  experiment_params.clear();
+  // experiment_params.clear(); // TODO solve it better
 }
 
 void Admin::CCloseAllExperiments (Gtp::Io& io) {
@@ -129,76 +134,78 @@ void Admin::CCloseAllExperiments (Gtp::Io& io) {
 }
 
 
-void Admin::CAddParam (Gtp::Io& io) {
-  int num = io.Read<int> ();
-  if (num != 1 && num != 2) {
-    io.SetError ("wronge engine number");
-    return;
-  }
-  QString name  = QString::fromStdString (io.Read<std::string>());
-  bool for_first_engine = num == 1;
-  while (true) {
-    QString value = QString::fromStdString (io.Read<std::string>(""));
-    if (value == "") break;
-    params [qMakePair (for_first_engine, name)] . append (value);
-  }
-}
-
-void Admin::SetPvBoth () {
+void Admin::SetPvBastFirst (CBAST& bast, int bast_id) {
   pv_first.clear();
   pv_second.clear();
-  QPair <bool, QString> param;
-  foreach (param, params.keys()) {
-    QString value = params [param] [rand() % params [param].size()];
-    if (param.first) {
-      pv_first.append (qMakePair(param.second, value));
-    } else {
-      pv_second.append (qMakePair(param.second, value));
-    }
-  }
-}
 
-void Admin::CAddGames (Gtp::Io& io)
-{
-  int game_count = io.Read<int>();
-  io.CheckEmpty();
-  
-  int game_ok;
-  for (game_ok = 0; game_ok < game_count; game_ok++) {
-    SetPvBoth ();
-    int game_id = db.AddGame (experiment_id, game_ok % 2 == 0, pv_first, pv_second);
-    if (game_id < 0) break;
+  std::vector<double> bast_v = bast.NextSample (bast_id);
+  uint ii = 0;
+
+  foreach (Param param, experiment_params) {
+    CHECK (ii < bast_v.size());
+    pv_first.append (qMakePair (param.name,
+                                QString::number (param.OfBast(bast_v[ii]))));
+    qDebug () << pv_first.last();
+    ii += 1;
   }
 
-  if (game_ok != game_count)
-    io.SetError ("");
+  CHECK (ii == bast_v.size());
 }
 
 
 void Admin::CLoopAddGames (Gtp::Io& io)
 {
   io.CheckEmpty();
-  
+
+  CHECK (experiment_params.size() > 0);
+  CBAST bast (experiment_params.size(), 1.0);
+  QMap <int, int> bast_id_of_game_id;
+  int bast_id = 0;
+
   int goal = 10;
   QString last_finished_at = "1982";
+  QStringList params = db.GetParams (experiment_id);
+
+  {
+    CHECK (params.size() == experiment_params.size());
+    for (int ii = 0; ii < params.size(); ii += 1) {
+      CHECK (params[ii] == experiment_params[ii].name);
+    }
+  }
 
   while (true) {
     QList <GameResult> results =
-      db.GetNewGameResults (experiment_id, true, &last_finished_at);
+      db.GetNewGameResults (experiment_id, &last_finished_at, params);
+
     foreach (const GameResult& r, results) {
       qDebug () << "New results:" << r.ToString().c_str();
+      CHECK (bast_id_of_game_id.contains (r.id));
+      bast.OnOutcome (r.victory ? CResults::Win : CResults::Loss,
+                      bast_id_of_game_id [r.id]);
     }
+
     int unclaimed_games = db.GetUnclaimedGameCount (experiment_id);
     if (unclaimed_games < goal / 2) goal *= 2;
-    qDebug() << "unclaimed / goal = " << unclaimed_games << " / " << goal;
+
+    std::vector<double> best;
+    bast.MaxParameter (best);
+    qDebug()
+      << "unclaimed / goal = " << unclaimed_games << " / " << goal;
+    for (int ii = 0; ii < int(best.size()); ii += 1) {
+      qDebug() << experiment_params [ii].name << " "
+               << experiment_params [ii].OfBast (best[ii]);
+    }
 
     int add_games = goal - unclaimed_games;
     if (add_games < 0) add_games = 0;
     add_games = add_games / 2 * 2; // parity
 
     for (int i = 0; i < add_games; i+=1) {
-      SetPvBoth ();
-      int game_id = db.AddGame (experiment_id, i%2, pv_first, pv_second);
+      bast_id += 1;
+      //SetPvBoth ();
+      SetPvBastFirst (bast, bast_id);
+      int game_id = db.AddGame (experiment_id, i%2, pv_first);
+      bast_id_of_game_id [game_id] = bast_id;
       qDebug () << "new game; id = " << game_id;
       if (game_id < 0) {
         io.SetError ("Can't add game");
@@ -241,14 +248,18 @@ bool Admin::AddEngine (QString name, QString config, QString command_line)
 
 
 void Admin::CExtractCsv (Gtp::Io& io) {
-  QString experiment = QString::fromStdString (io.Read<std::string>());
-  int num = io.Read<int> ();
-  if (num != 1 && num != 2) {
-    io.SetError ("wronge engine number");
-    return;
-  }
+  int experiment_id = io.Read<int>();
   QString file_name  = QString::fromStdString (io.Read<std::string>());
   io.CheckEmpty();
+
+  QString since = "1982";
+  QStringList params = db.GetParams (experiment_id);
+  QList <GameResult> results;
+  results = db.GetNewGameResults (experiment_id, &since, params);
+  if (results.size () == 0) {
+    io.SetError ("no reults in this experiment");
+    return;
+  }
 
   QFile file(file_name);
   if (!file.open (QIODevice::WriteOnly | QIODevice::Text)) {
@@ -257,8 +268,11 @@ void Admin::CExtractCsv (Gtp::Io& io) {
   }
 
   QTextStream out(&file);
-  if (!db.DumpCsv (experiment, out, num == 1)) {
-    io.SetError ("can't extract CSV");
-    return;
+  // header
+  foreach (const QString &p, params) out << p << ", ";
+  out << "victory" << endl;
+  // lines
+  foreach (const GameResult& r, results) {
+    out << r.ToString().c_str() << endl;
   }
 }

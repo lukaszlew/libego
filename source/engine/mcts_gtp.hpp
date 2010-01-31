@@ -1,15 +1,15 @@
 class MctsGtp {
 public:
-  MctsGtp (Gtp::ReplWithGogui& gtp, MctsEngine& mcts_engine)
+  MctsGtp (Engine& mcts_engine)
   : mcts_engine (mcts_engine)
   {
-    RegisterCommands (gtp);
-    RegisterParams (gtp);
+    RegisterCommands ();
+    RegisterParams ();
   }
 
 private:
 
-  void RegisterCommands (Gtp::ReplWithGogui& gtp) {
+  void RegisterCommands () {
     gtp.Register ("boardsize",    this, &MctsGtp::Cboardsize);
     gtp.Register ("clear_board",  this, &MctsGtp::Cclear_board);
     gtp.Register ("komi",         this, &MctsGtp::Ckomi);
@@ -17,53 +17,67 @@ private:
     gtp.Register ("undo",         this, &MctsGtp::Cundo);
     gtp.Register ("genmove",      this, &MctsGtp::Cgenmove);
     gtp.Register ("showboard",    this, &MctsGtp::Cshowboard);
-    gtp.Register ("time_left",    this, &MctsGtp::CTimeLeft);
 
-    gtp.RegisterGfx ("Mcts.DoPlayouts",      "1", this, &MctsGtp::CDoPlayouts);
-    gtp.RegisterGfx ("Mcts.DoPlayouts",     "10", this, &MctsGtp::CDoPlayouts);
-    gtp.RegisterGfx ("Mcts.DoPlayouts",    "100", this, &MctsGtp::CDoPlayouts);
-    gtp.RegisterGfx ("Mcts.DoPlayouts",   "1000", this, &MctsGtp::CDoPlayouts);
-    gtp.RegisterGfx ("Mcts.DoPlayouts",  "10000", this, &MctsGtp::CDoPlayouts);
-    gtp.RegisterGfx ("Mcts.DoPlayouts", "100000", this, &MctsGtp::CDoPlayouts);
+    gtp.RegisterGfx ("DoPlayouts",      "1", this, &MctsGtp::CDoPlayouts);
+    gtp.RegisterGfx ("DoPlayouts",     "10", this, &MctsGtp::CDoPlayouts);
+    gtp.RegisterGfx ("DoPlayouts",    "100", this, &MctsGtp::CDoPlayouts);
+    gtp.RegisterGfx ("DoPlayouts",   "1000", this, &MctsGtp::CDoPlayouts);
+    gtp.RegisterGfx ("DoPlayouts",  "10000", this, &MctsGtp::CDoPlayouts);
+    gtp.RegisterGfx ("DoPlayouts", "100000", this, &MctsGtp::CDoPlayouts);
 
-    gtp.RegisterGfx ("Mcts.ShowTree",    "0 4", this, &MctsGtp::CShowTree);
-    gtp.RegisterGfx ("Mcts.ShowTree",   "10 4", this, &MctsGtp::CShowTree);
-    gtp.RegisterGfx ("Mcts.ShowTree",  "100 4", this, &MctsGtp::CShowTree);
-    gtp.RegisterGfx ("Mcts.ShowTree", "1000 4", this, &MctsGtp::CShowTree);
+    gtp.RegisterGfx ("ShowLastPlayout",  "4", this, &MctsGtp::CShowLastPlayout);
+    gtp.RegisterGfx ("ShowLastPlayout",  "8", this, &MctsGtp::CShowLastPlayout);
+    gtp.RegisterGfx ("ShowLastPlayout", "12", this, &MctsGtp::CShowLastPlayout);
+    gtp.RegisterGfx ("ShowLastPlayout", "16", this, &MctsGtp::CShowLastPlayout);
+    gtp.RegisterGfx ("ShowLastPlayout", "20", this, &MctsGtp::CShowLastPlayout);
 
-    gtp.RegisterGfx ("Mcts.ShowLastPlayout",  "4", this, &MctsGtp::CShowLastPlayout);
-    gtp.RegisterGfx ("Mcts.ShowLastPlayout",  "8", this, &MctsGtp::CShowLastPlayout);
-    gtp.RegisterGfx ("Mcts.ShowLastPlayout", "12", this, &MctsGtp::CShowLastPlayout);
-    gtp.RegisterGfx ("Mcts.ShowLastPlayout", "16", this, &MctsGtp::CShowLastPlayout);
-    gtp.RegisterGfx ("Mcts.ShowLastPlayout", "20", this, &MctsGtp::CShowLastPlayout);
+
+    gtp.RegisterGfx ("McMc.Ownage", "", this, &MctsGtp::CMcmcOwnage);
+    gtp.RegisterGfx ("McMc.Reset", "", this, &MctsGtp::CMcmcReset);
+    gtp.RegisterGfx ("McMc.Show", "1", this, &MctsGtp::CShowMcmc);
+    gtp.RegisterGfx ("McMc.Show", "2", this, &MctsGtp::CShowMcmc);
+
   }
 
-  void RegisterParams (Gtp::ReplWithGogui& gtp) {
-    string cmd_search  = "Mcts.Params.Search";
-    string cmd_genmove = "Mcts.Params.Genmove";
-    string cmd_logger  = "Mcts.Params.Logger";
+  void RegisterParams () {
+    string tree  = "param.tree";
+    string mcmc  = "param.mcmc";
+    string other = "param.other";
 
-    gtp.RegisterParam (cmd_search, "explore_coeff", &Param::uct_explore_coeff);
-    gtp.RegisterParam (cmd_search, "bias_stat",     &Param::mcts_bias);
-    gtp.RegisterParam (cmd_search, "bias_rave",     &Param::mcts_bias);
-    gtp.RegisterParam (cmd_search, "use_rave",      &Param::use_rave);
-    gtp.RegisterParam (cmd_search, "update_rave",   &Param::update_rave);
-    gtp.RegisterParam (cmd_search, "mature_at",     &Param::mature_update_count);
+    gtp.RegisterParam (other, "genmove_playouts",     &Param::genmove_playouts);
+    gtp.RegisterParam (other, "local_use",            &Param::use_local);
+    gtp.RegisterParam (other, "seed",                 &mcts_engine.playout.random.seed);
+    gtp.RegisterParam (other, "logger_is_active",     &mcts_engine.logger.is_active);
+    gtp.RegisterParam (other, "logger_directory",     &mcts_engine.logger.log_directory);
 
-    gtp.RegisterParam (cmd_genmove, "resign_mean",  &Param::resign_mean);
-    gtp.RegisterParam (cmd_genmove, "playouts",     &Param::genmove_playouts);
-    gtp.RegisterParam (cmd_genmove, "reset_tree",   &Param::reset_tree_on_genmove);
-    gtp.RegisterParam (cmd_genmove, "seed",         &mcts_engine.random.seed);
+    gtp.RegisterParam (tree, "use",             &Param::tree_use);
+    gtp.RegisterParam (tree, "max_moves",       &Param::tree_max_moves);
+    gtp.RegisterParam (tree, "explore_coeff",   &Param::tree_explore_coeff);
+    gtp.RegisterParam (tree, "rave_update",     &Param::tree_rave_update);
+    gtp.RegisterParam (tree, "rave_use",        &Param::tree_rave_use);
+    gtp.RegisterParam (tree, "stat_bias",       &Param::tree_stat_bias);
+    gtp.RegisterParam (tree, "rave_bias",       &Param::tree_rave_bias);
 
-    gtp.RegisterParam (cmd_logger, "is_active",     &mcts_engine.logger.is_active);
-    gtp.RegisterParam (cmd_logger, "log_directory", &mcts_engine.logger.log_directory);
 
-    string d2gtp = "d2gtp-params";
-    gtp.RegisterParam (d2gtp, "ucb_coeff", &Param::uct_explore_coeff);
-    gtp.RegisterParam (d2gtp, "mcts_bias", &Param::mcts_bias);
-    gtp.RegisterParam (d2gtp, "rave_bias", &Param::rave_bias);
-    gtp.RegisterParam (d2gtp, "mature_at", &Param::mature_update_count);
-    gtp.RegisterParam (d2gtp, "playouts_per_genmove", &Param::genmove_playouts);
+    gtp.RegisterParam (mcmc, "update",          &Param::mcmc_update);
+    gtp.RegisterParam (mcmc, "update_fraction", &Param::mcmc_update_fraction);
+    gtp.RegisterParam (mcmc, "use",             &Param::mcmc_use);
+    gtp.RegisterParam (mcmc, "max_moves",       &Param::mcmc_max_moves);
+    gtp.RegisterParam (mcmc, "stat_bias",       &Param::mcmc_stat_bias);
+    gtp.RegisterParam (mcmc, "rave_bias",       &Param::mcmc_rave_bias);
+    gtp.RegisterParam (mcmc, "explore_coeff",   &Param::mcmc_explore_coeff);
+
+
+
+
+//     gtp.RegisterParam (cmd2, "resign_mean",        &Param::resign_mean);
+
+//     string d2gtp = "d2gtp-params";
+//     gtp.RegisterParam (d2gtp, "ucb_coeff", &Param::uct_explore_coeff);
+//     gtp.RegisterParam (d2gtp, "mcts_bias", &Param::mcts_bias);
+//     gtp.RegisterParam (d2gtp, "rave_bias", &Param::rave_bias);
+//     gtp.RegisterParam (d2gtp, "mature_at", &Param::mature_update_count);
+//     gtp.RegisterParam (d2gtp, "playouts_per_genmove", &Param::genmove_playouts);
   }
 
   void Cclear_board (Gtp::Io& io) {
@@ -74,8 +88,8 @@ private:
   void Cgenmove (Gtp::Io& io) {
     Player player = io.Read<Player> ();
     io.CheckEmpty ();
-    Vertex v = mcts_engine.Genmove (player);
-    io.out << (v.IsValid() ? v.ToGtpString() : "resign");
+    Move m = mcts_engine.Genmove (player);
+    io.out << (m.IsValid() ? m.GetVertex().ToGtpString() : "resign");
   }
 
   void Cboardsize (Gtp::Io& io) {
@@ -119,14 +133,7 @@ private:
   void CDoPlayouts (Gtp::Io& io) {
     uint n = io.Read <uint> (Param::genmove_playouts);
     io.CheckEmpty();
-    mcts_engine.DoNPlayouts (n);
-  }
-
-  void CShowTree (Gtp::Io& io) {
-    uint min_updates  = io.Read <uint> ();
-    uint max_children = io.Read <uint> ();
-    io.CheckEmpty();
-    io.out << mcts_engine.TreeAsciiArt (min_updates, max_children);
+    mcts_engine.playout.DoNPlayouts (n);
   }
 
   void CShowLastPlayout (Gtp::Io& io) {
@@ -135,13 +142,46 @@ private:
     mcts_engine.LastPlayoutGfx(n).Report (io);
   }
 
-  void CTimeLeft (Gtp::Io& io) {
-    Player player = io.Read<Player> ();
-    float time = io.Read<float> ();
-    int stones = io.Read<int> ();
-    mcts_engine.TimeLeft (player, time, stones);
+  void CShowMcmc (Gtp::Io& io) {
+    int level = io.Read<int> ();
+    io.CheckEmpty ();
+    if (level != 1 && level != 2) {
+      io.SetError ("bad level");
+      return;
+    }
+
+    Gtp::GoguiGfx gfx;
+    mcts_engine.playout.mcmc.MoveValueGfx (mcts_engine.full_board, &gfx, level);
+    gfx.Report (io);
   }
 
+  void CMcmcOwnage (Gtp::Io& io) {
+    io.CheckEmpty ();
+
+    Gtp::GoguiGfx gfx;
+    //mcts_engine.playout.mcmc.OwnageGfx (&gfx);
+    gfx.Report (io);
+  }
+
+  void CMcmcReset (Gtp::Io& io) {
+    io.CheckEmpty ();
+    mcts_engine.playout.mcmc.Reset ();
+  }
+
+  void CShowMcmcProb (Gtp::Io& io) {
+    Move   pre_move = io.Read<Move> ();
+    Player player   = io.Read<Player> ();
+    io.CheckEmpty ();
+
+    Gtp::GoguiGfx gfx;
+//     mcts_engine.playout.mcmc.MoveProbGfx (pre_move,
+//                                           player,
+//                                           mcts_engine.full_board,
+//                                           &gfx);
+    gfx.Report (io);
+  }
+
+
 private:
-  MctsEngine& mcts_engine;
+  Engine& mcts_engine;
 };

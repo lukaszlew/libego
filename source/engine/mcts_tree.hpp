@@ -7,23 +7,6 @@ const bool mcts_tree_ac = true;
 
 // -----------------------------------------------------------------------------
 // TODO move to separate class and static object
-namespace Param {
-  static float uct_explore_coeff = 0.0;
-
-  static float mcts_bias = 0.0;
-  static float rave_bias = 0.001;
-  static bool  update_rave = true;
-  static bool  use_rave  = true;  
-
-  static float prior_update_count = 10.0;
-  static float prior_mean = 1.0;
-
-  static float mature_update_count = 10.0;
-
-  static float resign_mean = -0.95;
-  static float genmove_playouts = 100000;
-  static bool reset_tree_on_genmove = true; // TODO memory problems 
-};
 
 // -----------------------------------------------------------------------------
 
@@ -51,19 +34,25 @@ public:
 
   void RemoveChild (MctsNode* child_ptr);
 
-  void EnsureAllPseudoLegalChildren (Player pl, const Board& board);
+  bool ReadyToExpand () const;
 
-  void RemoveIllegalChildren (Player pl, const FullBoard& full_board);
+  void EnsureAllLegalChildren (Player pl, const Board& board);
+
+  void RemoveIllegalChildren (Player pl, const Board& full_board);
 
   // Child finding.
 
   MctsNode* FindChild (Move m);
 
-  const MctsNode& MostExploredChild (Player pl);
+  const MctsNode& MostExploredChild (Player pl) const;
+
+  MctsNode& BestRaveChild (Player pl);
 
   // Other.
   
   float SubjectiveMean() const;
+
+  float SubjectiveRaveValue (Player pl, float log_val) const;
 
 public:
 
@@ -116,6 +105,11 @@ void MctsNode::RemoveChild (MctsNode* child_ptr) {
   }
 }
 
+bool MctsNode::ReadyToExpand () const {
+  return stat.update_count() > 
+    Param::prior_update_count + Param::mature_update_count;
+}
+
 MctsNode* MctsNode::FindChild (Move m) {
   // TODO make invariant about haveChildren and has_all_legal_children
   Player pl = m.GetPlayer();
@@ -135,10 +129,8 @@ string MctsNode::ToString() const {
     << v.ToGtpString() << " " 
     << stat.to_string() << " "
     << rave_stat.to_string() << " -> "
-    << Stat::Mix (stat,
-                  Param::mcts_bias,
-                  rave_stat,
-                  Param::rave_bias)
+    << Stat::Mix (stat,      Param::tree_stat_bias,
+                  rave_stat, Param::tree_rave_bias)
     // << " - ("  << stat.precision (Param::mcts_bias) << " : "
     // << stat.precision (Param::rave_bias) << ")"
     // << Stat::SlowMix (stat,
@@ -182,7 +174,7 @@ string MctsNode::RecToString (float min_visit, uint max_children) const {
   return out.str ();
 }
 
-const MctsNode& MctsNode::MostExploredChild (Player pl) {
+const MctsNode& MctsNode::MostExploredChild (Player pl) const {
   const MctsNode* best = NULL;
   float best_update_count = -1;
 
@@ -199,22 +191,44 @@ const MctsNode& MctsNode::MostExploredChild (Player pl) {
   return *best;
 }
 
-void MctsNode::EnsureAllPseudoLegalChildren (Player pl, const Board& board) {
+
+MctsNode& MctsNode::BestRaveChild (Player pl) {
+  MctsNode* best_child = NULL;
+  float best_urgency = -100000000000000.0; // TODO infinity
+  const float log_val = log (stat.update_count());
+
+  ASSERT (has_all_legal_children [pl]);
+
+  BOOST_FOREACH (MctsNode& child, Children()) {
+    if (child.player != pl) continue;
+    float child_urgency = child.SubjectiveRaveValue (pl, log_val);
+    if (child_urgency > best_urgency) {
+      best_urgency = child_urgency;
+      best_child   = &child;
+    }
+  }
+
+  ASSERT (best_child != NULL); // at least pass
+  return *best_child;
+}
+
+
+void MctsNode::EnsureAllLegalChildren (Player pl, const Board& board) {
   if (has_all_legal_children [pl]) return;
   empty_v_for_each_and_pass (&board, v, {
-      // big suicides and superko nodes have to be removed from the tree later
-      if (board.IsPseudoLegal (pl, v))
+      // superko nodes have to be removed from the tree later
+      if (board.IsLegal (pl, v))
         AddChild (MctsNode(pl, v));
     });
   has_all_legal_children [pl] = true;
 }
 
-void MctsNode::RemoveIllegalChildren (Player pl, const FullBoard& full_board) {
+void MctsNode::RemoveIllegalChildren (Player pl, const Board& full_board) {
   ASSERT (has_all_legal_children [pl]);
 
   ChildrenList::iterator child = children.begin();
   while (child != children.end()) {
-    if (child->player == pl && !full_board.IsLegal (Move (pl, child->v))) {
+    if (child->player == pl && !full_board.IsReallyLegal (Move (pl, child->v))) {
       children.erase (child++);
     } else {
       ++child;
@@ -234,5 +248,165 @@ void MctsNode::Reset () {
 float MctsNode::SubjectiveMean () const {
   return player.SubjectiveScore (stat.mean ());
 }
+
+float MctsNode::SubjectiveRaveValue (Player pl, float log_val) const {
+  float value;
+
+  if (Param::tree_rave_use) {
+    value = Stat::Mix (stat,      Param::tree_stat_bias,
+                       rave_stat, Param::tree_rave_bias);
+  } else {
+    value = stat.mean ();
+  }
+
+  return
+    pl.SubjectiveScore (value) +
+    Param::tree_explore_coeff * sqrt (log_val / stat.update_count());
+}
+
+// -----------------------------------------------------------------------------
+
+struct Mcts {
+  Mcts () :
+    root (Player::White(), Vertex::Any ())
+  {
+    act_root = &root;
+    gtp.RegisterGfx ("MCTS.show",    "0 4", this, &Mcts::GtpShowTree);
+    gtp.RegisterGfx ("MCTS.show",   "10 4", this, &Mcts::GtpShowTree);
+    gtp.RegisterGfx ("MCTS.show",  "100 4", this, &Mcts::GtpShowTree);
+    gtp.RegisterGfx ("MCTS.show", "1000 4", this, &Mcts::GtpShowTree);
+  }
+
+  void Reset () {
+    root.Reset ();
+  }
+
+  void Sync (const Board& board) {
+    Board sync_board;
+    act_root = &root;
+    BOOST_FOREACH (Move m, board.Moves ()) {
+      act_root->EnsureAllLegalChildren (m.GetPlayer(), sync_board);
+      act_root = act_root->FindChild (m);
+      CHECK (sync_board.IsLegal (m));
+      sync_board.PlayLegal (m);
+    }
+    
+    Player pl = board.ActPlayer();
+    act_root->EnsureAllLegalChildren (pl, board);
+    act_root->RemoveIllegalChildren (pl, board);
+  }
+
+
+  Move BestMove (Player player) {
+    const MctsNode& best_node = act_root->MostExploredChild (player);
+
+    return
+      best_node.SubjectiveMean() < Param::resign_mean ?
+      Move::Invalid() :
+      Move (player, best_node.v);
+  }
+
+
+  void NewPlayout () {
+    trace.clear();
+    trace.push_back (act_root);
+    move_history.clear ();
+    move_history.push_back (act_root->GetMove());
+    tree_phase = Param::tree_use;
+    tree_move_count = 0;
+  }
+
+  void NewMove (Move m) {
+    move_history.push_back (m);
+  }
+
+  Move ChooseMove (Board& play_board) {
+    Player pl = play_board.ActPlayer();
+
+    if (!tree_phase || tree_move_count >= Param::tree_max_moves) {
+      return Move::Invalid();
+    }
+
+    if (!ActNode().has_all_legal_children [pl]) {
+      if (!ActNode().ReadyToExpand ()) {
+        tree_phase = false;
+        return Move::Invalid();
+      }
+      ASSERT (pl == ActNode().player.Other());
+      ActNode().EnsureAllLegalChildren (pl, play_board);
+    }
+
+    MctsNode& uct_child = ActNode().BestRaveChild (pl);
+    trace.push_back (&uct_child);
+    ASSERT (uct_child.v != Vertex::Any());
+    tree_move_count += 1;
+    return Move (pl, uct_child.v);
+  }
+  
+  void UpdateTraceRegular (float score) {
+    BOOST_FOREACH (MctsNode* node, trace) {
+      node->stat.update (score);
+    }
+
+    if (Param::tree_rave_update) {
+      UpdateTraceRave (score);
+    }
+  }
+
+  void UpdateTraceRave (float score) {
+    // TODO configure rave blocking through options
+
+
+    uint last_ii  = move_history.size () * 7 / 8; // TODO 
+
+    rep (act_ii, trace.size()) {
+      // Mark moves that should be updated in RAVE children of: trace [act_ii]
+      NatMap <Move, bool> do_update (false);
+      NatMap <Move, bool> do_update_set_to (true);
+
+      // TODO this is the slow and too-fixed part
+      // TODO Change it to weighting with flexible masking.
+      reps (jj, act_ii+1, last_ii) {
+        Move m = move_history [jj];
+        do_update [m] = do_update_set_to [m];
+        do_update_set_to [m] = false;
+        do_update_set_to [m.OtherPlayer()] = false;
+      }
+
+      // Do the update.
+      BOOST_FOREACH (MctsNode& child, trace[act_ii]->Children()) {
+        if (do_update [child.GetMove()]) {
+          child.rave_stat.update (score);
+        }
+      }
+    }
+  }
+
+  MctsNode& ActNode() {
+    ASSERT (trace.size() > 0);
+    return *trace.back ();
+  }
+
+
+  void GtpShowTree (Gtp::Io& io) {
+    uint min_updates  = io.Read <uint> ();
+    uint max_children = io.Read <uint> ();
+    io.CheckEmpty();
+    io.out << endl << act_root->RecToString (min_updates, max_children);
+  }
+
+
+private:
+
+  MctsNode root;
+  MctsNode* act_root;
+
+  vector <MctsNode*> trace;               // nodes in the path
+  vector <Move> move_history;
+  uint tree_move_count;
+public:
+  bool tree_phase;
+};
+
 
 #endif

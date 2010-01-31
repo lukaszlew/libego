@@ -1,14 +1,16 @@
 #include "boost/foreach.hpp"
 
 #include "gtp_gogui.hpp"
+#include <cmath>
 
 namespace Gtp {
 
 GoguiGfx::GoguiGfx () {
 }
 
+
 void GoguiGfx::SetInfluence (const string& vertex, float influence) {
-  if (influence != 0.0) {
+  if (influence != 0.0 && ! std::isnan (influence)) {
     ostringstream s;
     s << influence;
     gfx_output ["INFLUENCE"] += vertex + " " + s.str() + " ";

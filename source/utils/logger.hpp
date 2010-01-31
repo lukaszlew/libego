@@ -34,7 +34,7 @@ private:
 
 template <class T>
 void Logger::LogLine (const T& val) {
-  if (!is_active && out.is_open()) return;
+  if (!is_active || !out.is_open()) return;
   out << val << std::endl << std::flush;
 }
 

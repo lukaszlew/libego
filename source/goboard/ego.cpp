@@ -4,8 +4,6 @@
 
 #include "ego.hpp"
 
-#include "utils.cpp"
-
 #include "fast_timer.cpp"
 #include "fast_random.cpp"
 
@@ -16,7 +14,6 @@
 
 #include "hash.cpp"
 #include "board.cpp"
-#include "full_board.cpp"
 
 #include "playout.cpp"
 #include "benchmark.cpp"

@@ -5,7 +5,7 @@
 #ifndef NAT_H_
 #define NAT_H_
 
-#include "uint.hpp"
+#include "utils.hpp"
 
 // -----------------------------------------------------------------------------
 // For a use case look in player.h
@@ -43,11 +43,14 @@ class Nat {
 template <typename Nat, typename Elt>
 class NatMap {
  public:
-  NatMap (const Elt& init);
+  NatMap (const Elt& init = Elt());
   Elt& operator[] (Nat nat);
   const Elt& operator[] (Nat nat) const;
   void SetAll (const Elt& elt);
-  void SetToZero (); // Assumes POD of Elt, uses memcpy.
+  void SetAllToZero (); // Assumes POD of Elt, uses memset
+  void Scale (Elt min_val, Elt max_val);
+  void ScalePositive ();
+  void Load (const NatMap& other);
 
  private:
   Elt tab [Nat::kBound];

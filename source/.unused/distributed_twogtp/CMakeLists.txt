@@ -32,20 +32,28 @@ include_directories (${libego_SOURCE_DIR}/libgtp)
 link_directories    (${libego_BINARY_DIR}/libgtp)
 
 # -----------------------------------------------------------------------------
+# Remi's BAST optimizer
+
+add_subdirectory (remi)
+include_directories (remi)
+link_directories    (remi)
+
+
+# -----------------------------------------------------------------------------
 # d2g-worker
 
 add_executable (d2g-worker
-  main.cpp database.cpp gtp_process.cpp admin.cpp worker.cpp)
+  d2g-worker.cpp database.cpp gtp_process.cpp worker.cpp)
 
-target_link_libraries (d2g-worker utils ego gtp ${QT_LIBRARIES})
+target_link_libraries (d2g-worker utils ego gtp remi ${QT_LIBRARIES})
 install (TARGETS d2g-worker ${INSTALL_TARGETS_DEFAULT_ARGS})
 
 # -----------------------------------------------------------------------------
 # d2g-admin
 
 add_executable (d2g-admin
-  main.cpp database.cpp gtp_process.cpp admin.cpp worker.cpp)
+  d2g-admin.cpp database.cpp gtp_process.cpp admin.cpp)
 
-target_link_libraries (d2g-admin utils ego gtp ${QT_LIBRARIES})
+target_link_libraries (d2g-admin utils ego gtp remi ${QT_LIBRARIES})
 install (TARGETS d2g-admin ${INSTALL_TARGETS_DEFAULT_ARGS})
 

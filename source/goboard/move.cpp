@@ -14,19 +14,19 @@ Move::Move (Player player, Vertex vertex)
 Move::Move (int raw) : Nat<Move> (raw) {
 }
 
-Move Move::OtherPlayer () {
+Move Move::OtherPlayer () const {
   return Move::OfRaw (GetRaw() ^ 0x1);
 };
 
-Player Move::GetPlayer () { 
+Player Move::GetPlayer () const {
   return Player::OfRaw (GetRaw() & 0x1);
 }
 
-Vertex Move::GetVertex () { 
+Vertex Move::GetVertex () const { 
   return Vertex::OfRaw (GetRaw() >> 1) ; 
 }
 
-string Move::ToGtpString () {
+string Move::ToGtpString () const {
   return
     GetPlayer().ToGtpString() + " " +
     GetVertex().ToGtpString();

@@ -13,7 +13,7 @@ class Player : public Nat <Player> {
 public:
 
   // Constructors.
-
+  Player ();
   static Player Black ();
   static Player White ();
   static Player WinnerOfBoardScore (int score);
