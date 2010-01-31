@@ -49,7 +49,7 @@ public:
 
   void ClearBoard () {
     full_board.Clear ();
-    tree.Reset ();
+    mcts.Reset ();
     playout.mcmc.Reset ();
     logger.NewLog ();
     logger.LogLine ("clear_board");
@@ -78,7 +78,7 @@ public:
 
   Vertex Genmove (Player player) {
     if (Param::reset_tree_on_genmove) {
-      tree.Reset ();
+      mcts.Reset ();
     }
     playout.mcmc.Reset ();
 
@@ -93,7 +93,7 @@ public:
     //cerr << "Playouts: " << playouts << endl;
     DoNPlayouts (playouts, player);
 
-    //cerr << mcts.ToString (show_tree_min_updates, show_tree_max_children) << endl;
+    //cerr << mcts.ToString (show_mcts_min_updates, show_mcts_max_children) << endl;
 
     Vertex v = BestMove (player);
 
@@ -116,8 +116,8 @@ public:
     return full_board.ToAsciiArt();
   }
 
-  string TreeAsciiArt (float min_updates, float max_children) {
-    return tree.FindRoot (full_board).RecToString (min_updates, max_children);
+  string MctsAsciiArt (float min_updates, float max_children) {
+    return mcts.FindRoot (full_board).RecToString (min_updates, max_children);
   }
 
   void DoNPlayouts (uint n) {
@@ -125,10 +125,10 @@ public:
   }
 
   void DoNPlayouts (uint n, Player first_player) {
-    MctsNode& act_root = tree.FindRoot (full_board);
+    MctsNode& act_root = mcts.FindRoot (full_board);
     rep (ii, n) {
-      tt.NewPlayout (act_root);
-      playout.DoOnePlayout (tt, full_board, first_player);
+      mcts.NewPlayout (act_root);
+      playout.DoOnePlayout (mcts, full_board, first_player);
     }
   }
 
@@ -166,7 +166,7 @@ public:
 private:
 
   Vertex BestMove (Player pl) {
-    MctsNode& act_root = tree.FindRoot (full_board);
+    MctsNode& act_root = mcts.FindRoot (full_board);
     const MctsNode& best_node = act_root.MostExploredChild (pl);
 
     return
@@ -188,8 +188,7 @@ private:
   
   // models
   M::Model model;
-  Tree tree;
-  TT tt;
+  Mcts mcts;
 
   // playout
   FastRandom random;

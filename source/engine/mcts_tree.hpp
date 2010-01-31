@@ -266,8 +266,8 @@ float MctsNode::SubjectiveRaveValue (Player pl, float log_val) const {
 
 // -----------------------------------------------------------------------------
 
-struct Tree {
-  Tree () :
+struct Mcts {
+  Mcts () :
     root (Player::White(), Vertex::Any ())
   {
   }
@@ -294,17 +294,6 @@ struct Tree {
   }
 
 
-  MctsNode root;
-};
-
-
-
-// -----------------------------------------------------------------------------
-// Tree iterator 
-
-// TODO merge with tree
-
-struct TT {
   void NewPlayout (MctsNode& playout_root) {
     trace.clear();
     trace.push_back (&playout_root);
@@ -387,6 +376,10 @@ struct TT {
 
 
 private:
+
+  MctsNode root;
+
+
   vector <MctsNode*> trace;               // nodes in the path
   vector <Move> move_history;
   uint tree_move_count;

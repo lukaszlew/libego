@@ -6,8 +6,8 @@ class MctsPlayout {
 public:
   MctsPlayout (FastRandom& random, M::Model& model) : random (random), model (model) {
   }
-
-  void DoOnePlayout (TT& tt, const Board& base_board, Player first_player) {
+ 
+  void DoOnePlayout (Mcts& mcts, const Board& base_board, Player first_player) {
     // Prepare simulation board and tree iterator.
     play_board.Load (base_board);
     play_board.SetActPlayer (first_player);
@@ -28,25 +28,25 @@ public:
 
       Move m = Move::Invalid ();
 
-      if (!m.IsValid()) m = tt.ChooseMove (play_board);
+      if (!m.IsValid()) m = mcts.ChooseMove (play_board);
       if (!m.IsValid()) m = mcmc.ChooseMove (play_board);
       if (!m.IsValid()) m = ChooseLocalMove ();
       if (!m.IsValid()) m = play_board.RandomLightMove (random);
 
       play_board.PlayLegal (m);
 
-      tt.NewMove (m);
+      mcts.NewMove (m);
       
       playout_moves.push_back (m);
       
       model.NewMove (m);
     }
     
-    double score = Score (tt.tree_phase);
+    double score = Score (mcts.tree_phase);
 
 
     // update models
-    tt.UpdateTraceRegular (score);
+    mcts.UpdateTraceRegular (score);
 
 
     // TODO remove stupid LastMove2

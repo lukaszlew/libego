@@ -147,7 +147,7 @@ private:
     uint min_updates  = io.Read <uint> ();
     uint max_children = io.Read <uint> ();
     io.CheckEmpty();
-    io.out << endl << mcts_engine.TreeAsciiArt (min_updates, max_children);
+    io.out << endl << mcts_engine.MctsAsciiArt (min_updates, max_children);
   }
 
   void CShowLastPlayout (Gtp::Io& io) {
