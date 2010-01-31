@@ -9,7 +9,38 @@ public:
     base_board (base_board),
     random (random) {
   }
+
  
+  Move Genmove (Player player) {
+    if (Param::reset_tree_on_genmove) mcts.Reset ();
+    mcmc.Reset ();
+
+    int playouts = time_control.PlayoutCount (player);
+
+    DoNPlayouts (playouts, player);
+
+    MctsNode& act_root = mcts.FindRoot (base_board);
+    const MctsNode& best_node = act_root.MostExploredChild (player);
+
+    return
+      best_node.SubjectiveMean() < Param::resign_mean ?
+      Move::Invalid() :
+      Move(player, best_node.v);
+  }
+
+
+  void DoNPlayouts (uint n) {
+    DoNPlayouts (n, base_board.ActPlayer());
+  }
+
+  void DoNPlayouts (uint n, Player first_player) {
+    MctsNode& act_root = mcts.FindRoot (base_board);
+    rep (ii, n) {
+      mcts.NewPlayout (act_root);
+      DoOnePlayout (first_player);
+    }
+  }
+
   void DoOnePlayout (Player first_player) {
     // Prepare simulation board and tree iterator.
     play_board.Load (base_board);
@@ -54,6 +85,7 @@ public:
                  playout_moves);
 
   }
+
 
   vector<Move> LastPlayout () {
     return playout_moves;
@@ -100,6 +132,7 @@ private:
   friend class MctsGtp;
   
   const Board& base_board;
+  TimeControl time_control;
 
   // playout
   Board play_board;

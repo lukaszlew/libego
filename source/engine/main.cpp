@@ -45,10 +45,10 @@ static const bool kCheckAsserts = false;
 #include "stat.hpp"
 #include "logger.hpp"
 
+#include "time_control.hpp"
 #include "mcts_tree.hpp"
 #include "mcts_mcmc.hpp"
 #include "mcts_playout.hpp"
-#include "time_control.hpp"
 #include "engine.hpp"
 #include "mcts_gtp.hpp"
 

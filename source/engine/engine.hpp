@@ -53,35 +53,23 @@ public:
     return ok;
   }
 
-  Vertex Genmove (Player player) {
-    if (Param::reset_tree_on_genmove) {
-      playout.mcts.Reset ();
-    }
-    playout.mcmc.Reset ();
-
+  Move Genmove (Player player) {
     logger.LogLine ("param.other seed " + ToString (random.GetSeed ()));
+    
+    Move m = playout.Genmove (player);
 
-    int playouts = time_control.PlayoutCount (player);
-
-    DoNPlayouts (playouts, player);
-
-    //cerr << mcts.ToString (show_mcts_min_updates, show_mcts_max_children) << endl;
-
-    Vertex v = BestMove (player);
-
-    if (v != Vertex::Invalid ()) {
-      CHECK (full_board.IsReallyLegal (Move (player, v)));
-      full_board.PlayLegal (Move (player, v));
+    if (m.IsValid ()) {
+      CHECK (full_board.IsReallyLegal (m));
+      full_board.PlayLegal (m);
 
       logger.LogLine ("reg_genmove " + player.ToGtpString() +
-                      "   #? [" + v.ToGtpString() + "]");
-      logger.LogLine ("play " + Move (player, v).ToGtpString() + 
-                      " # move " +
+                      "   #? [" + m.GetVertex().ToGtpString() + "]");
+      logger.LogLine ("play " + m.ToGtpString() + " # move " +
                       ToString(full_board.MoveCount()));
       logger.LogLine ("");
-
     }
-    return v;
+
+    return m;
   }
 
   string BoardAsciiArt () {
@@ -92,17 +80,6 @@ public:
     return playout.mcts.FindRoot (full_board).RecToString (min_updates, max_children);
   }
 
-  void DoNPlayouts (uint n) {
-    DoNPlayouts (n, full_board.ActPlayer());
-  }
-
-  void DoNPlayouts (uint n, Player first_player) {
-    MctsNode& act_root = playout.mcts.FindRoot (full_board);
-    rep (ii, n) {
-      playout.mcts.NewPlayout (act_root);
-      playout.DoOnePlayout (first_player);
-    }
-  }
 
   Gtp::GoguiGfx LastPlayoutGfx (uint move_count) {
     vector<Move> last_playout = playout.LastPlayout ();
@@ -132,15 +109,6 @@ public:
 
 private:
 
-  Vertex BestMove (Player pl) {
-    MctsNode& act_root = playout.mcts.FindRoot (full_board);
-    const MctsNode& best_node = act_root.MostExploredChild (pl);
-
-    return
-      best_node.SubjectiveMean() < Param::resign_mean ?
-      Vertex::Invalid() :
-      best_node.v;
-  }
 
 
 
@@ -157,5 +125,4 @@ private:
   FastRandom random;
   MctsPlayout playout;
 
-  TimeControl time_control;
 };

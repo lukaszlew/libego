@@ -93,8 +93,8 @@ private:
   void Cgenmove (Gtp::Io& io) {
     Player player = io.Read<Player> ();
     io.CheckEmpty ();
-    Vertex v = mcts_engine.Genmove (player);
-    io.out << (v.IsValid() ? v.ToGtpString() : "resign");
+    Move m = mcts_engine.Genmove (player);
+    io.out << (m.IsValid() ? m.GetVertex().ToGtpString() : "resign");
   }
 
   void Cboardsize (Gtp::Io& io) {
@@ -138,7 +138,7 @@ private:
   void CDoPlayouts (Gtp::Io& io) {
     uint n = io.Read <uint> (Param::genmove_playouts);
     io.CheckEmpty();
-    mcts_engine.DoNPlayouts (n);
+    mcts_engine.playout.DoNPlayouts (n);
   }
 
   void CShowTree (Gtp::Io& io) {
