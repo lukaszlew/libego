@@ -1,6 +1,6 @@
 class MctsGtp {
 public:
-  MctsGtp (Gtp::ReplWithGogui& gtp, MctsEngine& mcts_engine)
+  MctsGtp (Gtp::ReplWithGogui& gtp, Engine& mcts_engine)
   : mcts_engine (mcts_engine)
   {
     RegisterCommands (gtp);
@@ -202,5 +202,5 @@ private:
   }
 
 private:
-  MctsEngine& mcts_engine;
+  Engine& mcts_engine;
 };
