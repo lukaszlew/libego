@@ -11,6 +11,10 @@ public:
   {
   }
 
+  void Reset () {
+    mcts.Reset ();
+    mcmc.Reset ();
+  }
  
   Move Genmove () {
     if (Param::reset_tree_on_genmove) mcts.Reset ();
@@ -122,7 +126,6 @@ private:
   }
 
 private:
-  friend class MctsGtp;
   
   const Board& base_board;
   TimeControl time_control;
@@ -132,9 +135,11 @@ private:
   vector<Move> playout_moves;
 
   static const bool kCheckAsserts = false;
-public:
   Mcts mcts;
   Mcmc mcmc;
+
+public:
+  friend class MctsGtp;
   FastRandom random;
 
 };

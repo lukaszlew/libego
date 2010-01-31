@@ -271,6 +271,10 @@ struct Mcts {
     root (Player::White(), Vertex::Any ())
   {
     act_root = &root;
+    gtp.RegisterGfx ("MCTS.show",    "0 4", this, &Mcts::GtpShowTree);
+    gtp.RegisterGfx ("MCTS.show",   "10 4", this, &Mcts::GtpShowTree);
+    gtp.RegisterGfx ("MCTS.show",  "100 4", this, &Mcts::GtpShowTree);
+    gtp.RegisterGfx ("MCTS.show", "1000 4", this, &Mcts::GtpShowTree);
   }
 
   void Reset () {
@@ -300,11 +304,6 @@ struct Mcts {
       best_node.SubjectiveMean() < Param::resign_mean ?
       Move::Invalid() :
       Move (player, best_node.v);
-  }
-
-
-  string AsciiArt (double min_updates, double max_children) {
-    return act_root->RecToString (min_updates, max_children);
   }
 
 
@@ -386,6 +385,14 @@ struct Mcts {
   MctsNode& ActNode() {
     ASSERT (trace.size() > 0);
     return *trace.back ();
+  }
+
+
+  void GtpShowTree (Gtp::Io& io) {
+    uint min_updates  = io.Read <uint> ();
+    uint max_children = io.Read <uint> ();
+    io.CheckEmpty();
+    io.out << endl << act_root->RecToString (min_updates, max_children);
   }
 
 

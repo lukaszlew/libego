@@ -22,8 +22,7 @@ public:
 
   void ClearBoard () {
     full_board.Clear ();
-    playout.mcts.Reset ();
-    playout.mcmc.Reset ();
+    playout.Reset ();
     logger.NewLog ();
     logger.LogLine ("clear_board");
     logger.LogLine ("komi " + ToString (full_board.Komi()));
@@ -72,12 +71,7 @@ public:
   string BoardAsciiArt () {
     return full_board.ToAsciiArt();
   }
-
-  string MctsAsciiArt (float min_updates, float max_children) {
-    playout.mcts.Sync (full_board);
-    return playout.mcts.AsciiArt (min_updates, max_children);
-  }
-
+  
 
   Gtp::GoguiGfx LastPlayoutGfx (uint move_count) {
     vector<Move> last_playout = playout.LastPlayout ();
@@ -96,10 +90,10 @@ public:
                      Gtp::GoguiGfx::circle);
     }
 
-    rep (ii, playout.mcmc.moves.size()) {
-      gfx.SetSymbol (playout.mcmc.moves[ii].GetVertex().ToGtpString(),
-                     Gtp::GoguiGfx::triangle);
-    }
+//     rep (ii, playout.mcmc.moves.size()) {
+//       gfx.SetSymbol (playout.mcmc.moves[ii].GetVertex().ToGtpString(),
+//                      Gtp::GoguiGfx::triangle);
+//     }
 
 
     return gfx;

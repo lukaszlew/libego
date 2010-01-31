@@ -25,11 +25,6 @@ private:
     gtp.RegisterGfx ("DoPlayouts",  "10000", this, &MctsGtp::CDoPlayouts);
     gtp.RegisterGfx ("DoPlayouts", "100000", this, &MctsGtp::CDoPlayouts);
 
-    gtp.RegisterGfx ("Mcts.Show",    "0 4", this, &MctsGtp::CShowTree);
-    gtp.RegisterGfx ("Mcts.Show",   "10 4", this, &MctsGtp::CShowTree);
-    gtp.RegisterGfx ("Mcts.Show",  "100 4", this, &MctsGtp::CShowTree);
-    gtp.RegisterGfx ("Mcts.Show", "1000 4", this, &MctsGtp::CShowTree);
-
     gtp.RegisterGfx ("ShowLastPlayout",  "4", this, &MctsGtp::CShowLastPlayout);
     gtp.RegisterGfx ("ShowLastPlayout",  "8", this, &MctsGtp::CShowLastPlayout);
     gtp.RegisterGfx ("ShowLastPlayout", "12", this, &MctsGtp::CShowLastPlayout);
@@ -139,13 +134,6 @@ private:
     uint n = io.Read <uint> (Param::genmove_playouts);
     io.CheckEmpty();
     mcts_engine.playout.DoNPlayouts (n);
-  }
-
-  void CShowTree (Gtp::Io& io) {
-    uint min_updates  = io.Read <uint> ();
-    uint max_children = io.Read <uint> ();
-    io.CheckEmpty();
-    io.out << endl << mcts_engine.MctsAsciiArt (min_updates, max_children);
   }
 
   void CShowLastPlayout (Gtp::Io& io) {
