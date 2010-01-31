@@ -116,22 +116,43 @@ const uint RawBoard::NbrCounter::player_inc_tab [Player::kBound] = {
 
 // -----------------------------------------------------------------------------
 
+void RawBoard::Chain::ResetOffBoard () {
+  lib_cnt = 2; // this is needed to not try to remove offboard guards
+}
+
+void RawBoard::Chain::Reset () {
+  lib_cnt  = 0;
+  lib_sum  = 0;
+  lib_sum2 = 0;
+}
+
+
+void RawBoard::Chain::CondAddLib (bool add, Vertex v) {
+  uint mask = 0u - uint (add);
+  uint r = v.GetRaw();
+  lib_cnt  += 1 & mask;
+  lib_sum  += r & mask;
+  lib_sum2 += (r*r) & mask;
+}
+
 void RawBoard::Chain::AddLib (Vertex v) {
   uint r = v.GetRaw();
-  lib_cnt += 1;
-//   lib_sum += r;
-//   lib_sum2 += r*r;
+  lib_cnt  += 1;
+  lib_sum  += r;
+  lib_sum2 += r*r;
 }
 
 void RawBoard::Chain::SubLib (Vertex v) {
   uint r = v.GetRaw();
-  lib_cnt -= 1;
-//   lib_sum -= r;
-//   lib_sum2 -= r*r;
+  lib_cnt  -= 1;
+  lib_sum  -= r;
+  lib_sum2 -= r*r;
 }
 
 void RawBoard::Chain::Merge (const RawBoard::Chain& other) {
-  lib_cnt += other.lib_cnt;
+  lib_cnt  += other.lib_cnt;
+  lib_sum  += other.lib_sum;
+  lib_sum2 += other.lib_sum2;
 }
 
 bool RawBoard::Chain::IsCaptured () const {
@@ -202,7 +223,7 @@ void RawBoard::Clear () {
     nbr_cnt       [v] = NbrCounter::Empty();
     chain_next_v  [v] = v;
     chain_id      [v] = v;      // TODO is it needed, is it used?
-    chain[v].lib_cnt = NbrCounter::max; // TODO off_boards?
+    chain[v].ResetOffBoard ();
 
     if (v.IsOnBoard ()) {
       color_at   [v]              = Color::Empty ();
@@ -486,7 +507,11 @@ void RawBoard::place_stone (Player pl, Vertex v) {
   ASSERT (chain_next_v[v] == v);
 
   chain_id [v] = v;
-  chain_at(v).lib_cnt = nbr_cnt[v].empty_cnt (); // TODO incremental
+  
+  chain_at(v).Reset ();
+  vertex_for_each_4_nbr (v, nbr, {
+      chain_at(v).CondAddLib (color_at[nbr] == Color::Empty(), nbr);
+  });
 }
 
 

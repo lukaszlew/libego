@@ -186,8 +186,12 @@ private:
 
   struct Chain {
     mutable uint lib_cnt;
-    mutable uint lib_sum;
-    mutable uint lib_sum2;
+    uint lib_sum;
+    uint lib_sum2;
+
+    void Reset ();
+    void ResetOffBoard ();
+    void CondAddLib (bool add, Vertex v);
     void AddLib (Vertex v);
     void SubLib (Vertex v);
     void Merge (const Chain& other);
