@@ -1,15 +1,15 @@
 class MctsGtp {
 public:
-  MctsGtp (Gtp::ReplWithGogui& gtp, Engine& mcts_engine)
+  MctsGtp (Engine& mcts_engine)
   : mcts_engine (mcts_engine)
   {
-    RegisterCommands (gtp);
-    RegisterParams (gtp);
+    RegisterCommands ();
+    RegisterParams ();
   }
 
 private:
 
-  void RegisterCommands (Gtp::ReplWithGogui& gtp) {
+  void RegisterCommands () {
     gtp.Register ("boardsize",    this, &MctsGtp::Cboardsize);
     gtp.Register ("clear_board",  this, &MctsGtp::Cclear_board);
     gtp.Register ("komi",         this, &MctsGtp::Ckomi);
@@ -44,7 +44,7 @@ private:
 
   }
 
-  void RegisterParams (Gtp::ReplWithGogui& gtp) {
+  void RegisterParams () {
     string tree  = "param.tree";
     string mcmc  = "param.mcmc";
     string other = "param.other";

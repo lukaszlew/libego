@@ -36,6 +36,7 @@
 #include "ego.hpp"
 #include "to_string.hpp"
 
+Gtp::ReplWithGogui gtp;
 
 static const bool kCheckAsserts = false;
 
@@ -69,15 +70,14 @@ int main(int argc, char** argv) {
   setbuf (stderr, NULL);
   srand48 (123);
 
-  Gtp::ReplWithGogui gtp;
 
   gtp.RegisterStatic("name", "Libego");
   gtp.RegisterStatic("version", STRING(VERSION));
   gtp.RegisterStatic("protocol_version", "2");
   gtp.Register ("benchmark", Cbenchmark);
 
-  Engine& engine = *(new Engine(gtp));
-  MctsGtp mcts_gtp (gtp, engine);
+  Engine& engine = *(new Engine());
+  MctsGtp mcts_gtp (engine);
 
   reps (ii, 1, argc) {
     if (ii == argc-1 && string (argv[ii]) == "gtp") continue;

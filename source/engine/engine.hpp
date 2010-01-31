@@ -7,10 +7,9 @@
 class Engine {
 public:
   
-  Engine (Gtp::ReplWithGogui& gtp) :
+  Engine () :
     random (TimeSeed()),
-    playout(random),
-    time_control (gtp)
+    playout(random)
   {
   }
 

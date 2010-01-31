@@ -4,7 +4,7 @@
 
 class TimeControl {
 public:
-  TimeControl (Gtp::ReplWithGogui& gtp) :
+  TimeControl () :
     time_left (0.0),
     time_stones (-1),
     playouts_per_second (10000)

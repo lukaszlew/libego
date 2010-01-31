@@ -15,9 +15,6 @@ SCRIPT_DIR="$(readlink -f $(dirname "$0"))"
     "param.mcmc rave_bias 0.001" \
     "param.mcmc explore_coeff 0" \
     \
-    "model.param boltzmann_constant 1.0" \
-    "model.param update 0" \
-    \
     "param.other local_use 0" \
     \
     "param.other logger_is_active 0" \
