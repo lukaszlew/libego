@@ -69,9 +69,6 @@ int main(int argc, char** argv) {
   setbuf (stderr, NULL);
   srand48 (123);
 
-  cout << Benchmark::Run (100000);
-  return 0;
-
   gtp.RegisterStatic("name", "Libego");
   gtp.RegisterStatic("version", STRING(VERSION));
   gtp.RegisterStatic("protocol_version", "2");

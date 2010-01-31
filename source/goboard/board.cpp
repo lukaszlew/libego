@@ -116,8 +116,17 @@ const uint RawBoard::NbrCounter::player_inc_tab [Player::kBound] = {
 
 // -----------------------------------------------------------------------------
 
+namespace {
+  struct Precomputed {
+    Precomputed () { ForEachNat (Vertex, v) square [v] = v.GetRaw() * v.GetRaw(); }
+    NatMap <Vertex, uint> square;
+  } const static precomputed;
+}
+
 void RawBoard::Chain::ResetOffBoard () {
-  lib_cnt = 2; // this is needed to not try to remove offboard guards
+  lib_cnt  = 2; // this is needed to not try to remove offboard guards
+  lib_sum  = 1;
+  lib_sum2 = 1;
 }
 
 void RawBoard::Chain::Reset () {
@@ -129,24 +138,21 @@ void RawBoard::Chain::Reset () {
 
 void RawBoard::Chain::CondAddLib (bool add, Vertex v) {
   uint mask = 0u - uint (add);
-  uint r = v.GetRaw();
   lib_cnt  += 1 & mask;
-  lib_sum  += r & mask;
-  lib_sum2 += (r*r) & mask;
+  lib_sum  += v.GetRaw() & mask;
+  lib_sum2 += precomputed.square [v] & mask;
 }
 
 void RawBoard::Chain::AddLib (Vertex v) {
-  uint r = v.GetRaw();
   lib_cnt  += 1;
-  lib_sum  += r;
-  lib_sum2 += r*r;
+  lib_sum  += v.GetRaw();
+  lib_sum2 += precomputed.square [v];
 }
 
 void RawBoard::Chain::SubLib (Vertex v) {
-  uint r = v.GetRaw();
   lib_cnt  -= 1;
-  lib_sum  -= r;
-  lib_sum2 -= r*r;
+  lib_sum  -= v.GetRaw();
+  lib_sum2 -= precomputed.square [v];
 }
 
 void RawBoard::Chain::Merge (const RawBoard::Chain& other) {

@@ -184,10 +184,12 @@ private:
     static const uint player_cnt_is_max_mask [Player::kBound];
   };
 
+  // TODO probably something can be gained from having these int separated
   struct Chain {
     mutable uint lib_cnt;
     uint lib_sum;
     uint lib_sum2;
+    uint _padding;
 
     void Reset ();
     void ResetOffBoard ();
