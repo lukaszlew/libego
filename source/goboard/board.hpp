@@ -144,7 +144,7 @@ private:
 
   void play_eye_legal (Vertex v);
 
-  void update_neighbour (Player player, Vertex v, Vertex nbr_v);
+  void update_neighbour (Vertex v, Vertex nbr_v);
   void merge_chains (Vertex v_base, Vertex v_new);
   void remove_chain (Vertex v);
   void place_stone (Player pl, Vertex v);

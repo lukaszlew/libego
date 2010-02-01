@@ -426,16 +426,16 @@ void RawBoard::PlayLegal (Player player, Vertex v) { // TODO test with move
   place_stone (player, v);
 
   if (nbr_cnt[v].player_cnt_is_max (player.Other())) {
-    vertex_for_each_4_nbr (v, nbr_v, chain_at(nbr_v).SubLib (v));
-
     vertex_for_each_4_nbr (v, nbr_v, {
+      chain_at(nbr_v).SubLib (v);
       if ((chain_at(nbr_v).IsCaptured ()))
         remove_chain (nbr_v);
     });
     // if captured exactly one stone (and this was eye) then Ko
     if (last_empty_v_cnt == empty_v_cnt) ko_v = empty_v [empty_v_cnt - 1];
   } else {
-    vertex_for_each_4_nbr (v, nbr_v, update_neighbour(player, v, nbr_v));
+
+    vertex_for_each_4_nbr (v, nbr_v, update_neighbour(v, nbr_v));
   }
 
   vertex_for_each_4_nbr (v, nbr_v, nbr_cnt [nbr_v].player_inc (player));
@@ -447,12 +447,15 @@ void RawBoard::PlayLegal (Player player, Vertex v) { // TODO test with move
 
 
 all_inline
-void RawBoard::update_neighbour (Player player, Vertex v, Vertex nbr_v) {
-  if (!color_at [nbr_v].IsPlayer ()) return;
+void RawBoard::update_neighbour (Vertex v, Vertex nbr_v) {
+  if (!color_at [nbr_v].IsPlayer ()) {
+    chain_at(v).CondAddLib (color_at[nbr_v] == Color::Empty(), nbr_v);
+    return;
+  }
 
   chain_at(nbr_v).SubLib (v);
 
-  if (color_at [nbr_v] != Color::OfPlayer (player)) { // same color of groups
+  if (color_at [nbr_v] != color_at [v]) {
     if (chain_at(nbr_v).IsCaptured ())
       remove_chain (nbr_v);
   } else {
@@ -522,9 +525,6 @@ void RawBoard::place_stone (Player pl, Vertex v) {
   chain_id [v] = v;
   
   chain_at(v).Reset ();
-  vertex_for_each_4_nbr (v, nbr, {
-      chain_at(v).CondAddLib (color_at[nbr] == Color::Empty(), nbr);
-  });
 }
 
 
