@@ -199,6 +199,7 @@ private:
     void Merge (const Chain& other);
     bool IsCaptured () const;
     bool IsInAtari () const;
+    Vertex AtariVertex () const;
   };
 
   Chain& chain_at (Vertex v);

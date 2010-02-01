@@ -172,6 +172,10 @@ bool RawBoard::Chain::IsInAtari () const {
   return lib_cnt * lib_sum2 == lib_sum * lib_sum;
 }
 
+Vertex RawBoard::Chain::AtariVertex () const {
+  CHECK (lib_sum % lib_cnt == 0);
+  return Vertex::OfRaw (lib_sum / lib_cnt); // TODO inefficient
+}
 
 // -----------------------------------------------------------------------------
 
