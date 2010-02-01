@@ -57,10 +57,16 @@ static const bool kCheckAsserts = false;
 #define VERSION unknown
 #endif
 
-void Cbenchmark (Gtp::Io& io) {
+void GtpBenchmark (Gtp::Io& io) {
   uint n = io.Read<uint> (100000);
   io.CheckEmpty ();
   io.out << Benchmark::Run (n);
+}
+
+void GtpBoardTest (Gtp::Io& io) {
+  bool print_moves = io.Read<bool> (false);
+  io.CheckEmpty ();
+  Board::PlayoutTest(print_moves);
 }
 
 int main(int argc, char** argv) {
@@ -72,7 +78,8 @@ int main(int argc, char** argv) {
   gtp.RegisterStatic("name", "Libego");
   gtp.RegisterStatic("version", STRING(VERSION));
   gtp.RegisterStatic("protocol_version", "2");
-  gtp.Register ("benchmark", Cbenchmark);
+  gtp.Register ("benchmark", GtpBenchmark);
+  gtp.Register ("board_test", GtpBoardTest);
 
   Engine& engine = *(new Engine());
   MctsGtp mcts_gtp (engine);

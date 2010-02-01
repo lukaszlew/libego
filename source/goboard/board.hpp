@@ -131,6 +131,9 @@ public:
   // Clears the board. (It is faster to Load(empty_board))
   void Clear ();
 
+  // Tests for implementation correctness;
+  static void PlayoutTest(bool print_moves);
+
   static const uint kArea = board_size * board_size;
 
 private: 

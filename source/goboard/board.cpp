@@ -381,6 +381,7 @@ bool RawBoard::IsEyelike (Move move) const {
   return IsEyelike (move.GetPlayer (), move.GetVertex());
 }
 
+
 Vertex RawBoard::RandomLightMove (Player pl, FastRandom& random) const {
   uint ii_start = random.GetNextUint (EmptyVertexCount()); 
   uint ii = ii_start;
@@ -754,6 +755,48 @@ const Zobrist RawBoard::zobrist[1] = { Zobrist () };
 
 #undef vertex_for_each_4_nbr
 #undef vertex_for_each_diag_nbr
+
+void RawBoard::PlayoutTest (bool print_moves) {
+  RawBoard empty;
+  RawBoard board;
+  FastRandom random (123);
+  NatMap <Player, uint> win_cnt (0);
+  uint move_count = 0;
+  uint move_count2 = 0;
+
+  rep (ii, 10000) {
+    board.Load (empty);
+    while (!board.BothPlayerPass ()) {
+      move_count2 += 1;
+      FastStack<Vertex, kArea> legals;
+      Player pl = board.ActPlayer();
+      ForEachNat (Vertex, v) {
+        if (!board.IsEyelike (pl, v) && board.IsLegal (pl, v)) legals.Push(v);
+      }
+      Vertex v = legals.PopRandom (random);
+      if (print_moves) {
+        cerr << move_count2 << ":"
+             << v.ToGtpString ()
+             << " (" << legals.Size() << ")" << endl;
+      }
+      board.PlayLegal (pl, v);
+    }
+
+    win_cnt [board.PlayoutWinner ()] ++;
+    move_count += board.MoveCount();
+  }
+
+  cerr
+    << "OK: "
+    << win_cnt [Player::Black ()] << "/"
+    << win_cnt [Player::White ()] << " "
+    << move_count;
+
+  CHECK (win_cnt [Player::Black()] == 3498);
+  CHECK (win_cnt [Player::White()] == 6502);
+  CHECK (move_count  == 982841);
+  CHECK (move_count2 == 982841);
+}
 
 
 // -----------------------------------------------------------------------------
