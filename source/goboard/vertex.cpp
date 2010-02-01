@@ -113,6 +113,17 @@ Vertex Vertex::NE() const { return N().E(); }
 Vertex Vertex::SW() const { return S().W(); }
 Vertex Vertex::SE() const { return S().E(); }
 
+Vertex Vertex::Nbr(Dir d) const {
+  ASSERT (IsOnBoard ());
+  const static uint delta_raw[8] = { // TODO NatMap<Dir, uint> when compiler allows
+    -dNS, +dWE, +dNS, -dWE,
+    -dNS-dWE, -dNS+dWE, +dNS+dWE, +dNS-dWE
+  };
+
+  return OfRaw (GetRaw() + delta_raw[d.GetRaw()]);
+}
+
+
 string Vertex::ToGtpString() const {
   if (*this == Invalid()) return "invalid";
   if (*this == Pass())    return "pass";

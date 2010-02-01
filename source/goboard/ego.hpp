@@ -14,6 +14,7 @@
 
 #include "player.hpp"
 #include "color.hpp"
+#include "dir.hpp"
 #include "vertex.hpp"
 #include "move.hpp"
 

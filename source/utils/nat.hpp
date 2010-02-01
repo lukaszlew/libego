@@ -29,9 +29,9 @@ class Nat {
 
  protected:
   explicit Nat (uint raw);
+  uint raw;
 
  private:
-  uint raw;
   const static bool kCheckAsserts = false;
 };
 
