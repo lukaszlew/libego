@@ -778,21 +778,31 @@ void RawBoard::PlayoutTest (bool print_moves) {
           legals.Push(v);
         }
       }
+//       string legals_str;
+//       if (print_moves) {
+//         rep (ii, legals.Size()) {
+//           legals_str += legals[ii].ToGtpString() + " ";
+//         }
+//         legals_str += ToString (legals.Size());
+//       }
 
       Vertex v;
+      uint random_idx = 999;
       if (legals.Size() == 0) {
         v = Vertex::Pass ();
       } else {
-        uint idx = random.GetNextUint (legals.Size());
-        v = legals.Remove (idx);
+        random_idx = random.GetNextUint (legals.Size());
+        v = legals.Remove (random_idx);
       }
+
+      board.PlayLegal (pl, v);
 
       if (print_moves) {
         cerr << move_count2 << ":"
-             << v.ToGtpString ()
-             << " (" << legals.Size() << ")" << endl;
+             << v.ToGtpString () << " "
+             << "(" << random_idx << "/" << legals.Size () + 1 << ")"
+             << endl;
       }
-      board.PlayLegal (pl, v);
     }
 
     win_cnt [board.PlayoutWinner ()] ++;
