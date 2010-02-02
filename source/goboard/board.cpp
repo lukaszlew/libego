@@ -772,14 +772,20 @@ void RawBoard::PlayoutTest (bool print_moves) {
       FastStack<Vertex, kArea> legals;
       Player pl = board.ActPlayer();
       ForEachNat (Vertex, v) {
-        if (//v != Vertex::Pass () &&
+        if (v != Vertex::Pass () &&
             board.IsLegal (pl, v) &&
             !board.IsEyelike (pl, v)) {
           legals.Push(v);
         }
       }
 
-      Vertex v = legals.PopRandom (random);
+      Vertex v;
+      if (legals.Size() == 0) {
+        v = Vertex::Pass ();
+      } else {
+        v = legals.PopRandom (random);
+      }
+
       if (print_moves) {
         cerr << move_count2 << ":"
              << v.ToGtpString ()
@@ -793,15 +799,15 @@ void RawBoard::PlayoutTest (bool print_moves) {
   }
 
   cerr
-    << "OK: "
+    << "board_test ok: "
     << win_cnt [Player::Black ()] << "/"
     << win_cnt [Player::White ()] << " "
-    << move_count;
+    << move_count << endl;
 
-  CHECK (win_cnt [Player::Black()] == 3493);
-  CHECK (win_cnt [Player::White()] == 6507);
+  CHECK (win_cnt [Player::Black()] == 4448);
+  CHECK (win_cnt [Player::White()] == 5552);
   CHECK (move_count  == move_count2);
-  CHECK (move_count2 == 984004 );
+  CHECK (move_count2 == 1115760);
 }
 
 
