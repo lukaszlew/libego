@@ -41,31 +41,42 @@ private:
 // -----------------------------------------------------------------------------
 
 
+// perfect 20 bit hash (bitmask)
+// bit mask from least significant
+// N, E, S, W, NW, NE, SE, SW, aN, aE, aS, sW
+// 2  2  2  2   2   2   2   2   1   1   1   1
+
 class Hash3x3 : public Nat <Hash3x3> {
 public:
   explicit Hash3x3 () : Nat <Hash3x3>() {};
 
   
   // ataris have to be marked manually
-  Hash3x3 OfBoard (const NatMap <Vertex, Color>& color_at, Vertex v) {
-    // bit mask from least significant
-    // N, E, S, W, NW, NE, SE, SW, aN, aE, aS, sW
-    // 2  2  2  2   2   2   2   2   1   1   1   1
+  static Hash3x3 OfBoard (const NatMap <Vertex, Color>& color_at, Vertex v) {
+    if (!v.IsOnBoard()) return OfRaw (0);
     uint raw = 0;
     ForEachNat (Dir, dir) {
       raw |= color_at [v.Nbr(dir)].GetRaw() << (2*dir.GetRaw());
     }
 
-    return Hash3x3::OfRaw (raw);
+    return OfRaw (raw);
   }
 
   Color ColorAt (Dir dir) const {
-    return Color::OfRaw (GetRaw() & (3 << (2*dir.GetRaw())));
+    return Color::OfRaw ((GetRaw() >> (2*dir.GetRaw())) & 3);
   }
 
   void SetColorAt (Dir dir, Color color) {
     raw &= ~(3 << (2*dir.GetRaw()));
     raw |= color.GetRaw() << (2*dir.GetRaw());
+  }
+
+  string ToString () const {
+    ostringstream out;
+    ForEachNat (Dir, dir) {
+      out << ColorAt(dir).ToShowboardChar ();
+    }
+    return out.str();
   }
 
   // TODO atari stuff

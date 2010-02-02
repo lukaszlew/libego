@@ -138,8 +138,6 @@ public:
 
 private: 
 
-  static const bool kCheckAsserts = false;
-
   Hash recalc_hash () const;
 
   void play_eye_legal (Vertex v);
@@ -160,6 +158,7 @@ private:
   void check_chain_next_v () const;
   void check () const;
   void check_no_more_legal (Player player) const;
+  void check_hash3x3 () const;
 
   class NbrCounter { // TODO update it to a full 3x3 pattern
   public:
@@ -238,12 +237,11 @@ private:
   NatMap<Vertex, uint>         empty_pos;
 
   NatMap<Vertex, uint>         play_count;
+  NatMap<Vertex, Hash3x3>      hash3x3;
 
   static const Zobrist zobrist[1];
 
-public:
-  // This function does nothing. Read comment in benchmark.cpp.
-  static void AlignHack(RawBoard&);
+  static const bool kCheckAsserts = false;
 };
 
 // -----------------------------------------------------------------------------

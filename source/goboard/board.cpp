@@ -256,6 +256,10 @@ void RawBoard::Clear () {
     }
   }
 
+  ForEachNat (Vertex, v) {
+    hash3x3[v] = Hash3x3::OfBoard (color_at, v);
+  }
+
   hash = recalc_hash ();
 
   check ();
@@ -511,9 +515,20 @@ void RawBoard::remove_chain (Vertex v) {
 
 
 void RawBoard::place_stone (Player pl, Vertex v) {
+  Color color = Color::OfPlayer (pl);
   hash ^= zobrist->OfPlayerVertex (pl, v);
   player_v_cnt[pl]++;
-  color_at[v] = Color::OfPlayer (pl);
+  color_at[v] = color;
+
+  hash3x3 [v.N() ].SetColorAt (Dir::S(), color);
+  hash3x3 [v.E() ].SetColorAt (Dir::W(), color);
+  hash3x3 [v.S() ].SetColorAt (Dir::N(), color);
+  hash3x3 [v.W() ].SetColorAt (Dir::E(), color);
+  hash3x3 [v.NW()].SetColorAt (Dir::SE(), color);
+  hash3x3 [v.NE()].SetColorAt (Dir::SW(), color);
+  hash3x3 [v.SE()].SetColorAt (Dir::NW(), color);
+  hash3x3 [v.SW()].SetColorAt (Dir::NE(), color);
+
   play_count[v] += 1;
 
   empty_v_cnt--;
@@ -532,6 +547,16 @@ void RawBoard::remove_stone (Vertex v) {
   hash ^= zobrist->OfPlayerVertex (color_at [v].ToPlayer (), v);
   player_v_cnt [color_at[v].ToPlayer ()]--;
   color_at [v] = Color::Empty ();
+
+  // TODO test if template wouldn't be more efficient
+  hash3x3 [v.N() ].SetColorAt (Dir::S(), Color::Empty());
+  hash3x3 [v.E() ].SetColorAt (Dir::W(), Color::Empty());
+  hash3x3 [v.S() ].SetColorAt (Dir::N(), Color::Empty());
+  hash3x3 [v.W() ].SetColorAt (Dir::E(), Color::Empty());
+  hash3x3 [v.NW()].SetColorAt (Dir::SE(), Color::Empty());
+  hash3x3 [v.NE()].SetColorAt (Dir::SW(), Color::Empty());
+  hash3x3 [v.SE()].SetColorAt (Dir::NW(), Color::Empty());
+  hash3x3 [v.SW()].SetColorAt (Dir::NE(), Color::Empty());
 
   empty_pos [v] = empty_v_cnt;
   empty_v [empty_v_cnt++] = v;
@@ -645,6 +670,17 @@ const RawBoard::Chain& RawBoard::chain_at (Vertex v) const {
 
 // -----------------------------------------------------------------------------
 
+void RawBoard::check_hash3x3 () const {
+  ForEachNat (Vertex, v) {
+    if (!v.IsOnBoard()) continue;
+    IFNCHECK (hash3x3[v] == Hash3x3::OfBoard (color_at, v), {
+      DebugPrint(v);
+      cerr << hash3x3[v].ToString () << " == "
+           << Hash3x3::OfBoard (color_at, v).ToString() << endl;
+    });
+  }
+}
+
 void RawBoard::check_empty_v () const {
   if (!kCheckAsserts) return;
 
@@ -739,6 +775,7 @@ void RawBoard::check () const {
   check_nbr_cnt       ();
   check_chain_at      ();
   check_chain_next_v  ();
+  check_hash3x3       ();
 }
 
 
@@ -769,7 +806,7 @@ void RawBoard::PlayoutTest (bool print_moves) {
     board.Load (empty);
     while (!board.BothPlayerPass ()) {
       move_count2 += 1;
-      FastStack<Vertex, kArea> legals;
+      FastStack<Vertex, kArea> legals; // TODO pass
       Player pl = board.ActPlayer();
       ForEachNat (Vertex, v) {
         if (!board.IsEyelike (pl, v) && board.IsLegal (pl, v)) legals.Push(v);
