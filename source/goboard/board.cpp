@@ -809,15 +809,37 @@ void RawBoard::PlayoutTest (bool print_moves) {
       FastStack<Vertex, kArea> legals; // TODO pass
       Player pl = board.ActPlayer();
       ForEachNat (Vertex, v) {
-        if (!board.IsEyelike (pl, v) && board.IsLegal (pl, v)) legals.Push(v);
+        if (v != Vertex::Pass () &&
+            board.IsLegal (pl, v) &&
+            !board.IsEyelike (pl, v)) {
+          legals.Push(v);
+        }
       }
-      Vertex v = legals.PopRandom (random);
+//       string legals_str;
+//       if (print_moves) {
+//         rep (ii, legals.Size()) {
+//           legals_str += legals[ii].ToGtpString() + " ";
+//         }
+//         legals_str += ToString (legals.Size());
+//       }
+
+      Vertex v;
+      uint random_idx = 999;
+      if (legals.Size() == 0) {
+        v = Vertex::Pass ();
+      } else {
+        random_idx = random.GetNextUint (legals.Size());
+        v = legals.Remove (random_idx);
+      }
+
+      board.PlayLegal (pl, v);
+
       if (print_moves) {
         cerr << move_count2 << ":"
-             << v.ToGtpString ()
-             << " (" << legals.Size() << ")" << endl;
+             << v.ToGtpString () << " "
+             << "(" << random_idx << "/" << legals.Size () + 1 << ")"
+             << endl;
       }
-      board.PlayLegal (pl, v);
     }
 
     win_cnt [board.PlayoutWinner ()] ++;
@@ -825,15 +847,15 @@ void RawBoard::PlayoutTest (bool print_moves) {
   }
 
   cerr
-    << "OK: "
+    << "board_test ok: "
     << win_cnt [Player::Black ()] << "/"
     << win_cnt [Player::White ()] << " "
-    << move_count;
+    << move_count << endl;
 
-  CHECK (win_cnt [Player::Black()] == 3498);
-  CHECK (win_cnt [Player::White()] == 6502);
-  CHECK (move_count  == 982841);
-  CHECK (move_count2 == 982841);
+  CHECK (win_cnt [Player::Black()] == 4448);
+  CHECK (win_cnt [Player::White()] == 5552);
+  CHECK (move_count  == move_count2);
+  CHECK (move_count2 == 1115760);
 }
 
 

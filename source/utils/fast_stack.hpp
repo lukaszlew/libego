@@ -70,19 +70,17 @@ public:
     Check ();
   }
 
-  Elt& PopTop () {
-    size--;
-    Check();
-    return tab [size];
-  }
-
-  Elt PopRandom (FastRandom& fr) {
-    ASSERT (size > 0);
-    uint idx = fr.GetNextUint (size);
+  Elt Remove (uint idx) {
     Elt elt = tab [idx];
     size--;
     tab [idx] = tab [size];
     return elt;
+  }
+
+  Elt& PopTop () {
+    size--;
+    Check();
+    return tab [size];
   }
 
   Elt& operator[] (uint i) { 
