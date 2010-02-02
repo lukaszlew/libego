@@ -783,7 +783,8 @@ void RawBoard::PlayoutTest (bool print_moves) {
       if (legals.Size() == 0) {
         v = Vertex::Pass ();
       } else {
-        v = legals.PopRandom (random);
+        uint idx = random.GetNextUint (legals.Size());
+        v = legals.Remove (idx);
       }
 
       if (print_moves) {

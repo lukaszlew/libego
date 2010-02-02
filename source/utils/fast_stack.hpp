@@ -83,12 +83,6 @@ public:
     return tab [size];
   }
 
-  Elt PopRandom (FastRandom& fr) {
-    ASSERT (size > 0);
-    uint idx = fr.GetNextUint (size);
-    return Remove (idx);
-  }
-
   Elt& operator[] (uint i) { 
     ASSERT (i < size);
     return tab [i];
