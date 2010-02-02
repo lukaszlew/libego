@@ -70,6 +70,13 @@ public:
     Check ();
   }
 
+  Elt Remove (uint idx) {
+    Elt elt = tab [idx];
+    size--;
+    tab [idx] = tab [size];
+    return elt;
+  }
+
   Elt& PopTop () {
     size--;
     Check();
@@ -79,10 +86,7 @@ public:
   Elt PopRandom (FastRandom& fr) {
     ASSERT (size > 0);
     uint idx = fr.GetNextUint (size);
-    Elt elt = tab [idx];
-    size--;
-    tab [idx] = tab [size];
-    return elt;
+    return Remove (idx);
   }
 
   Elt& operator[] (uint i) { 

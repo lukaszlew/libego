@@ -756,6 +756,7 @@ const Zobrist RawBoard::zobrist[1] = { Zobrist () };
 #undef vertex_for_each_4_nbr
 #undef vertex_for_each_diag_nbr
 
+flatten
 void RawBoard::PlayoutTest (bool print_moves) {
   RawBoard empty;
   RawBoard board;
@@ -771,8 +772,13 @@ void RawBoard::PlayoutTest (bool print_moves) {
       FastStack<Vertex, kArea> legals;
       Player pl = board.ActPlayer();
       ForEachNat (Vertex, v) {
-        if (!board.IsEyelike (pl, v) && board.IsLegal (pl, v)) legals.Push(v);
+        if (//v != Vertex::Pass () &&
+            board.IsLegal (pl, v) &&
+            !board.IsEyelike (pl, v)) {
+          legals.Push(v);
+        }
       }
+
       Vertex v = legals.PopRandom (random);
       if (print_moves) {
         cerr << move_count2 << ":"
@@ -792,10 +798,10 @@ void RawBoard::PlayoutTest (bool print_moves) {
     << win_cnt [Player::White ()] << " "
     << move_count;
 
-  CHECK (win_cnt [Player::Black()] == 3498);
-  CHECK (win_cnt [Player::White()] == 6502);
-  CHECK (move_count  == 982841);
-  CHECK (move_count2 == 982841);
+  CHECK (win_cnt [Player::Black()] == 3493);
+  CHECK (win_cnt [Player::White()] == 6507);
+  CHECK (move_count  == move_count2);
+  CHECK (move_count2 == 984004 );
 }
 
 
