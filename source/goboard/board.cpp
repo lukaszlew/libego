@@ -756,6 +756,7 @@ const Zobrist RawBoard::zobrist[1] = { Zobrist () };
 #undef vertex_for_each_4_nbr
 #undef vertex_for_each_diag_nbr
 
+flatten
 void RawBoard::PlayoutTest (bool print_moves) {
   RawBoard empty;
   RawBoard board;
