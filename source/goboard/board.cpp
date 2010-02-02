@@ -442,8 +442,6 @@ void RawBoard::PlayLegal (Player player, Vertex v) { // TODO test with move
     vertex_for_each_4_nbr (v, nbr_v, update_neighbour(v, nbr_v));
   }
 
-  vertex_for_each_4_nbr (v, nbr_v, nbr_cnt [nbr_v].player_inc (player));
-
   // suicide support
   // if (chain_at(v).IsCaptured ()) remove_chain (v);
   ASSERT (!chain_at(v).IsCaptured());
@@ -502,7 +500,7 @@ void RawBoard::remove_chain (Vertex v) {
 
   do {
     vertex_for_each_4_nbr (act_v, nbr_v, {
-      nbr_cnt [nbr_v].player_dec (old_color.ToPlayer());
+      ASSERT (color_at[nbr_v] != old_color);
       chain_at(nbr_v).AddLib (act_v);
     });
 
@@ -541,12 +539,15 @@ void RawBoard::place_stone (Player pl, Vertex v) {
   chain_id [v] = v;
   
   chain_at(v).Reset ();
+  vertex_for_each_4_nbr (v, nbr_v, nbr_cnt [nbr_v].player_inc (pl));
 }
 
 
 void RawBoard::remove_stone (Vertex v) {
-  hash ^= zobrist->OfPlayerVertex (color_at [v].ToPlayer (), v);
-  player_v_cnt [color_at[v].ToPlayer ()]--;
+  Player pl = color_at [v].ToPlayer ();
+
+  hash ^= zobrist->OfPlayerVertex (pl, v);
+  player_v_cnt [pl]--;
   color_at [v] = Color::Empty ();
 
   // TODO vector operations here would be a win.
@@ -563,6 +564,8 @@ void RawBoard::remove_stone (Vertex v) {
   empty_pos [v] = empty_v_cnt;
   empty_v [empty_v_cnt++] = v;
   chain_id [v] = v;
+
+  vertex_for_each_4_nbr (v, nbr_v, nbr_cnt [nbr_v].player_dec (pl));
 
   ASSERT (empty_v_cnt < Vertex::kBound);
 }
