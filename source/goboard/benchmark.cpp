@@ -44,6 +44,7 @@ namespace Benchmark {
 
     float seconds_total = seconds_end - seconds_begin;
     float cc_per_playout = fast_timer.Ticks () / double (playout_cnt);
+    float cc_per_move    = fast_timer.Ticks () / double (move_count);
     float playouts_finished = win_cnt [Player::Black ()] + win_cnt [Player::White ()];
 
     ostringstream ret;
@@ -51,6 +52,7 @@ namespace Benchmark {
         << playout_cnt << " playouts in " << seconds_total << " seconds" << endl
         << float (playout_cnt) / seconds_total / 1000.0 << " kpps" << endl
         << 1000000.0 / cc_per_playout  << " kpps/GHz (clock independent)" << endl
+        << cc_per_move  << " CC/move (clock independent)" << endl
         << win_cnt [Player::Black ()] << "/" << win_cnt [Player::White ()]
         << " (black wins / white wins)" << endl
         << "AVG moves/playout = " << move_count / playouts_finished << endl;

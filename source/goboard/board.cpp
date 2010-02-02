@@ -520,6 +520,7 @@ void RawBoard::place_stone (Player pl, Vertex v) {
   player_v_cnt[pl]++;
   color_at[v] = color;
 
+  // TODO vector operations here would be a win.
   hash3x3 [v.N() ].SetColorAt (Dir::S(), color);
   hash3x3 [v.E() ].SetColorAt (Dir::W(), color);
   hash3x3 [v.S() ].SetColorAt (Dir::N(), color);
@@ -548,6 +549,7 @@ void RawBoard::remove_stone (Vertex v) {
   player_v_cnt [color_at[v].ToPlayer ()]--;
   color_at [v] = Color::Empty ();
 
+  // TODO vector operations here would be a win.
   // TODO test if template wouldn't be more efficient
   hash3x3 [v.N() ].SetColorAt (Dir::S(), Color::Empty());
   hash3x3 [v.E() ].SetColorAt (Dir::W(), Color::Empty());
