@@ -421,15 +421,12 @@ void RawBoard::PlayLegal (Player player, Vertex v) { // TODO test with move
 
   place_stone (player, v);
 
-  if (nbr_cnt[v].player_cnt_is_max (player.Other())) {
-    vertex_for_each_4_nbr (v, nbr_v, {
-      if ((chain_at(nbr_v).IsCaptured ()))
-        remove_chain (nbr_v);
-    });
-    // if captured exactly one stone (and this was eye) then Ko
-    if (last_empty_v_cnt == empty_v_cnt) ko_v = empty_v [empty_v_cnt - 1];
-  } else {
-    vertex_for_each_4_nbr (v, nbr_v, update_neighbour(v, nbr_v));
+  bool play_in_his_eye = nbr_cnt[v].player_cnt_is_max (player.Other());
+
+  vertex_for_each_4_nbr (v, nbr_v, update_neighbour(v, nbr_v));
+
+  if (play_in_his_eye && last_empty_v_cnt == empty_v_cnt) {
+    ko_v = empty_v [empty_v_cnt - 1];
   }
 
   // suicide support
@@ -546,6 +543,8 @@ void RawBoard::remove_stone (Vertex v) {
 
   // TODO vector operations here would be a win.
   // TODO test if template wouldn't be more efficient
+  hash3x3 [v].ResetAtariBits();
+
   hash3x3 [v.N() ].SetColorAt (Dir::S(), Color::Empty());
   hash3x3 [v.E() ].SetColorAt (Dir::W(), Color::Empty());
   hash3x3 [v.S() ].SetColorAt (Dir::N(), Color::Empty());
@@ -672,10 +671,12 @@ const RawBoard::Chain& RawBoard::chain_at (Vertex v) const {
 void RawBoard::check_hash3x3 () const {
   ForEachNat (Vertex, v) {
     if (!v.IsOnBoard()) continue;
-    IFNCHECK (hash3x3[v] == Hash3x3::OfBoard (color_at, v), {
+    if (color_at [v] != Color::Empty()) continue;
+    Hash3x3 correct_hash = Hash3x3::OfBoard (color_at, v);
+    IFNCHECK (hash3x3[v] == correct_hash, {
       DebugPrint(v);
       cerr << hash3x3[v].ToString () << " == "
-           << Hash3x3::OfBoard (color_at, v).ToString() << endl;
+           << correct_hash.ToString() << endl;
     });
   }
 }
@@ -929,3 +930,4 @@ bool Board::IsHashRepeated () {
 const vector<Move>& Board::Moves () const {
   return moves;
 }
+

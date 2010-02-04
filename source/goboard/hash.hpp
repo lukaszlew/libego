@@ -71,11 +71,36 @@ public:
     raw |= color.GetRaw() << (2*dir.GetRaw());
   }
 
+  void SetAtariBits (bool bN, bool bE, bool bS, bool bW) {
+    uint mask = (bN << 16) | (bE << 17) | (bS << 18) | (bW << 19);
+    ASSERT (raw & mask == 0);
+    raw |= mask;
+  }
+
+  void UnsetAtariBits (bool bN, bool bE, bool bS, bool bW) {
+    uint mask = (bN << 16) | (bE << 17) | (bS << 18) | (bW << 19);
+    ASSERT (raw & mask == mask);
+    raw &= ~mask;
+  }
+
+  void ResetAtariBits () {
+    raw &= (1 << 16) - 1;
+  }
+
+  bool IsInAtari (Dir dir) const {
+    ASSERT (dir.IsSimple4());
+    return (raw >> (16 + dir.GetRaw())) & 1;
+  }
+
   string ToString () const {
     ostringstream out;
     ForEachNat (Dir, dir) {
       out << ColorAt(dir).ToShowboardChar ();
+      if (dir.IsSimple4()) {
+        if (IsInAtari (dir)) out << '!';
+      }
     }
+    out << hex << raw;
     return out.str();
   }
 

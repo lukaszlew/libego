@@ -27,4 +27,7 @@ void TestFail (const char* msg, const char* file, int line, const char* pf);
 // Evalueate and assert only if kCheckAsserts == true
 #define ASSERT(expr) (kCheckAsserts ? CHECK (expr) : void(0))
 
+#define IFNASSERT(expr, block) { if (kCheckAsserts) { IFNCHECK (expr, block) } }
+
+
 #endif

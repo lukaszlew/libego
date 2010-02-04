@@ -14,7 +14,7 @@ public:
   static Dir SE () { return OfRaw (6); }
   static Dir SW () { return OfRaw (7); }
 
-  bool IsBasic () const { return GetRaw() < 4; }
+  bool IsSimple4 () const { return GetRaw() < 4; }
 
   static const uint kBound = 8;
 
