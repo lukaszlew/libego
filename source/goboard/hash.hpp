@@ -89,7 +89,25 @@ public:
 
   bool IsInAtari (Dir dir) const {
     ASSERT (dir.IsSimple4());
+    ASSERT (ColorAt(dir).IsPlayer());
     return (raw >> (16 + dir.GetRaw())) & 1;
+  }
+
+  bool IsLegal (Player pl) {
+    NatMap <Color, uint> color_cnt;
+    NatMap <Player, uint> atari_cnt;
+
+    ForEachNat (Dir, dir) {
+      if (!dir.IsSimple4()) continue;
+      Color c = ColorAt (dir);
+      color_cnt [c] += 1;
+      if (c.IsPlayer() && IsInAtari(dir)) atari_cnt [c.ToPlayer()] += 1;
+    }
+
+    if (color_cnt [Color::Empty()] > 0) return true;
+    if (atari_cnt [pl.Other()] > 0) return true;
+    if (atari_cnt [pl] < color_cnt [Color::OfPlayer(pl)]) return true;
+    return false;
   }
 
   string ToString () const {

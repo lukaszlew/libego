@@ -847,6 +847,12 @@ void RawBoard::PlayoutTest (bool print_moves) {
       FastStack<Vertex, kArea> legals; // TODO pass
       Player pl = board.ActPlayer();
       ForEachNat (Vertex, v) {
+        IFNCHECK (board.ColorAt(v) != Color::Empty() ||
+                  board.KoVertex() == v ||
+                  board.IsLegal (pl, v) == board.hash3x3[v].IsLegal(pl), {
+          board.DebugPrint (v);
+          cerr << pl.ToGtpString () << " to play" << endl;
+        });
         if (v != Vertex::Pass () &&
             board.IsLegal (pl, v) &&
             !board.IsEyelike (pl, v)) {
