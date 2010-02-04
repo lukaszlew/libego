@@ -147,6 +147,8 @@ private:
   void remove_chain (Vertex v);
   void place_stone (Player pl, Vertex v);
   void remove_stone (Vertex v);
+  void MaybeInAtari (Vertex v);
+  void MaybeInAtariEnd (Vertex v);
 
 
   // TODO: move these consistency checks to some some kind of unit testing

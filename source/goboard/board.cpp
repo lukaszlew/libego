@@ -432,6 +432,9 @@ void RawBoard::PlayLegal (Player player, Vertex v) { // TODO test with move
   // suicide support
   // if (chain_at(v).IsCaptured ()) remove_chain (v);
   ASSERT (!chain_at(v).IsCaptured());
+
+  MaybeInAtari (v);
+  check ();
 }
 
 
@@ -442,8 +445,11 @@ void RawBoard::update_neighbour (Vertex v, Vertex nbr_v) {
   }
 
   if (color_at [nbr_v] != color_at [v]) {
-    if (chain_at(nbr_v).IsCaptured ())
+    if (chain_at(nbr_v).IsCaptured ()) {
       remove_chain (nbr_v);
+    } else {
+      MaybeInAtari (nbr_v);
+    }
   } else {
     if (chain_id [nbr_v] != chain_id [v]) {
       if (chain_at(v).size > chain_at(nbr_v).size) {
@@ -455,6 +461,33 @@ void RawBoard::update_neighbour (Vertex v, Vertex nbr_v) {
   }
 }
 
+all_inline
+void RawBoard::MaybeInAtari (Vertex v) {
+  // update atari bits in hash3x3
+  IFNASSERT (color_at[v] != Color::Empty(), {DebugPrint (v);});
+  if (!chain_at(v).IsInAtari ()) return;
+
+  Vertex av = chain_at(v).AtariVertex();
+  hash3x3[av].SetAtariBits (chain_id [av.N()] == chain_id [v],
+                            chain_id [av.E()] == chain_id [v],
+                            chain_id [av.S()] == chain_id [v],
+                            chain_id [av.W()] == chain_id [v]);
+}
+
+all_inline
+void RawBoard::MaybeInAtariEnd (Vertex v) {
+  // update atari bits in hash3x3
+  //ASSERT (color_at[v].IsPlayer());
+  if (!color_at[v].IsPlayer()) return;
+  if (chain_at(v).IsCaptured ()) return;
+  if (!chain_at(v).IsInAtari ()) return;
+
+  Vertex av = chain_at(v).AtariVertex();
+  hash3x3[av].UnsetAtariBits (chain_id [av.N()] == chain_id [v],
+                              chain_id [av.E()] == chain_id [v],
+                              chain_id [av.S()] == chain_id [v],
+                              chain_id [av.W()] == chain_id [v]);
+}
 
 void RawBoard::merge_chains (Vertex v_base, Vertex v_new) {
   chain_at(v_base).Merge (chain_at(v_new));
@@ -485,6 +518,7 @@ void RawBoard::remove_chain (Vertex v) {
   do {
     vertex_for_each_4_nbr (act_v, nbr_v, {
       ASSERT (color_at[nbr_v] != old_color);
+      MaybeInAtariEnd (nbr_v);
       chain_at(nbr_v).AddLib (act_v);
     });
 
@@ -673,6 +707,10 @@ void RawBoard::check_hash3x3 () const {
     if (!v.IsOnBoard()) continue;
     if (color_at [v] != Color::Empty()) continue;
     Hash3x3 correct_hash = Hash3x3::OfBoard (color_at, v);
+    correct_hash.SetAtariBits (color_at [v.N()].IsPlayer() && chain_at(v.N()).IsInAtari(),
+                               color_at [v.E()].IsPlayer() && chain_at(v.E()).IsInAtari(),
+                               color_at [v.S()].IsPlayer() && chain_at(v.S()).IsInAtari(),
+                               color_at [v.W()].IsPlayer() && chain_at(v.W()).IsInAtari());
     IFNCHECK (hash3x3[v] == correct_hash, {
       DebugPrint(v);
       cerr << hash3x3[v].ToString () << " == "
