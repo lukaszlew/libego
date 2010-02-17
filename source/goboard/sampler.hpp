@@ -35,14 +35,15 @@ struct Sampler {
 
     if (gamma_sum == 0.0) return Vertex::Pass (); // TODO gamma for pass
 
-    //double sample = random.NextDouble (gamma_sum);
     double sample = drand48() * gamma_sum;
+    ASSERT (sample < gamma_sum);
+
     gamma_sum = 0.0;
     rep (ii, board.EmptyVertexCount()) {
       Vertex v = board.EmptyVertex (ii);
       if (v == board.KoVertex ()) continue;
       gamma_sum += (*gamma) [pl] [board.Hash3x3At (v)];
-      if (gamma_sum >= sample) return v;
+      if (gamma_sum > sample) return v;
     }
     CHECK (false);
   }
@@ -53,6 +54,8 @@ struct Sampler {
   Board& board;
   Gammas* gamma;
   double last_sum;
+
+  const static bool kCheckAsserts = true;
 };
 
 #endif

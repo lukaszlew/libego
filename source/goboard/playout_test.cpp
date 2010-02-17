@@ -20,9 +20,9 @@ void PlayoutTest (bool print_moves) {
       Player pl = board.ActPlayer();
 
       // legal moves
-      ForEachNat (Vertex, v) {
-        IFNCHECK (board.ColorAt(v) != Color::Empty() ||
-                  board.KoVertex() == v ||
+      rep (jj, board.EmptyVertexCount()) {
+        Vertex v = board.EmptyVertex (jj);
+        IFNCHECK (board.KoVertex() == v ||
                   board.IsLegal (pl, v) == board.Hash3x3At(v).IsLegal(pl), {
                     board.DebugPrint (v);
                   });
@@ -79,9 +79,9 @@ void PlayoutTest (bool print_moves) {
     << hash_changed_count << " "
     << endl;
 
-  CHECK (win_cnt [Player::Black()] == 4448);
-  CHECK (win_cnt [Player::White()] == 5552);
+  CHECK (win_cnt [Player::Black()] == 4382);
+  CHECK (win_cnt [Player::White()] == 5618);
   CHECK (move_count  == move_count2);
-  CHECK (move_count2 == 1115760);
-  CHECK (hash_changed_count == 10002578);
+  CHECK (move_count2 == 1112165);
+  CHECK (hash_changed_count == 9965409);
 }
