@@ -3,16 +3,6 @@
 
 #include <tr1/random>
 
-struct Random {
-  std::tr1::mt19937 mt;
-  double NextDouble (double max = 1.0) {
-    std::tr1::uniform_real<double> uniform (max);
-    return uniform (mt);
-  }
-};
-
-
-
 struct Sampler {
   explicit Sampler (Board& board) : board (board), gamma ((new Gammas())) {
     ForEachNat (Player, pl) {
@@ -25,9 +15,11 @@ struct Sampler {
     }
   }
 
+
   ~Sampler () {
     delete gamma;
   }
+
 
   Vertex SampleMove () {
     Player pl = board.ActPlayer ();
@@ -43,8 +35,8 @@ struct Sampler {
 
     if (gamma_sum == 0.0) return Vertex::Pass (); // TODO gamma for pass
 
-    double sample = random.NextDouble (gamma_sum);
-
+    //double sample = random.NextDouble (gamma_sum);
+    double sample = drand48() * gamma_sum;
     gamma_sum = 0.0;
     rep (ii, board.EmptyVertexCount()) {
       Vertex v = board.EmptyVertex (ii);
@@ -55,11 +47,11 @@ struct Sampler {
     CHECK (false);
   }
 
+
   typedef NatMap<Player, NatMap<Hash3x3, double> > Gammas;
 
   Board& board;
   Gammas* gamma;
-  Random random;
   double last_sum;
 };
 

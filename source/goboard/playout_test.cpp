@@ -12,10 +12,14 @@ void PlayoutTest (bool print_moves) {
 
   rep (ii, 10000) {
     board.Load (empty);
+
+    // Plaout loop
     while (!board.BothPlayerPass ()) {
       move_count2 += 1;
       FastStack<Vertex, Board::kArea> legals; // TODO pass
       Player pl = board.ActPlayer();
+
+      // legal moves
       ForEachNat (Vertex, v) {
         IFNCHECK (board.ColorAt(v) != Color::Empty() ||
                   board.KoVertex() == v ||
@@ -29,7 +33,9 @@ void PlayoutTest (bool print_moves) {
         }
       }
 
+      // random move
       Vertex sampler_v = sampler.SampleMove();
+      CHECK (board.IsLegal (pl, sampler_v));
       IFNCHECK (sampler.last_sum == legals.Size(), {
           board.DebugPrint ();
           WW (sampler.last_sum);
@@ -45,8 +51,10 @@ void PlayoutTest (bool print_moves) {
         v = legals.Remove (random_idx);
       }
 
-      
+      // play_it
       board.PlayLegal (pl, v);
+
+
       hash_changed_count += board.Hash3x3ChangedCount ();
 
       if (print_moves && ii < 1000) {
@@ -62,6 +70,7 @@ void PlayoutTest (bool print_moves) {
     move_count += board.MoveCount();
   }
 
+  // Report and regression checks.
   cerr
     << "board_test ok: "
     << win_cnt [Player::Black ()] << "/"
