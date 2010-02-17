@@ -110,6 +110,26 @@ public:
     return false;
   }
 
+  bool IsEyelike (Player pl) const {
+    NatMap <Color, uint> color_cnt(0);
+    NatMap <Color, uint> diag_color_cnt(0);
+    ForEachNat (Dir, dir) {
+      if (dir.IsSimple4()) {
+        color_cnt [ColorAt (dir)] += 1;
+      } else {
+        diag_color_cnt [ColorAt (dir)] += 1;
+      }
+    }
+    
+    if (color_cnt [Color::OfPlayer(pl)] + color_cnt [Color::OffBoard()] < 4) {
+      return false;
+    }
+
+    return
+      diag_color_cnt [Color::OfPlayer (pl.Other())] +
+      (diag_color_cnt [Color::OffBoard ()] > 0) < 2;
+  }
+
   string ToString () const {
     ostringstream out;
     ForEachNat (Dir, dir) {
@@ -118,7 +138,7 @@ public:
         if (IsInAtari (dir)) out << '!';
       }
     }
-    out << hex << raw;
+    out << " " << hex << raw;
     return out.str();
   }
 

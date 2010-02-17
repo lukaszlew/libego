@@ -387,7 +387,10 @@ bool RawBoard::IsLegal (Move move) const {
 
 bool RawBoard::IsEyelike (Player player, Vertex v) const {
   ASSERT (color_at [v] == Color::Empty ());
-  if (! nbr_cnt[v].player_cnt_is_max (player)) return false;
+  if (!nbr_cnt[v].player_cnt_is_max (player)) {
+    ASSERT (!hash3x3[v].IsEyelike(player));
+    return false;
+  }
 
   NatMap<Color, int> diag_color_cnt (0); // TODO
 
@@ -395,9 +398,19 @@ bool RawBoard::IsEyelike (Player player, Vertex v) const {
     diag_color_cnt [color_at [diag_v]]++;
   });
 
-  return
+  bool is_eye = 
     diag_color_cnt [Color::OfPlayer (player.Other())] +
     (diag_color_cnt [Color::OffBoard ()] > 0) < 2;
+
+  IFNASSERT (hash3x3[v].IsEyelike (player) == is_eye, {
+    DebugPrint (v);
+    WW (player.ToGtpString());
+    WW (is_eye);
+    WW (hash3x3[v].IsEyelike(player));
+    WW (hash3x3[v].ToString());
+  });
+
+  return is_eye;
 }
 
 bool RawBoard::IsEyelike (Move move) const {
