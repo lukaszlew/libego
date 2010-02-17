@@ -59,6 +59,24 @@ class NatMap {
 
 // -----------------------------------------------------------------------------
 
+template <typename Nat>
+class NatSet {
+public:
+
+  explicit NatSet () : mark (0), act_mark (1) { }
+
+  void Clear () { act_mark += 1; }
+
+  bool IsMarked (Nat n) { return mark [n] == act_mark; }
+  void Mark (Nat n) { mark [n] = act_mark; }
+
+private:
+  NatMap <Nat, uint> mark;
+  uint act_mark;
+};
+
+// -----------------------------------------------------------------------------
+
 #include "nat-inl.hpp"
 
 #endif // NAT_H_

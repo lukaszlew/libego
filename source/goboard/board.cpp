@@ -407,6 +407,8 @@ flatten all_inline
 void RawBoard::PlayLegal (Player player, Vertex v) { // TODO test with move
   check ();
 
+  tmp_vertex_set.Clear ();
+
   ASSERT (player.IsValid());
   ASSERT (v.IsValid());
   ASSERT (IsLegal (player, v));
@@ -472,6 +474,7 @@ void RawBoard::MaybeInAtari (Vertex v) {
                             chain_id [av.E()] == chain_id [v],
                             chain_id [av.S()] == chain_id [v],
                             chain_id [av.W()] == chain_id [v]);
+  tmp_vertex_set.Mark (av);
 }
 
 all_inline
@@ -487,6 +490,7 @@ void RawBoard::MaybeInAtariEnd (Vertex v) {
                               chain_id [av.E()] == chain_id [v],
                               chain_id [av.S()] == chain_id [v],
                               chain_id [av.W()] == chain_id [v]);
+  tmp_vertex_set.Mark (av);
 }
 
 void RawBoard::merge_chains (Vertex v_base, Vertex v_new) {
@@ -529,7 +533,6 @@ void RawBoard::remove_chain (Vertex v) {
   } while (act_v != v);
 }
 
-
 void RawBoard::place_stone (Player pl, Vertex v) {
   Color color = Color::OfPlayer (pl);
   hash ^= zobrist->OfPlayerVertex (pl, v);
@@ -538,13 +541,28 @@ void RawBoard::place_stone (Player pl, Vertex v) {
 
   // TODO vector operations here would be a win.
   hash3x3 [v.N() ].SetColorAt (Dir::S(), color);
+  tmp_vertex_set.Mark (v.N());
+
   hash3x3 [v.E() ].SetColorAt (Dir::W(), color);
+  tmp_vertex_set.Mark (v.E());
+
   hash3x3 [v.S() ].SetColorAt (Dir::N(), color);
+  tmp_vertex_set.Mark (v.S());
+
   hash3x3 [v.W() ].SetColorAt (Dir::E(), color);
+  tmp_vertex_set.Mark (v.W());
+
   hash3x3 [v.NW()].SetColorAt (Dir::SE(), color);
+  tmp_vertex_set.Mark (v.NW());
+
   hash3x3 [v.NE()].SetColorAt (Dir::SW(), color);
+  tmp_vertex_set.Mark (v.NE());
+
   hash3x3 [v.SE()].SetColorAt (Dir::NW(), color);
+  tmp_vertex_set.Mark (v.SE());
+
   hash3x3 [v.SW()].SetColorAt (Dir::NE(), color);
+  tmp_vertex_set.Mark (v.SW());
 
   play_count[v] += 1;
 
@@ -578,15 +596,31 @@ void RawBoard::remove_stone (Vertex v) {
   // TODO vector operations here would be a win.
   // TODO test if template wouldn't be more efficient
   hash3x3 [v].ResetAtariBits();
+  tmp_vertex_set.Mark (v);
 
   hash3x3 [v.N() ].SetColorAt (Dir::S(), Color::Empty());
+  tmp_vertex_set.Mark (v.N());
+
   hash3x3 [v.E() ].SetColorAt (Dir::W(), Color::Empty());
+  tmp_vertex_set.Mark (v.E());
+
   hash3x3 [v.S() ].SetColorAt (Dir::N(), Color::Empty());
+  tmp_vertex_set.Mark (v.S());
+
   hash3x3 [v.W() ].SetColorAt (Dir::E(), Color::Empty());
+  tmp_vertex_set.Mark (v.W());
+
   hash3x3 [v.NW()].SetColorAt (Dir::SE(), Color::Empty());
+  tmp_vertex_set.Mark (v.NW());
+
   hash3x3 [v.NE()].SetColorAt (Dir::SW(), Color::Empty());
+  tmp_vertex_set.Mark (v.NE());
+
   hash3x3 [v.SE()].SetColorAt (Dir::NW(), Color::Empty());
+  tmp_vertex_set.Mark (v.SE());
+
   hash3x3 [v.SW()].SetColorAt (Dir::NE(), Color::Empty());
+  tmp_vertex_set.Mark (v.SW());
 
   empty_pos [v] = empty_v_cnt;
   empty_v [empty_v_cnt++] = v;

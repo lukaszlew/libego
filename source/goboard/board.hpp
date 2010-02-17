@@ -230,7 +230,7 @@ private:
   NatMap<Vertex, Vertex>       chain_id;     // Identical for one chain.
   NatMap<Vertex, Chain>        chain;        // Indexed by chain_id[v]
 
-  NatMap<Vertex, NbrCounter>   nbr_cnt; // 3x3 patterns
+  NatMap<Vertex, NbrCounter>   nbr_cnt;
 
   // Incremantal set of empty Vertices.
   // TODO Merge this four members into NatSet
@@ -239,7 +239,9 @@ private:
   NatMap<Vertex, uint>         empty_pos;
 
   NatMap<Vertex, uint>         play_count;
-  NatMap<Vertex, Hash3x3>      hash3x3;
+  NatMap<Vertex, Hash3x3>      hash3x3; // 3x3 patterns
+
+  NatSet<Vertex> tmp_vertex_set;
 
   static const Zobrist zobrist[1];
 
