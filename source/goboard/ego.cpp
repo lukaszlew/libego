@@ -16,3 +16,4 @@
 #include "board.cpp"
 
 #include "benchmark.cpp"
+#include "playout_test.cpp"

@@ -20,7 +20,9 @@
 
 #include "hash.hpp"
 #include "board.hpp"
+#include "sampler.hpp"
 
 #include "benchmark.hpp"
+#include "playout_test.hpp"
 
 #endif

@@ -51,7 +51,6 @@ static const bool kCheckAsserts = false;
 #include "engine.hpp"
 #include "mcts_gtp.hpp"
 
-
 // TODO automatize through CMake (and add git SHA1)
 #ifndef VERSION
 #define VERSION unknown
@@ -66,7 +65,7 @@ void GtpBenchmark (Gtp::Io& io) {
 void GtpBoardTest (Gtp::Io& io) {
   bool print_moves = io.Read<bool> (false);
   io.CheckEmpty ();
-  Board::PlayoutTest(print_moves);
+  PlayoutTest (print_moves);
 }
 
 int main(int argc, char** argv) {
