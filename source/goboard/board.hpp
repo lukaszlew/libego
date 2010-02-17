@@ -27,6 +27,13 @@ public:
 
   // Number of Empty board Vertices.
   uint EmptyVertexCount () const;
+  
+  // Returns 20bit hash at given location;
+  Hash3x3 Hash3x3At (Vertex v) const;
+
+  // List of 20bit hashes changed by last move.
+  uint Hash3x3ChangedCount () const;
+  Vertex Hash3x3Changed (uint ii) const;
 
   // Returns player on move.
   Player ActPlayer () const;
@@ -240,6 +247,7 @@ private:
 
   NatMap<Vertex, uint>         play_count;
   NatMap<Vertex, Hash3x3>      hash3x3; // 3x3 patterns
+  FastStack <Vertex, kArea>    hash3x3_changed;
 
   NatSet<Vertex> tmp_vertex_set;
 

@@ -313,11 +313,26 @@ uint RawBoard::EmptyVertexCount () const {
   return empty_v_cnt;
 }
 
+Hash3x3 RawBoard::Hash3x3At (Vertex v) const {
+  return hash3x3 [v];
+}
+
+
+uint RawBoard::Hash3x3ChangedCount () const {
+  return hash3x3_changed.Size();
+}
+
+
+Vertex RawBoard::Hash3x3Changed (uint ii) const {
+  return hash3x3_changed [ii];
+}
+
 
 void RawBoard::Load (const RawBoard& save_board) {
   memcpy(this, &save_board, sizeof(RawBoard));
   check ();
 }
+
 
 void RawBoard::SetKomi (float fkomi) {
   komi_inverse = int (ceil (-fkomi));
@@ -419,7 +434,8 @@ void RawBoard::PlayLegal (Player player, Vertex v) { // TODO test with move
   check ();
 
   tmp_vertex_set.Clear ();
-
+  hash3x3_changed.Clear ();
+  
   ASSERT (player.IsValid());
   ASSERT (v.IsValid());
   ASSERT (IsLegal (player, v));
@@ -487,6 +503,7 @@ void RawBoard::MaybeInAtari (Vertex v) {
                             chain_id [av.W()] == chain_id [v]);
   
   if (!tmp_vertex_set.IsMarked (av)) {
+    hash3x3_changed.Push (av);
     tmp_vertex_set.Mark (av);
   }
 }
@@ -505,6 +522,7 @@ void RawBoard::MaybeInAtariEnd (Vertex v) {
                               chain_id [av.S()] == chain_id [v],
                               chain_id [av.W()] == chain_id [v]);
   if (!tmp_vertex_set.IsMarked (av)) {
+    hash3x3_changed.Push (av);
     tmp_vertex_set.Mark (av);
   }
 }
@@ -560,6 +578,7 @@ void RawBoard::place_stone (Player pl, Vertex v) {
     Vertex nbr = v.Nbr (dir);
     hash3x3 [nbr].SetColorAt (dir.Opposite(), color);
     ASSERT (!tmp_vertex_set.IsMarked (nbr));
+    hash3x3_changed.Push (nbr);
     tmp_vertex_set.Mark (nbr);
   });
 
@@ -596,6 +615,7 @@ void RawBoard::remove_stone (Vertex v) {
   // TODO test if template wouldn't be more efficient
   hash3x3 [v].ResetAtariBits();
   if (!tmp_vertex_set.IsMarked (v)) {
+    hash3x3_changed.Push (v);
     tmp_vertex_set.Mark (v);
   }
 
@@ -603,6 +623,7 @@ void RawBoard::remove_stone (Vertex v) {
     Vertex nbr = v.Nbr (dir);
     hash3x3 [nbr].SetColorAt (dir.Opposite(), Color::Empty());
     if (!tmp_vertex_set.IsMarked (nbr)) {
+      hash3x3_changed.Push (nbr);
       tmp_vertex_set.Mark (nbr);
     }
   });
@@ -858,6 +879,7 @@ void RawBoard::PlayoutTest (bool print_moves) {
   NatMap <Player, uint> win_cnt (0);
   uint move_count = 0;
   uint move_count2 = 0;
+  uint hash_changed_count = 0;
 
   rep (ii, 10000) {
     board.Load (empty);
@@ -896,11 +918,13 @@ void RawBoard::PlayoutTest (bool print_moves) {
       }
 
       board.PlayLegal (pl, v);
+      hash_changed_count += board.Hash3x3ChangedCount ();
 
-      if (print_moves) {
+      if (print_moves && ii < 1000) {
         cerr << move_count2 << ":"
              << v.ToGtpString () << " "
-             << "(" << random_idx << "/" << legals.Size () + 1 << ")"
+             << "(" << random_idx << "/" << legals.Size () + 1 << ") "
+             << board.Hash3x3ChangedCount ()
              << endl;
       }
     }
@@ -913,12 +937,15 @@ void RawBoard::PlayoutTest (bool print_moves) {
     << "board_test ok: "
     << win_cnt [Player::Black ()] << "/"
     << win_cnt [Player::White ()] << " "
-    << move_count << endl;
+    << move_count << " "
+    << hash_changed_count << " "
+    << endl;
 
   CHECK (win_cnt [Player::Black()] == 4448);
   CHECK (win_cnt [Player::White()] == 5552);
   CHECK (move_count  == move_count2);
   CHECK (move_count2 == 1115760);
+  CHECK (hash_changed_count == 10002578);
 }
 
 
