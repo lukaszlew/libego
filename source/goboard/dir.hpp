@@ -16,6 +16,10 @@ public:
 
   bool IsSimple4 () const { return GetRaw() < 4; }
 
+  Dir Opposite () {
+    return OfRaw (((raw + 2) & 3) | (raw & 4));
+  }
+
   static const uint kBound = 8;
 
 private:
