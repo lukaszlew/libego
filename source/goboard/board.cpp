@@ -485,7 +485,10 @@ void RawBoard::MaybeInAtari (Vertex v) {
                             chain_id [av.E()] == chain_id [v],
                             chain_id [av.S()] == chain_id [v],
                             chain_id [av.W()] == chain_id [v]);
-  tmp_vertex_set.Mark (av);
+  
+  if (!tmp_vertex_set.IsMarked (av)) {
+    tmp_vertex_set.Mark (av);
+  }
 }
 
 all_inline
@@ -501,7 +504,9 @@ void RawBoard::MaybeInAtariEnd (Vertex v) {
                               chain_id [av.E()] == chain_id [v],
                               chain_id [av.S()] == chain_id [v],
                               chain_id [av.W()] == chain_id [v]);
-  tmp_vertex_set.Mark (av);
+  if (!tmp_vertex_set.IsMarked (av)) {
+    tmp_vertex_set.Mark (av);
+  }
 }
 
 void RawBoard::merge_chains (Vertex v_base, Vertex v_new) {
@@ -554,6 +559,7 @@ void RawBoard::place_stone (Player pl, Vertex v) {
   FOREACH_DIR (dir, {
     Vertex nbr = v.Nbr (dir);
     hash3x3 [nbr].SetColorAt (dir.Opposite(), color);
+    ASSERT (!tmp_vertex_set.IsMarked (nbr));
     tmp_vertex_set.Mark (nbr);
   });
 
@@ -585,16 +591,20 @@ void RawBoard::remove_stone (Vertex v) {
   hash ^= zobrist->OfPlayerVertex (pl, v);
   player_v_cnt [pl]--;
   color_at [v] = Color::Empty ();
-
+  
   // TODO vector operations here would be a win.
   // TODO test if template wouldn't be more efficient
   hash3x3 [v].ResetAtariBits();
-  tmp_vertex_set.Mark (v);
+  if (!tmp_vertex_set.IsMarked (v)) {
+    tmp_vertex_set.Mark (v);
+  }
 
   FOREACH_DIR (dir, {
     Vertex nbr = v.Nbr (dir);
     hash3x3 [nbr].SetColorAt (dir.Opposite(), Color::Empty());
-    tmp_vertex_set.Mark (nbr);
+    if (!tmp_vertex_set.IsMarked (nbr)) {
+      tmp_vertex_set.Mark (nbr);
+    }
   });
 
   empty_pos [v] = empty_v_cnt;

@@ -73,13 +73,13 @@ public:
 
   void SetAtariBits (bool bN, bool bE, bool bS, bool bW) {
     uint mask = (bN << 16) | (bE << 17) | (bS << 18) | (bW << 19);
-    ASSERT (raw & mask == 0);
+    ASSERT ((raw & mask) == 0);
     raw |= mask;
   }
 
   void UnsetAtariBits (bool bN, bool bE, bool bS, bool bW) {
     uint mask = (bN << 16) | (bE << 17) | (bS << 18) | (bW << 19);
-    ASSERT (raw & mask == mask);
+    ASSERT ((raw & mask) == mask);
     raw &= ~mask;
   }
 
