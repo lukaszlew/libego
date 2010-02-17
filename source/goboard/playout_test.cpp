@@ -8,6 +8,7 @@ void PlayoutTest (bool print_moves) {
   uint move_count = 0;
   uint move_count2 = 0;
   uint hash_changed_count = 0;
+  Sampler sampler (board);
 
   rep (ii, 10000) {
     board.Load (empty);
@@ -20,7 +21,6 @@ void PlayoutTest (bool print_moves) {
                   board.KoVertex() == v ||
                   board.IsLegal (pl, v) == board.Hash3x3At(v).IsLegal(pl), {
                     board.DebugPrint (v);
-                    cerr << pl.ToGtpString () << " to play" << endl;
                   });
         if (v != Vertex::Pass () &&
             board.IsLegal (pl, v) &&
@@ -28,6 +28,13 @@ void PlayoutTest (bool print_moves) {
           legals.Push(v);
         }
       }
+
+      Vertex sampler_v = sampler.SampleMove();
+      IFNCHECK (sampler.last_sum == legals.Size(), {
+          board.DebugPrint ();
+          WW (sampler.last_sum);
+          WW (legals.Size());
+      });
 
       Vertex v;
       uint random_idx = 999;
@@ -38,6 +45,7 @@ void PlayoutTest (bool print_moves) {
         v = legals.Remove (random_idx);
       }
 
+      
       board.PlayLegal (pl, v);
       hash_changed_count += board.Hash3x3ChangedCount ();
 

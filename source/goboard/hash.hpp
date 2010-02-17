@@ -94,8 +94,8 @@ public:
   }
 
   bool IsLegal (Player pl) {
-    NatMap <Color, uint> color_cnt;
-    NatMap <Player, uint> atari_cnt;
+    NatMap <Color, uint> color_cnt(0);
+    NatMap <Player, uint> atari_cnt(0);
 
     ForEachNat (Dir, dir) {
       if (!dir.IsSimple4()) continue;

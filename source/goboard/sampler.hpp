@@ -14,12 +14,16 @@ struct Random {
 
 
 struct Sampler {
-  explicit Sampler (Board& board) : board (board) {
+  explicit Sampler (Board& board) : board (board), gamma ((new Gammas())) {
     ForEachNat (Player, pl) {
       ForEachNat (Hash3x3, hash) {
-        gamma [pl] [hash] = hash.IsLegal (pl) ? 1.0 : 0.0;
+        (*gamma) [pl] [hash] = hash.IsLegal (pl) ? 1.0 : 0.0;
       }
     }
+  }
+
+  ~Sampler () {
+    delete gamma;
   }
 
   Vertex SampleMove () {
@@ -29,7 +33,8 @@ struct Sampler {
     rep (ii, board.EmptyVertexCount()) {
       Vertex v = board.EmptyVertex (ii);
       if (v == board.KoVertex ()) continue;
-      gamma_sum += gamma [pl] [board.Hash3x3At (v)];
+      if (board.IsEyelike (pl, v)) continue;
+      gamma_sum += (*gamma) [pl] [board.Hash3x3At (v)];
     }
 
     last_sum = gamma_sum;
@@ -42,14 +47,16 @@ struct Sampler {
     rep (ii, board.EmptyVertexCount()) {
       Vertex v = board.EmptyVertex (ii);
       if (v == board.KoVertex ()) continue;
-      gamma_sum += gamma [pl] [board.Hash3x3At (v)];
+      gamma_sum += (*gamma) [pl] [board.Hash3x3At (v)];
       if (gamma_sum >= sample) return v;
     }
     CHECK (false);
   }
 
-  NatMap<Player, NatMap<Hash3x3, double> > gamma;
+  typedef NatMap<Player, NatMap<Hash3x3, double> > Gammas;
+
   Board& board;
+  Gammas* gamma;
   Random random;
   double last_sum;
 };

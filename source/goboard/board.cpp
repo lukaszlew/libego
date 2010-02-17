@@ -226,6 +226,7 @@ string RawBoard::ToAsciiArt (Vertex mark_v) const {
 
 void RawBoard::DebugPrint (Vertex v) const {
   cerr << ToAsciiArt (v);
+  cerr << ActPlayer().ToGtpString () << " to play" << endl;
 }
 
 
