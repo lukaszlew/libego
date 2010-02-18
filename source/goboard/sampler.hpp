@@ -14,6 +14,7 @@ struct Sampler {
       }
     }
     act_gamma [Vertex::Any()] = 0.0;
+    act_gamma_sum = 0.0; // to avoid warning
   }
 
 
@@ -23,19 +24,28 @@ struct Sampler {
 
 
   void NewPlayout () {
+    Player pl = board.ActPlayer ();
+
+    // Prepare act_gamma and act_gamma_sum
+    act_gamma_sum = 0.0;
+
+    rep (ii, board.EmptyVertexCount()) {
+      Vertex v = board.EmptyVertex (ii);
+      act_gamma [v] = (*gamma) [pl] [board.Hash3x3At (v)];
+      act_gamma_sum += act_gamma[v];
+    }
+
+    Vertex ko_v = board.KoVertex ();
+    act_gamma_sum -= act_gamma [ko_v];
+    act_gamma [ko_v] = 0.0;
   }
 
 
   void MovePlayed () {
-  }
-
-
-  Vertex SampleMove () {
     Player pl = board.ActPlayer ();
-    double sum;
 
     // Prepare act_gamma and act_gamma_sum
-    sum = 0.0;
+    double sum = 0.0;
 
     rep (ii, board.EmptyVertexCount()) {
       Vertex v = board.EmptyVertex (ii);
@@ -48,12 +58,15 @@ struct Sampler {
     act_gamma [ko_v] = 0.0;
 
     act_gamma_sum = sum;
+  }
 
+
+  Vertex SampleMove () {
     // Select move based on act_gamma and act_gamma_sum
     double sample = drand48() * act_gamma_sum;
     ASSERT (sample < act_gamma_sum || act_gamma_sum == 0.0);
     
-    sum = 0.0;
+    double sum = 0.0;
     rep (ii, board.EmptyVertexCount()) {
       Vertex v = board.EmptyVertex (ii);
       sum += act_gamma [v];
@@ -71,9 +84,12 @@ struct Sampler {
 
   Board& board;
   Gammas* gamma;
-  double act_gamma_sum;
 
+  // The invariant is that act_gamma[v] is correct for all empty 
+  // vertices except KoVertex() where it is 0.0.
+  // act_gamma_sum is a sum of the above.
   NatMap <Vertex, double> act_gamma;
+  double act_gamma_sum;
 
   const static bool kCheckAsserts = false;
 };

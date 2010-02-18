@@ -102,6 +102,7 @@ void SamplerPlayoutTest (bool print_moves) {
 
   rep (ii, 10000) {
     board.Load (empty);
+    sampler.NewPlayout();
 
     // Plaout loop
     while (!board.BothPlayerPass ()) {
@@ -115,6 +116,7 @@ void SamplerPlayoutTest (bool print_moves) {
 
       // play_it
       board.PlayLegal (pl, v);
+      sampler.MovePlayed();
 
       hash_changed_count += board.Hash3x3ChangedCount ();
 
