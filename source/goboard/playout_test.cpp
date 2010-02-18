@@ -12,6 +12,7 @@ void PlayoutTest (bool print_moves) {
 
   rep (ii, 10000) {
     board.Load (empty);
+    sampler.NewPlayout ();
 
     // Plaout loop
     while (!board.BothPlayerPass ()) {
@@ -36,9 +37,9 @@ void PlayoutTest (bool print_moves) {
       // random move
       Vertex sampler_v = sampler.SampleMove();
       CHECK (board.IsLegal (pl, sampler_v));
-      IFNCHECK (sampler.act_gamma_sum == legals.Size(), {
+      IFNCHECK (sampler.act_gamma_sum [pl] == legals.Size(), {
           board.DebugPrint ();
-          WW (sampler.act_gamma_sum);
+          WW (sampler.act_gamma_sum [pl]);
           WW (legals.Size());
       });
 
@@ -53,7 +54,7 @@ void PlayoutTest (bool print_moves) {
 
       // play_it
       board.PlayLegal (pl, v);
-
+      sampler.MovePlayed ();
 
       hash_changed_count += board.Hash3x3ChangedCount ();
 
