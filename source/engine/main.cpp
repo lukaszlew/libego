@@ -68,6 +68,12 @@ void GtpBoardTest (Gtp::Io& io) {
   PlayoutTest (print_moves);
 }
 
+void GtpSamplerTest (Gtp::Io& io) {
+  bool print_moves = io.Read<bool> (false);
+  io.CheckEmpty ();
+  SamplerPlayoutTest (print_moves);
+}
+
 int main(int argc, char** argv) {
   // no buffering to work well with gogui
   setbuf (stdout, NULL);
@@ -79,6 +85,7 @@ int main(int argc, char** argv) {
   gtp.RegisterStatic("protocol_version", "2");
   gtp.Register ("benchmark", GtpBenchmark);
   gtp.Register ("board_test", GtpBoardTest);
+  gtp.Register ("sampler_test", GtpSamplerTest);
 
   Engine& engine = *(new Engine());
   MctsGtp mcts_gtp (engine);
