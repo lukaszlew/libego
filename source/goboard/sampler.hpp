@@ -7,7 +7,7 @@ struct Sampler {
   explicit Sampler (Board& board) : board (board), gamma ((new Gammas())) {
     ForEachNat (Player, pl) {
       ForEachNat (Hash3x3, hash) {
-        (*gamma) [pl] [hash] = 
+        (*gamma) [hash] [pl] = 
           (hash.IsLegal (pl) && !hash.IsEyelike (pl))
           ? 1.0
           : 0.0;
@@ -31,7 +31,7 @@ struct Sampler {
 
     rep (ii, board.EmptyVertexCount()) {
       Vertex v = board.EmptyVertex (ii);
-      act_gamma [v] = (*gamma) [pl] [board.Hash3x3At (v)];
+      act_gamma [v] = (*gamma) [board.Hash3x3At (v)] [pl];
       act_gamma_sum += act_gamma[v];
     }
 
@@ -49,7 +49,7 @@ struct Sampler {
 
     rep (ii, board.EmptyVertexCount()) {
       Vertex v = board.EmptyVertex (ii);
-      act_gamma [v] = (*gamma) [pl] [board.Hash3x3At (v)];
+      act_gamma [v] = (*gamma) [board.Hash3x3At (v)] [pl];
       sum += act_gamma[v];
     }
 
@@ -80,7 +80,7 @@ struct Sampler {
   }
 
 
-  typedef NatMap<Player, NatMap<Hash3x3, double> > Gammas;
+  typedef NatMap<Hash3x3, NatMap<Player, double> > Gammas;
 
   Board& board;
   Gammas* gamma;
