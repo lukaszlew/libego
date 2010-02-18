@@ -139,9 +139,9 @@ void SamplerPlayoutTest (bool print_moves) {
     << hash_changed_count << " "
     << endl;
 
-  CHECK (win_cnt [Player::Black()] == 4460);
-  CHECK (win_cnt [Player::White()] == 5540);
+  CHECK (win_cnt [Player::Black()] == 4473);
+  CHECK (win_cnt [Player::White()] == 5527);
   CHECK (move_count  == move_count2);
-  CHECK (move_count2 == 1112717);
-  CHECK (hash_changed_count == 9969260);
+  CHECK (move_count2 == 1109768);
+  CHECK (hash_changed_count == 9941675);
 }

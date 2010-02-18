@@ -43,7 +43,7 @@ struct Sampler {
     act_gamma_sum = sum;
 
     // Select move based on act_gamma and act_gamma_sum
-    double sample = (act_gamma_sum > 0.0) ? drand48() * act_gamma_sum : 0.0;
+    double sample = drand48() * act_gamma_sum;
     ASSERT (sample < act_gamma_sum || act_gamma_sum == 0.0);
     
     sum = 0.0;
@@ -51,7 +51,7 @@ struct Sampler {
       Vertex v = board.EmptyVertex (ii);
       sum += act_gamma [v];
       if (sum > sample) {
-        CHECK (act_gamma_sum > 0.0);
+        ASSERT (act_gamma_sum > 0.0);
         return v;
       }
     }
