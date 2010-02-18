@@ -112,5 +112,7 @@ int main(int argc, char** argv) {
     gtp.Run (cin, cout);
   }
 
+  delete &engine;
+
   return 0;
 }
