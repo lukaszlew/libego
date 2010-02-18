@@ -28,7 +28,8 @@ struct Sampler {
     rep (ii, board.EmptyVertexCount()) {
       Vertex v = board.EmptyVertex (ii);
       if (v == board.KoVertex ()) continue;
-      gamma_sum += (*gamma) [pl] [board.Hash3x3At (v)];
+      act_gamma [v] = (*gamma) [pl] [board.Hash3x3At (v)];
+      gamma_sum += act_gamma[v];
     }
 
     last_sum = gamma_sum;
@@ -42,9 +43,11 @@ struct Sampler {
     rep (ii, board.EmptyVertexCount()) {
       Vertex v = board.EmptyVertex (ii);
       if (v == board.KoVertex ()) continue;
-      gamma_sum += (*gamma) [pl] [board.Hash3x3At (v)];
+      gamma_sum += act_gamma [v];
       if (gamma_sum > sample) return v;
     }
+
+    return Vertex::Pass();
     CHECK (false);
   }
 
@@ -55,7 +58,9 @@ struct Sampler {
   Gammas* gamma;
   double last_sum;
 
-  const static bool kCheckAsserts = true;
+  NatMap <Vertex, double> act_gamma;
+
+  const static bool kCheckAsserts = false;
 };
 
 #endif
