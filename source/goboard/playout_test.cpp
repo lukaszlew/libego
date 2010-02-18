@@ -36,9 +36,9 @@ void PlayoutTest (bool print_moves) {
       // random move
       Vertex sampler_v = sampler.SampleMove();
       CHECK (board.IsLegal (pl, sampler_v));
-      IFNCHECK (sampler.last_sum == legals.Size(), {
+      IFNCHECK (sampler.act_gamma_sum == legals.Size(), {
           board.DebugPrint ();
-          WW (sampler.last_sum);
+          WW (sampler.act_gamma_sum);
           WW (legals.Size());
       });
 

@@ -23,28 +23,28 @@ struct Sampler {
 
   Vertex SampleMove () {
     Player pl = board.ActPlayer ();
+    double sum;
 
-    double gamma_sum = 0.0;
+    sum = 0.0;
     rep (ii, board.EmptyVertexCount()) {
       Vertex v = board.EmptyVertex (ii);
       if (v == board.KoVertex ()) continue;
       act_gamma [v] = (*gamma) [pl] [board.Hash3x3At (v)];
-      gamma_sum += act_gamma[v];
+      sum += act_gamma[v];
     }
+    act_gamma_sum = sum;
 
-    last_sum = gamma_sum;
+    if (act_gamma_sum == 0.0) return Vertex::Pass (); // TODO gamma for pass
 
-    if (gamma_sum == 0.0) return Vertex::Pass (); // TODO gamma for pass
-
-    double sample = drand48() * gamma_sum;
-    ASSERT (sample < gamma_sum);
-
-    gamma_sum = 0.0;
+    double sample = drand48() * act_gamma_sum;
+    ASSERT (sample < act_gamma_sum);
+    
+    sum = 0.0;
     rep (ii, board.EmptyVertexCount()) {
       Vertex v = board.EmptyVertex (ii);
       if (v == board.KoVertex ()) continue;
-      gamma_sum += act_gamma [v];
-      if (gamma_sum > sample) return v;
+      sum += act_gamma [v];
+      if (sum > sample) return v;
     }
 
     return Vertex::Pass();
@@ -56,7 +56,7 @@ struct Sampler {
 
   Board& board;
   Gammas* gamma;
-  double last_sum;
+  double act_gamma_sum;
 
   NatMap <Vertex, double> act_gamma;
 
