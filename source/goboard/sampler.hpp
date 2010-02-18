@@ -28,10 +28,19 @@ struct Sampler {
     sum = 0.0;
     rep (ii, board.EmptyVertexCount()) {
       Vertex v = board.EmptyVertex (ii);
-      if (v == board.KoVertex ()) continue;
       act_gamma [v] = (*gamma) [pl] [board.Hash3x3At (v)];
       sum += act_gamma[v];
     }
+
+    // TODO ko  is always last in EmptyVertex seq.
+    {
+      Vertex ko_v = board.KoVertex ();
+      if (ko_v != Vertex::Any ()) {
+        sum -= act_gamma [ko_v];
+        act_gamma [ko_v] = 0.0;
+      }
+    }
+
     act_gamma_sum = sum;
 
     if (act_gamma_sum == 0.0) return Vertex::Pass (); // TODO gamma for pass
@@ -42,7 +51,6 @@ struct Sampler {
     sum = 0.0;
     rep (ii, board.EmptyVertexCount()) {
       Vertex v = board.EmptyVertex (ii);
-      if (v == board.KoVertex ()) continue;
       sum += act_gamma [v];
       if (sum > sample) return v;
     }
