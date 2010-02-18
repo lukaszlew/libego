@@ -17,12 +17,15 @@ namespace Benchmark {
 
   void DoPlayouts (uint playout_cnt, NatMap<Player, uint>* win_cnt) {
     rep (ii, playout_cnt) {
+
       board.Load (empty_board);
+      sampler.NewPlayout ();
+
       while (!board.BothPlayerPass ()) {
         Player pl = board.ActPlayer ();
-        //Vertex v  = board.RandomLightMove (pl, random);
-        Vertex v = sampler.SampleMove ();
+        Vertex v = sampler.SampleMove (); //board.RandomLightMove (pl, random);
         board.PlayLegal (pl, v);
+        sampler.MovePlayed ();
       }
 
       (*win_cnt) [board.PlayoutWinner ()] ++;
