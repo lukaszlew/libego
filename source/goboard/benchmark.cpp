@@ -10,8 +10,8 @@
 namespace Benchmark {
 
   uint move_count = 0;
-  RawBoard empty_board;
-  RawBoard board;
+  Board empty_board;
+  Board board;
   FastRandom random (123);
   //Sampler sampler (board);
 
