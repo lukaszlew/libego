@@ -25,38 +25,38 @@ struct Sampler {
     Player pl = board.ActPlayer ();
     double sum;
 
+    // Prepare act_gamma and act_gamma_sum
     sum = 0.0;
     rep (ii, board.EmptyVertexCount()) {
       Vertex v = board.EmptyVertex (ii);
       act_gamma [v] = (*gamma) [pl] [board.Hash3x3At (v)];
       sum += act_gamma[v];
     }
-
-    // TODO ko  is always last in EmptyVertex seq.
     {
+      // TODO ko is always last in EmptyVertex seq.
       Vertex ko_v = board.KoVertex ();
       if (ko_v != Vertex::Any ()) {
         sum -= act_gamma [ko_v];
         act_gamma [ko_v] = 0.0;
       }
     }
-
     act_gamma_sum = sum;
 
-    if (act_gamma_sum == 0.0) return Vertex::Pass (); // TODO gamma for pass
-
-    double sample = drand48() * act_gamma_sum;
-    ASSERT (sample < act_gamma_sum);
+    // Select move based on act_gamma and act_gamma_sum
+    double sample = (act_gamma_sum > 0.0) ? drand48() * act_gamma_sum : 0.0;
+    ASSERT (sample < act_gamma_sum || act_gamma_sum == 0.0);
     
     sum = 0.0;
     rep (ii, board.EmptyVertexCount()) {
       Vertex v = board.EmptyVertex (ii);
       sum += act_gamma [v];
-      if (sum > sample) return v;
+      if (sum > sample) {
+        CHECK (act_gamma_sum > 0.0);
+        return v;
+      }
     }
 
     return Vertex::Pass();
-    CHECK (false);
   }
 
 
