@@ -84,7 +84,7 @@ void PlayoutTest (bool print_moves) {
   CHECK (win_cnt [Player::White()] == 5618);
   CHECK (move_count  == move_count2);
   CHECK (move_count2 == 1112165);
-  CHECK (hash_changed_count == 9965409);
+  CHECK (hash_changed_count == 9965396);
 }
 
 
@@ -146,5 +146,5 @@ void SamplerPlayoutTest (bool print_moves) {
   CHECK (win_cnt [Player::White()] == 5527);
   CHECK (move_count  == move_count2);
   CHECK (move_count2 == 1109768);
-  CHECK (hash_changed_count == 9941675);
+  CHECK (hash_changed_count == 9941634);
 }
