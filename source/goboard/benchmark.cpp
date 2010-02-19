@@ -23,7 +23,8 @@ namespace Benchmark {
 
       while (!board.BothPlayerPass ()) {
         Player pl = board.ActPlayer ();
-        Vertex v = sampler.SampleMove (); //board.RandomLightMove (pl, random);
+        Vertex v = sampler.SampleMove ();
+        //Vertex v = board.RandomLightMove (pl, random);
         board.PlayLegal (pl, v);
         sampler.MovePlayed ();
       }

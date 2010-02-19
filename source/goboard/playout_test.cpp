@@ -9,8 +9,12 @@ void PlayoutTest (bool print_moves) {
   uint move_count2 = 0;
   uint hash_changed_count = 0;
   Sampler sampler (board);
+  uint n = 10000;
+  if (board_size == 19) {
+    n = 1000;
+  }
 
-  rep (ii, 10000) {
+  rep (ii, n) {
     board.Load (empty);
     sampler.NewPlayout ();
 
@@ -80,11 +84,21 @@ void PlayoutTest (bool print_moves) {
     << hash_changed_count << " "
     << endl;
 
-  CHECK (win_cnt [Player::Black()] == 4382);
-  CHECK (win_cnt [Player::White()] == 5618);
-  CHECK (move_count  == move_count2);
-  CHECK (move_count2 == 1112165);
-  CHECK (hash_changed_count == 9965396);
+  if (board_size == 9) {
+    CHECK (win_cnt [Player::Black()] == 4382);
+    CHECK (win_cnt [Player::White()] == 5618);
+    CHECK (move_count  == move_count2);
+    CHECK (move_count2 == 1112165);
+    CHECK (hash_changed_count == 9965396);
+  } else if (board_size == 19) {
+    CHECK (win_cnt [Player::Black()] == 455);
+    CHECK (win_cnt [Player::White()] == 545);
+    CHECK (move_count  == move_count2);
+    CHECK (move_count2 == 454249);
+    CHECK (hash_changed_count == 4076564);
+  } else {
+    CHECK (false);
+  }
 }
 
 
@@ -101,7 +115,10 @@ void SamplerPlayoutTest (bool print_moves) {
 
   srand48 (123);
 
-  rep (ii, 10000) {
+  uint n = 10000;
+  if (board_size == 19) n = 1000;
+
+  rep (ii, n) {
     board.Load (empty);
     sampler.NewPlayout();
 
@@ -142,9 +159,20 @@ void SamplerPlayoutTest (bool print_moves) {
     << hash_changed_count << " "
     << endl;
 
-  CHECK (win_cnt [Player::Black()] == 4473);
-  CHECK (win_cnt [Player::White()] == 5527);
-  CHECK (move_count  == move_count2);
-  CHECK (move_count2 == 1109768);
-  CHECK (hash_changed_count == 9941634);
+
+  if (board_size == 9) {
+    CHECK (win_cnt [Player::Black()] == 4473);
+    CHECK (win_cnt [Player::White()] == 5527);
+    CHECK (move_count  == move_count2);
+    CHECK (move_count2 == 1109768);
+    CHECK (hash_changed_count == 9941634);
+  } else if (board_size == 19) {
+    CHECK (win_cnt [Player::Black()] == 460);
+    CHECK (win_cnt [Player::White()] == 540);
+    CHECK (move_count  == move_count2);
+    CHECK (move_count2 == 454316);
+    CHECK (hash_changed_count == 4077475);
+  } else {
+    CHECK (false);
+  }
 }
