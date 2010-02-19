@@ -134,6 +134,7 @@ public:
 
   // debugging helper
   void DebugPrint (Vertex v = Vertex::Pass ()) const;
+  void Dump () const;
 
   // Clears the board. (It is faster to Load(empty_board))
   void Clear ();

@@ -229,6 +229,12 @@ void RawBoard::DebugPrint (Vertex v) const {
   cerr << ActPlayer().ToGtpString () << " to play" << endl;
 }
 
+void RawBoard::Dump () const {
+  Vertex v = LastVertex();
+  cerr << ToAsciiArt (v);
+  cerr << ActPlayer().ToGtpString () << " to play" << endl;
+}
+
 
 void RawBoard::Clear () {
   empty_v_cnt = 0;

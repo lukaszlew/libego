@@ -42,11 +42,12 @@ void PlayoutTest (bool print_moves) {
       Vertex sampler_v = sampler.SampleMove();
       CHECK (board.IsLegal (pl, sampler_v));
 
+
       IFNCHECK (fabs (sampler.act_gamma_sum [pl] - legals.Size()) < 0.000001, {
-          board.DebugPrint (board.LastVertex());
-          WW (sampler.act_gamma_sum [pl]);
-          WW (legals.Size());
-          WW (move_count2);
+        board.DebugPrint (board.LastVertex());
+        WW (sampler.act_gamma_sum [pl]);
+        WW (legals.Size());
+        WW (move_count2);
       });
 
       Vertex v;
