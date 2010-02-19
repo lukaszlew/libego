@@ -12,8 +12,12 @@ struct Sampler {
           ? 1.0
           : 0.0;
       }
-    act_gamma [Vertex::Any()] [pl] = 0.0;
-    act_gamma_sum [pl] = 0.0; // to avoid warning
+    }
+    ForEachNat (Player, pl) {
+      ForEachNat (Vertex, v) {
+        act_gamma [v] [pl] = 0.0;
+      }
+      act_gamma_sum [pl] = 0.0;
     }
   }
 
@@ -77,7 +81,7 @@ struct Sampler {
       uint n = board.Hash3x3ChangedCount ();
       rep (ii, n) {
         Vertex v = board.Hash3x3Changed (ii);
-        if (board.ColorAt(v) != Color::Empty()) continue;
+        ASSERT (board.ColorAt(v) == Color::Empty());
 
         act_gamma_sum [pl] -= act_gamma [v] [pl];
         act_gamma [v] [pl] = (*gamma) [board.Hash3x3At (v)] [pl];
