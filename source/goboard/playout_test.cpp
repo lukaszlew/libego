@@ -91,13 +91,13 @@ void PlayoutTest (bool print_moves) {
     CHECK (win_cnt [Player::White()] == 5618);
     CHECK (move_count  == move_count2);
     CHECK (move_count2 == 1112165);
-    CHECK (hash_changed_count == 9965396);
+    CHECK (hash_changed_count == 3709768);
   } else if (board_size == 19) {
     CHECK (win_cnt [Player::Black()] == 455);
     CHECK (win_cnt [Player::White()] == 545);
     CHECK (move_count  == move_count2);
     CHECK (move_count2 == 454249);
-    CHECK (hash_changed_count == 4076564);
+    CHECK (hash_changed_count == 1689144);
   } else {
     CHECK (false);
   }
@@ -167,13 +167,13 @@ void SamplerPlayoutTest (bool print_moves) {
     CHECK (win_cnt [Player::White()] == 5527);
     CHECK (move_count  == move_count2);
     CHECK (move_count2 == 1109768);
-    CHECK (hash_changed_count == 9941634);
+    CHECK (hash_changed_count == 3703030);
   } else if (board_size == 19) {
     CHECK (win_cnt [Player::Black()] == 460);
     CHECK (win_cnt [Player::White()] == 540);
     CHECK (move_count  == move_count2);
     CHECK (move_count2 == 454316);
-    CHECK (hash_changed_count == 4077475);
+    CHECK (hash_changed_count == 1689165);
   } else {
     CHECK (false);
   }

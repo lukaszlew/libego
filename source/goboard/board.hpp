@@ -244,7 +244,7 @@ private:
 
   NatMap<Vertex, uint>         play_count;
   NatMap<Vertex, Hash3x3>      hash3x3; // 3x3 patterns
-  FastStack <Vertex, Vertex::kBound> hash3x3_changed;
+  FastStack <Vertex, kArea>    hash3x3_changed;
 
   NatSet<Vertex> tmp_vertex_set;
 

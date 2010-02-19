@@ -511,6 +511,8 @@ void RawBoard::MaybeInAtari (Vertex v) {
   if (!chain_at(v).IsInAtari ()) return;
 
   Vertex av = chain_at(v).AtariVertex();
+  ASSERT (color_at [av] == Color::Empty ());
+
   hash3x3[av].SetAtariBits (chain_id [av.N()] == chain_id [v],
                             chain_id [av.E()] == chain_id [v],
                             chain_id [av.S()] == chain_id [v],
@@ -531,6 +533,8 @@ void RawBoard::MaybeInAtariEnd (Vertex v) {
   if (!chain_at(v).IsInAtari ()) return;
 
   Vertex av = chain_at(v).AtariVertex();
+  ASSERT (color_at [av] == Color::Empty ());
+
   hash3x3[av].UnsetAtariBits (chain_id [av.N()] == chain_id [v],
                               chain_id [av.E()] == chain_id [v],
                               chain_id [av.S()] == chain_id [v],
@@ -592,8 +596,10 @@ void RawBoard::place_stone (Player pl, Vertex v) {
     Vertex nbr = v.Nbr (dir);
     hash3x3 [nbr].SetColorAt (dir.Opposite(), color);
     ASSERT (!tmp_vertex_set.IsMarked (nbr));
-    hash3x3_changed.Push (nbr);
-    tmp_vertex_set.Mark (nbr);
+    if (color_at [nbr] == Color::Empty()) {
+      hash3x3_changed.Push (nbr);
+      tmp_vertex_set.Mark (nbr);
+    }
   });
 
   play_count[v] += 1;
@@ -636,7 +642,7 @@ void RawBoard::remove_stone (Vertex v) {
   FOREACH_DIR (dir, {
     Vertex nbr = v.Nbr (dir);
     hash3x3 [nbr].SetColorAt (dir.Opposite(), Color::Empty());
-    if (!tmp_vertex_set.IsMarked (nbr)) {
+    if (!tmp_vertex_set.IsMarked (nbr) && color_at [nbr] == Color::Empty ()) {
       hash3x3_changed.Push (nbr);
       tmp_vertex_set.Mark (nbr);
     }
