@@ -8,6 +8,6 @@
 // TODO this have to be renamed to max_board_size
 // TODO better use of CMake
 
-const uint board_size = 19;
+const uint board_size = 9;
 
 #endif

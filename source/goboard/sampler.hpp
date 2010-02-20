@@ -44,8 +44,8 @@ struct Sampler {
     }
   }
 
-
-  void MovePlayed () {
+  // non-incremental version.
+  void MovePlayed_Slow () {
     Player pl = board.ActPlayer ();
 
     // Prepare act_gamma and act_gamma_sum
@@ -65,7 +65,7 @@ struct Sampler {
   }
 
 
-  void MovePlayed2 () {
+  void MovePlayed () {
     Player last_pl = board.LastPlayer();
     Vertex last_v  = board.LastVertex ();
 
@@ -75,9 +75,12 @@ struct Sampler {
     act_gamma_sum [last_pl] += act_gamma [ko_v] [last_pl];
 
     ForEachNat (Player, pl) {
+      // One new occupied intersection.
+      ASSERT (board.ColorAt(last_v) != Color::Empty());
       act_gamma_sum [pl] -= act_gamma [last_v] [pl];
       act_gamma [last_v] [pl] = 0.0;
 
+      // All new gammas.
       uint n = board.Hash3x3ChangedCount ();
       rep (ii, n) {
         Vertex v = board.Hash3x3Changed (ii);
@@ -89,12 +92,12 @@ struct Sampler {
       }
     }
 
+    // New illegal ko point.
     Player act_pl  = board.ActPlayer();
     ko_v = board.KoVertex();
+    ASSERT (board.ColorAt(ko_v) == Color::Empty() || ko_v == Vertex::Any ());
     act_gamma_sum [act_pl] -= act_gamma [ko_v] [act_pl];
     act_gamma [ko_v] [act_pl] = 0.0;
-
-    // TODO ko after pass, ko recapture 
   }
 
 
