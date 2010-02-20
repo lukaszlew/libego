@@ -50,6 +50,9 @@ class Hash3x3 : public Nat <Hash3x3> {
 public:
   explicit Hash3x3 () : Nat <Hash3x3>() {};
 
+  static Hash3x3 Any () {
+    return OfRaw (0xfffff);
+  }
 
   // ataris have to be marked manually
   static Hash3x3 OfBoard (const NatMap <Vertex, Color>& color_at, Vertex v) {

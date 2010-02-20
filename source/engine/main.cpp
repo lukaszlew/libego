@@ -51,6 +51,8 @@ static const bool kCheckAsserts = false;
 #include "engine.hpp"
 #include "mcts_gtp.hpp"
 
+#include "all_hash3x3.hpp"
+
 // TODO automatize through CMake (and add git SHA1)
 #ifndef VERSION
 #define VERSION unknown
