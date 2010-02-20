@@ -52,6 +52,7 @@ static const bool kCheckAsserts = false;
 #include "mcts_gtp.hpp"
 
 #include "all_hash3x3.hpp"
+All2051Hash3x3 all_hash3x3;
 
 // TODO automatize through CMake (and add git SHA1)
 #ifndef VERSION

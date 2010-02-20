@@ -541,6 +541,10 @@ void RawBoard::MaybeInAtariEnd (Vertex v) {
   Vertex av = chain_at(v).AtariVertex();
   ASSERT (color_at [av] == Color::Empty ());
 
+  // This may not be needed, in case when atari bits were not set yet.
+  // For instance the stone we play is about to be in atari, but
+  // captures sth. Then chain_at(v).IsInAtari is true, but atari bits
+  // are not set yet.
   hash3x3[av].UnsetAtariBits (chain_id [av.N()] == chain_id [v],
                               chain_id [av.E()] == chain_id [v],
                               chain_id [av.S()] == chain_id [v],
@@ -580,6 +584,7 @@ void RawBoard::remove_chain (Vertex v) {
   do {
     vertex_for_each_4_nbr (act_v, nbr_v, {
       ASSERT (color_at[nbr_v] != old_color);
+      // These two must be in this order.
       MaybeInAtariEnd (nbr_v);
       chain_at(nbr_v).AddLib (act_v);
     });

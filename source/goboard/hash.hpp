@@ -79,14 +79,12 @@ public:
 
   void SetAtariBits (bool bN, bool bE, bool bS, bool bW) {
     uint mask = (bN << 16) | (bE << 17) | (bS << 18) | (bW << 19);
-    ASSERT ((raw & mask) == 0);
     raw |= mask;
   }
 
 
   void UnsetAtariBits (bool bN, bool bE, bool bS, bool bW) {
     uint mask = (bN << 16) | (bE << 17) | (bS << 18) | (bW << 19);
-    ASSERT ((raw & mask) == mask);
     raw &= ~mask;
   }
 
@@ -98,7 +96,7 @@ public:
 
   bool IsInAtari (Dir dir) const {
     ASSERT (dir.IsSimple4());
-    ASSERT (ColorAt(dir).IsPlayer());
+    //ASSERT (ColorAt(dir).IsPlayer());
     return (raw >> (16 + dir.GetRaw())) & 1;
   }
 
@@ -153,8 +151,11 @@ public:
       ((raw >> 6) & 0x00303); // new N and NW
 
     uint raw90_ataris =
-      ((raw << 1) & 0xd0000) |
+      ((raw << 1) & 0xe0000) |
       ((raw >> 3) & 0x10000); // new N and NW
+
+    ASSERT ((raw90_colors & 0xffff)  == raw90_colors);
+    ASSERT ((raw90_ataris & 0xf0000) == raw90_ataris);
     
     return OfRaw (raw90_colors | raw90_ataris);
   }
@@ -198,6 +199,25 @@ public:
       }
     }
     out << " " << hex << raw;
+    return out.str();
+  }
+
+  string ToAsciiArt () const {
+    ostringstream out;
+    out
+      << ColorAt(Dir::NW()).ToShowboardChar () << " "
+      << ColorAt(Dir::N ()).ToShowboardChar () << (IsInAtari(Dir::N()) ? "!" : " ")
+      << ColorAt(Dir::NE()).ToShowboardChar () << " "
+      << endl
+      << ColorAt(Dir::W ()).ToShowboardChar () << (IsInAtari(Dir::W()) ? "!" : " ")
+      << "." << " "
+      << ColorAt(Dir::E ()).ToShowboardChar () << (IsInAtari(Dir::E()) ? "!" : " ")
+      << endl
+      << ColorAt(Dir::SW()).ToShowboardChar () << " "
+      << ColorAt(Dir::S ()).ToShowboardChar () << (IsInAtari(Dir::S()) ? "!" : " ")
+      << ColorAt(Dir::SE()).ToShowboardChar () << " "
+      << endl;
+
     return out.str();
   }
 
