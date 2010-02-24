@@ -79,6 +79,11 @@ void GtpSamplerTest (Gtp::Io& io) {
   SamplerPlayoutTest (print_moves);
 }
 
+void GtpMmTest (Gtp::Io& io) {
+  io.CheckEmpty ();
+  BradleyTerry::Test ();
+}
+
 int main(int argc, char** argv) {
   // no buffering to work well with gogui
   setbuf (stdout, NULL);
@@ -91,6 +96,7 @@ int main(int argc, char** argv) {
   gtp.Register ("benchmark", GtpBenchmark);
   gtp.Register ("board_test", GtpBoardTest);
   gtp.Register ("sampler_test", GtpSamplerTest);
+  gtp.Register ("mm_test", GtpMmTest);
 
   Engine& engine = *(new Engine());
   MctsGtp mcts_gtp (engine);
