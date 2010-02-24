@@ -9,8 +9,8 @@ namespace BradleyTerry {
 
 // -----------------------------------------------------------------------------
 
-const uint feature_count = 5;
-  const uint level_count [feature_count] = { 5, 4, 3, 2, 3 };
+const uint feature_count = 3;
+  const uint level_count [feature_count] = { 20, 3, 2 };
 
 
 // -----------------------------------------------------------------------------
@@ -64,7 +64,7 @@ struct Gammas {
     ostringstream out;
     rep (feature , feature_count) {
       rep (level , level_count [feature]) {
-        out << setprecision(6) << setw (10) << Get (feature, level) << " ";
+        out << setprecision(5) << setw (8) << log (Get (feature, level)) << " ";
       }
       out << " | ";
     }
@@ -231,7 +231,7 @@ void Test () {
 
   rep (feature, feature_count) {
     rep (level, level_count[feature]) {
-      true_gammas.Set (feature, level, exp (3 * drand48 ()));
+      true_gammas.Set (feature, level, exp (5 * drand48 ()));
     }
   }
   
@@ -241,7 +241,7 @@ void Test () {
   gammas = true_gammas;
 
   BtModel model;
-  rep (ii, 100000) {
+  rep (ii, 10000) {
     Match& match = model.NewMatch ();
     rep (jj, 3) { // TODO randomize team number
       Team& team = match.NewTeam ();
