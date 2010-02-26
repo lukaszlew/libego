@@ -55,6 +55,7 @@ static const bool kCheckAsserts = false;
 All2051Hash3x3 all_hash3x3;
 
 #include "mm.hpp"
+#include "mm_train.hpp"
 
 // TODO automatize through CMake (and add git SHA1)
 #ifndef VERSION
