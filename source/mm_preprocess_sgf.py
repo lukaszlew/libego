@@ -3,6 +3,10 @@
 import sys
 import re, os
 
+def toCoords (m):
+    rows = "ABCDEFGHJKLMNOPQRST"
+    return "%s%s" % (rows [ord(m[0]) - ord('a')], 19-ord(m[1]) + ord('a'))
+
 def doFile (name):
     f = open(name, 'rb').read()
     f = filter(lambda g: not g.isspace(), f)
@@ -17,12 +21,18 @@ def doFile (name):
     moves = l[2:]
 
     size = re.search('SZ\\[([^]]*)\\]', header).group(1)
-    komi = re.search('KM\\[([^]]*)\\]', header).group(1)
-
-    rows = "ABCDEFGHJKLMNOPQRST"
-    
     print size
-    print komi
+
+
+    handi = re.search('HA\[[1-9]\]AB((\[..\])+)', header)
+    if handi != None:
+        hcs = handi.group(1).split("[")
+        assert (hcs [0] == "")
+        hcs = hcs[1:]
+        for hc in hcs:
+            assert (len(hc) == 3)
+            assert (hc[2] == ']')
+            print "B", toCoords (hc[:2])
 
 
     for m in moves:
@@ -33,7 +43,7 @@ def doFile (name):
         if (len(m) == 3): 
             print "%s pass" % (m[0])
         else:
-            print "%s %s%s" % (m[0], rows [ord(m[2]) - ord('a')], 19-ord(m[3]) + ord('a'))
+            print "%s %s" % (m[0], toCoords (m[2:4]))
     print
 
 
