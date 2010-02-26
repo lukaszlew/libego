@@ -21,7 +21,8 @@ def doFile (name):
     moves = l[2:]
 
     size = re.search('SZ\\[([^]]*)\\]', header).group(1)
-    print size
+
+    ret_moves = []
 
 
     handi = re.search('HA\[[1-9]\]AB((\[..\])+)', header)
@@ -32,7 +33,7 @@ def doFile (name):
         for hc in hcs:
             assert (len(hc) == 3)
             assert (hc[2] == ']')
-            print "B", toCoords (hc[:2])
+            ret_moves.append ("B %s" % toCoords (hc[:2]))
 
 
     for m in moves:
@@ -41,12 +42,17 @@ def doFile (name):
         assert (m[1] == '[')
         assert (m[-1] == ']')
         if (len(m) == 3): 
-            print "%s pass" % (m[0])
+            ret_moves.append ("%s pass" % (m[0]))
         else:
-            print "%s %s" % (m[0], toCoords (m[2:4]))
-    print
+            ret_moves.append ("%s %s" % (m[0], toCoords (m[2:4])))
+
+    return (size, ret_moves)
 
 
 for root, _, files in os.walk(sys.argv[1], topdown=False):
     for name in files:
-        doFile ((os.path.join(root, name)))
+        (size, moves) = doFile ((os.path.join(root, name)))
+        print size
+        print len(moves)
+        print "\n".join (moves)
+        print
