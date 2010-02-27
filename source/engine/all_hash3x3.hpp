@@ -33,37 +33,15 @@ struct All2051Hash3x3 {
     if (!hash.IsLegal (Player::Black()))  return;
     if (min_hash[hash] != Hash3x3::Any()) return;
 
-    FastStack <Hash3x3, 8> all;
+    Hash3x3 all[8];
 
-    Hash3x3 act = hash;
-    rep (kk, 2) {
-      Hash3x3 tmp = act;
-      rep (ii, 4) {
-        all.Push (act);
-        act = act.Rotate90();
-      }
+    hash.GetAll8Symmetries (all);
 
-      CHECK (act == tmp);
-      act = act.Mirror();
-    }
+    rep (ii, 8) CHECK (min_hash [all [ii]] == Hash3x3::Any ());
+    rep (ii, 8) min_hash [all [ii]] = all [0];
 
-    CHECK (act == hash);
-    CHECK (all.Size() == 8);
-
-    uint min_ii = 0;
-    rep (ii, 8) {
-      if (all[ii].GetRaw() < all[min_ii].GetRaw()) min_ii = ii;
-    }
-
-    rep (ii, 8) {
-      CHECK (min_hash [all [ii]] == Hash3x3::Any ());
-    }
-
-    rep (ii, 8) {
-      min_hash [all [ii]] = all [min_ii];
-    }
-    unique.push_back (all [min_ii]);
-    cerr << "New: " << unique.size() << " " << all [min_ii].ToString() << endl;
+    unique.push_back (all [0]);
+    cerr << "New: " << unique.size() << " " << all [0].ToString() << endl;
   }
 
   const Board empty;

@@ -189,6 +189,28 @@ public:
     return ret;
   }
 
+  void GetAll8Symmetries (Hash3x3 all[8]) const {
+    Hash3x3 act = *this;
+    rep (kk, 2) {
+      Hash3x3 tmp = act;
+      rep (ii, 4) {
+        all[ii + kk*4] = act;
+        act = act.Rotate90();
+      }
+
+      ASSERT (act == tmp);
+      act = act.Mirror();
+    }
+
+    ASSERT (act == *this);
+
+    uint min_ii = 0;
+    rep (ii, 8) {
+      if (all[ii].raw < all[min_ii].raw) min_ii = ii;
+    }
+    swap (all[0], all[min_ii]);
+  }
+
 
   string ToString () const {
     ostringstream out;
