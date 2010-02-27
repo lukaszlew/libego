@@ -42,19 +42,20 @@ struct MmTrain {
     }
     cerr << "Reading file..." << endl << flush;
     Read (file);
-    cerr << "Constructing data ..." << endl << flush;
-    Do();
+    cerr << "Harvesting pattern data ..." << endl << flush;
+    Harvest();
     cerr << "Done." << endl << flush;
     file.close ();
   }
 
-  void Do () {
+  void Harvest () {
     rep (game_no, games.size()) {
       const vector<Move> & moves = games[game_no];
       board.Clear ();
       
       rep (move_no, moves.size()) {
         Move m = moves [move_no];
+        HarvestNewMatch (m);
         IFNCHECK (board.IsLegal (m), {
           cerr
             << "Illegal move " << m.ToGtpString()
@@ -65,6 +66,10 @@ struct MmTrain {
         board.PlayLegal (m);
       }
     }
+  }
+
+  void HarvestNewMatch (Move m) {
+    
   }
 
   vector <vector <Move> > games;

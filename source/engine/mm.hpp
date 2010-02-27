@@ -78,8 +78,6 @@ private:
 
 // -----------------------------------------------------------------------------
 
-Gammas gammas;
-
 struct Team {
   Team () {
     levels.resize (feature_count, 0);
@@ -95,7 +93,7 @@ struct Team {
     return levels [feature] == level ? 1.0 : 0.0;
   }
 
-  double TeamGamma () {
+  double TeamGamma (const Gammas& gammas) {
     double mul = 1.0;
     rep (feature, feature_count) {
       mul *= gammas.Get (feature, levels [feature]);
@@ -103,12 +101,12 @@ struct Team {
     return mul;
   }
 
-  double TeamGammaDiff (uint feature, uint level) {
+  double TeamGammaDiff (const Gammas& gammas, uint feature, uint level) {
     if (levels [feature] != level)
       return 0.0;
 
     return
-      TeamGamma () / gammas.Get (feature, levels [feature]);
+      TeamGamma (gammas) / gammas.Get (feature, levels [feature]);
   }
 
   string ToString () {
@@ -136,11 +134,11 @@ struct Match {
     this->winner = winner;
   }
 
-  void SetRandomWinner () {
+  void SetRandomWinner (const Gammas& gammas) {
     vector <double> team_gammas (teams.size());
     double sum = 0.0;
     rep (ii, teams.size()) {
-      team_gammas [ii] = teams [ii].TeamGamma ();
+      team_gammas [ii] = teams [ii].TeamGamma (gammas);
       sum += team_gammas [ii];
     }
     double sample = drand48() * sum;
@@ -159,18 +157,18 @@ struct Match {
     return teams [winner].GammaExponent (feature, level);
   }
 
-  double TotalGammaDiff (uint feature, uint level) {
+  double TotalGammaDiff (const Gammas& gammas, uint feature, uint level) {
     double sum = 0.0;
     rep (ii, teams.size()) {
-      sum += teams[ii].TeamGammaDiff (feature, level);
+      sum += teams[ii].TeamGammaDiff (gammas, feature, level);
     }
     return sum;
   }
 
-  double TotalGamma () {
+  double TotalGamma (const Gammas& gammas) {
     double sum = 0.0;
     rep (ii, teams.size()) {
-      sum += teams[ii].TeamGamma ();
+      sum += teams[ii].TeamGamma (gammas);
     }
     return sum;
   }
@@ -203,8 +201,8 @@ struct BtModel {
     rep (ii, matches.size()) {
       w   += matches [ii].WinnerGammaExponent (feature, level); // TODO precompute
       c_e +=
-        matches [ii].TotalGammaDiff (feature, level) /
-        matches [ii].TotalGamma ();
+        matches [ii].TotalGammaDiff (gammas, feature, level) /
+        matches [ii].TotalGamma (gammas);
     }
 
     gammas.Set (feature, level, w / c_e);
@@ -216,9 +214,11 @@ struct BtModel {
         UpdateGamma (feature, level);
       }
     }
+    gammas.Normalize (); 
   }
 
   vector <Match> matches;
+  Gammas gammas;
 };
 
 // -----------------------------------------------------------------------------
@@ -237,9 +237,6 @@ void Test () {
   
   true_gammas.Normalize (); 
 
-  // just for setting the random winner
-  gammas = true_gammas;
-
   BtModel model;
   rep (ii, 10000) {
     Match& match = model.NewMatch ();
@@ -250,18 +247,15 @@ void Test () {
         team.SetFeatureLevel (feature, level);
       }
     }
-    match.SetRandomWinner ();
+    match.SetRandomWinner (true_gammas);
     //cerr << ii << ": " << match.ToString () << endl;
   }
 
-  gammas.Reset ();
-
   rep (epoch, 100) {
     model.DoFullUpdate ();
-    gammas.Normalize (); 
     WW (epoch);
     cerr << true_gammas.ToString () << endl;
-    cerr << gammas.ToString () << endl << endl;
+    cerr << model.gammas.ToString () << endl << endl;
   }
 
 }
