@@ -3,13 +3,33 @@
 import sys
 import re, os
 
+file = ""
+fail = False
+
 def toCoords (m):
+    if (m in ("tt", "ti")): return "pass"
     rows = "ABCDEFGHJKLMNOPQRST"
-    return "%s%s" % (rows [ord(m[0]) - ord('a')], 19-ord(m[1]) + ord('a'))
+    row = ord(m[0]) - ord('a')
+    col = 19-ord(m[1]) + ord('a')
+    if (row in range(19) and col in range(1,20)):
+        return "%s%d" % (rows [row], col)
+    else:
+        global fail
+        fail = True
 
 def doFile (name):
+    global file, fail
+    file = name
+    fail = False
+
     f = open(name, 'rb').read()
     f = filter(lambda g: not g.isspace(), f)
+
+    f = re.sub ('EV\[[^]]*\]', '', f)
+    f = re.sub ('PW\[[^]]*\]', '', f)
+    f = re.sub ('PB\[[^]]*\]', '', f)
+    f = re.sub ('SO\[[^]]*\]', '', f)
+    f = re.sub ('DT\[[^]]*\]', '', f)
 
     assert (f[0] == '(' and f[-1] == ')')
     f = f[1:-1]
@@ -37,7 +57,9 @@ def doFile (name):
 
 
     for m in moves:
-        assert (len (m) in (3, 5))
+        if not len (m) in (3, 5):
+            fail = True
+            return (19, [])
         assert (m[0] in ('W', 'B'))
         assert (m[1] == '[')
         assert (m[-1] == ']')
@@ -52,7 +74,12 @@ def doFile (name):
 for root, _, files in os.walk(sys.argv[1], topdown=False):
     for name in files:
         (size, moves) = doFile ((os.path.join(root, name)))
-        print size
-        print len(moves)
-        print "\n".join (moves)
-        print
+        if (not fail):
+            print size
+            print len(moves)
+            print "\n".join (moves)
+            print
+        else:
+            sys.stderr.write ("Bad file: ")
+            sys.stderr.write (file)
+            sys.stderr.write ("\n")
