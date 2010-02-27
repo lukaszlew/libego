@@ -56,7 +56,9 @@ def doFile (name):
             assert (hc[2] == ']')
             ret_moves.append ("B %s" % toCoords (hc[:2]))
             handi_n += 1
-        assert handi_n == int (re.search('HA\[([1-9])\]', header).group(1))
+        xx = re.search('HA\[([1-9])\]', header)
+        if xx != None: 
+            assert handi_n == int (xx.group(1))
             
 
 
@@ -75,15 +77,19 @@ def doFile (name):
     return (size, ret_moves)
 
 
-for root, _, files in os.walk(sys.argv[1], topdown=False):
-    for name in files:
-        (size, moves) = doFile ((os.path.join(root, name)))
-        if (not fail):
-            print "file", file
-            print size, len(moves)
-            print "\n".join (moves)
-            print
-        else:
-            sys.stderr.write ("Bad file: ")
-            sys.stderr.write (file)
-            sys.stderr.write ("\n")
+try:
+    for root, _, files in os.walk(sys.argv[1], topdown=False):
+        for name in files:
+            (size, moves) = doFile ((os.path.join(root, name)))
+            if (not fail):
+                print "file", file
+                print size, len(moves)
+                print "\n".join (moves)
+                print
+            else:
+                sys.stderr.write ("Bad file: ")
+                sys.stderr.write (file)
+                sys.stderr.write ("\n")
+except Exception, err:
+    sys.stderr.write (file + "\n")
+    raise err

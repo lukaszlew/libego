@@ -56,12 +56,11 @@ struct MmTrain {
       rep (move_no, moves.size()) {
         Move m = moves [move_no];
         IFNCHECK (board.IsLegal (m), {
-          rep (kk, moves.size()) {
-            cerr << kk << " " << moves[kk].ToGtpString() << endl;
-          }
-          board.DebugPrint (m.GetVertex());
-          WW(move_no);
-          WW(files [game_no]);
+          cerr
+            << "Illegal move " << m.ToGtpString()
+            << " nr " << move_no
+            << " in file " << files[game_no]
+            << endl;
         });
         board.PlayLegal (m);
       }
