@@ -10,8 +10,6 @@ struct MmTrain {
       if (!(in >> bs)) break;
       games.resize (game_no + 1);
       
-      CHECK (bs == board_size);
-
       uint move_count;
       CHECK (in >> move_count);
       games [game_no].resize (move_count);
@@ -20,7 +18,9 @@ struct MmTrain {
         CHECK (m.IsValid ());
         games [game_no] [ii] = m;
       }
-      game_no += 1;
+      if (bs == board_size) {
+        game_no += 1;
+      }
     }
   }
 
