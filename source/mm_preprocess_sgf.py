@@ -45,15 +45,19 @@ def doFile (name):
     ret_moves = []
 
 
-    handi = re.search('HA\[[1-9]\]AB((\[..\])+)', header)
+    handi = re.search('AB((\[..\])+)', header)
     if handi != None:
         hcs = handi.group(1).split("[")
         assert (hcs [0] == "")
         hcs = hcs[1:]
+        handi_n = 0
         for hc in hcs:
             assert (len(hc) == 3)
             assert (hc[2] == ']')
             ret_moves.append ("B %s" % toCoords (hc[:2]))
+            handi_n += 1
+        assert handi_n == int (re.search('HA\[([1-9])\]', header).group(1))
+            
 
 
     for m in moves:
@@ -75,8 +79,8 @@ for root, _, files in os.walk(sys.argv[1], topdown=False):
     for name in files:
         (size, moves) = doFile ((os.path.join(root, name)))
         if (not fail):
-            print size
-            print len(moves)
+            print "file", file
+            print size, len(moves)
             print "\n".join (moves)
             print
         else:

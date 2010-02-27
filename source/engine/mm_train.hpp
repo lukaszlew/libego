@@ -5,10 +5,17 @@ struct MmTrain {
 
   void Read (istream& in) {
     uint game_no = 0;
-    while (true) {
-      uint bs;
-      if (!(in >> bs)) break;
+    string s;
+    while (in >> s) {
+      CHECK (s == "file");
       games.resize (game_no + 1);
+      files.resize (game_no + 1);
+
+      getline (in, files[game_no]);
+      CHECK (in);
+
+      uint bs;
+      CHECK (in >> bs);
       
       uint move_count;
       CHECK (in >> move_count);
@@ -42,17 +49,19 @@ struct MmTrain {
   }
 
   void Do () {
-    rep (ii, games.size()) {
+    rep (game_no, games.size()) {
+      const vector<Move> & moves = games[game_no];
       board.Clear ();
-      rep (jj, games[ii].size()) {
-        Move m = games [ii] [jj];
+      
+      rep (move_no, moves.size()) {
+        Move m = moves [move_no];
         IFNCHECK (board.IsLegal (m), {
-          rep (kk, games[ii].size()) {
-            cerr << kk << " " << games[ii][kk].ToGtpString() << endl;
+          rep (kk, moves.size()) {
+            cerr << kk << " " << moves[kk].ToGtpString() << endl;
           }
           board.DebugPrint (m.GetVertex());
-          WW(ii);
-          WW(jj);
+          WW(move_no);
+          WW(files [game_no]);
         });
         board.PlayLegal (m);
       }
@@ -60,6 +69,7 @@ struct MmTrain {
   }
 
   vector <vector <Move> > games;
+  vector <string> files;
   Board board;
 };
 
