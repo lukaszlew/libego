@@ -1,5 +1,8 @@
 struct MmTrain {
-  MmTrain () {
+  MmTrain () :
+    random(123),
+    pattern_level (uint(-1))
+  {
     gtp.Register ("mm_train", this, &MmTrain::GtpMmTrain);
   }
 
@@ -40,7 +43,9 @@ struct MmTrain {
       io.SetError ("Can't find file: " + file_name);
       return;
     }
-    cerr << "Reading file..." << endl << flush;
+    cerr << "Initializing..." << endl << flush;
+    Init ();
+    cerr << "Reading game file..." << endl << flush;
     Read (file);
     cerr << "Harvesting pattern data ..." << endl << flush;
     Harvest();
@@ -48,8 +53,25 @@ struct MmTrain {
     file.close ();
   }
 
+  void Init () {
+    All2051Hash3x3 all2051;
+    all2051.Generate (5000);
+    CHECK (all2051.unique.size() == 2051);
+    rep (level, 2051) {
+      Hash3x3 all[8];
+      all2051.unique [level].GetAll8Symmetries (all);
+      rep (ii, 8) {
+        pattern_level [all [ii]] = level;
+      }
+    }
+  }
+
   void Harvest () {
     rep (game_no, games.size()) {
+      if (game_no % (games.size() / 50) == 0) {
+        WW(model.matches.size());
+        cerr << "." << flush;
+      }
       const vector<Move> & moves = games[game_no];
       board.Clear ();
       
@@ -69,12 +91,40 @@ struct MmTrain {
   }
 
   void HarvestNewMatch (Move m) {
-    
+    if (random.GetNextUint(32) >= 1) return;
+
+    Player pl = m.GetPlayer ();
+
+    Mm::Match& match = model.NewMatch();
+
+    rep (ii, board.EmptyVertexCount()) {
+      Vertex v = board.EmptyVertex (ii);
+      if (!board.IsLegal (pl, v)) continue;
+
+      Hash3x3 hash = board.Hash3x3At (v);
+
+      if (pl == Player::White ()) {
+        hash = hash.InvertColors();
+      }
+
+      CHECK (pattern_level [hash] != uint(-1));
+
+      Mm::Team& team = match.NewTeam();
+      team.SetFeatureLevel (Mm::kPatternFeature, pattern_level [hash]);
+
+      if (v == m.GetVertex()) {
+        match.SetWinnerLastTeam();
+      }
+    }
   }
 
   vector <vector <Move> > games;
   vector <string> files;
   Board board;
+  FastRandom random;
+  Mm::BtModel model;
+
+  NatMap <Hash3x3, uint> pattern_level;
 };
 
 MmTrain mm_train;

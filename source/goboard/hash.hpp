@@ -178,7 +178,7 @@ public:
   }
 
 
-  Hash3x3 InverseColors () const {
+  Hash3x3 InvertColors () const {
     Hash3x3 ret = *this;
     ForEachNat (Dir, dir) {
       if (ColorAt(dir).IsPlayer()) {

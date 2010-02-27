@@ -5,12 +5,16 @@
 #include <vector>
 using namespace std;
 
-namespace BradleyTerry {
+namespace Mm {
 
 // -----------------------------------------------------------------------------
 
-const uint feature_count = 3;
-  const uint level_count [feature_count] = { 20, 3, 2 };
+enum Feature {
+  kPatternFeature = 0,
+  feature_count = 1
+};
+
+const uint level_count [feature_count] = { 2051 };
 
 
 // -----------------------------------------------------------------------------
@@ -80,7 +84,9 @@ private:
 
 struct Team {
   Team () {
-    levels.resize (feature_count, 0);
+    rep (feature, feature_count) {
+      levels [feature] = 0;
+    }
   }
 
   void SetFeatureLevel (uint feature, uint level) {
@@ -111,13 +117,13 @@ struct Team {
 
   string ToString () {
     ostringstream out;
-    rep (ii, levels.size()) {
+    rep (ii, feature_count) {
       out << (ii == 0 ? "" : " ") << levels[ii];
     }
     return out.str();
   }
 
-  vector <uint> levels;
+  uint levels [feature_count];
 };
 
 // -----------------------------------------------------------------------------
@@ -129,9 +135,9 @@ struct Match {
     return teams.back();
   }
 
-  void SetWinner (uint winner) {
-    CHECK (winner < teams.size());
-    this->winner = winner;
+  void SetWinnerLastTeam () {
+    CHECK (teams.size() > 0);
+    this->winner = teams.size()-1;
   }
 
   void SetRandomWinner (const Gammas& gammas) {
@@ -146,7 +152,7 @@ struct Match {
     rep (ii, teams.size()) {
       sum2 += team_gammas [ii];
       if (sum2 >= sample) {
-        SetWinner (ii);
+        winner = ii;
         break;
       }
     }
@@ -231,14 +237,14 @@ void Test () {
 
   rep (feature, feature_count) {
     rep (level, level_count[feature]) {
-      true_gammas.Set (feature, level, exp (5 * drand48 ()));
+      true_gammas.Set (feature, level, exp (0.1 *  drand48 ()));
     }
   }
   
   true_gammas.Normalize (); 
 
   BtModel model;
-  rep (ii, 10000) {
+  rep (ii, 20000) {
     Match& match = model.NewMatch ();
     rep (jj, 3) { // TODO randomize team number
       Team& team = match.NewTeam ();

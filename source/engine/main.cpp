@@ -82,7 +82,7 @@ void GtpSamplerTest (Gtp::Io& io) {
 
 void GtpMmTest (Gtp::Io& io) {
   io.CheckEmpty ();
-  BradleyTerry::Test ();
+  Mm::Test ();
 }
 
 int main(int argc, char** argv) {

@@ -41,7 +41,7 @@ struct All2051Hash3x3 {
     rep (ii, 8) min_hash [all [ii]] = all [0];
 
     unique.push_back (all [0]);
-    cerr << "New: " << unique.size() << " " << all [0].ToString() << endl;
+    //cerr << "New: " << unique.size() << " " << all [0].ToString() << endl;
   }
 
   const Board empty;
