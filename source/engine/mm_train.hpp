@@ -33,11 +33,34 @@ struct MmTrain {
       io.SetError ("Can't find file: " + file_name);
       return;
     }
+    cerr << "Reading file..." << endl << flush;
     Read (file);
+    cerr << "Constructing data ..." << endl << flush;
+    Do();
+    cerr << "Done." << endl << flush;
     file.close ();
   }
 
+  void Do () {
+    rep (ii, games.size()) {
+      board.Clear ();
+      rep (jj, games[ii].size()) {
+        Move m = games [ii] [jj];
+        IFNCHECK (board.IsLegal (m), {
+          rep (kk, games[ii].size()) {
+            cerr << kk << " " << games[ii][kk].ToGtpString() << endl;
+          }
+          board.DebugPrint (m.GetVertex());
+          WW(ii);
+          WW(jj);
+        });
+        board.PlayLegal (m);
+      }
+    }
+  }
+
   vector <vector <Move> > games;
+  Board board;
 };
 
 MmTrain mm_train;
