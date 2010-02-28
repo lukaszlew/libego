@@ -42,6 +42,12 @@ struct Gammas {
     return gammas [feature] [level];
   }
 
+  double& GetRef (uint feature, uint level) {
+    ASSERT (feature < feature_count);
+    ASSERT (level < level_count [feature]);
+    return gammas [feature] [level];
+  }
+
   void Set (uint feature, uint level, double value) {
     ASSERT (feature < feature_count);
     ASSERT (level < level_count [feature]);
@@ -62,6 +68,19 @@ struct Gammas {
         gammas [feature] [level] /= mul;
       }
     }
+  }
+
+  double Distance (const Gammas& other) {
+    double sum = 0.0;
+
+    rep (feature , feature_count) {
+      rep (level , level_count [feature]) {
+        double d = log (Get (feature, level) / other.Get(feature, level));
+        sum += d*d;
+      }
+    }
+
+    return sqrt(sum);
   }
 
   string ToString () {
@@ -113,6 +132,12 @@ struct Team {
 
     return
       TeamGamma (gammas) / gammas.Get (feature, levels [feature]);
+  }
+
+  void GradientUpdate (Gammas& gammas, double update) {
+    rep (feature, feature_count) {
+      gammas.GetRef (feature, levels [feature]) *= update;
+    }
   }
 
   string ToString () {
@@ -187,6 +212,23 @@ struct Match {
     return out.str ();
   }
 
+  void GradientUpdate (Gammas& gammas, double alpha) {
+    double p [teams.size()];
+    double sum = 0.0;
+    rep (ii, teams.size()) {
+      p [ii] = teams[ii].TeamGamma(gammas);
+      sum += p[ii];
+    }
+    rep (ii, teams.size()) {
+      p[ii] /= sum;
+    }
+
+    teams[winner].GradientUpdate (gammas, exp (alpha)); // update +alpha
+    rep (ii, teams.size()) {
+      teams[ii].GradientUpdate (gammas, exp (-alpha*p[ii]));
+    }
+  }
+
   vector <Team> teams;
   uint winner;
 };
@@ -194,6 +236,7 @@ struct Match {
 // -----------------------------------------------------------------------------
 
 struct BtModel {
+  BtModel () : random(123) {}
 
   Match& NewMatch () {
     matches.resize (matches.size() + 1);
@@ -223,8 +266,18 @@ struct BtModel {
     gammas.Normalize (); 
   }
 
+  void DoGradientUpdate (uint n, double alpha) {
+
+    rep (ii, n) {
+      uint match_no = random.GetNextUint (matches.size());
+      matches [match_no].GradientUpdate (gammas, alpha);
+    }
+    gammas.Normalize ();
+  }
+
   vector <Match> matches;
   Gammas gammas;
+  FastRandom random;
 };
 
 // -----------------------------------------------------------------------------
@@ -237,16 +290,16 @@ void Test () {
 
   rep (feature, feature_count) {
     rep (level, level_count[feature]) {
-      true_gammas.Set (feature, level, exp (0.1 *  drand48 ()));
+      true_gammas.Set (feature, level, exp (1 *  drand48 ()));
     }
   }
   
   true_gammas.Normalize (); 
 
   BtModel model;
-  rep (ii, 20000) {
+  rep (ii, 100000) {
     Match& match = model.NewMatch ();
-    rep (jj, 3) { // TODO randomize team number
+    rep (jj, 40) { // TODO randomize team number
       Team& team = match.NewTeam ();
       rep (feature, feature_count) {
         uint level = rand.GetNextUint (level_count[feature]);
@@ -257,13 +310,26 @@ void Test () {
     //cerr << ii << ": " << match.ToString () << endl;
   }
 
-  rep (epoch, 100) {
-    model.DoFullUpdate ();
-    WW (epoch);
-    cerr << true_gammas.ToString () << endl;
-    cerr << model.gammas.ToString () << endl << endl;
-  }
+  const double a0  = 0.01;
+  const double a20 = 0.0002;
+  const double aa = (a0 / a20 - 1.0) / 20;
 
+  model.gammas.Reset ();
+
+  rep (epoch, 40) {
+    cerr << true_gammas.Distance (model.gammas) << " pre" <<endl;
+    model.DoGradientUpdate (25000, a0 / (aa*epoch+1));
+    cerr << true_gammas.Distance (model.gammas) << " a1" << endl;
+    model.DoGradientUpdate (25000, a0 / (aa*epoch+1));
+    cerr << true_gammas.Distance (model.gammas) << " a2" << endl << endl;
+  }
+  cerr << endl;
+
+  model.gammas.Reset ();
+  rep (epoch, 10) {
+    cerr << true_gammas.Distance (model.gammas) << endl;
+    model.DoFullUpdate ();
+  }
 }
 
 // -----------------------------------------------------------------------------
