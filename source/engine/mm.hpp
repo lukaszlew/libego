@@ -14,7 +14,7 @@ enum Feature {
   feature_count = 1
 };
 
-const uint level_count [feature_count] = { 20 };
+const uint level_count [feature_count] = { 2051 };
 
 
 // -----------------------------------------------------------------------------
@@ -56,13 +56,14 @@ struct Gammas {
 
   void Normalize () {
     rep (feature, feature_count) {
-      double mul = 1.0;
+      double log_sum = 1.0;
       double n = 0.0;
       rep (level, level_count [feature]) {
-        mul *= Get (feature, level);
+        log_sum += log (Get (feature, level));
         n += 1.0;
       }
-      mul = pow (mul, 1.0 / n);
+
+      double mul = exp (log_sum / n);
 
       rep (level, level_count [feature]) {
         gammas [feature] [level] /= mul;
@@ -314,8 +315,8 @@ void Test () {
     //cerr << ii << ": " << match.ToString () << endl;
   }
 
-  const double a0  = 0.01;
-  const double a20 = 0.0002;
+  const double a0  = 0.04;
+  const double a20 = 0.006;
   const double aa = (a0 / a20 - 1.0) / 20;
 
   model.gammas.Reset ();
