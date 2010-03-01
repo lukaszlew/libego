@@ -34,6 +34,7 @@ struct Gammas {
         Set (feature, level, 1.0);
       }
     }
+    t = 100000.0; // TODO parameter
   }
 
   double Get (uint feature, uint level) const {
@@ -45,7 +46,8 @@ struct Gammas {
   void LambdaUpdate (uint feature, uint level, double update) {
     ASSERT (feature < feature_count);
     ASSERT (level < level_count [feature]);
-    gammas [feature] [level] *= exp (update);
+    gammas [feature] [level] *= exp (update * 100000 / t);
+    t += 1;
   }
 
   void Set (uint feature, uint level, double value) {
@@ -98,6 +100,7 @@ struct Gammas {
 
 private:
   vector <vector <double> > gammas;
+  double t;
 };
 
 // -----------------------------------------------------------------------------
@@ -213,7 +216,8 @@ struct Match {
     return out.str ();
   }
 
-  void GradientUpdate (Gammas& gammas, double alpha) {
+  void GradientUpdate (Gammas& gammas) {
+    // Calculate probabilities
     double p [teams.size()];
     double sum = 0.0;
     rep (ii, teams.size()) {
@@ -224,9 +228,9 @@ struct Match {
       p[ii] /= sum;
     }
 
-    teams[winner].GradientUpdate (gammas, alpha); // update +alpha
+    teams[winner].GradientUpdate (gammas, 1.0); // update +alpha
     rep (ii, teams.size()) {
-      teams[ii].GradientUpdate (gammas, -alpha*p[ii]);
+      teams[ii].GradientUpdate (gammas, -p[ii]);
     }
   }
 
@@ -269,10 +273,10 @@ struct BtModel {
     gammas.Normalize (); 
   }
 
-  void DoGradientUpdate (uint n, double alpha) {
+  void DoGradientUpdate (uint n) {
 
     rep (ii, n) {
-      matches [act_match].GradientUpdate (gammas, alpha);
+      matches [act_match].GradientUpdate (gammas);
       act_match += 1;
       if (act_match >= matches.size()) act_match = 0;
     }
@@ -315,18 +319,11 @@ void Test () {
     //cerr << ii << ": " << match.ToString () << endl;
   }
 
-  const double a0  = 0.04;
-  const double a20 = 0.006;
-  const double aa = (a0 / a20 - 1.0) / 20;
-
   model.gammas.Reset ();
 
   rep (epoch, 40) {
-    cerr << true_gammas.Distance (model.gammas) << " pre" <<endl;
-    model.DoGradientUpdate (25000, a0 / (aa*epoch+1));
-    cerr << true_gammas.Distance (model.gammas) << " a1" << endl;
-    model.DoGradientUpdate (25000, a0 / (aa*epoch+1));
-    cerr << true_gammas.Distance (model.gammas) << " a2" << endl << endl;
+    cerr << true_gammas.Distance (model.gammas) << endl;
+    model.DoGradientUpdate (25000);
   }
   cerr << endl;
 
