@@ -42,10 +42,10 @@ struct Gammas {
     return gammas [feature] [level];
   }
 
-  double& GetRef (uint feature, uint level) {
+  void LambdaUpdate (uint feature, uint level, double update) {
     ASSERT (feature < feature_count);
     ASSERT (level < level_count [feature]);
-    return gammas [feature] [level];
+    gammas [feature] [level] *= exp (update);
   }
 
   void Set (uint feature, uint level, double value) {
@@ -137,7 +137,7 @@ struct Team {
 
   void GradientUpdate (Gammas& gammas, double update) {
     rep (feature, feature_count) {
-      gammas.GetRef (feature, levels [feature]) *= update;
+      gammas.LambdaUpdate (feature, levels [feature], update);
     }
   }
 
@@ -224,9 +224,9 @@ struct Match {
       p[ii] /= sum;
     }
 
-    teams[winner].GradientUpdate (gammas, exp (alpha)); // update +alpha
+    teams[winner].GradientUpdate (gammas, alpha); // update +alpha
     rep (ii, teams.size()) {
-      teams[ii].GradientUpdate (gammas, exp (-alpha*p[ii]));
+      teams[ii].GradientUpdate (gammas, -alpha*p[ii]);
     }
   }
 
