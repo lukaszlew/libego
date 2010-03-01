@@ -14,7 +14,7 @@ enum Feature {
   feature_count = 1
 };
 
-const uint level_count [feature_count] = { 2051 };
+const uint level_count [feature_count] = { 20 };
 
 
 // -----------------------------------------------------------------------------
@@ -236,7 +236,9 @@ struct Match {
 // -----------------------------------------------------------------------------
 
 struct BtModel {
-  BtModel () : random(123) {}
+  BtModel () : random(123) {
+    act_match = 0;
+  }
 
   Match& NewMatch () {
     matches.resize (matches.size() + 1);
@@ -269,13 +271,15 @@ struct BtModel {
   void DoGradientUpdate (uint n, double alpha) {
 
     rep (ii, n) {
-      uint match_no = random.GetNextUint (matches.size());
-      matches [match_no].GradientUpdate (gammas, alpha);
+      matches [act_match].GradientUpdate (gammas, alpha);
+      act_match += 1;
+      if (act_match >= matches.size()) act_match = 0;
     }
     gammas.Normalize ();
   }
 
   vector <Match> matches;
+  uint act_match;
   Gammas gammas;
   FastRandom random;
 };
