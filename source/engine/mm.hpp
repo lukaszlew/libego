@@ -34,7 +34,7 @@ struct Gammas {
         Set (feature, level, 1.0);
       }
     }
-    t = 100000.0; // TODO parameter
+    t = 2.0; // TODO parameter
   }
 
   double Get (uint feature, uint level) const {
@@ -46,8 +46,8 @@ struct Gammas {
   void LambdaUpdate (uint feature, uint level, double update) {
     ASSERT (feature < feature_count);
     ASSERT (level < level_count [feature]);
-    gammas [feature] [level] *= exp (update * 100000 / t);
-    t += 1;
+    gammas [feature] [level] *= exp (update / t);
+    t += 0.000006;
   }
 
   void Set (uint feature, uint level, double value) {
@@ -234,6 +234,10 @@ struct Match {
     }
   }
 
+  double LogLikelihood (const Gammas& gammas) {
+    return log (teams[winner].TeamGamma (gammas) / TotalGamma (gammas));
+  }
+
   vector <Team> teams;
   uint winner;
 };
@@ -283,6 +287,14 @@ struct BtModel {
     gammas.Normalize ();
   }
 
+  double LogLikelihood () {
+    double sum = 0.0;
+    rep (ii, matches.size ()) {
+      sum += matches[ii].LogLikelihood (gammas);
+    }
+    return sum / matches.size();
+  }
+
   vector <Match> matches;
   uint act_match;
   Gammas gammas;
@@ -299,14 +311,14 @@ void Test () {
 
   rep (feature, feature_count) {
     rep (level, level_count[feature]) {
-      true_gammas.Set (feature, level, exp (1 *  drand48 ()));
+      true_gammas.Set (feature, level, exp (2 *  drand48 ()));
     }
   }
   
   true_gammas.Normalize (); 
 
   BtModel model;
-  rep (ii, 100000) {
+  rep (ii, 40000) {
     Match& match = model.NewMatch ();
     rep (jj, 40) { // TODO randomize team number
       Team& team = match.NewTeam ();
@@ -321,15 +333,20 @@ void Test () {
 
   model.gammas.Reset ();
 
-  rep (epoch, 40) {
-    cerr << true_gammas.Distance (model.gammas) << endl;
-    model.DoGradientUpdate (25000);
+  rep (epoch, 20) {
+    if (epoch % 10 == 0) cerr << endl;
+    model.DoGradientUpdate (10000);
+    cerr
+      << true_gammas.Distance (model.gammas) << " / "
+      << model.LogLikelihood() << endl;
   }
   cerr << endl;
 
   model.gammas.Reset ();
   rep (epoch, 10) {
-    cerr << true_gammas.Distance (model.gammas) << endl;
+    cerr
+      << true_gammas.Distance (model.gammas)
+      << " / " <<  model.LogLikelihood() << endl;
     model.DoFullUpdate ();
   }
 }
