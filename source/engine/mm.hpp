@@ -11,10 +11,10 @@ namespace Mm {
 
 enum Feature {
   kPatternFeature = 0,
-  feature_count = 1
+  feature_count = 3
 };
 
-const uint level_count [feature_count] = { 2051 };
+const uint level_count [feature_count] = { 2051, 100, 2 };
 
 
 // -----------------------------------------------------------------------------
@@ -274,22 +274,21 @@ struct BtModel {
       const Match& match = matches [ii];
       
       double tg_sum = 0.0; // E in Remi's paper
+      vector <double> tg (match.teams.size(), 0.0);
       vector <double> tg_diff_sum (level_count [feature], 0.0); // C in Remi's paper
 
       rep (jj, match.teams.size()) { // TEAM loop
         const Team& team = match.teams [jj];
-        double tg = team.TeamGamma (gammas); // TODO expand
-        tg_sum += tg;
+        tg[jj] = team.TeamGamma (gammas); // TODO expand
+        tg_sum += tg[jj];
+      }
 
+      rep (jj, match.teams.size()) { // TEAM loop
+        const Team& team = match.teams [jj];
         // level of the updated feature in current team
         uint level = team.levels [feature];
         double gamma = gammas.Get (feature, level);
-        tg_diff_sum [level] += tg / gamma;
-      }
-
-      
-      rep(level, level_count[feature]) {
-        c_e [level] += tg_diff_sum [level] / tg_sum; // update SUM C/E from Remi's paper
+        c_e [level] += tg[jj] / (gamma * tg_sum);
       }
     }
 
@@ -405,7 +404,7 @@ void Test () {
       << true_gammas.Distance (model.gammas)
       << " / " <<  model.LogLikelihood() << endl;
   }
-  
+
   // cerr << endl << "---------------------------------" << endl;
 
   // model.PreprocessData ();
