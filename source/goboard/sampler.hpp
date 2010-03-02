@@ -5,14 +5,7 @@
 
 struct Sampler {
   explicit Sampler (Board& board) : board (board), gamma ((new Gammas())) {
-    ForEachNat (Player, pl) {
-      ForEachNat (Hash3x3, hash) {
-        (*gamma) [hash] [pl] = 
-          (hash.IsLegal (pl) && !hash.IsEyelike (pl))
-          ? 1.0
-          : 0.0;
-      }
-    }
+    ResetGammas ();
     ForEachNat (Player, pl) {
       ForEachNat (Vertex, v) {
         act_gamma [v] [pl] = 0.0;
@@ -26,6 +19,48 @@ struct Sampler {
     delete gamma;
   }
 
+  void ResetGammas () {
+    ForEachNat (Player, pl) {
+      ForEachNat (Hash3x3, hash) {
+        (*gamma) [hash] [pl] = 
+          (hash.IsLegal (pl) && !hash.IsEyelike (pl))
+          ? 1.0
+          : 0.0;
+      }
+    }
+  }
+
+  bool ReadGammas (istream& in) {
+    uint raw_hash;
+    double value;
+
+    rep (ii, 2051) {
+      in >> raw_hash >> value;
+
+      if (!in) {
+        ResetGammas ();
+        return false;
+      }
+      
+      Hash3x3 all[8];
+      Hash3x3::OfRaw (raw_hash).GetAll8Symmetries (all);
+      rep (ii, 8) {
+        Hash3x3 hash = all[ii];
+        if (hash.IsLegal (Player::Black()))
+          (*gamma) [hash] [Player::Black()] = value;
+
+        hash = hash.InvertColors ();
+        if (hash.IsLegal (Player::White()))
+          (*gamma) [hash] [Player::White()] = value;
+      }
+    }
+    in >> raw_hash;
+    if (in) {
+      ResetGammas ();
+      return false;
+    }
+    return true;
+  }
 
   void NewPlayout () {
     // Prepare act_gamma and act_gamma_sum

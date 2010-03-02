@@ -7,6 +7,7 @@ public:
 
   MctsPlayout (const Board& base_board) :
     base_board (base_board),
+    sampler (play_board),
     random (TimeSeed())
   {
   }
@@ -41,7 +42,7 @@ public:
     // Prepare simulation board and tree iterator.
     play_board.Load (base_board);
     playout_moves.clear();
-
+    sampler.NewPlayout ();
 
     // TODO setup nonempty as played once already
 
@@ -54,11 +55,13 @@ public:
 
       if (!m.IsValid()) m = mcts.ChooseMove (play_board);
       if (!m.IsValid()) m = ChooseLocalMove ();
-      if (!m.IsValid()) m = play_board.RandomLightMove (random);
+      //if (!m.IsValid()) m = play_board.RandomLightMove (random);
+      if (!m.IsValid()) m = Move (play_board.ActPlayer (), sampler.SampleMove ());
 
       play_board.PlayLegal (m);
 
       mcts.NewMove (m);
+      sampler.MovePlayed ();
       
       playout_moves.push_back (m);
       
@@ -122,11 +125,11 @@ private:
   Board play_board;
   vector<Move> playout_moves;
 
-  static const bool kCheckAsserts = false;
   Mcts mcts;
+  Sampler sampler;
 
+  static const bool kCheckAsserts = false;
 public:
   friend class MctsGtp;
   FastRandom random;
-
 };
