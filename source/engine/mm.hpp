@@ -399,25 +399,25 @@ void Test () {
     << true_gammas.Distance (model.gammas)
     << " / " <<  model.LogLikelihood() << endl;
 
-  rep (epoch, 10) {
-    model.BatchMM (0);
+  rep (epoch, 20*feature_count) {
+    model.BatchMM (epoch % feature_count);
     cerr
       << true_gammas.Distance (model.gammas)
       << " / " <<  model.LogLikelihood() << endl;
   }
+  
+  // cerr << endl << "---------------------------------" << endl;
 
-  cerr << endl << "---------------------------------" << endl;
-
-  model.PreprocessData ();
-  cerr
-    << true_gammas.Distance (model.gammas)
-    << " / " <<  model.LogLikelihood() << endl;
-  rep (epoch, 4) {
-    model.DoFullUpdate ();
-    cerr
-      << true_gammas.Distance (model.gammas)
-      << " / " <<  model.LogLikelihood() << endl;
-  }
+  // model.PreprocessData ();
+  // cerr
+  //   << true_gammas.Distance (model.gammas)
+  //   << " / " <<  model.LogLikelihood() << endl;
+  // rep (epoch, 4) {
+  //   model.DoFullUpdate ();
+  //   cerr
+  //     << true_gammas.Distance (model.gammas)
+  //     << " / " <<  model.LogLikelihood() << endl;
+  // }
 }
 
 // -----------------------------------------------------------------------------
