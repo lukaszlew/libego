@@ -73,7 +73,6 @@ struct MmTrain {
   void Harvest () {
     rep (game_no, games.size()) {
       if (game_no % (games.size() / 50) == 0) {
-        WW(model.matches.size());
         cerr << "." << flush;
       }
       const vector<Move> & moves = games[game_no];
@@ -92,6 +91,7 @@ struct MmTrain {
         board.PlayLegal (m);
       }
     }
+    cerr << endl;
   }
 
   void HarvestNewMatch (Move m) {
@@ -123,9 +123,13 @@ struct MmTrain {
   }
 
   void Learn () {
-    rep (epoch, 100) {
+    WW(model.matches.size());
+
+    model.PreprocessData ();
+    rep (epoch, 20) {
       //model.DoFullUpdate();
-      model.DoGradientUpdate (10000);
+      model.BatchMM (0);
+      //model.DoGradientUpdate (10000);
       cerr << epoch << " " << model.LogLikelihood() << endl;
     }
     cerr << endl;

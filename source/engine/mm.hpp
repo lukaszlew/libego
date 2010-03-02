@@ -11,10 +11,10 @@ namespace Mm {
 
 enum Feature {
   kPatternFeature = 0,
-  feature_count = 3
+  feature_count = 1
 };
 
-const uint level_count [feature_count] = { 2051, 100, 2 };
+const uint level_count [feature_count] = { 2051 };
 
 
 // -----------------------------------------------------------------------------
@@ -243,6 +243,7 @@ struct Match {
 struct BtModel {
   BtModel () : random(123) {
     act_match = 0;
+    prior_games = 4.0;
   }
 
   Match& NewMatch () {
@@ -267,7 +268,7 @@ struct BtModel {
     vector <double> c_e (level_count [feature]);
     // prior
     rep (level, level_count [feature]) {
-      c_e [level] = 2.0 / (gammas.Get (feature, level) + 1.0);
+      c_e [level] = prior_games / (gammas.Get (feature, level) + 1.0);
     }
 
     rep (ii, matches.size ()) {
@@ -291,8 +292,7 @@ struct BtModel {
     }
 
     rep (level, level_count [feature]) {
-      // +1.0 is a part of prior
-      double new_gamma = (gammas.w [feature] [level] + 1.0) / c_e [level];
+      double new_gamma = (gammas.w [feature] [level] + prior_games / 2) / c_e [level];
       gammas.Set (feature, level, new_gamma);
     }
 
@@ -349,6 +349,7 @@ struct BtModel {
   uint act_match;
   Gammas gammas;
   FastRandom random;
+  double prior_games;
 };
 
 // -----------------------------------------------------------------------------
@@ -368,7 +369,7 @@ void Test () {
   true_gammas.Normalize (); 
 
   BtModel model;
-  rep (ii, 1000000) {
+  rep (ii, 100000) {
     Match& match = model.NewMatch ();
     rep (jj, 200) { // TODO randomize team number
       Team& team = match.NewTeam ();
@@ -385,9 +386,9 @@ void Test () {
   cerr
     << endl << "---------------------------------" << endl
     << true_gammas.Distance (model.gammas)
-    << " / " <<  model.LogLikelihood() << endl;
+    << " / " <<  model.LogLikelihood() << endl << endl;
 
-  rep (epoch, 3*feature_count) {
+  rep (epoch, 5*feature_count) {
     model.BatchMM (epoch % feature_count);
     cerr
       << true_gammas.Distance (model.gammas)
