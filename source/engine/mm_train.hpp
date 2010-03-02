@@ -36,23 +36,36 @@ struct MmTrain {
 
   void GtpMmTrain (Gtp::Io& io) {
     string file_name = io.Read <string> ();
+    string out_file_name = io.Read <string> ();
     io.CheckEmpty();
     ifstream file;
+    ofstream out_file;
+
     file.open (file_name.c_str(), ifstream::in);
     if (!file.good()) {
-      io.SetError ("Can't find file: " + file_name);
+      io.SetError ("Can't open in-file: " + file_name);
       return;
     }
+
+    out_file.open (out_file_name.c_str(), ofstream::out);
+    if (!out_file.good()) {
+      io.SetError ("Can't open out-file: " + out_file_name);
+      return;
+    }
+    
     cerr << "Initializing..." << endl << flush;
     Init ();
     cerr << "Reading game file..." << endl << flush;
     Read (file);
-    cerr << "Harvesting pattern data ..." << endl << flush;
+    file.close ();
+    cerr << "Harvesting pattern data..." << endl << flush;
     Harvest();
     cerr << "Learning..." << endl << flush;
     Learn();
+    cerr << "Dumping..." << endl << flush;
+    Dump (out_file);
     cerr << "Done." << endl << flush;
-    file.close ();
+    out_file.close ();
   }
 
   void Init () {
@@ -133,6 +146,9 @@ struct MmTrain {
       cerr << epoch << " " << model.LogLikelihood() << endl;
     }
     cerr << endl;
+  }
+
+  void Dump (ostream& out) {
     vector <pair <double, uint> > sort_tab (2051);
     rep (level, 2051) {
       sort_tab [level].first  = model.gammas.Get (Mm::kPatternFeature, level);
@@ -140,12 +156,11 @@ struct MmTrain {
     }
     std::sort (sort_tab.begin(), sort_tab.end());
     rep (level, 2051) {
-      cerr
-        << level_to_pattern [sort_tab [level].second] .ToAsciiArt()
+      out 
+        << setw(7) << level_to_pattern [sort_tab [level].second].GetRaw()  << " "
         << sort_tab [level].first
-        << endl << endl;
+        << endl;
     }
-    
   }
 
   vector <vector <Move> > games;
