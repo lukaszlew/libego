@@ -34,7 +34,7 @@ struct Gammas {
         Set (feature, level, 1.0);
       }
     }
-    t = 2.0; // TODO parameter
+    t = 1.5; // TODO parameter
   }
 
   double Get (uint feature, uint level) const {
@@ -47,7 +47,7 @@ struct Gammas {
     ASSERT (feature < feature_count);
     ASSERT (level < level_count [feature]);
     gammas [feature] [level] *= exp (update / t);
-    t += 0.000006;
+    t += 0.000001;
   }
 
   void Set (uint feature, uint level, double value) {
@@ -256,8 +256,10 @@ struct BtModel {
 
   // Minorization - Maximization algorithm
   void UpdateGamma (uint feature, uint level) {
-    double w = 0.0;
-    double c_e = 0.0;
+    // prior
+    double w = 1.0;
+    double c_e = 2.0 / (gammas.Get (feature, level) + 1.0);
+    
     rep (ii, matches.size()) {
       w   += matches [ii].WinnerGammaExponent (feature, level); // TODO precompute
       c_e +=
@@ -272,6 +274,8 @@ struct BtModel {
     rep (feature , feature_count) {
       rep (level , level_count [feature]) {
         UpdateGamma (feature, level);
+        cerr << level << " "  << LogLikelihood() << endl;
+
       }
     }
     gammas.Normalize (); 

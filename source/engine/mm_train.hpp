@@ -49,12 +49,15 @@ struct MmTrain {
     Read (file);
     cerr << "Harvesting pattern data ..." << endl << flush;
     Harvest();
+    cerr << "Learning..." << endl << flush;
+    Learn();
     cerr << "Done." << endl << flush;
     file.close ();
   }
 
   void Init () {
     All2051Hash3x3 all2051;
+    level_to_pattern.resize (2051);
     all2051.Generate (5000);
     CHECK (all2051.unique.size() == 2051);
     rep (level, 2051) {
@@ -63,6 +66,7 @@ struct MmTrain {
       rep (ii, 8) {
         pattern_level [all [ii]] = level;
       }
+      level_to_pattern [level] = all [0];
     }
   }
 
@@ -91,7 +95,7 @@ struct MmTrain {
   }
 
   void HarvestNewMatch (Move m) {
-    if (random.GetNextUint(32) >= 1) return;
+    if (random.GetNextUint(8) >= 1) return;
 
     Player pl = m.GetPlayer ();
 
@@ -118,6 +122,28 @@ struct MmTrain {
     }
   }
 
+  void Learn () {
+    rep (epoch, 100) {
+      //model.DoFullUpdate();
+      model.DoGradientUpdate (10000);
+      cerr << epoch << " " << model.LogLikelihood() << endl;
+    }
+    cerr << endl;
+    vector <pair <double, uint> > sort_tab (2051);
+    rep (level, 2051) {
+      sort_tab [level].first  = model.gammas.Get (Mm::kPatternFeature, level);
+      sort_tab [level].second = level;
+    }
+    std::sort (sort_tab.begin(), sort_tab.end());
+    rep (level, 2051) {
+      cerr
+        << level_to_pattern [sort_tab [level].second] .ToAsciiArt()
+        << sort_tab [level].first
+        << endl << endl;
+    }
+    
+  }
+
   vector <vector <Move> > games;
   vector <string> files;
   Board board;
@@ -125,6 +151,7 @@ struct MmTrain {
   Mm::BtModel model;
 
   NatMap <Hash3x3, uint> pattern_level;
+  vector <Hash3x3> level_to_pattern;
 };
 
 MmTrain mm_train;
