@@ -130,6 +130,17 @@ struct Team {
     return mul;
   }
 
+  double IncompleteTeamGamma (const Gammas& gammas, uint skip_feature, double* incomplete) const {
+    double mul = 1.0;
+    rep (feature, feature_count) {
+      if (feature != skip_feature) {
+        mul *= gammas.Get (feature, levels [feature]);
+      }
+    }
+    *incomplete = mul;
+    return mul * gammas.Get (skip_feature, levels [skip_feature]);;
+  }
+
   double TeamGammaDiff (const Gammas& gammas, uint feature, uint level) const {
     if (levels [feature] != level)
       return 0.0;
@@ -274,20 +285,20 @@ struct BtModel {
     rep (ii, matches.size ()) {
       const vector <Team>& teams = matches [ii].teams;
       
-      // tg = team gamma
-      vector <double> tg (teams.size(), 0.0);
+      // itg = incomplete team gamma (without current feature)
+      double itg [teams.size()];
       double tg_sum = 0.0; // E in Remi's paper
 
       rep (jj, teams.size()) {
-        tg[jj] = teams [jj].TeamGamma (gammas); // TODO expand
-        tg_sum += tg[jj];
+        tg_sum += teams [jj].IncompleteTeamGamma (gammas, feature, & itg[jj]);
       }
+
+      double tg_sum_inv = 1.0 / tg_sum;
 
       rep (jj, teams.size()) {
         // level of the updated feature in current team
         uint level = teams [jj].levels [feature];
-        double gamma = gammas.Get (feature, level);
-        c_e [level] += tg [jj] / (gamma * tg_sum);
+        c_e [level] += itg [jj] * tg_sum_inv;
       }
     }
 
@@ -369,7 +380,7 @@ void Test () {
   true_gammas.Normalize (); 
 
   BtModel model;
-  rep (ii, 100000) {
+  rep (ii, 200000) {
     Match& match = model.NewMatch ();
     rep (jj, 200) { // TODO randomize team number
       Team& team = match.NewTeam ();
@@ -388,7 +399,7 @@ void Test () {
     << true_gammas.Distance (model.gammas)
     << " / " <<  model.LogLikelihood() << endl << endl;
 
-  rep (epoch, 5*feature_count) {
+  rep (epoch, 15*feature_count) {
     model.BatchMM (epoch % feature_count);
     cerr
       << true_gammas.Distance (model.gammas)
