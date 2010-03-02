@@ -22,8 +22,10 @@ const uint level_count [feature_count] = { 2051 };
 struct Gammas {
   Gammas () {
     gammas.resize (feature_count);
+    w.resize (feature_count);
     rep (feature, feature_count) {
       gammas [feature].resize (level_count [feature]);
+      w [feature].resize (level_count [feature]);
     }
     Reset ();
   }
@@ -32,6 +34,7 @@ struct Gammas {
     rep (feature , feature_count) {
       rep (level , level_count [feature]) {
         Set (feature, level, 1.0);
+        w [feature] [level] = 0.0;
       }
     }
     t = 1.5; // TODO parameter
@@ -98,6 +101,7 @@ struct Gammas {
   }
 
 
+  vector <vector <double> > w;
 private:
   vector <vector <double> > gammas;
   double t;
@@ -116,10 +120,6 @@ struct Team {
     CHECK (feature < feature_count);
     CHECK (level < level_count [feature]);
     levels [feature] = level;
-  }
-
-  double GammaExponent (uint feature, uint level) {
-    return levels [feature] == level ? 1.0 : 0.0;
   }
 
   double TeamGamma (const Gammas& gammas) {
@@ -188,10 +188,6 @@ struct Match {
     //cerr << "X " << ToString () << " " << sum << " " << sample << endl;
   }
 
-  double WinnerGammaExponent (uint feature, uint level) {
-    return teams [winner].GammaExponent (feature, level);
-  }
-
   double TotalGammaDiff (const Gammas& gammas, uint feature, uint level) {
     double sum = 0.0;
     rep (ii, teams.size()) {
@@ -254,27 +250,38 @@ struct BtModel {
     return matches.back();
   }
 
+  void AllDataPresent () {
+    gammas.Reset ();
+    rep (ii, matches.size()) {
+      const Match& match = matches [ii]; 
+      const Team& winner = match.teams [match.winner];
+      
+      rep (feature , feature_count) {
+        uint level = winner.levels [feature];
+        gammas.w [feature] [level] += 1.0;
+      }
+    }
+  }
+
   // Minorization - Maximization algorithm
   void UpdateGamma (uint feature, uint level) {
     // prior
-    double w = 1.0;
     double c_e = 2.0 / (gammas.Get (feature, level) + 1.0);
     
     rep (ii, matches.size()) {
-      w   += matches [ii].WinnerGammaExponent (feature, level); // TODO precompute
       c_e +=
         matches [ii].TotalGammaDiff (gammas, feature, level) /
         matches [ii].TotalGamma (gammas);
     }
-
-    gammas.Set (feature, level, w / c_e);
+    // + 1.0 is prior
+    gammas.Set (feature, level, (gammas.w[feature][level] + 1.0) / c_e);
   }
 
   void DoFullUpdate () {
     rep (feature , feature_count) {
       rep (level , level_count [feature]) {
         UpdateGamma (feature, level);
-        cerr << level << " "  << LogLikelihood() << endl;
+        //cerr << level << " "  << LogLikelihood() << endl;
 
       }
     }
@@ -335,23 +342,22 @@ void Test () {
     //cerr << ii << ": " << match.ToString () << endl;
   }
 
-  model.gammas.Reset ();
+  model.AllDataPresent ();
 
-  rep (epoch, 20) {
-    if (epoch % 10 == 0) cerr << endl;
-    model.DoGradientUpdate (10000);
-    cerr
-      << true_gammas.Distance (model.gammas) << " / "
-      << model.LogLikelihood() << endl;
-  }
-  cerr << endl;
+  // rep (epoch, 20) {
+  //   if (epoch % 10 == 0) cerr << endl;
+  //   model.DoGradientUpdate (10000);
+  //   cerr
+  //     << true_gammas.Distance (model.gammas) << " / "
+  //     << model.LogLikelihood() << endl;
+  // }
+  // cerr << endl;
 
-  model.gammas.Reset ();
-  rep (epoch, 10) {
+  rep (epoch, 4) {
+    model.DoFullUpdate ();
     cerr
       << true_gammas.Distance (model.gammas)
       << " / " <<  model.LogLikelihood() << endl;
-    model.DoFullUpdate ();
   }
 }
 
