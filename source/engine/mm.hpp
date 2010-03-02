@@ -122,7 +122,7 @@ struct Team {
     levels [feature] = level;
   }
 
-  double TeamGamma (const Gammas& gammas) {
+  double TeamGamma (const Gammas& gammas) const {
     double mul = 1.0;
     rep (feature, feature_count) {
       mul *= gammas.Get (feature, levels [feature]);
@@ -130,7 +130,7 @@ struct Team {
     return mul;
   }
 
-  double TeamGammaDiff (const Gammas& gammas, uint feature, uint level) {
+  double TeamGammaDiff (const Gammas& gammas, uint feature, uint level) const {
     if (levels [feature] != level)
       return 0.0;
 
@@ -250,7 +250,7 @@ struct BtModel {
     return matches.back();
   }
 
-  void AllDataPresent () {
+  void PreprocessData () {
     gammas.Reset ();
     rep (ii, matches.size()) {
       const Match& match = matches [ii]; 
@@ -263,18 +263,60 @@ struct BtModel {
     }
   }
 
+  void BatchMM (uint feature) {
+    vector <double> c_e (level_count [feature]);
+    // prior
+    rep (level, level_count [feature]) {
+      c_e [level] = 2.0 / (gammas.Get (feature, level) + 1.0);
+    }
+
+    rep (ii, matches.size ()) { // MATCH loop
+      const Match& match = matches [ii];
+      
+      double tg_sum = 0.0; // E in Remi's paper
+      vector <double> tg_diff_sum (level_count [feature], 0.0); // C in Remi's paper
+
+      rep (jj, match.teams.size()) { // TEAM loop
+        const Team& team = match.teams [jj];
+        double tg = team.TeamGamma (gammas); // TODO expand
+        tg_sum += tg;
+
+        // level of the updated feature in current team
+        uint level = team.levels [feature];
+        double gamma = gammas.Get (feature, level);
+        tg_diff_sum [level] += tg / gamma;
+      }
+
+      
+      rep(level, level_count[feature]) {
+        c_e [level] += tg_diff_sum [level] / tg_sum; // update SUM C/E from Remi's paper
+      }
+    }
+
+    rep (level, level_count [feature]) {
+      // +1.0 is a part of prior
+      double new_gamma = (gammas.w [feature] [level] + 1.0) / c_e [level];
+      gammas.Set (feature, level, new_gamma);
+    }
+
+    gammas.Normalize ();
+  }
+
   // Minorization - Maximization algorithm
   void UpdateGamma (uint feature, uint level) {
+    
     // prior
     double c_e = 2.0 / (gammas.Get (feature, level) + 1.0);
     
     rep (ii, matches.size()) {
-      c_e +=
-        matches [ii].TotalGammaDiff (gammas, feature, level) /
-        matches [ii].TotalGamma (gammas);
+      double tgd = matches [ii].TotalGammaDiff (gammas, feature, level);
+      double tg  = matches [ii].TotalGamma (gammas);
+      c_e += tgd / tg;
     }
     // + 1.0 is prior
-    gammas.Set (feature, level, (gammas.w[feature][level] + 1.0) / c_e);
+    double w = gammas.w[feature][level] + 1.0;
+    
+    gammas.Set (feature, level, w / c_e);
   }
 
   void DoFullUpdate () {
@@ -342,7 +384,6 @@ void Test () {
     //cerr << ii << ": " << match.ToString () << endl;
   }
 
-  model.AllDataPresent ();
 
   // rep (epoch, 20) {
   //   if (epoch % 10 == 0) cerr << endl;
@@ -353,6 +394,24 @@ void Test () {
   // }
   // cerr << endl;
 
+  model.PreprocessData ();
+  cerr
+    << true_gammas.Distance (model.gammas)
+    << " / " <<  model.LogLikelihood() << endl;
+
+  rep (epoch, 10) {
+    model.BatchMM (0);
+    cerr
+      << true_gammas.Distance (model.gammas)
+      << " / " <<  model.LogLikelihood() << endl;
+  }
+
+  cerr << endl << "---------------------------------" << endl;
+
+  model.PreprocessData ();
+  cerr
+    << true_gammas.Distance (model.gammas)
+    << " / " <<  model.LogLikelihood() << endl;
   rep (epoch, 4) {
     model.DoFullUpdate ();
     cerr
