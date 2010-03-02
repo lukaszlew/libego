@@ -58,6 +58,7 @@ public:
       //if (!m.IsValid()) m = play_board.RandomLightMove (random);
       if (!m.IsValid()) m = Move (play_board.ActPlayer (), sampler.SampleMove ());
 
+      ASSERT (play_board.IsLegal (m));
       play_board.PlayLegal (m);
 
       mcts.NewMove (m);

@@ -18,6 +18,8 @@ private:
     gtp.Register ("genmove",      this, &MctsGtp::Cgenmove);
     gtp.Register ("showboard",    this, &MctsGtp::Cshowboard);
 
+    gtp.Register ("LoadGammas",   this, &MctsGtp::CLoadGammas);
+
     gtp.RegisterGfx ("DoPlayouts",      "1", this, &MctsGtp::CDoPlayouts);
     gtp.RegisterGfx ("DoPlayouts",     "10", this, &MctsGtp::CDoPlayouts);
     gtp.RegisterGfx ("DoPlayouts",    "100", this, &MctsGtp::CDoPlayouts);
@@ -113,6 +115,22 @@ private:
     int n = io.Read<int> ();
     io.CheckEmpty ();
     mcts_engine.LastPlayoutGfx(n).Report (io);
+  }
+
+  void CLoadGammas (Gtp::Io& io) {
+    string file_name = io.Read<string> ();
+    io.CheckEmpty ();
+    ifstream in;
+    in.open (file_name.c_str(), ifstream::in);
+    if (!in.good()) {
+      io.SetError ("Can't open a file: " + file_name);
+      return;
+    }
+    if (!mcts_engine.playout.sampler.ReadGammas (in)) {
+      io.SetError ("File in a bad format.");
+      return;
+    }
+    in.close();
   }
 
 private:
