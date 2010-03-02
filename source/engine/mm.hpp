@@ -50,7 +50,7 @@ struct Gammas {
     ASSERT (feature < feature_count);
     ASSERT (level < level_count [feature]);
     gammas [feature] [level] *= exp (update / t);
-    t += 0.000001;
+    t += 0.0000001;
   }
 
   void Set (uint feature, uint level, double value) {
@@ -270,25 +270,23 @@ struct BtModel {
       c_e [level] = 2.0 / (gammas.Get (feature, level) + 1.0);
     }
 
-    rep (ii, matches.size ()) { // MATCH loop
-      const Match& match = matches [ii];
+    rep (ii, matches.size ()) {
+      const vector <Team>& teams = matches [ii].teams;
       
+      // tg = team gamma
+      vector <double> tg (teams.size(), 0.0);
       double tg_sum = 0.0; // E in Remi's paper
-      vector <double> tg (match.teams.size(), 0.0);
-      vector <double> tg_diff_sum (level_count [feature], 0.0); // C in Remi's paper
 
-      rep (jj, match.teams.size()) { // TEAM loop
-        const Team& team = match.teams [jj];
-        tg[jj] = team.TeamGamma (gammas); // TODO expand
+      rep (jj, teams.size()) {
+        tg[jj] = teams [jj].TeamGamma (gammas); // TODO expand
         tg_sum += tg[jj];
       }
 
-      rep (jj, match.teams.size()) { // TEAM loop
-        const Team& team = match.teams [jj];
+      rep (jj, teams.size()) {
         // level of the updated feature in current team
-        uint level = team.levels [feature];
+        uint level = teams [jj].levels [feature];
         double gamma = gammas.Get (feature, level);
-        c_e [level] += tg[jj] / (gamma * tg_sum);
+        c_e [level] += tg [jj] / (gamma * tg_sum);
       }
     }
 
@@ -363,16 +361,16 @@ void Test () {
 
   rep (feature, feature_count) {
     rep (level, level_count[feature]) {
-      true_gammas.Set (feature, level, exp (2 *  drand48 ()));
+      true_gammas.Set (feature, level, exp (6 *  drand48 ()));
     }
   }
   
   true_gammas.Normalize (); 
 
   BtModel model;
-  rep (ii, 40000) {
+  rep (ii, 1000000) {
     Match& match = model.NewMatch ();
-    rep (jj, 40) { // TODO randomize team number
+    rep (jj, 200) { // TODO randomize team number
       Team& team = match.NewTeam ();
       rep (feature, feature_count) {
         uint level = rand.GetNextUint (level_count[feature]);
@@ -383,27 +381,38 @@ void Test () {
     //cerr << ii << ": " << match.ToString () << endl;
   }
 
+  model.PreprocessData ();
+  cerr
+    << endl << "---------------------------------" << endl
+    << true_gammas.Distance (model.gammas)
+    << " / " <<  model.LogLikelihood() << endl;
+
+  rep (epoch, 3*feature_count) {
+    model.BatchMM (epoch % feature_count);
+    cerr
+      << true_gammas.Distance (model.gammas)
+      << " / " <<  model.LogLikelihood() << endl;
+  }
+
+  // // ----------------------
+
+  // model.PreprocessData ();
+  // cerr
+  //   << endl << "---------------------------------" << endl
+  //   << true_gammas.Distance (model.gammas)
+  //   << " / " <<  model.LogLikelihood() << endl;
 
   // rep (epoch, 20) {
   //   if (epoch % 10 == 0) cerr << endl;
-  //   model.DoGradientUpdate (10000);
+  //   model.DoGradientUpdate (100000);
   //   cerr
   //     << true_gammas.Distance (model.gammas) << " / "
   //     << model.LogLikelihood() << endl;
   // }
   // cerr << endl;
 
-  model.PreprocessData ();
-  cerr
-    << true_gammas.Distance (model.gammas)
-    << " / " <<  model.LogLikelihood() << endl;
+  // ----------------------
 
-  rep (epoch, 20*feature_count) {
-    model.BatchMM (epoch % feature_count);
-    cerr
-      << true_gammas.Distance (model.gammas)
-      << " / " <<  model.LogLikelihood() << endl;
-  }
 
   // cerr << endl << "---------------------------------" << endl;
 
