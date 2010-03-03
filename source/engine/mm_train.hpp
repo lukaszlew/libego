@@ -10,6 +10,7 @@ struct MmTrain {
     string file_name = io.Read <string> ();
     string out_file_name = io.Read <string> ();
     uint   needed_moves = io.Read <uint> ();
+    uint   epochs = io.Read <uint> ();
     io.CheckEmpty();
 
     ifstream file;
@@ -35,7 +36,7 @@ struct MmTrain {
     cerr << "Harvesting pattern data..." << endl << flush;
     Harvest();
     cerr << "Learning..." << endl << flush;
-    Learn();
+    Learn (epochs);
     cerr << "Dumping..." << endl << flush;
     Dump (out_file);
     cerr << "Done." << endl << flush;
@@ -74,6 +75,7 @@ struct MmTrain {
     }
 
     accept_prob = needed_move_count / total_move_count;
+    WW (accept_prob);
   }
 
   void Init () {
@@ -143,17 +145,11 @@ struct MmTrain {
     }
   }
 
-  void Learn () {
+  void Learn (uint epochs) {
     WW(model.matches.size());
 
     model.PreprocessData ();
-    rep (epoch, 20) {
-      //model.DoFullUpdate();
-      model.BatchMM (0); // TODO all features;
-      //model.DoGradientUpdate (10000);
-      cerr << epoch << " " << model.LogLikelihood() << endl;
-    }
-    cerr << endl;
+    model.Train (epochs);
   }
 
   void Dump (ostream& out) {
@@ -165,7 +161,7 @@ struct MmTrain {
     std::sort (sort_tab.begin(), sort_tab.end());
     rep (level, 2051) {
       out 
-        << setw(7) << level_to_pattern [sort_tab [level].second].GetRaw()  << " "
+        << setw(7) << level_to_pattern [sort_tab [level].second].GetRaw()  << ", "
         << sort_tab [level].first
         << endl;
     }
