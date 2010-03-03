@@ -1,6 +1,10 @@
 
 struct All2051Hash3x3 {
-  All2051Hash3x3 () : random(123), min_hash (Hash3x3::Any ()) {
+  All2051Hash3x3 () :
+    empty (),
+    random(123),
+    min_hash (Hash3x3::Any ())
+  {
     gtp.Register ("gen_all_pat", this, &All2051Hash3x3::GtpGenerate);
   }
 

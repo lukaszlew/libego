@@ -33,6 +33,7 @@ private:
     gtp.RegisterGfx ("ShowLastPlayout", "16", this, &MctsGtp::CShowLastPlayout);
     gtp.RegisterGfx ("ShowLastPlayout", "20", this, &MctsGtp::CShowLastPlayout);
 
+    gtp.RegisterGfx ("ShowGammas", "", this, &MctsGtp::CShowGammas);
 
   }
 
@@ -115,6 +116,13 @@ private:
     int n = io.Read<int> ();
     io.CheckEmpty ();
     mcts_engine.LastPlayoutGfx(n).Report (io);
+  }
+
+  void CShowGammas (Gtp::Io& io) {
+    io.CheckEmpty ();
+    Gtp::GoguiGfx gfx;
+    mcts_engine.ShowGammas (gfx);
+    gfx.Report (io);
   }
 
   void CLoadGammas (Gtp::Io& io) {

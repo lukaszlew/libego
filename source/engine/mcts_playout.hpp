@@ -40,9 +40,7 @@ public:
 
   void DoOnePlayout () {
     // Prepare simulation board and tree iterator.
-    play_board.Load (base_board);
-    playout_moves.clear();
-    sampler.NewPlayout ();
+    Sync ();
 
     // TODO setup nonempty as played once already
 
@@ -75,6 +73,11 @@ public:
     mcts.UpdateTraceRegular (score);
   }
 
+  void Sync () {
+    play_board.Load (base_board);
+    playout_moves.clear();
+    sampler.NewPlayout ();
+  }
 
   vector<Move> LastPlayout () {
     return playout_moves;
@@ -127,10 +130,10 @@ private:
   vector<Move> playout_moves;
 
   Mcts mcts;
-  Sampler sampler;
 
   static const bool kCheckAsserts = false;
 public:
   friend class MctsGtp;
+  Sampler sampler;
   FastRandom random;
 };
