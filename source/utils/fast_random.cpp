@@ -39,6 +39,18 @@ uint FastRandom::GetNextUint (uint n) { // 0 .. n-1
   return ((GetNextUint() & 0xffff) * n) >> 16;
 }
 
+double FastRandom::NextDouble () {
+  const double inv_max_uint = 1.0 / double (uint(1) << 31); // TODO - 1 - 1
+  return GetNextUint() * inv_max_uint;
+}
+
+double FastRandom::NextDouble (double scale) {
+  const double inv_max_uint = 1.0 / double (uint(1) << 31); // TODO - 1 - 1
+  uint s = GetNextUint();
+  double ret = double (s) * (inv_max_uint * scale);
+  return ret;
+}
+
 /*
 // TODO move it to test
 void FastRandom::test () {

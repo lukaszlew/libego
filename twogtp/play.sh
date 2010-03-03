@@ -1,7 +1,7 @@
 #!/bin/sh
 
 if test $# -ne 4; then
-  echo "Usage: $0 GAME_NO PROC_NO ENGINE_BLACK ENGINE_WHITE"
+  echo "Usage: $0 ENGINE_BLACK ENGINE_WHITE GAME_NO PROC_NO"
   exit 1
 fi
 

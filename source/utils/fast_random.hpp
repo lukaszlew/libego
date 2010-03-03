@@ -17,6 +17,9 @@ public:
   uint GetNextUint ();
   uint GetNextUint (uint n);   // n must be between 1 .. (1<<16) + 1
 
+  double NextDouble ();
+  double NextDouble (double scale);
+
   uint seed;
 
   static const bool kCheckAsserts = false;

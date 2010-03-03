@@ -13,7 +13,7 @@ namespace Benchmark {
   Board empty_board;
   Board board;
   FastRandom random (123);
-  Sampler sampler (board);
+  Sampler sampler (board, random);
 
   void DoPlayouts (uint playout_cnt, NatMap<Player, uint>* win_cnt) {
     rep (ii, playout_cnt) {

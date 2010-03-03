@@ -7,8 +7,8 @@ public:
 
   MctsPlayout (const Board& base_board) :
     base_board (base_board),
-    sampler (play_board),
-    random (TimeSeed())
+    random (TimeSeed()),
+    sampler (play_board, random)
   {
   }
 
@@ -134,6 +134,6 @@ private:
   static const bool kCheckAsserts = false;
 public:
   friend class MctsGtp;
-  Sampler sampler;
   FastRandom random;
+  Sampler sampler;
 };
