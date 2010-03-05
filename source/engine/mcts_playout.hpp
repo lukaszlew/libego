@@ -57,20 +57,8 @@ private:
       if (play_board.BothPlayerPass()) break;
       if (play_board.MoveCount() >= 3*Board::kArea) return;
 
-      Move m = Move::Invalid ();
-
-      if (!m.IsValid()) m = mcts.ChooseMove (play_board);
-      if (!m.IsValid()) m = ChooseLocalMove ();
-      //if (!m.IsValid()) m = play_board.RandomLightMove (random);
-      if (!m.IsValid()) m = Move (play_board.ActPlayer (), sampler.SampleMove ());
-
-      ASSERT (play_board.IsLegal (m));
-      play_board.PlayLegal (m);
-
-      mcts.NewMove (m);
-      sampler.MovePlayed ();
-      
-      playout_moves.push_back (m);
+      Move m = ChooseMove ();
+      PlayMove (m);
     }
     
     double score = Score (mcts.tree_phase);
@@ -79,7 +67,28 @@ private:
     mcts.UpdateTraceRegular (score);
   }
 
-private:
+
+  Move ChooseMove () {
+    Move m = Move::Invalid ();
+
+    if (!m.IsValid()) m = mcts.ChooseMove (play_board);
+    if (!m.IsValid()) m = ChooseLocalMove ();
+    //if (!m.IsValid()) m = play_board.RandomLightMove (random);
+    if (!m.IsValid()) m = Move (play_board.ActPlayer (), sampler.SampleMove ());
+    return m;
+  }
+
+
+  void PlayMove (Move m) {
+    ASSERT (play_board.IsLegal (m));
+    play_board.PlayLegal (m);
+
+    mcts.NewMove (m);
+    sampler.MovePlayed ();
+      
+    playout_moves.push_back (m);
+  }
+
 
   double Score (bool accurate) {
     // TODO game replay i update wszystkich modeli
@@ -93,6 +102,7 @@ private:
     }
     return score;
   }
+
 
   // TODO policy randomization
   Move ChooseLocalMove () {
