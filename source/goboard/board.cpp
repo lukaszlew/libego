@@ -408,7 +408,7 @@ bool RawBoard::IsEyelike (Player player, Vertex v) const {
     diag_color_cnt [Color::OfPlayer (player.Other())] +
     (diag_color_cnt [Color::OffBoard ()] > 0) < 2;
 
-  IFNASSERT (hash3x3[v].IsEyelike (player) == is_eye, {
+  ASSERT2 (hash3x3[v].IsEyelike (player) == is_eye, {
     DebugPrint (v);
     WW (player.ToGtpString());
     WW (is_eye);
@@ -513,7 +513,7 @@ void RawBoard::update_neighbour (Vertex v, Vertex nbr_v) {
 all_inline
 void RawBoard::MaybeInAtari (Vertex v) {
   // update atari bits in hash3x3
-  IFNASSERT (color_at[v] != Color::Empty(), {DebugPrint (v);});
+  ASSERT2 (color_at[v] != Color::Empty(), {DebugPrint (v);});
   if (!chain_at(v).IsInAtari ()) return;
 
   Vertex av = chain_at(v).AtariVertex();
@@ -782,7 +782,7 @@ void RawBoard::check_hash3x3 () const {
                                color_at [v.E()].IsPlayer() && chain_at(v.E()).IsInAtari(),
                                color_at [v.S()].IsPlayer() && chain_at(v.S()).IsInAtari(),
                                color_at [v.W()].IsPlayer() && chain_at(v.W()).IsInAtari());
-    IFNCHECK (hash3x3[v] == correct_hash, {
+    CHECK2 (hash3x3[v] == correct_hash, {
       DebugPrint(v);
       cerr << hash3x3[v].ToString () << " == "
            << correct_hash.ToString() << endl;

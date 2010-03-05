@@ -27,10 +27,10 @@ void PlayoutTest (bool print_moves) {
       // legal moves
       rep (jj, board.EmptyVertexCount()) {
         Vertex v = board.EmptyVertex (jj);
-        IFNCHECK (board.KoVertex() == v ||
-                  board.IsLegal (pl, v) == board.Hash3x3At(v).IsLegal(pl), {
-                    board.DebugPrint (v);
-                  });
+        CHECK2 (board.KoVertex() == v ||
+                board.IsLegal (pl, v) == board.Hash3x3At(v).IsLegal(pl), {
+                  board.DebugPrint (v);
+                });
         if (v != Vertex::Pass () &&
             board.IsLegal (pl, v) &&
             !board.IsEyelike (pl, v)) {
@@ -43,7 +43,7 @@ void PlayoutTest (bool print_moves) {
       CHECK (board.IsLegal (pl, sampler_v));
 
 
-      IFNCHECK (fabs (sampler.act_gamma_sum [pl] - legals.Size()) < 0.000001, {
+      CHECK2 (fabs (sampler.act_gamma_sum [pl] - legals.Size()) < 0.000001, {
         board.DebugPrint (board.LastVertex());
         WW (sampler.act_gamma_sum [pl]);
         WW (legals.Size());

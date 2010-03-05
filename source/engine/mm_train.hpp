@@ -104,7 +104,7 @@ struct MmTrain {
       rep (move_no, moves.size()) {
         Move m = moves [move_no];
         HarvestNewMatch (m);
-        IFNCHECK (board.IsLegal (m), {
+        CHECK2 (board.IsLegal (m), {
           cerr
             << "Illegal move " << m.ToGtpString()
             << " nr " << move_no
