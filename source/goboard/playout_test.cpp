@@ -8,7 +8,8 @@ void PlayoutTest (bool print_moves) {
   uint move_count = 0;
   uint move_count2 = 0;
   uint hash_changed_count = 0;
-  Sampler sampler (board, random);
+  Gammas gammas;
+  Sampler sampler (board, gammas, random);
   uint n = 10000;
   if (board_size == 19) {
     n = 1000;
@@ -114,7 +115,8 @@ void SamplerPlayoutTest (bool print_moves) {
   uint move_count = 0;
   uint move_count2 = 0;
   uint hash_changed_count = 0;
-  Sampler sampler (board, random);
+  Gammas gammas;
+  Sampler sampler (board, gammas, random);
 
   uint n = 10000;
   if (board_size == 19) n = 1000;

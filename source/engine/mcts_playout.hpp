@@ -8,7 +8,7 @@ public:
   MctsPlayout (const Board& base_board) :
     base_board (base_board),
     random (TimeSeed()),
-    sampler (play_board, random)
+    sampler (play_board, gammas, random)
   {
   }
 
@@ -140,5 +140,6 @@ private:
 public:
   friend class MctsGtp;
   FastRandom random;
+  Gammas gammas;
   Sampler sampler;
 };

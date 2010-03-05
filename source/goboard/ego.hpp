@@ -20,6 +20,8 @@
 
 #include "hash.hpp"
 #include "board.hpp"
+
+#include "gammas.hpp"
 #include "sampler.hpp"
 
 #include "benchmark.hpp"

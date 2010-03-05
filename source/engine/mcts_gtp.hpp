@@ -134,7 +134,7 @@ private:
       io.SetError ("Can't open a file: " + file_name);
       return;
     }
-    if (!mcts_engine.playout.sampler.ReadGammas (in)) {
+    if (!mcts_engine.playout.gammas.Read (in)) {
       io.SetError ("File in a bad format.");
       return;
     }
