@@ -36,8 +36,6 @@ public:
 private:
   friend class Nat <Move>;
   explicit Move (int raw);
-
-  const static bool kCheckAsserts = false;
 };
 
 #endif

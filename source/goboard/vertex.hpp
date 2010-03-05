@@ -63,7 +63,6 @@ public:
 private:
   friend class Nat <Vertex>;
   explicit Vertex (uint raw);
-  const static bool kCheckAsserts = false;
 };
 
 #define for_each_8_nbr(center_v, nbr_v, block) {                \

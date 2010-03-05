@@ -107,8 +107,6 @@ public:
   }
 
 private:
-  static const bool kCheckAsserts = false;
-
   float sample_count;
   float sample_sum;
   float square_sample_sum;

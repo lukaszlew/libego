@@ -250,7 +250,6 @@ private:
 
   friend class  Nat <Hash3x3>;
   explicit Hash3x3 (uint raw) : Nat <Hash3x3> (raw) {}
-  const static bool kCheckAsserts = false;
 };
 
 #endif

@@ -131,7 +131,6 @@ private:
 
   Mcts mcts;
 
-  static const bool kCheckAsserts = false;
 public:
   friend class MctsGtp;
   FastRandom random;

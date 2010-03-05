@@ -191,7 +191,6 @@ struct Sampler {
 
   Vertex ko_v;
 
-  const static bool kCheckAsserts = false;
   static const double accurancy = 1.0e-10;
 };
 

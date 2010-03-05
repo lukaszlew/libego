@@ -69,8 +69,6 @@ private:
   void RecPrint (ostream& out, uint depth, float min_visit, uint max_children) const;
 
   ChildrenList children;
-
-  static const bool kCheckAsserts = false;
 };
 
 // -----------------------------------------------------------------------------

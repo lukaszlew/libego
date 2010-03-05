@@ -250,8 +250,6 @@ private:
   NatSet<Vertex> tmp_vertex_set;
 
   static const Zobrist zobrist[1];
-
-  static const bool kCheckAsserts = false;
 };
 
 // -----------------------------------------------------------------------------
@@ -284,8 +282,6 @@ public:
 private:
 
   bool IsHashRepeated ();
-
-  static const bool kCheckAsserts = false;
 
   vector<Move> moves;
 };

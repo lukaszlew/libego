@@ -6,17 +6,33 @@
 void TestFail (const char* msg, const char* file, int line, const char* pf);
 
 // TODO ifndef DEBUG
+
+// On default there should be one global kCheckAsserts == false
+// During debugging it might be convinient to define local variable
+// with the same name to change behaviour of subset of ASSERTS.
+
+// ASSERT's arument should have no side effects.
+// CHECK might be used safely with side effects.
+// ASSERT2 and CHECK2 take as a second argument block of code that
+// will be executed in case of failure.
+// It might be convinient to use WW in this blocks.
+
+#if 1
 const bool kCheckAsserts = false;
+#else
+const bool kCheckAsserts = true;
+#endif
 
 // debugging  macros
 
 #define STRING__(x) #x
 #define STRING(x) STRING__(x)
 
-// Debug print.
+// Debug print to track code execution.
+// Funny to use: Just write QQ(a) to have letter a printed when it is executed.
 #define QQ(x) cerr << #x << flush;
 
-// Debug print with expresion equation.
+// Convinient macro for printing value of expression.
 #define WW(x) cerr << #x << " = " << x << endl << flush;
 
 // Automatic progam failure with report.

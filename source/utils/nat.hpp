@@ -30,9 +30,6 @@ class Nat {
  protected:
   explicit Nat (uint raw);
   uint raw;
-
- private:
-  const static bool kCheckAsserts = false;
 };
 
 #define ForEachNat(T, var) for (T var = T::Invalid(); var.MoveNext(); )
@@ -55,7 +52,6 @@ class NatMap {
 
  private:
   Elt tab [Nat::kBound];
-  const static bool kCheckAsserts = false;
 };
 
 // -----------------------------------------------------------------------------
