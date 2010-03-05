@@ -75,7 +75,7 @@ public:
   }
 
 
-  double Get (Hash3x3 hash, Player pl) {
+  double Get (Hash3x3 hash, Player pl) const {
     return (*gammas) [hash] [pl];
   }
 

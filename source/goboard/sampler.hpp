@@ -4,10 +4,9 @@
 #include <tr1/random>
 
 struct Sampler {
-  explicit Sampler (Board& board, Gammas& gammas, FastRandom& random) :
+  explicit Sampler (const Board& board, const Gammas& gammas) :
     board (board),
-    gammas (gammas), 
-    random (random)
+    gammas (gammas)
   {
     ForEachNat (Player, pl) {
       ForEachNat (Vertex, v) {
@@ -95,7 +94,14 @@ struct Sampler {
   }
 
 
-  Vertex SampleMove () {
+  double Probability (Player pl, Vertex v) const {
+    WW (act_gamma [v] [pl]);
+    WW (act_gamma_sum [pl]);
+    return act_gamma [v] [pl] / act_gamma_sum [pl];
+  }
+
+
+  Vertex SampleMove (FastRandom& random) {
     Player pl = board.ActPlayer ();
     if (act_gamma_sum [pl] < Gammas::kAccurancy) {
       // TODO assert no_more_legal_moves
@@ -120,9 +126,8 @@ struct Sampler {
     return Vertex::Pass();
   }
 
-  Board& board;
-  Gammas& gammas;
-  FastRandom& random;
+  const Board& board;
+  const Gammas& gammas;
 
   // The invariant is that act_gamma[v] is correct for all empty 
   // vertices except KoVertex() where it is 0.0.

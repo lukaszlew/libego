@@ -8,7 +8,7 @@ public:
   MctsPlayout (const Board& base_board) :
     base_board (base_board),
     random (TimeSeed()),
-    sampler (play_board, gammas, random)
+    sampler (play_board, gammas)
   {
   }
 
@@ -30,7 +30,7 @@ public:
 
 
   void DoNPlayouts (uint n) {
-    mcts.SyncRoot (base_board);
+    mcts.SyncRoot (base_board, gammas);
     rep (ii, n) {
       DoOnePlayout ();
     }
@@ -71,10 +71,10 @@ private:
   Move ChooseMove () {
     Move m = Move::Invalid ();
 
-    if (!m.IsValid()) m = mcts.ChooseMove (play_board);
+    if (!m.IsValid()) m = mcts.ChooseMove (play_board, sampler);
     if (!m.IsValid()) m = ChooseLocalMove ();
     //if (!m.IsValid()) m = play_board.RandomLightMove (random);
-    if (!m.IsValid()) m = Move (play_board.ActPlayer (), sampler.SampleMove ());
+    if (!m.IsValid()) m = Move (play_board.ActPlayer (), sampler.SampleMove (random));
     return m;
   }
 

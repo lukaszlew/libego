@@ -9,7 +9,7 @@ void PlayoutTest (bool print_moves) {
   uint move_count2 = 0;
   uint hash_changed_count = 0;
   Gammas gammas;
-  Sampler sampler (board, gammas, random);
+  Sampler sampler (board, gammas);
   uint n = 10000;
   if (board_size == 19) {
     n = 1000;
@@ -40,7 +40,7 @@ void PlayoutTest (bool print_moves) {
       }
 
       // random move
-      Vertex sampler_v = sampler.SampleMove();
+      Vertex sampler_v = sampler.SampleMove(random);
       CHECK (board.IsLegal (pl, sampler_v));
 
 
@@ -116,7 +116,7 @@ void SamplerPlayoutTest (bool print_moves) {
   uint move_count2 = 0;
   uint hash_changed_count = 0;
   Gammas gammas;
-  Sampler sampler (board, gammas, random);
+  Sampler sampler (board, gammas);
 
   uint n = 10000;
   if (board_size == 19) n = 1000;
@@ -132,7 +132,7 @@ void SamplerPlayoutTest (bool print_moves) {
 
 
       // random move
-      Vertex v = sampler.SampleMove();
+      Vertex v = sampler.SampleMove(random);
       CHECK (board.IsLegal (pl, v));
 
       // play_it
