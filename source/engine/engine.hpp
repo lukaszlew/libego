@@ -101,7 +101,7 @@ public:
 
   void ShowGammas (Gtp::GoguiGfx& gfx) {
     Player pl = full_board.ActPlayer ();
-    playout.Sync ();
+    playout.PrepareToPlayout ();
     NatMap <Vertex, double> p (0.0);
     rep (ii, 15) {
       Vertex v = playout.sampler.SampleMove ();

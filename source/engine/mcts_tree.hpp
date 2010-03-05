@@ -279,7 +279,7 @@ struct Mcts {
     root.Reset ();
   }
 
-  void Sync (const Board& board) {
+  void SyncRoot (const Board& board) {
     Board sync_board;
     act_root = &root;
     BOOST_FOREACH (Move m, board.Moves ()) {

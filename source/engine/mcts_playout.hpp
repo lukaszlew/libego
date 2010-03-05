@@ -25,24 +25,32 @@ public:
 
     DoNPlayouts (playouts);
 
-    mcts.Sync (base_board);
     return mcts.BestMove (player);
   }
 
 
   void DoNPlayouts (uint n) {
-    mcts.Sync (base_board);
+    mcts.SyncRoot (base_board);
     rep (ii, n) {
-      mcts.NewPlayout ();
       DoOnePlayout ();
     }
   }
 
-  void DoOnePlayout () {
-    // Prepare simulation board and tree iterator.
-    Sync ();
+  vector<Move> LastPlayout () {
+    return playout_moves;
+  }
 
-    // TODO setup nonempty as played once already
+  void PrepareToPlayout () {
+    play_board.Load (base_board);
+    playout_moves.clear();
+    sampler.NewPlayout ();
+    mcts.NewPlayout ();
+  }
+
+
+private:
+  void DoOnePlayout () {
+    PrepareToPlayout ();
 
     // do the playout
     while (true) {
@@ -63,24 +71,12 @@ public:
       sampler.MovePlayed ();
       
       playout_moves.push_back (m);
-      
     }
     
     double score = Score (mcts.tree_phase);
 
-
     // update models
     mcts.UpdateTraceRegular (score);
-  }
-
-  void Sync () {
-    play_board.Load (base_board);
-    playout_moves.clear();
-    sampler.NewPlayout ();
-  }
-
-  vector<Move> LastPlayout () {
-    return playout_moves;
   }
 
 private:
