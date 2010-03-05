@@ -5,6 +5,8 @@
 
 void TestFail (const char* msg, const char* file, int line, const char* pf);
 
+// TODO ifndef DEBUG
+const bool kCheckAsserts = false;
 
 // debugging  macros
 
@@ -21,14 +23,14 @@ void TestFail (const char* msg, const char* file, int line, const char* pf);
 #define FAIL(msg) (TestFail (msg, __FILE__, __LINE__, __PRETTY_FUNCTION__), exit(0))
 
 // Always evaluate condition and always assert true.
-#define CHECK(expr) ((expr) ? void(0) : FAIL (#expr))
-
 #define CHECK2(expr, block) { if (!(expr)) { block; FAIL (#expr); } }
 
-// Evalueate and assert only if kCheckAsserts == true
-#define ASSERT(expr) (kCheckAsserts ? CHECK (expr) : void(0))
+#define CHECK(expr) CHECK2(expr, {})
 
+// Evalueate and assert only if kCheckAsserts == true
 #define ASSERT2(expr, block) { if (kCheckAsserts) { CHECK2 (expr, block) } }
+
+#define ASSERT(expr) ASSERT2(expr, {})
 
 
 #endif
