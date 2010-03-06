@@ -23,18 +23,25 @@ struct Sampler {
   void NewPlayout () {
     // Prepare act_gamma and act_gamma_sum
     ForEachNat (Player, pl) {
+      // TODO memcpy
       act_gamma_sum [pl] = 0.0;
+      ForEachNat (Vertex, v) {
+        act_gamma [v] [pl] = 0.0;
+      }
 
       rep (ii, board.EmptyVertexCount()) {
         Vertex v = board.EmptyVertex (ii);
         act_gamma [v] [pl] = gammas.Get (board.Hash3x3At (v), pl);
         act_gamma_sum [pl] += act_gamma [v] [pl];
       }
-
-      ko_v = board.KoVertex (); // TODO this assumes correct alernating play.
-      act_gamma_sum [pl] -= act_gamma [ko_v] [pl];
-      act_gamma [ko_v] [pl] = 0.0;
     }
+
+    Player act_pl = board.ActPlayer();
+    ko_v = board.KoVertex (); // TODO this assumes correct alernating play.
+    act_gamma_sum [act_pl] -= act_gamma [ko_v] [act_pl];
+    act_gamma [ko_v] [act_pl] = 0.0;
+
+    CheckConsistency ();
   }
 
   // non-incremental version.
