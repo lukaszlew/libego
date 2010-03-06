@@ -96,9 +96,14 @@ struct Sampler {
 
 
   double Probability (Player pl, Vertex v) const {
-    WW (act_gamma [v] [pl]);
-    WW (act_gamma_sum [pl]);
-    return act_gamma [v] [pl] / act_gamma_sum [pl];
+    CheckConsistency ();
+    double g  = act_gamma [v] [pl];
+    double tg = act_gamma_sum [pl];
+    double p = g / (tg + Gammas::kAccurancy);
+    ASSERT2 (!isnan (p), WW(g); WW(tg));
+    ASSERT2 (p >= 0.0,   WW(g); WW(tg));
+    ASSERT2 (p <= 1.0,   WW(g); WW(tg));
+    return p;
   }
 
 
