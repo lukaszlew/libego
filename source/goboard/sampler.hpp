@@ -90,6 +90,8 @@ struct Sampler {
     ASSERT (board.ColorAt(ko_v) == Color::Empty() || ko_v == Vertex::Any ());
     act_gamma_sum [act_pl] -= act_gamma [ko_v] [act_pl];
     act_gamma [ko_v] [act_pl] = 0.0;
+
+    CheckConsistency ();
   }
 
 
@@ -123,6 +125,58 @@ struct Sampler {
     }
 
     return Vertex::Pass();
+  }
+
+
+  void CheckSumCorrect (string id = "x") const {
+    if (!kCheckAsserts) return;
+
+    ForEachNat (Player, pl) {
+      double sum = 0.0;
+      ForEachNat (Vertex, v) {
+        sum += act_gamma [v] [pl];
+      }
+      CHECK2 (fabs (act_gamma_sum [pl] - sum) < Gammas::kAccurancy,
+              WW (act_gamma_sum[pl]);
+              WW(sum);
+              WW(id);
+              board.Dump());
+    }
+  }
+
+
+  void CheckValuesCorrect (string id = "x") const {
+    if (!kCheckAsserts) return;
+
+    ForEachNat (Player, pl) {
+      ForEachNat (Vertex, v) {
+        double correct;
+        if (board.ColorAt(v) != Color::Empty ()) {
+          correct = 0.0;
+        } else if (pl == board.ActPlayer() && v == board.KoVertex ()) {
+          correct = 0.0;
+        } else {
+          correct = gammas.Get (board.Hash3x3At (v), pl);
+        }
+        CHECK2 (correct == act_gamma [v] [pl],
+                WW (act_gamma[v][pl]);
+                WW(correct);
+                WW(id);
+                board.DebugPrint(v);
+                WW(board.KoVertex().ToGtpString());
+                WW (pl.ToGtpString());
+                WW (board.ActPlayer().ToGtpString());
+                );
+      }
+    }
+  }
+  
+
+  void CheckConsistency (const char* id = "x") const {
+    if (!kCheckAsserts) return;
+
+    CheckSumCorrect (id);
+    CheckValuesCorrect (id);
   }
 
   const Board& board;
