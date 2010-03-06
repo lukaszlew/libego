@@ -33,6 +33,7 @@ public:
     bool ok = full_board.IsReallyLegal (move);
     if (ok) {
       full_board.PlayLegal (move);
+      full_board.Dump();
       logger.LogLine ("play " + move.ToGtpString());
       logger.LogLine ("");
     }
@@ -57,6 +58,7 @@ public:
     if (m.IsValid ()) {
       CHECK (full_board.IsReallyLegal (m));
       full_board.PlayLegal (m);
+      full_board.Dump();
 
       logger.LogLine ("reg_genmove " + player.ToGtpString() +
                       "   #? [" + m.GetVertex().ToGtpString() + "]");

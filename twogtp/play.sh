@@ -27,6 +27,7 @@ for i in `seq ${PROC_NO}`; do
         -black "${BLACK}" \
         -white "${WHITE}" \
         -sgffile "p${i}" \
+        -verbose \
         &
 done
 

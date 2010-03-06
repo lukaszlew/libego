@@ -1,1 +1,1 @@
-./play.sh ../bin/libego.sh ../bin/gnugo.sh 20 5
+./play.sh ../bin/libego.sh ../bin/gnugo.sh ${1} ${2}

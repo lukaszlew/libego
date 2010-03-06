@@ -61,7 +61,6 @@ struct Sampler {
   void MovePlayed () {
     Player last_pl = board.LastPlayer();
     Vertex last_v  = board.LastVertex ();
-
     // Restore gamma after ko_ban lifted
     ASSERT (act_gamma [ko_v] [last_pl] == 0.0);
     act_gamma [ko_v] [last_pl] = gammas.Get (board.Hash3x3At (ko_v), last_pl); 
