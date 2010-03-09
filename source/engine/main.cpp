@@ -49,7 +49,6 @@ Gtp::ReplWithGogui gtp;
 #include "engine.hpp"
 #include "mcts_gtp.hpp"
 
-#include "time_control.cpp"
 #include "mcts_tree.cpp"
 #include "mcts_playout.cpp"
 

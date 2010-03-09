@@ -3,6 +3,9 @@
 //
 
 #include "time_control.hpp"
+#include "param.hpp"
+
+extern Gtp::Repl gtp;
 
 TimeControl::TimeControl () :
     time_left (0.0),
@@ -29,4 +32,3 @@ TimeControl::TimeControl () :
     time_left [pl] = seconds;
     time_stones [pl] = stones;
   }
-
