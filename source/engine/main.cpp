@@ -39,7 +39,6 @@
 Gtp::ReplWithGogui gtp;
 
 // local hard-include
-#include "param.cpp"
 #include "stat.hpp"
 #include "logger.hpp"
 
