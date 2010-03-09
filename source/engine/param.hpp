@@ -9,6 +9,7 @@ namespace Param {
   bool  tree_rave_use    = true;  
   float tree_stat_bias   = 0.0;
   float tree_rave_bias   = 0.001;
+  float tree_progressive_bias = 500.0;
 
   bool  mcmc_update = false;
   float mcmc_update_fraction = 0.5;

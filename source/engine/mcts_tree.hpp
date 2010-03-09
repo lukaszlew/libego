@@ -268,8 +268,8 @@ float MctsNode::SubjectiveRaveValue (Player pl, float log_val) const {
   return
     pl.SubjectiveScore (value)
     + Param::tree_explore_coeff * sqrt (log_val / stat.update_count())
-  // + 100.0 * bias / stat.update_count ();
-    ;
+    + Param::tree_progressive_bias * bias / stat.update_count ();
+  // TODO other equation for PB
 }
 
 // -----------------------------------------------------------------------------

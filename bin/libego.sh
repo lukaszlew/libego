@@ -7,6 +7,7 @@ SCRIPT_DIR="$(readlink -f $(dirname "$0"))"
     \
     "param.tree use 1" \
     "param.tree max_moves 400" \
+    "param.tree progressive_bias 100" \
     \
     "param.other local_use 0" \
     \

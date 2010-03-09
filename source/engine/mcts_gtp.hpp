@@ -54,6 +54,7 @@ private:
     gtp.RegisterParam (tree, "rave_use",        &Param::tree_rave_use);
     gtp.RegisterParam (tree, "stat_bias",       &Param::tree_stat_bias);
     gtp.RegisterParam (tree, "rave_bias",       &Param::tree_rave_bias);
+    gtp.RegisterParam (tree, "progressive_bias",&Param::tree_progressive_bias);
   }
 
   void Cclear_board (Gtp::Io& io) {
