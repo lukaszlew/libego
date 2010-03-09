@@ -180,14 +180,14 @@ struct Match {
     this->winner = teams.size()-1;
   }
 
-  void SetRandomWinner (const Gammas& gammas) {
+  void SetRandomWinner (const Gammas& gammas, FastRandom& random) {
     vector <double> team_gammas (teams.size());
     double sum = 0.0;
     rep (ii, teams.size()) {
       team_gammas [ii] = teams [ii].TeamGamma (gammas);
       sum += team_gammas [ii];
     }
-    double sample = drand48() * sum;
+    double sample = random.NextDouble (sum);
     double sum2 = 0.0;
     rep (ii, teams.size()) {
       sum2 += team_gammas [ii];
@@ -369,11 +369,10 @@ void Test () {
   Gammas true_gammas;
 
   FastRandom rand (123);
-  srand48 (123);
 
   rep (feature, feature_count) {
     rep (level, level_count[feature]) {
-      true_gammas.Set (feature, level, exp (6 *  drand48 ()));
+      true_gammas.Set (feature, level, exp (rand.NextDouble (6)));
     }
   }
   
@@ -389,7 +388,7 @@ void Test () {
         team.SetFeatureLevel (feature, level);
       }
     }
-    match.SetRandomWinner (true_gammas);
+    match.SetRandomWinner (true_gammas, rand);
     //cerr << ii << ": " << match.ToString () << endl;
   }
 

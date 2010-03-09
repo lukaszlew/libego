@@ -8,7 +8,7 @@ void PlayoutTest (bool print_moves) {
   uint move_count = 0;
   uint move_count2 = 0;
   uint hash_changed_count = 0;
-  Sampler sampler (board);
+  Sampler sampler (board, random);
   uint n = 10000;
   if (board_size == 19) {
     n = 1000;
@@ -88,17 +88,17 @@ void PlayoutTest (bool print_moves) {
     << endl;
 
   if (board_size == 9) {
-    CHECK (win_cnt [Player::Black()] == 4382);
-    CHECK (win_cnt [Player::White()] == 5618);
+    CHECK (win_cnt [Player::Black()] == 4436);
+    CHECK (win_cnt [Player::White()] == 5564);
     CHECK (move_count  == move_count2);
-    CHECK (move_count2 == 1112165);
-    CHECK (hash_changed_count == 3709768);
+    CHECK (move_count2 == 1109454);
+    CHECK (hash_changed_count == 3702383);
   } else if (board_size == 19) {
-    CHECK (win_cnt [Player::Black()] == 455);
-    CHECK (win_cnt [Player::White()] == 545);
+    CHECK (win_cnt [Player::Black()] == 476);
+    CHECK (win_cnt [Player::White()] == 524);
     CHECK (move_count  == move_count2);
-    CHECK (move_count2 == 454249);
-    CHECK (hash_changed_count == 1689144);
+    CHECK (move_count2 == 454567);
+    CHECK (hash_changed_count == 1689259);
   } else {
     CHECK (false);
   }
@@ -114,9 +114,7 @@ void SamplerPlayoutTest (bool print_moves) {
   uint move_count = 0;
   uint move_count2 = 0;
   uint hash_changed_count = 0;
-  Sampler sampler (board);
-
-  srand48 (123);
+  Sampler sampler (board, random);
 
   uint n = 10000;
   if (board_size == 19) n = 1000;

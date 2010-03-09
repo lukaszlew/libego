@@ -4,7 +4,11 @@
 #include <tr1/random>
 
 struct Sampler {
-  explicit Sampler (Board& board) : board (board), gamma ((new Gammas())) {
+  explicit Sampler (Board& board, FastRandom& random) :
+    board (board),
+    random (random),
+    gamma ((new Gammas()))
+  {
     ResetGammas ();
     ForEachNat (Player, pl) {
       ForEachNat (Vertex, v) {
@@ -155,8 +159,7 @@ struct Sampler {
     }
 
     // Select move based on act_gamma and act_gamma_sum
-    double rand = drand48();
-    double sample = rand * act_gamma_sum [pl];
+    double sample = random.NextDouble (act_gamma_sum [pl]);
     ASSERT (sample < act_gamma_sum [pl] || act_gamma_sum [pl] == 0.0);
     
     double sum = 0.0;
@@ -177,6 +180,7 @@ struct Sampler {
   typedef NatMap<Hash3x3, NatMap<Player, double> > Gammas;
 
   Board& board;
+  FastRandom& random;
   Gammas* gamma;
 
   // The invariant is that act_gamma[v] is correct for all empty 
