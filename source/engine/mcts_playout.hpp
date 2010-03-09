@@ -1,5 +1,5 @@
-#ifndef _MCTS_PLAYOUT_H
-#define _MCTS_PLAYOUT_H
+#ifndef MCTS_PLAYOUT_H_
+#define MCTS_PLAYOUT_H_
 
 //
 // Copyright 2006 and onwards, Lukasz Lew
@@ -46,4 +46,4 @@ public:
   Sampler sampler;
 };
 
-#endif /* _MCTS_PLAYOUT_H */
+#endif /* MCTS_PLAYOUT_H_ */
