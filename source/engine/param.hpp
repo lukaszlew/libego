@@ -1,6 +1,8 @@
 #ifndef GO_PARAM_H
 #define GO_PARAM_H
 
+#include "utils.hpp"
+
 class Param {
 public:
   static float genmove_playouts;

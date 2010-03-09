@@ -1,6 +1,9 @@
 #include <list>
+#include <boost/foreach.hpp>
 #include "mcts_tree.hpp"
+#include "gtp_gogui.hpp"
 
+extern Gtp::ReplWithGogui gtp;
 
 MctsNode::MctsNode (Player player, Vertex v, double bias)
 : player(player), v(v), has_all_legal_children (false), bias(bias)

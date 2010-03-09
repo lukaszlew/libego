@@ -49,8 +49,6 @@ Gtp::ReplWithGogui gtp;
 #include "engine.hpp"
 #include "mcts_gtp.hpp"
 
-#include "mcts_tree.cpp"
-
 #include "all_hash3x3.hpp"
 All2051Hash3x3 all_hash3x3;
 

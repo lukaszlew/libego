@@ -3,6 +3,7 @@
 
 #include <list>
 #include "stat.hpp"
+#include "gtp.hpp"
 
 
 class MctsNode {

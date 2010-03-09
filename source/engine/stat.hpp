@@ -1,7 +1,9 @@
 #ifndef STAT_H_
 #define STAT_H_
 
+#include <cmath>
 #include "param.hpp"
+#include "ego.hpp"
 
 class Stat {
 public:
