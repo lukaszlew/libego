@@ -4,12 +4,10 @@
 #include <tr1/random>
 
 struct Sampler {
-  explicit Sampler (Board& board, FastRandom& random) :
+  explicit Sampler (const Board& board, const Gammas& gammas) :
     board (board),
-    random (random),
-    gamma ((new Gammas()))
+    gammas (gammas)
   {
-    ResetGammas ();
     ForEachNat (Player, pl) {
       ForEachNat (Vertex, v) {
         act_gamma [v] [pl] = 0.0;
@@ -20,78 +18,30 @@ struct Sampler {
 
 
   ~Sampler () {
-    delete gamma;
-  }
-
-  void ResetGammas () {
-    ForEachNat (Player, pl) {
-      ForEachNat (Hash3x3, hash) {
-        (*gamma) [hash] [pl] = 
-          (hash.IsLegal (pl) && !hash.IsEyelike (pl))
-          ? 1.0
-          : 0.0;
-      }
-    }
-  }
-
-  bool ReadGammas (istream& in) {
-    uint raw_hash;
-    double value;
-    string c;
-
-    ForEachNat (Player, pl) {
-      ForEachNat (Hash3x3, hash) {
-        (*gamma) [hash] [pl] = 0.0;
-      }
-    }
-
-    rep (ii, 2051) {
-      in >> raw_hash >> c >> value;
-      
-      if (!in || c != ",") {
-        ResetGammas ();
-        cerr << "Error at:" << ii << endl;
-        return false;
-      }
-      
-      Hash3x3 all[8];
-      Hash3x3::OfRaw (raw_hash).GetAll8Symmetries (all);
-      rep (ii, 8) {
-        Hash3x3 hash = all[ii];
-        CHECK (value > 0.0);
-        CHECK (hash.IsLegal (Player::Black ()));
-        CHECK (value > accurancy * 100);
-
-        if (!hash.IsEyelike (Player::Black())) {
-          (*gamma) [hash] [Player::Black()] = value;
-          hash = hash.InvertColors ();
-          (*gamma) [hash] [Player::White()] = value;
-        }
-      }
-    }
-    in >> raw_hash;
-    if (in) {
-      ResetGammas ();
-      return false;
-    }
-    return true;
   }
 
   void NewPlayout () {
     // Prepare act_gamma and act_gamma_sum
     ForEachNat (Player, pl) {
+      // TODO memcpy
       act_gamma_sum [pl] = 0.0;
+      ForEachNat (Vertex, v) {
+        act_gamma [v] [pl] = 0.0;
+      }
 
       rep (ii, board.EmptyVertexCount()) {
         Vertex v = board.EmptyVertex (ii);
-        act_gamma [v] [pl] = (*gamma) [board.Hash3x3At (v)] [pl];
+        act_gamma [v] [pl] = gammas.Get (board.Hash3x3At (v), pl);
         act_gamma_sum [pl] += act_gamma [v] [pl];
       }
-
-      ko_v = board.KoVertex (); // TODO this assumes correct alernating play.
-      act_gamma_sum [pl] -= act_gamma [ko_v] [pl];
-      act_gamma [ko_v] [pl] = 0.0;
     }
+
+    Player act_pl = board.ActPlayer();
+    ko_v = board.KoVertex (); // TODO this assumes correct alernating play.
+    act_gamma_sum [act_pl] -= act_gamma [ko_v] [act_pl];
+    act_gamma [ko_v] [act_pl] = 0.0;
+
+    CheckConsistency ();
   }
 
   // non-incremental version.
@@ -103,7 +53,7 @@ struct Sampler {
 
     rep (ii, board.EmptyVertexCount()) {
       Vertex v = board.EmptyVertex (ii);
-      act_gamma [v] [pl] = (*gamma) [board.Hash3x3At (v)] [pl];
+      act_gamma [v] [pl] = gammas.Get (board.Hash3x3At (v), pl);
       sum += act_gamma [v] [pl];
     }
 
@@ -118,10 +68,9 @@ struct Sampler {
   void MovePlayed () {
     Player last_pl = board.LastPlayer();
     Vertex last_v  = board.LastVertex ();
-
     // Restore gamma after ko_ban lifted
     ASSERT (act_gamma [ko_v] [last_pl] == 0.0);
-    act_gamma [ko_v] [last_pl] = (*gamma) [board.Hash3x3At (ko_v)] [last_pl];
+    act_gamma [ko_v] [last_pl] = gammas.Get (board.Hash3x3At (ko_v), last_pl); 
     act_gamma_sum [last_pl] += act_gamma [ko_v] [last_pl];
 
     ForEachNat (Player, pl) {
@@ -137,7 +86,7 @@ struct Sampler {
         ASSERT (board.ColorAt(v) == Color::Empty());
 
         act_gamma_sum [pl] -= act_gamma [v] [pl];
-        act_gamma [v] [pl] = (*gamma) [board.Hash3x3At (v)] [pl];
+        act_gamma [v] [pl] = gammas.Get (board.Hash3x3At (v), pl);
         act_gamma_sum [pl] += act_gamma [v] [pl];
       }
     }
@@ -148,12 +97,26 @@ struct Sampler {
     ASSERT (board.ColorAt(ko_v) == Color::Empty() || ko_v == Vertex::Any ());
     act_gamma_sum [act_pl] -= act_gamma [ko_v] [act_pl];
     act_gamma [ko_v] [act_pl] = 0.0;
+
+    CheckConsistency ();
   }
 
 
-  Vertex SampleMove () {
+  double Probability (Player pl, Vertex v) const {
+    CheckConsistency ();
+    double g  = act_gamma [v] [pl];
+    double tg = act_gamma_sum [pl];
+    double p = g / (tg + Gammas::kAccurancy);
+    ASSERT2 (!isnan (p), WW(g); WW(tg));
+    ASSERT2 (p >= 0.0,   WW(g); WW(tg));
+    ASSERT2 (p <= 1.0,   WW(g); WW(tg));
+    return p;
+  }
+
+
+  Vertex SampleMove (FastRandom& random) {
     Player pl = board.ActPlayer ();
-    if (act_gamma_sum [pl] < accurancy) {
+    if (act_gamma_sum [pl] < Gammas::kAccurancy) {
       // TODO assert no_more_legal_moves
       return Vertex::Pass ();
     }
@@ -177,22 +140,67 @@ struct Sampler {
   }
 
 
-  typedef NatMap<Hash3x3, NatMap<Player, double> > Gammas;
+  void CheckSumCorrect (string id = "x") const {
+    if (!kCheckAsserts) return;
 
-  Board& board;
-  FastRandom& random;
-  Gammas* gamma;
+    ForEachNat (Player, pl) {
+      double sum = 0.0;
+      ForEachNat (Vertex, v) {
+        sum += act_gamma [v] [pl];
+      }
+      CHECK2 (fabs (act_gamma_sum [pl] - sum) < Gammas::kAccurancy,
+              WW (act_gamma_sum[pl]);
+              WW(sum);
+              WW(id);
+              board.Dump());
+    }
+  }
+
+
+  void CheckValuesCorrect (string id = "x") const {
+    if (!kCheckAsserts) return;
+
+    ForEachNat (Player, pl) {
+      ForEachNat (Vertex, v) {
+        double correct;
+        if (board.ColorAt(v) != Color::Empty ()) {
+          correct = 0.0;
+        } else if (pl == board.ActPlayer() && v == board.KoVertex ()) {
+          correct = 0.0;
+        } else {
+          correct = gammas.Get (board.Hash3x3At (v), pl);
+        }
+        CHECK2 (correct == act_gamma [v] [pl],
+                WW (act_gamma[v][pl]);
+                WW(correct);
+                WW(id);
+                board.DebugPrint(v);
+                WW(board.KoVertex().ToGtpString());
+                WW (pl.ToGtpString());
+                WW (board.ActPlayer().ToGtpString());
+                );
+      }
+    }
+  }
+  
+
+  void CheckConsistency (const char* id = "x") const {
+    if (!kCheckAsserts) return;
+
+    CheckSumCorrect (id);
+    CheckValuesCorrect (id);
+  }
+
+  const Board& board;
+  const Gammas& gammas;
 
   // The invariant is that act_gamma[v] is correct for all empty 
   // vertices except KoVertex() where it is 0.0.
   // act_gamma_sum is a sum of the above.
   NatMap <Vertex, NatMap<Player, double> > act_gamma;
   NatMap <Player, double> act_gamma_sum;
-
   Vertex ko_v;
 
-  const static bool kCheckAsserts = false;
-  static const double accurancy = 1.0e-10;
 };
 
 #endif

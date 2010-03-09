@@ -33,6 +33,7 @@ public:
     bool ok = full_board.IsReallyLegal (move);
     if (ok) {
       full_board.PlayLegal (move);
+      full_board.Dump();
       logger.LogLine ("play " + move.ToGtpString());
       logger.LogLine ("");
     }
@@ -57,6 +58,7 @@ public:
     if (m.IsValid ()) {
       CHECK (full_board.IsReallyLegal (m));
       full_board.PlayLegal (m);
+      full_board.Dump();
 
       logger.LogLine ("reg_genmove " + player.ToGtpString() +
                       "   #? [" + m.GetVertex().ToGtpString() + "]");
@@ -101,15 +103,8 @@ public:
 
   void ShowGammas (Gtp::GoguiGfx& gfx) {
     Player pl = full_board.ActPlayer ();
-    playout.Sync ();
+    playout.PrepareToPlayout ();
     NatMap <Vertex, double> p (0.0);
-    rep (ii, 15) {
-      Vertex v = playout.sampler.SampleMove ();
-      double g = playout.sampler.act_gamma [v] [pl];
-      double tg = playout.sampler.act_gamma_sum [pl];
-      cerr << v.ToGtpString() << " " 
-           << playout.sampler.act_gamma [v] [pl] << g << " / " << tg << " = " << g/tg << endl;
-    }
     ForEachNat (Vertex, v) {
       if (full_board.ColorAt (v) == Color::Empty()) {
         p [v] = playout.sampler.act_gamma [v] [pl];

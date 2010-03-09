@@ -99,9 +99,6 @@ private:
   }
 
 private:
-
-  static const bool kCheckAsserts = false;
-
   Elt tab [max_size];
   uint size;
 };

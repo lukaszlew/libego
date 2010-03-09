@@ -21,8 +21,6 @@ public:
   double NextDouble (double scale);
 
   uint seed;
-
-  static const bool kCheckAsserts = false;
 };
 
 #endif

@@ -6,38 +6,13 @@ struct MmTrain {
     gtp.Register ("mm_train", this, &MmTrain::GtpMmTrain);
   }
 
-  void Read (istream& in) {
-    uint game_no = 0;
-    string s;
-    while (in >> s) {
-      CHECK (s == "file");
-      games.resize (game_no + 1);
-      files.resize (game_no + 1);
-
-      getline (in, files[game_no]);
-      CHECK (in);
-
-      uint bs;
-      CHECK (in >> bs);
-      
-      uint move_count;
-      CHECK (in >> move_count);
-      games [game_no].resize (move_count);
-      rep (ii, move_count) {
-        Move m = Move::OfGtpStream (in);
-        CHECK (m.IsValid ());
-        games [game_no] [ii] = m;
-      }
-      if (bs == board_size) {
-        game_no += 1;
-      }
-    }
-  }
-
   void GtpMmTrain (Gtp::Io& io) {
     string file_name = io.Read <string> ();
     string out_file_name = io.Read <string> ();
+    uint   needed_moves = io.Read <uint> ();
+    uint   epochs = io.Read <uint> ();
     io.CheckEmpty();
+
     ifstream file;
     ofstream out_file;
 
@@ -56,16 +31,51 @@ struct MmTrain {
     cerr << "Initializing..." << endl << flush;
     Init ();
     cerr << "Reading game file..." << endl << flush;
-    Read (file);
+    Read (file, needed_moves);
     file.close ();
     cerr << "Harvesting pattern data..." << endl << flush;
     Harvest();
     cerr << "Learning..." << endl << flush;
-    Learn();
+    Learn (epochs);
     cerr << "Dumping..." << endl << flush;
     Dump (out_file);
     cerr << "Done." << endl << flush;
     out_file.close ();
+  }
+
+  void Read (istream& in, double needed_move_count) {
+    uint game_no = 0;
+    uint total_move_count = 0;
+
+    string s;
+    while (in >> s) {
+      CHECK (s == "file");
+      games.resize (game_no + 1);
+      files.resize (game_no + 1);
+
+      getline (in, files[game_no]);
+      CHECK (in);
+
+      uint bs;
+      CHECK (in >> bs);
+      
+      uint move_count;
+      CHECK (in >> move_count);
+      total_move_count += move_count;
+
+      games [game_no].resize (move_count);
+      rep (ii, move_count) {
+        Move m = Move::OfGtpStream (in);
+        CHECK (m.IsValid ());
+        games [game_no] [ii] = m;
+      }
+      if (bs == board_size) {
+        game_no += 1;
+      }
+    }
+
+    accept_prob = needed_move_count / total_move_count;
+    WW (accept_prob);
   }
 
   void Init () {
@@ -94,7 +104,7 @@ struct MmTrain {
       rep (move_no, moves.size()) {
         Move m = moves [move_no];
         HarvestNewMatch (m);
-        IFNCHECK (board.IsLegal (m), {
+        CHECK2 (board.IsLegal (m), {
           cerr
             << "Illegal move " << m.ToGtpString()
             << " nr " << move_no
@@ -108,7 +118,7 @@ struct MmTrain {
   }
 
   void HarvestNewMatch (Move m) {
-    if (random.GetNextUint(8) >= 1) return;
+    if (random.NextDouble () > accept_prob) return;
 
     Player pl = m.GetPlayer ();
 
@@ -135,17 +145,11 @@ struct MmTrain {
     }
   }
 
-  void Learn () {
+  void Learn (uint epochs) {
     WW(model.matches.size());
 
     model.PreprocessData ();
-    rep (epoch, 20) {
-      //model.DoFullUpdate();
-      model.BatchMM (0);
-      //model.DoGradientUpdate (10000);
-      cerr << epoch << " " << model.LogLikelihood() << endl;
-    }
-    cerr << endl;
+    model.Train (epochs);
   }
 
   void Dump (ostream& out) {
@@ -157,7 +161,7 @@ struct MmTrain {
     std::sort (sort_tab.begin(), sort_tab.end());
     rep (level, 2051) {
       out 
-        << setw(7) << level_to_pattern [sort_tab [level].second].GetRaw()  << " "
+        << setw(7) << level_to_pattern [sort_tab [level].second].GetRaw()  << ", "
         << sort_tab [level].first
         << endl;
     }
@@ -165,6 +169,8 @@ struct MmTrain {
 
   vector <vector <Move> > games;
   vector <string> files;
+  double accept_prob;
+
   Board board;
   FastRandom random;
   Mm::BtModel model;

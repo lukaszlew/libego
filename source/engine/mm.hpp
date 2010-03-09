@@ -275,7 +275,8 @@ struct BtModel {
     }
   }
 
-  void BatchMM (uint feature) {
+  // Batch MM
+  void TrainFeature (uint feature) {
     vector <double> c_e (level_count [feature]);
     // prior
     rep (level, level_count [feature]) {
@@ -308,6 +309,31 @@ struct BtModel {
     }
 
     gammas.Normalize ();
+  }
+
+  void Train (uint epochs) {
+    double ll_improve [feature_count];
+    rep (f, feature_count)  ll_improve [f] = 1000.0;
+
+    double last_ll = LogLikelihood();
+    cerr << "Begin LL: " << last_ll << endl;
+
+    rep (ii, epochs) {
+      uint best_f = 0;
+      rep (f, feature_count) {
+        if (ll_improve[f] > ll_improve[best_f]) {
+          best_f = f;
+        }
+      }
+
+      cerr << "Train feature " << best_f << " ... " << flush;
+      TrainFeature (best_f);
+
+      double new_ll = LogLikelihood();
+      ll_improve [best_f] = new_ll - last_ll;
+      last_ll = new_ll;
+      cerr << "New LL = " << new_ll << "; delta LL = " << ll_improve [best_f] << endl;
+    }
   }
 
   // Minorization - Maximization algorithm
@@ -399,7 +425,7 @@ void Test () {
     << " / " <<  model.LogLikelihood() << endl << endl;
 
   rep (epoch, 15*feature_count) {
-    model.BatchMM (epoch % feature_count);
+    model.TrainFeature (epoch % feature_count);
     cerr
       << true_gammas.Distance (model.gammas)
       << " / " <<  model.LogLikelihood() << endl;

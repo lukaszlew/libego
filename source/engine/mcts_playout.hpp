@@ -8,7 +8,7 @@ public:
   MctsPlayout (const Board& base_board) :
     base_board (base_board),
     random (TimeSeed()),
-    sampler (play_board, random)
+    sampler (play_board, gammas)
   {
   }
 
@@ -25,65 +25,70 @@ public:
 
     DoNPlayouts (playouts);
 
-    mcts.Sync (base_board);
     return mcts.BestMove (player);
   }
 
 
   void DoNPlayouts (uint n) {
-    mcts.Sync (base_board);
+    mcts.SyncRoot (base_board, gammas);
     rep (ii, n) {
-      mcts.NewPlayout ();
       DoOnePlayout ();
     }
-  }
-
-  void DoOnePlayout () {
-    // Prepare simulation board and tree iterator.
-    Sync ();
-
-    // TODO setup nonempty as played once already
-
-    // do the playout
-    while (true) {
-      if (play_board.BothPlayerPass()) break;
-      if (play_board.MoveCount() >= 3*Board::kArea) return;
-
-      Move m = Move::Invalid ();
-
-      if (!m.IsValid()) m = mcts.ChooseMove (play_board);
-      if (!m.IsValid()) m = ChooseLocalMove ();
-      //if (!m.IsValid()) m = play_board.RandomLightMove (random);
-      if (!m.IsValid()) m = Move (play_board.ActPlayer (), sampler.SampleMove ());
-
-      ASSERT (play_board.IsLegal (m));
-      play_board.PlayLegal (m);
-
-      mcts.NewMove (m);
-      sampler.MovePlayed ();
-      
-      playout_moves.push_back (m);
-      
-    }
-    
-    double score = Score (mcts.tree_phase);
-
-
-    // update models
-    mcts.UpdateTraceRegular (score);
-  }
-
-  void Sync () {
-    play_board.Load (base_board);
-    playout_moves.clear();
-    sampler.NewPlayout ();
   }
 
   vector<Move> LastPlayout () {
     return playout_moves;
   }
 
+  void PrepareToPlayout () {
+    play_board.Load (base_board);
+    playout_moves.clear();
+    sampler.NewPlayout ();
+    mcts.NewPlayout ();
+  }
+
+
 private:
+  void DoOnePlayout () {
+    PrepareToPlayout ();
+
+    // do the playout
+    while (true) {
+      if (play_board.BothPlayerPass()) break;
+      if (play_board.MoveCount() >= 3*Board::kArea) return;
+
+      Move m = ChooseMove ();
+      PlayMove (m);
+    }
+    
+    double score = Score (mcts.tree_phase);
+
+    // update models
+    mcts.UpdateTraceRegular (score);
+  }
+
+
+  Move ChooseMove () {
+    Move m = Move::Invalid ();
+
+    if (!m.IsValid()) m = mcts.ChooseMove (play_board, sampler);
+    if (!m.IsValid()) m = ChooseLocalMove ();
+    //if (!m.IsValid()) m = play_board.RandomLightMove (random);
+    if (!m.IsValid()) m = Move (play_board.ActPlayer (), sampler.SampleMove (random));
+    return m;
+  }
+
+
+  void PlayMove (Move m) {
+    ASSERT (play_board.IsLegal (m));
+    play_board.PlayLegal (m);
+
+    mcts.NewMove (m);
+    sampler.MovePlayed ();
+      
+    playout_moves.push_back (m);
+  }
+
 
   double Score (bool accurate) {
     // TODO game replay i update wszystkich modeli
@@ -97,6 +102,7 @@ private:
     }
     return score;
   }
+
 
   // TODO policy randomization
   Move ChooseLocalMove () {
@@ -131,9 +137,9 @@ private:
 
   Mcts mcts;
 
-  static const bool kCheckAsserts = false;
 public:
   friend class MctsGtp;
   FastRandom random;
+  Gammas gammas;
   Sampler sampler;
 };

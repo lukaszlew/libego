@@ -8,7 +8,8 @@ void PlayoutTest (bool print_moves) {
   uint move_count = 0;
   uint move_count2 = 0;
   uint hash_changed_count = 0;
-  Sampler sampler (board, random);
+  Gammas gammas;
+  Sampler sampler (board, gammas);
   uint n = 10000;
   if (board_size == 19) {
     n = 1000;
@@ -27,10 +28,10 @@ void PlayoutTest (bool print_moves) {
       // legal moves
       rep (jj, board.EmptyVertexCount()) {
         Vertex v = board.EmptyVertex (jj);
-        IFNCHECK (board.KoVertex() == v ||
-                  board.IsLegal (pl, v) == board.Hash3x3At(v).IsLegal(pl), {
-                    board.DebugPrint (v);
-                  });
+        CHECK2 (board.KoVertex() == v ||
+                board.IsLegal (pl, v) == board.Hash3x3At(v).IsLegal(pl), {
+                  board.DebugPrint (v);
+                });
         if (v != Vertex::Pass () &&
             board.IsLegal (pl, v) &&
             !board.IsEyelike (pl, v)) {
@@ -39,11 +40,11 @@ void PlayoutTest (bool print_moves) {
       }
 
       // random move
-      Vertex sampler_v = sampler.SampleMove();
+      Vertex sampler_v = sampler.SampleMove(random);
       CHECK (board.IsLegal (pl, sampler_v));
 
 
-      IFNCHECK (fabs (sampler.act_gamma_sum [pl] - legals.Size()) < 0.000001, {
+      CHECK2 (fabs (sampler.act_gamma_sum [pl] - legals.Size()) < 0.000001, {
         board.DebugPrint (board.LastVertex());
         WW (sampler.act_gamma_sum [pl]);
         WW (legals.Size());
@@ -114,7 +115,8 @@ void SamplerPlayoutTest (bool print_moves) {
   uint move_count = 0;
   uint move_count2 = 0;
   uint hash_changed_count = 0;
-  Sampler sampler (board, random);
+  Gammas gammas;
+  Sampler sampler (board, gammas);
 
   uint n = 10000;
   if (board_size == 19) n = 1000;
@@ -130,7 +132,7 @@ void SamplerPlayoutTest (bool print_moves) {
 
 
       // random move
-      Vertex v = sampler.SampleMove();
+      Vertex v = sampler.SampleMove(random);
       CHECK (board.IsLegal (pl, v));
 
       // play_it

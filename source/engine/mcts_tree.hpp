@@ -16,7 +16,7 @@ public:
 
   // Initialization.
 
-  explicit MctsNode (Player player_, Vertex v_);
+  explicit MctsNode (Player player, Vertex v, double bias);
 
   void Reset ();
 
@@ -36,7 +36,7 @@ public:
 
   bool ReadyToExpand () const;
 
-  void EnsureAllLegalChildren (Player pl, const Board& board);
+  void EnsureAllLegalChildren (Player pl, const Board& board, const Sampler& sampler);
 
   void RemoveIllegalChildren (Player pl, const Board& full_board);
 
@@ -64,19 +64,22 @@ public:
 
   Stat stat;
   Stat rave_stat;
+  const double bias;
 
 private:
   void RecPrint (ostream& out, uint depth, float min_visit, uint max_children) const;
 
   ChildrenList children;
-
-  static const bool kCheckAsserts = false;
 };
 
 // -----------------------------------------------------------------------------
 
-MctsNode::MctsNode (Player player_, Vertex v_)
-: player(player_), v(v_), has_all_legal_children (false) {
+MctsNode::MctsNode (Player player, Vertex v, double bias)
+  : player(player), v(v), has_all_legal_children (false), bias(bias)
+{
+  ASSERT2 (!isnan (bias), WW(bias));
+  ASSERT2 (bias >= 0.0, WW(bias));
+  ASSERT2 (bias <= 1.0, WW(bias));
   Reset ();
 }
 
@@ -128,7 +131,8 @@ string MctsNode::ToString() const {
   s << player.ToGtpString() << " " 
     << v.ToGtpString() << " " 
     << stat.to_string() << " "
-    << rave_stat.to_string() << " -> "
+    << rave_stat.to_string() << " + "
+    << bias << " -> "
     << Stat::Mix (stat,      Param::tree_stat_bias,
                   rave_stat, Param::tree_rave_bias)
     // << " - ("  << stat.precision (Param::mcts_bias) << " : "
@@ -213,12 +217,14 @@ MctsNode& MctsNode::BestRaveChild (Player pl) {
 }
 
 
-void MctsNode::EnsureAllLegalChildren (Player pl, const Board& board) {
+void MctsNode::EnsureAllLegalChildren (Player pl, const Board& board, const Sampler& sampler) {
   if (has_all_legal_children [pl]) return;
   empty_v_for_each_and_pass (&board, v, {
       // superko nodes have to be removed from the tree later
-      if (board.IsLegal (pl, v))
-        AddChild (MctsNode(pl, v));
+      if (board.IsLegal (pl, v)) {
+        double bias = sampler.Probability (pl, v);
+        AddChild (MctsNode(pl, v, bias));
+      }
     });
   has_all_legal_children [pl] = true;
 }
@@ -260,15 +266,17 @@ float MctsNode::SubjectiveRaveValue (Player pl, float log_val) const {
   }
 
   return
-    pl.SubjectiveScore (value) +
-    Param::tree_explore_coeff * sqrt (log_val / stat.update_count());
+    pl.SubjectiveScore (value)
+    + Param::tree_explore_coeff * sqrt (log_val / stat.update_count())
+    + Param::tree_progressive_bias * bias / stat.update_count ();
+  // TODO other equation for PB
 }
 
 // -----------------------------------------------------------------------------
 
 struct Mcts {
   Mcts () :
-    root (Player::White(), Vertex::Any ())
+    root (Player::White(), Vertex::Any (), 0.0)
   {
     act_root = &root;
     gtp.RegisterGfx ("MCTS.show",    "0 4", this, &Mcts::GtpShowTree);
@@ -281,18 +289,23 @@ struct Mcts {
     root.Reset ();
   }
 
-  void Sync (const Board& board) {
+  void SyncRoot (const Board& board, const Gammas& gammas) {
+    // TODO replace this by FatBoard
     Board sync_board;
+    Sampler sampler(sync_board, gammas);
+    sampler.NewPlayout ();
+
     act_root = &root;
     BOOST_FOREACH (Move m, board.Moves ()) {
-      act_root->EnsureAllLegalChildren (m.GetPlayer(), sync_board);
+      act_root->EnsureAllLegalChildren (m.GetPlayer(), sync_board, sampler);
       act_root = act_root->FindChild (m);
       CHECK (sync_board.IsLegal (m));
       sync_board.PlayLegal (m);
+      sampler.MovePlayed();
     }
     
     Player pl = board.ActPlayer();
-    act_root->EnsureAllLegalChildren (pl, board);
+    act_root->EnsureAllLegalChildren (pl, board, sampler);
     act_root->RemoveIllegalChildren (pl, board);
   }
 
@@ -320,7 +333,7 @@ struct Mcts {
     move_history.push_back (m);
   }
 
-  Move ChooseMove (Board& play_board) {
+  Move ChooseMove (Board& play_board, const Sampler& sampler) {
     Player pl = play_board.ActPlayer();
 
     if (!tree_phase || tree_move_count >= Param::tree_max_moves) {
@@ -333,7 +346,7 @@ struct Mcts {
         return Move::Invalid();
       }
       ASSERT (pl == ActNode().player.Other());
-      ActNode().EnsureAllLegalChildren (pl, play_board);
+      ActNode().EnsureAllLegalChildren (pl, play_board, sampler);
     }
 
     MctsNode& uct_child = ActNode().BestRaveChild (pl);
@@ -404,6 +417,7 @@ private:
   vector <MctsNode*> trace;               // nodes in the path
   vector <Move> move_history;
   uint tree_move_count;
+
 public:
   bool tree_phase;
 };

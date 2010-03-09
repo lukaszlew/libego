@@ -54,6 +54,7 @@ private:
     gtp.RegisterParam (tree, "rave_use",        &Param::tree_rave_use);
     gtp.RegisterParam (tree, "stat_bias",       &Param::tree_stat_bias);
     gtp.RegisterParam (tree, "rave_bias",       &Param::tree_rave_bias);
+    gtp.RegisterParam (tree, "progressive_bias",&Param::tree_progressive_bias);
   }
 
   void Cclear_board (Gtp::Io& io) {
@@ -134,7 +135,7 @@ private:
       io.SetError ("Can't open a file: " + file_name);
       return;
     }
-    if (!mcts_engine.playout.sampler.ReadGammas (in)) {
+    if (!mcts_engine.playout.gammas.Read (in)) {
       io.SetError ("File in a bad format.");
       return;
     }

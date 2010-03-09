@@ -25,7 +25,6 @@ public:
 private:
   friend class Nat <Dir>;
   explicit Dir (uint raw) : Nat<Dir> (raw) {};
-  const static bool kCheckAsserts = false;
 };
 
 #endif

@@ -13,7 +13,8 @@ namespace Benchmark {
   Board empty_board;
   Board board;
   FastRandom random (123);
-  Sampler sampler (board, random);
+  Gammas gammas;
+  Sampler sampler (board, gammas);
 
   void DoPlayouts (uint playout_cnt, NatMap<Player, uint>* win_cnt) {
     rep (ii, playout_cnt) {
@@ -23,7 +24,7 @@ namespace Benchmark {
 
       while (!board.BothPlayerPass ()) {
         Player pl = board.ActPlayer ();
-        Vertex v = sampler.SampleMove ();
+        Vertex v = sampler.SampleMove (random);
         //Vertex v = board.RandomLightMove (pl, random);
         board.PlayLegal (pl, v);
         sampler.MovePlayed ();
