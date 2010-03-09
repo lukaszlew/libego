@@ -18,6 +18,10 @@ Player Player::White () {
   return Player (1); 
 }
 
+Player Player::None() {
+  return Player (2);
+}
+
 Player Player::OfGtpStream (istream& in) {
   string s;
   in >> s;

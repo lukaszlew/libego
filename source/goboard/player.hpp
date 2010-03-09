@@ -16,6 +16,7 @@ public:
   Player ();
   static Player Black ();
   static Player White ();
+  static Player None ();
   static Player WinnerOfBoardScore (int score);
   static Player OfGtpStream (std::istream& s);
 
