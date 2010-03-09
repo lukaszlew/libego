@@ -162,17 +162,17 @@ void SamplerPlayoutTest (bool print_moves) {
 
 
   if (board_size == 9) {
-    CHECK (win_cnt [Player::Black()] == 4460);
-    CHECK (win_cnt [Player::White()] == 5540);
+    CHECK (win_cnt [Player::Black()] == 4504);
+    CHECK (win_cnt [Player::White()] == 5496);
     CHECK (move_count  == move_count2);
-    CHECK (move_count2 == 1112717);
-    CHECK (hash_changed_count == 3710623);
+    CHECK (move_count2 == 1109793);
+    CHECK (hash_changed_count == 3703753);
   } else if (board_size == 19) {
-    CHECK (win_cnt [Player::Black()] == 463);
-    CHECK (win_cnt [Player::White()] == 537);
+    CHECK (win_cnt [Player::Black()] == 452);
+    CHECK (win_cnt [Player::White()] == 548);
     CHECK (move_count  == move_count2);
-    CHECK (move_count2 == 455509);
-    CHECK (hash_changed_count == 1692961);
+    CHECK (move_count2 == 455121);
+    CHECK (hash_changed_count == 1692632);
   } else {
     CHECK (false);
   }
