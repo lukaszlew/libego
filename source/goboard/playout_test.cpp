@@ -155,8 +155,8 @@ void SamplerPlayoutTest (bool print_moves) {
 
   // Report and regression checks.
   cerr
-    << "sampler_test ok: "
-    << win_cnt [Player::Black ()] << "/"
+    << "sampler_test results: "
+    << win_cnt [Player::Black ()] << " "
     << win_cnt [Player::White ()] << " "
     << move_count << " "
     << hash_changed_count << " "
@@ -164,17 +164,17 @@ void SamplerPlayoutTest (bool print_moves) {
 
 
   if (board_size == 9) {
-    CHECK (win_cnt [Player::Black()] == 4473);
-    CHECK (win_cnt [Player::White()] == 5527);
+    CHECK (win_cnt [Player::Black()] == 4460);
+    CHECK (win_cnt [Player::White()] == 5540);
     CHECK (move_count  == move_count2);
-    CHECK (move_count2 == 1109768);
-    CHECK (hash_changed_count == 3703030);
+    CHECK (move_count2 == 1112717);
+    CHECK (hash_changed_count == 3710623);
   } else if (board_size == 19) {
-    CHECK (win_cnt [Player::Black()] == 460);
-    CHECK (win_cnt [Player::White()] == 540);
+    CHECK (win_cnt [Player::Black()] == 463);
+    CHECK (win_cnt [Player::White()] == 537);
     CHECK (move_count  == move_count2);
-    CHECK (move_count2 == 454316);
-    CHECK (hash_changed_count == 1689165);
+    CHECK (move_count2 == 455509);
+    CHECK (hash_changed_count == 1692961);
   } else {
     CHECK (false);
   }
