@@ -58,9 +58,11 @@ struct Sampler {
         CHECK (hash.IsLegal (Player::Black ()));
         CHECK (value > accurancy * 100);
 
-        (*gamma) [hash] [Player::Black()] = value;
-        hash = hash.InvertColors ();
-        (*gamma) [hash] [Player::White()] = value;
+        if (!hash.IsEyelike (Player::Black())) {
+          (*gamma) [hash] [Player::Black()] = value;
+          hash = hash.InvertColors ();
+          (*gamma) [hash] [Player::White()] = value;
+        }
       }
     }
     in >> raw_hash;

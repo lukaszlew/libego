@@ -99,10 +99,29 @@ public:
     return gfx;
   }
 
-private:
-
-
-
+  void ShowGammas (Gtp::GoguiGfx& gfx) {
+    Player pl = full_board.ActPlayer ();
+    playout.Sync ();
+    NatMap <Vertex, double> p (0.0);
+    rep (ii, 15) {
+      Vertex v = playout.sampler.SampleMove ();
+      double g = playout.sampler.act_gamma [v] [pl];
+      double tg = playout.sampler.act_gamma_sum [pl];
+      cerr << v.ToGtpString() << " " 
+           << playout.sampler.act_gamma [v] [pl] << g << " / " << tg << " = " << g/tg << endl;
+    }
+    ForEachNat (Vertex, v) {
+      if (full_board.ColorAt (v) == Color::Empty()) {
+        p [v] = playout.sampler.act_gamma [v] [pl];
+      }
+    }
+    p.ScalePositive ();
+    ForEachNat (Vertex, v) {
+      if (full_board.ColorAt (v) == Color::Empty()) {
+        gfx.SetInfluence (v.ToGtpString(), p[v]);
+      }
+    }
+  }
 
 private:
   friend class MctsGtp;
