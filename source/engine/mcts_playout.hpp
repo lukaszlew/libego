@@ -5,6 +5,10 @@
 // Copyright 2006 and onwards, Lukasz Lew
 //
 
+#include "ego.hpp"
+#include "time_control.hpp"
+#include "mcts_tree.hpp"
+
 class MctsPlayout {
 public:
 

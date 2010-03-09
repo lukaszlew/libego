@@ -2,6 +2,7 @@
 #define MCTS_TREE_
 
 #include <list>
+#include "stat.hpp"
 
 
 class MctsNode {

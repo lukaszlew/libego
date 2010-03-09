@@ -50,7 +50,6 @@ Gtp::ReplWithGogui gtp;
 #include "mcts_gtp.hpp"
 
 #include "mcts_tree.cpp"
-#include "mcts_playout.cpp"
 
 #include "all_hash3x3.hpp"
 All2051Hash3x3 all_hash3x3;

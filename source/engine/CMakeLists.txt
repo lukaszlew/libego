@@ -9,7 +9,7 @@ link_directories    (${libego_BINARY_DIR}/goboard)
 include_directories (${libego_SOURCE_DIR}/gtp)
 link_directories    (${libego_BINARY_DIR}/gtp)
 
-add_executable (engine main.cpp time_control.cpp)
+add_executable (engine main.cpp time_control.cpp mcts_playout.cpp)
 
 target_link_libraries (engine utils ego gtp)
 

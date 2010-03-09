@@ -1,7 +1,7 @@
 #ifndef STAT_H_
 #define STAT_H_
 
-const bool stat_ac = false;
+#include "param.hpp"
 
 class Stat {
 public:
