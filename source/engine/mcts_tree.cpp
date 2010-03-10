@@ -300,8 +300,8 @@ void Mcts::UpdateTraceRegular (float score) {
 void Mcts::UpdateTraceRave (float score) {
   // TODO configure rave blocking through options
 
-
-  uint last_ii  = move_history.size () * 7 / 8; // TODO 
+  uint last_ii  = move_history.size () * Param::tree_rave_update_fraction;
+  // TODO tune that
 
   rep (act_ii, trace.size()) {
     // Mark moves that should be updated in RAVE children of: trace [act_ii]

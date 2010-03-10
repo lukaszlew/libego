@@ -117,24 +117,4 @@ private:
 
 // -----------------------------------------------------------------------------
 
-struct Stat2 {
-  Stat stat;
-  Stat rave;
-
-  float McmcMix () const {
-    return
-      Stat::Mix (stat, Param::mcmc_stat_bias,
-                 rave, Param::mcmc_rave_bias) +
-      Param::mcmc_explore_coeff / sqrt(stat.update_count ());
-  }
-
-  string ToString () const {
-    ostringstream out;
-    out << stat.to_string () << " ++ " << rave.to_string ()
-        << " -> " << McmcMix ();
-    return out.str();
-  }
-
-};
-
 #endif

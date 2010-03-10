@@ -16,14 +16,7 @@ public:
   static float tree_stat_bias;
   static float tree_rave_bias;
   static float tree_progressive_bias;
-
-  static bool  mcmc_update;
-  static float mcmc_update_fraction;
-  static bool  mcmc_use;
-  static uint  mcmc_max_moves;
-  static float mcmc_stat_bias;
-  static float mcmc_rave_bias;
-  static float mcmc_explore_coeff;
+  static float tree_rave_update_fraction;
 
   static float prior_update_count;
   static float prior_mean;
