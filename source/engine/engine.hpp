@@ -2,6 +2,10 @@
 // Copyright 2006 and onwards, Lukasz Lew
 //
 
+#include "mcts_playout.hpp"
+#include "logger.hpp"
+#include "to_string.hpp"
+
 class Engine {
 public:
   

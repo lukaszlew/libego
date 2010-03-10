@@ -3,6 +3,7 @@
 // TODO mini batches
 
 #include <vector>
+#include <iomanip>
 using namespace std;
 
 namespace Mm {

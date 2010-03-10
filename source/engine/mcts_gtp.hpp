@@ -1,3 +1,5 @@
+extern Gtp::ReplWithGogui gtp;
+
 class MctsGtp {
 public:
   MctsGtp (Engine& mcts_engine)

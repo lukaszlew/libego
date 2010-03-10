@@ -1,3 +1,6 @@
+#include "all_hash3x3.hpp"
+#include "mm.hpp"
+
 struct MmTrain {
   MmTrain () :
     random(123),
