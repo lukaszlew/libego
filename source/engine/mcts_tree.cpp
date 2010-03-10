@@ -307,6 +307,7 @@ void Mcts::UpdateTraceRave (float score) {
     // Mark moves that should be updated in RAVE children of: trace [act_ii]
     NatMap <Move, bool> do_update (false);
     NatMap <Move, bool> do_update_set_to (true);
+    ForEachNat (Player, pl) do_update_set_to [Move (pl, Vertex::Pass())] = false;
 
     // TODO this is the slow and too-fixed part
     // TODO Change it to weighting with flexible masking.
