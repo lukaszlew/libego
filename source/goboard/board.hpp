@@ -8,6 +8,7 @@
 #include "utils.hpp"
 #include "hash.hpp"
 #include "color.hpp"
+#include "fast_stack.hpp"
 
 
 class RawBoard {

@@ -1,6 +1,8 @@
 #ifndef _GAMMAS_HPP
 #define _GAMMAS_HPP
 
+#include "hash.hpp"
+
 class Gammas {
 public:
   Gammas () {

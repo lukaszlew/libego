@@ -1,6 +1,8 @@
 #ifndef DIR_H_
 #define DIR_H_
 
+#include "nat.hpp"
+
 class Dir : public Nat <Dir> {
 public:
   explicit Dir () : Nat<Dir> () {};

@@ -8,6 +8,7 @@
 #include "utils.hpp"
 #include "fast_random.hpp"
 #include "move.hpp"
+#include "color.hpp"
 
 class Hash {
 public:
