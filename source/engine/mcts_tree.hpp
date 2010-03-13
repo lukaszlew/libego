@@ -32,8 +32,6 @@ public:
 
   bool ReadyToExpand () const;
 
-  void EnsureAllLegalChildren (Player pl, const Board& board, const Sampler& sampler);
-
   void RemoveIllegalChildren (Player pl, const Board& full_board);
 
   // Child finding.
@@ -77,6 +75,7 @@ struct Mcts {
   void SyncRoot (const Board& board, const Gammas& gammas);
   Move BestMove (Player player);
   void NewPlayout ();
+  void EnsureAllLegalChildren (MctsNode* node, Player pl, const Board& board, const Sampler& sampler);
   void NewMove (Move m);
 
   Move ChooseMove (Board& play_board, const Sampler& sampler);

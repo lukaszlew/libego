@@ -148,18 +148,6 @@ MctsNode& MctsNode::BestRaveChild (Player pl) {
 }
 
 
-void MctsNode::EnsureAllLegalChildren (Player pl, const Board& board, const Sampler& sampler) {
-  if (has_all_legal_children [pl]) return;
-  empty_v_for_each_and_pass (&board, v, {
-      // superko nodes have to be removed from the tree later
-      if (board.IsLegal (pl, v)) {
-      double bias = sampler.Probability (pl, v);
-      AddChild (MctsNode(pl, v, bias));
-      }
-      });
-  has_all_legal_children [pl] = true;
-}
-
 void MctsNode::RemoveIllegalChildren (Player pl, const Board& full_board) {
   ASSERT (has_all_legal_children [pl]);
 
@@ -228,7 +216,7 @@ void Mcts::SyncRoot (const Board& board, const Gammas& gammas) {
 
   act_root = &root;
   BOOST_FOREACH (Move m, board.Moves ()) {
-    act_root->EnsureAllLegalChildren (m.GetPlayer(), sync_board, sampler);
+    EnsureAllLegalChildren (act_root, m.GetPlayer(), sync_board, sampler);
     act_root = act_root->FindChild (m);
     CHECK (sync_board.IsLegal (m));
     sync_board.PlayLegal (m);
@@ -236,7 +224,7 @@ void Mcts::SyncRoot (const Board& board, const Gammas& gammas) {
   }
 
   Player pl = board.ActPlayer();
-  act_root->EnsureAllLegalChildren (pl, board, sampler);
+  EnsureAllLegalChildren (act_root, pl, board, sampler);
   act_root->RemoveIllegalChildren (pl, board);
 }
 
@@ -260,6 +248,19 @@ void Mcts::NewPlayout (){
   tree_move_count = 0;
 }
 
+void Mcts::EnsureAllLegalChildren (MctsNode* node, Player pl, const Board& board, const Sampler& sampler) {
+  if (node->has_all_legal_children [pl]) return;
+  empty_v_for_each_and_pass (&board, v, {
+      // superko nodes have to be removed from the tree later
+      if (board.IsLegal (pl, v)) {
+      double bias = sampler.Probability (pl, v);
+      node->AddChild (MctsNode(pl, v, bias));
+      }
+      });
+  node->has_all_legal_children [pl] = true;
+}
+
+
 void Mcts::NewMove (Move m) {
   move_history.push_back (m);
 }
@@ -277,7 +278,7 @@ Move Mcts::ChooseMove (Board& play_board, const Sampler& sampler) {
       return Move::Invalid();
     }
     ASSERT (pl == ActNode().player.Other());
-    ActNode().EnsureAllLegalChildren (pl, play_board, sampler);
+    EnsureAllLegalChildren (&ActNode(), pl, play_board, sampler);
   }
 
   MctsNode& uct_child = ActNode().BestRaveChild (pl);
