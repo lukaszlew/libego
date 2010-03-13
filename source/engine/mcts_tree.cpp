@@ -225,6 +225,7 @@ Move Mcts::BestMove (Player player) {
 void Mcts::NewPlayout (){
   trace.clear();
   trace.push_back (act_root);
+  act_node = act_root;
   move_history.clear ();
   move_history.push_back (act_root->GetMove());
   tree_phase = Param::tree_use;
@@ -269,17 +270,18 @@ Move Mcts::ChooseMove (Board& play_board, const Sampler& sampler) {
     return Move::Invalid();
   }
 
-  if (!ActNode().has_all_legal_children [pl]) {
-    if (!ActNode().ReadyToExpand ()) {
+  if (!act_node->has_all_legal_children [pl]) {
+    if (!act_node->ReadyToExpand ()) {
       tree_phase = false;
       return Move::Invalid();
     }
-    ASSERT (pl == ActNode().player.Other());
-    EnsureAllLegalChildren (&ActNode(), pl, play_board, sampler);
+    ASSERT (pl == act_node->player.Other());
+    EnsureAllLegalChildren (act_node, pl, play_board, sampler);
   }
 
-  MctsNode& uct_child = ActNode().BestRaveChild (pl);
+  MctsNode& uct_child = act_node->BestRaveChild (pl);
   trace.push_back (&uct_child);
+  act_node = &uct_child;
   ASSERT (uct_child.v != Vertex::Any());
   tree_move_count += 1;
   return Move (pl, uct_child.v);
@@ -323,11 +325,6 @@ void Mcts::UpdateTraceRave (float score) {
       }
     }
   }
-}
-
-MctsNode& Mcts::ActNode() {
-  ASSERT (trace.size() > 0);
-  return *trace.back ();
 }
 
 

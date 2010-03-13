@@ -78,14 +78,13 @@ struct Mcts {
   void UpdateTraceRegular (float score);
   void UpdateTraceRave (float score);
 
-  MctsNode& ActNode();
-
   void GtpShowTree (Gtp::Io& io);
 
 private:
 
   MctsNode root;
   MctsNode* act_root;
+  MctsNode* act_node;
 
   vector <MctsNode*> trace;               // nodes in the path
   vector <Move> move_history;
