@@ -24,8 +24,6 @@ public:
 
   // Children operations.
   
-  ChildrenList& Children ();
-
   void AddChild (const MctsNode& node);
 
   void RemoveChild (MctsNode* child_ptr);

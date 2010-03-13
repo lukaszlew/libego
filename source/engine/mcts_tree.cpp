@@ -14,10 +14,6 @@ MctsNode::MctsNode (Player player, Vertex v, double bias)
   Reset ();
 }
 
-MctsNode::ChildrenList& MctsNode::Children () {
-  return children;
-}
-
 Move MctsNode::GetMove () const {
   return Move(player, v);
 }
@@ -134,7 +130,7 @@ MctsNode& MctsNode::BestRaveChild (Player pl) {
 
   ASSERT (has_all_legal_children [pl]);
 
-  BOOST_FOREACH (MctsNode& child, Children()) {
+  BOOST_FOREACH (MctsNode& child, children) {
     if (child.player != pl) continue;
     float child_urgency = child.SubjectiveRaveValue (pl, log_val);
     if (child_urgency > best_urgency) {
@@ -321,7 +317,7 @@ void Mcts::UpdateTraceRave (float score) {
     }
 
     // Do the update.
-    BOOST_FOREACH (MctsNode& child, trace[act_ii]->Children()) {
+    BOOST_FOREACH (MctsNode& child, trace[act_ii]->children) {
       if (do_update [child.GetMove()]) {
         child.rave_stat.update (score);
       }
