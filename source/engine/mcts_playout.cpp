@@ -51,7 +51,7 @@ void MctsPlayout::DoOnePlayout () {
   double score = Score (mcts.tree_phase);
 
   // update models
-  mcts.UpdateTraceRegular (score);
+  mcts.trace.UpdateTraceRegular (score);
 }
 
 void MctsPlayout::PrepareToPlayout () {

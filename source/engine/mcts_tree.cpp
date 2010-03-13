@@ -177,6 +177,55 @@ float MctsNode::SubjectiveRaveValue (Player pl, float log_val) const {
 
 // -----------------------------------------------------------------------------
 
+void MctsTrace::Reset (MctsNode& node) {
+  trace.clear();
+  trace.push_back (&node);
+  move_history.clear ();
+  move_history.push_back (node.GetMove());
+}
+
+void MctsTrace::UpdateTraceRegular (float score) {
+  BOOST_FOREACH (MctsNode* node, trace) {
+    node->stat.update (score);
+  }
+
+  if (Param::tree_rave_update) {
+    UpdateTraceRave (score);
+  }
+}
+
+void MctsTrace::UpdateTraceRave (float score) {
+  // TODO configure rave blocking through options
+
+  uint last_ii  = move_history.size () * Param::tree_rave_update_fraction;
+  // TODO tune that
+
+  rep (act_ii, trace.size()) {
+    // Mark moves that should be updated in RAVE children of: trace [act_ii]
+    NatMap <Move, bool> do_update (false);
+    NatMap <Move, bool> do_update_set_to (true);
+    ForEachNat (Player, pl) do_update_set_to [Move (pl, Vertex::Pass())] = false;
+
+    // TODO this is the slow and too-fixed part
+    // TODO Change it to weighting with flexible masking.
+    reps (jj, act_ii+1, last_ii) {
+      Move m = move_history [jj];
+      do_update [m] = do_update_set_to [m];
+      do_update_set_to [m] = false;
+      do_update_set_to [m.OtherPlayer()] = false;
+    }
+
+    // Do the update.
+    BOOST_FOREACH (MctsNode& child, trace[act_ii]->children) {
+      if (do_update [child.GetMove()]) {
+        child.rave_stat.update (score);
+      }
+    }
+  }
+}
+
+// -----------------------------------------------------------------------------
+
 Mcts::Mcts () :
   root (Player::White(), Vertex::Any (), 0.0)
 {
@@ -223,11 +272,8 @@ Move Mcts::BestMove (Player player) {
 
 
 void Mcts::NewPlayout (){
-  trace.clear();
-  trace.push_back (act_root);
+  trace.Reset (*act_root);
   act_node = act_root;
-  move_history.clear ();
-  move_history.push_back (act_root->GetMove());
   tree_phase = Param::tree_use;
   tree_move_count = 0;
 }
@@ -260,7 +306,7 @@ void Mcts::RemoveIllegalChildren (MctsNode* node, Player pl, const Board& full_b
 
 
 void Mcts::NewMove (Move m) {
-  move_history.push_back (m);
+  trace.move_history.push_back (m);
 }
 
 Move Mcts::ChooseMove (Board& play_board, const Sampler& sampler) {
@@ -280,51 +326,11 @@ Move Mcts::ChooseMove (Board& play_board, const Sampler& sampler) {
   }
 
   MctsNode& uct_child = act_node->BestRaveChild (pl);
-  trace.push_back (&uct_child);
+  trace.trace.push_back (&uct_child);
   act_node = &uct_child;
   ASSERT (uct_child.v != Vertex::Any());
   tree_move_count += 1;
   return Move (pl, uct_child.v);
-}
-
-void Mcts::UpdateTraceRegular (float score) {
-  BOOST_FOREACH (MctsNode* node, trace) {
-    node->stat.update (score);
-  }
-
-  if (Param::tree_rave_update) {
-    UpdateTraceRave (score);
-  }
-}
-
-void Mcts::UpdateTraceRave (float score) {
-  // TODO configure rave blocking through options
-
-  uint last_ii  = move_history.size () * Param::tree_rave_update_fraction;
-  // TODO tune that
-
-  rep (act_ii, trace.size()) {
-    // Mark moves that should be updated in RAVE children of: trace [act_ii]
-    NatMap <Move, bool> do_update (false);
-    NatMap <Move, bool> do_update_set_to (true);
-    ForEachNat (Player, pl) do_update_set_to [Move (pl, Vertex::Pass())] = false;
-
-    // TODO this is the slow and too-fixed part
-    // TODO Change it to weighting with flexible masking.
-    reps (jj, act_ii+1, last_ii) {
-      Move m = move_history [jj];
-      do_update [m] = do_update_set_to [m];
-      do_update_set_to [m] = false;
-      do_update_set_to [m.OtherPlayer()] = false;
-    }
-
-    // Do the update.
-    BOOST_FOREACH (MctsNode& child, trace[act_ii]->children) {
-      if (do_update [child.GetMove()]) {
-        child.rave_stat.update (score);
-      }
-    }
-  }
 }
 
 

@@ -61,6 +61,19 @@ public:
   ChildrenList children;
 };
 
+// -----------------------------------------------------------------------------
+
+struct MctsTrace {
+  void Reset (MctsNode& node);
+  
+  void UpdateTraceRegular (float score);
+  void UpdateTraceRave (float score);
+
+  vector <MctsNode*> trace;               // nodes in the path
+  vector <Move> move_history;
+};
+
+// -----------------------------------------------------------------------------
 
 struct Mcts {
   Mcts ();
@@ -75,8 +88,6 @@ struct Mcts {
   void NewMove (Move m);
 
   Move ChooseMove (Board& play_board, const Sampler& sampler);
-  void UpdateTraceRegular (float score);
-  void UpdateTraceRave (float score);
 
   void GtpShowTree (Gtp::Io& io);
 
@@ -86,11 +97,12 @@ private:
   MctsNode* act_root;
   MctsNode* act_node;
 
-  vector <MctsNode*> trace;               // nodes in the path
-  vector <Move> move_history;
   uint tree_move_count;
-
+  
 public:
+
+  MctsTrace trace;
+
   bool tree_phase;
 };
 
