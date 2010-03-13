@@ -32,8 +32,6 @@ public:
 
   bool ReadyToExpand () const;
 
-  void RemoveIllegalChildren (Player pl, const Board& full_board);
-
   // Child finding.
 
   MctsNode* FindChild (Move m);
@@ -60,7 +58,6 @@ public:
   Stat rave_stat;
   const double bias;
 
-private:
   void RecPrint (ostream& out, uint depth, float min_visit, uint max_children) const;
 
   ChildrenList children;
@@ -76,6 +73,7 @@ struct Mcts {
   Move BestMove (Player player);
   void NewPlayout ();
   void EnsureAllLegalChildren (MctsNode* node, Player pl, const Board& board, const Sampler& sampler);
+  void RemoveIllegalChildren (MctsNode* node, Player pl, const Board& full_board);
   void NewMove (Move m);
 
   Move ChooseMove (Board& play_board, const Sampler& sampler);

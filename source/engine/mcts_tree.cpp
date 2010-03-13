@@ -148,19 +148,6 @@ MctsNode& MctsNode::BestRaveChild (Player pl) {
 }
 
 
-void MctsNode::RemoveIllegalChildren (Player pl, const Board& full_board) {
-  ASSERT (has_all_legal_children [pl]);
-
-  ChildrenList::iterator child = children.begin();
-  while (child != children.end()) {
-    if (child->player == pl && !full_board.IsReallyLegal (Move (pl, child->v))) {
-      children.erase (child++);
-    } else {
-      ++child;
-    }
-  }
-}
-
 void MctsNode::Reset () {
   has_all_legal_children.SetAll (false);
   children.clear ();
@@ -225,7 +212,7 @@ void Mcts::SyncRoot (const Board& board, const Gammas& gammas) {
 
   Player pl = board.ActPlayer();
   EnsureAllLegalChildren (act_root, pl, board, sampler);
-  act_root->RemoveIllegalChildren (pl, board);
+  RemoveIllegalChildren (act_root, pl, board);
 }
 
 
@@ -258,6 +245,20 @@ void Mcts::EnsureAllLegalChildren (MctsNode* node, Player pl, const Board& board
       }
       });
   node->has_all_legal_children [pl] = true;
+}
+
+
+void Mcts::RemoveIllegalChildren (MctsNode* node, Player pl, const Board& full_board) {
+  ASSERT (node->has_all_legal_children [pl]);
+
+  MctsNode::ChildrenList::iterator child = node->children.begin();
+  while (child != node->children.end()) {
+    if (child->player == pl && !full_board.IsReallyLegal (Move (pl, child->v))) {
+      node->children.erase (child++);
+    } else {
+      ++child;
+    }
+  }
 }
 
 
