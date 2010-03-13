@@ -64,11 +64,15 @@ public:
 // -----------------------------------------------------------------------------
 
 struct MctsTrace {
+public:
+
   void Reset (MctsNode& node);
-  
+  void NewMove (Move m);
+  void NewNode (MctsNode& node);
   void UpdateTraceRegular (float score);
   void UpdateTraceRave (float score);
 
+private:
   vector <MctsNode*> trace;               // nodes in the path
   vector <Move> move_history;
 };
@@ -85,7 +89,6 @@ struct Mcts {
   void NewPlayout ();
   void EnsureAllLegalChildren (MctsNode* node, Player pl, const Board& board, const Sampler& sampler);
   void RemoveIllegalChildren (MctsNode* node, Player pl, const Board& full_board);
-  void NewMove (Move m);
 
   Move ChooseMove (Board& play_board, const Sampler& sampler);
 

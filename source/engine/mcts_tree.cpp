@@ -184,6 +184,17 @@ void MctsTrace::Reset (MctsNode& node) {
   move_history.push_back (node.GetMove());
 }
 
+
+void MctsTrace::NewNode (MctsNode& node) {
+  trace.push_back (&node);  
+}
+
+
+void MctsTrace::NewMove (Move m) {
+  move_history.push_back (m);
+}
+
+
 void MctsTrace::UpdateTraceRegular (float score) {
   BOOST_FOREACH (MctsNode* node, trace) {
     node->stat.update (score);
@@ -193,6 +204,7 @@ void MctsTrace::UpdateTraceRegular (float score) {
     UpdateTraceRave (score);
   }
 }
+
 
 void MctsTrace::UpdateTraceRave (float score) {
   // TODO configure rave blocking through options
@@ -305,10 +317,6 @@ void Mcts::RemoveIllegalChildren (MctsNode* node, Player pl, const Board& full_b
 }
 
 
-void Mcts::NewMove (Move m) {
-  trace.move_history.push_back (m);
-}
-
 Move Mcts::ChooseMove (Board& play_board, const Sampler& sampler) {
   Player pl = play_board.ActPlayer();
 
@@ -326,7 +334,7 @@ Move Mcts::ChooseMove (Board& play_board, const Sampler& sampler) {
   }
 
   MctsNode& uct_child = act_node->BestRaveChild (pl);
-  trace.trace.push_back (&uct_child);
+  trace.NewNode (uct_child);
   act_node = &uct_child;
   ASSERT (uct_child.v != Vertex::Any());
   tree_move_count += 1;

@@ -75,7 +75,7 @@ void MctsPlayout::PlayMove (Move m) {
   ASSERT (play_board.IsLegal (m));
   play_board.PlayLegal (m);
 
-  mcts.NewMove (m);
+  mcts.trace.NewMove (m);
   sampler.MovePlayed ();
 
   playout_moves.push_back (m);
