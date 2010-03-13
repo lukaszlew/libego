@@ -73,8 +73,8 @@ public:
   void UpdateTraceRave (float score);
 
 private:
-  vector <MctsNode*> trace;               // nodes in the path
-  vector <Move> move_history;
+  vector <MctsNode*> nodes;
+  vector <Move> moves;
 };
 
 // -----------------------------------------------------------------------------

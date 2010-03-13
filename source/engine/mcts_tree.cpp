@@ -178,25 +178,25 @@ float MctsNode::SubjectiveRaveValue (Player pl, float log_val) const {
 // -----------------------------------------------------------------------------
 
 void MctsTrace::Reset (MctsNode& node) {
-  trace.clear();
-  trace.push_back (&node);
-  move_history.clear ();
-  move_history.push_back (node.GetMove());
+  nodes.clear();
+  nodes.push_back (&node);
+  moves.clear ();
+  moves.push_back (node.GetMove());
 }
 
 
 void MctsTrace::NewNode (MctsNode& node) {
-  trace.push_back (&node);  
+  nodes.push_back (&node);  
 }
 
 
 void MctsTrace::NewMove (Move m) {
-  move_history.push_back (m);
+  moves.push_back (m);
 }
 
 
 void MctsTrace::UpdateTraceRegular (float score) {
-  BOOST_FOREACH (MctsNode* node, trace) {
+  BOOST_FOREACH (MctsNode* node, nodes) {
     node->stat.update (score);
   }
 
@@ -209,10 +209,10 @@ void MctsTrace::UpdateTraceRegular (float score) {
 void MctsTrace::UpdateTraceRave (float score) {
   // TODO configure rave blocking through options
 
-  uint last_ii  = move_history.size () * Param::tree_rave_update_fraction;
+  uint last_ii  = moves.size () * Param::tree_rave_update_fraction;
   // TODO tune that
 
-  rep (act_ii, trace.size()) {
+  rep (act_ii, nodes.size()) {
     // Mark moves that should be updated in RAVE children of: trace [act_ii]
     NatMap <Move, bool> do_update (false);
     NatMap <Move, bool> do_update_set_to (true);
@@ -221,14 +221,14 @@ void MctsTrace::UpdateTraceRave (float score) {
     // TODO this is the slow and too-fixed part
     // TODO Change it to weighting with flexible masking.
     reps (jj, act_ii+1, last_ii) {
-      Move m = move_history [jj];
+      Move m = moves [jj];
       do_update [m] = do_update_set_to [m];
       do_update_set_to [m] = false;
       do_update_set_to [m.OtherPlayer()] = false;
     }
 
     // Do the update.
-    BOOST_FOREACH (MctsNode& child, trace[act_ii]->children) {
+    BOOST_FOREACH (MctsNode& child, nodes[act_ii]->children) {
       if (do_update [child.GetMove()]) {
         child.rave_stat.update (score);
       }
