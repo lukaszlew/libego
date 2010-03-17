@@ -3,6 +3,10 @@
 
 #include <tr1/random>
 
+namespace Params {
+  const static double proximity_bonus [2] = { 10.0, 10.0 };
+};
+
 struct Sampler {
   explicit Sampler (const Board& board, const Gammas& gammas) :
     board (board),
@@ -120,9 +124,39 @@ struct Sampler {
       // TODO assert no_more_legal_moves
       return Vertex::Pass ();
     }
+    
+    Vertex last_v = board.LastVertex ();
+
+    // gammas calculations
+    NatMap <Dir, double> proxy_gamma;
+    double total_proxy_gamma = 0.0;
+
+    if (board.ColorAt (last_v) != Color::OffBoard ()) {
+      ForEachNat (Dir, d) {
+        proxy_gamma [d] = act_gamma [last_v.Nbr(d)] [pl] * Params::proximity_bonus [d.Proximity()];
+        total_proxy_gamma += proxy_gamma [d];
+      }
+
+    } else {
+      ForEachNat (Dir, d) {
+        proxy_gamma [d] = 0.0;
+      }
+    }
 
     // Select move based on act_gamma and act_gamma_sum
-    double sample = random.NextDouble (act_gamma_sum [pl]);
+    double total_gamma = act_gamma_sum [pl] + total_proxy_gamma;
+    double sample = random.NextDouble (total_gamma);
+
+    if (sample < total_proxy_gamma) {
+      double proxy_gamma_sum = 0.0;
+      ForEachNat (Dir, d) {
+        proxy_gamma_sum += proxy_gamma [d];
+        if (proxy_gamma_sum >= sample) return last_v.Nbr (d);
+      }
+      CHECK (false);
+    }
+
+    sample -= total_proxy_gamma;
     ASSERT (sample < act_gamma_sum [pl] || act_gamma_sum [pl] == 0.0);
     
     double sum = 0.0;
@@ -200,7 +234,6 @@ struct Sampler {
   NatMap <Vertex, NatMap<Player, double> > act_gamma;
   NatMap <Player, double> act_gamma_sum;
   Vertex ko_v;
-
 };
 
 #endif

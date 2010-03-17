@@ -22,6 +22,8 @@ public:
     return OfRaw (((raw + 2) & 3) | (raw & 4));
   }
 
+  uint Proximity () { return GetRaw() < 4 ? 0 : 1; } // TODO direct >= 4
+
   static const uint kBound = 8;
 
 private:
