@@ -35,6 +35,17 @@ Field::Field(const QPainterPath & path, QGraphicsItem *parent) :
   addToGroup(m_background);
 }
 
+void Field::clearField() {
+    removeItem(m_stone);
+    removeItem(m_mark);
+    removeItem(m_circle);
+    removeItem(m_square);
+    removeItem(m_triangle);
+    removeItem(m_label);
+    removeBGMark();
+    update();
+} 
+
 void Field::mousePressEvent ( QGraphicsSceneMouseEvent * event ) {
   if (m_mousePressHandler)
     m_mousePressHandler(event->buttons());
@@ -66,7 +77,10 @@ void Field::hoverEnterEvent(QGraphicsSceneHoverEvent * event) {
 
 void Field::hoverLeaveEvent(QGraphicsSceneHoverEvent * event) {
   Q_UNUSED(event);
-  m_background->setBrush(Qt::NoBrush);
+  if (bgMark.get())
+    m_background->setBrush(*bgMark);
+  else
+    m_background->setBrush(Qt::NoBrush);
   update();
   if (m_hooverLeaveHandler)
     m_hooverLeaveHandler();
@@ -218,3 +232,16 @@ QGraphicsItem* Field::addLabel(const QString& labelString) {
 void Field::removeLabel() {
   removeItem(m_label);
 }
+
+void Field::addBGMark(const QColor& c) {
+  m_background->setBrush(c);
+  bgMark.reset(new QColor(c));
+  update();
+}
+
+void Field::removeBGMark() {
+  m_background->setBrush(Qt::NoBrush);
+  bgMark.reset();
+}
+
+

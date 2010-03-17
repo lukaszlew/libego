@@ -22,6 +22,8 @@ public:
 public:
   GameScene(Grid *grid, QObject *parent = 0);
 
+  void clearBoard();
+
   void addBlackStone(int x, int y);
   void addWhiteStone(int x, int y);
   void removeStone(int x, int y);
@@ -40,6 +42,9 @@ public:
 
   void addLabel(int x, int y, const QString& label);
   void removeLabel(int x, int y);
+
+  void addBGMark(int x, int y, const QColor& c = QColor(32,32,32,32));
+  void removeBGMark(int x, int y);
 
   static QString getFieldString(int x, int y);
 

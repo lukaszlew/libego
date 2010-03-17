@@ -35,6 +35,12 @@ GameScene::GameScene(Grid* grid, QObject *parent) :
       }
 }
 
+void GameScene::clearBoard() {
+    for (map_type::iterator it=m_fields.begin(); it!=m_fields.end(); ++it) {
+      (*it)->clearField();
+    }
+}
+
 GameScene *GameScene::createHavannahScene(int size, QObject *parent) {
   return new GameScene(new HavannahGrid(size), parent);
 }
@@ -165,6 +171,26 @@ void GameScene::addLabel(int x, int y, const QString& label) {
 
 void GameScene::removeLabel(int x, int y) {
   removeShape(x, y, TypeLabel);
+}
+
+void GameScene::addBGMark(int x, int y, const QColor& c) {
+  QString pos = getFieldString(x, y);
+  QMutexLocker locker(&m_mutex);
+
+  map_type::iterator it = m_fields.find(pos);
+  if (it != m_fields.end()) {
+    (*it)->addBGMark(c);
+  }
+}
+
+void GameScene::removeBGMark(int x, int y) {
+  QString pos = getFieldString(x, y);
+  QMutexLocker locker(&m_mutex);
+
+  map_type::iterator it = m_fields.find(pos);
+  if (it != m_fields.end()) {
+    (*it)->removeBGMark();
+  }
 }
 
 QString GameScene::getFieldString(int x, int y) {

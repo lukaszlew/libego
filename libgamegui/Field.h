@@ -4,6 +4,7 @@
 #include <QGraphicsItemGroup>
 #include <QPen>
 #include <boost/function.hpp>
+#include <boost/shared_ptr.hpp>
 
 class Field: public QGraphicsItemGroup
 {
@@ -33,9 +34,14 @@ public:
   virtual QGraphicsItem* addLabel(const QString& label);
   void removeLabel();
 
+  virtual void addBGMark(const QColor& c = QColor(32,32,32,32));
+  void removeBGMark();
+
   virtual QPainterPath shape() const {
     return m_background->shape();
   }
+
+  virtual void clearField();
 
   typedef boost::function<void (Qt::MouseButtons buttons)> mouse_callback_type;
   typedef boost::function<void (int delta)> wheel_callback_type;
@@ -64,6 +70,8 @@ protected:
   QGraphicsItem *m_square;
   QGraphicsItem *m_triangle;
   QGraphicsItem *m_label;
+  boost::shared_ptr<QColor> bgMark;
+
   mouse_callback_type m_mousePressHandler;
   mouse_callback_type m_mouseReleaseHandler;
   mouse_callback_type m_mouseDoubleClickHandler;
