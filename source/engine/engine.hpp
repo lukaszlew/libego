@@ -53,6 +53,15 @@ public:
     return ok;
   }
 
+  Player PlayerAt(Vertex v)
+  {
+      if (full_board.ColorAt(v)==Color::White())
+          return Player::White();
+      if (full_board.ColorAt(v)==Color::Black())
+          return Player::Black();
+      return Player::Invalid();
+  }
+
   Move Genmove (Player player) {
     logger.LogLine ("param.other seed " + ToString (playout.random.GetSeed ()));
     
