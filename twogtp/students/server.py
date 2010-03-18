@@ -56,4 +56,9 @@ server.register_function (get_game_setup, "get_game_setup")
 server.register_function (report_game_result, "report_game_result")
 
 print "Listening on port %d..." % address[1]
+
+f = open (report_file, "a")
+f.write ("%s\n" % format_report_header())
+f.close ()
+
 server.serve_forever()
