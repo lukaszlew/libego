@@ -1,7 +1,7 @@
 #include "param.hpp"
 
-float Param::genmove_playouts = 10000;
-bool  Param::use_local  = true;  
+float Param::genmove_playouts = 2000;
+bool  Param::use_local  = false;
 
 bool  Param::tree_use = true;
 uint  Param::tree_max_moves   = 200;
@@ -10,7 +10,7 @@ bool  Param::tree_rave_update = true;
 bool  Param::tree_rave_use    = true;  
 float Param::tree_stat_bias   = 0.0;
 float Param::tree_rave_bias   = 0.001;
-float Param::tree_progressive_bias = 500.0;
+float Param::tree_progressive_bias = 100.0;
 float Param::tree_rave_update_fraction = 0.75;
 
 float Param::prior_update_count = 10.0;
