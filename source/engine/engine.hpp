@@ -55,11 +55,11 @@ public:
 
   Player PlayerAt(Vertex v)
   {
-      if (full_board.ColorAt(v)==Color::White())
-          return Player::White();
-      if (full_board.ColorAt(v)==Color::Black())
-          return Player::Black();
-      return Player::Invalid();
+    if (full_board.ColorAt(v)==Color::White())
+      return Player::White();
+    if (full_board.ColorAt(v)==Color::Black())
+      return Player::Black();
+    return Player::Invalid();
   }
 
   Move Genmove (Player player) {
