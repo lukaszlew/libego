@@ -62,6 +62,10 @@ public:
     return Player::Invalid();
   }
 
+  Vertex LastVertex () {
+    return full_board.LastVertex();
+  }
+
   Move Genmove (Player player) {
     logger.LogLine ("param.other seed " + ToString (playout.random.GetSeed ()));
     

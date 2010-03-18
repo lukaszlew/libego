@@ -95,12 +95,19 @@ void manager::refreshBoard()
         for (int y=0; y<=board_size; y++) {
             if (!engine_.PlayerAt(gui2vertex(x,y)).IsValid() ) {
                 m_gameScene->removeStone(x,y);
+                m_gameScene->removeCircle(x,y);
             } else {
                 if (engine_.PlayerAt(gui2vertex(x,y)) == Player::White()) {
                     m_gameScene->addWhiteStone(x,y);
                 }
                 if (engine_.PlayerAt(gui2vertex(x,y)) == Player::Black()) {
                     m_gameScene->addBlackStone(x,y);
+                }
+                if (engine_.LastVertex() == gui2vertex(x,y)) {
+                    m_gameScene->addCircle(x,y);
+                }
+                else {
+                    m_gameScene->removeCircle(x,y);
                 }
             }
         }
