@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 SCRIPT_DIR="$(readlink -f $(dirname "$0"))"
 
 "${SCRIPT_DIR}"/engine \

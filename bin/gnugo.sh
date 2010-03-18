@@ -1,7 +1,6 @@
-#!/bin/sh
-SCRIPT_DIR="$(readlink -f $(dirname "$0"))"
+#!/bin/bash
 
-"${SCRIPT_DIR}"/gnugo-3.8 \
+gnugo-3.8 \
     --mode gtp \
     --chinese-rules \
     --capture-all-dead \
