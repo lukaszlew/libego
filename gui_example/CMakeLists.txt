@@ -20,7 +20,7 @@ include_directories (
 
 link_directories ( ${BoardGameGui_BINARY_DIR}/libgamegui )
 
-add_executable (test  ${SRCS} ${RC_SRCS} ${UI_HDRS} ${MOC_SRCS} )
+add_executable (gui_example  ${SRCS} ${RC_SRCS} ${UI_HDRS} ${MOC_SRCS} )
 
-target_link_libraries(test gamegui ${QT_LIBRARIES})
+target_link_libraries(gui_example gamegui ${QT_LIBRARIES})
 
