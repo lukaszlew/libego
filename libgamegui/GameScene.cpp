@@ -54,7 +54,7 @@ GameScene *GameScene::createHoScene(int size, QObject *parent) {
 }
 
 GameScene *GameScene::createGoScene(int size, QObject *parent) {
-  return new GameScene(new SquareGrid(size), parent);
+  return new GameScene(new SquareGrid(size, SquareGrid::ReverseY), parent);
 }
 
 GameScene *GameScene::createYScene(int size, QObject *parent) {

@@ -5,8 +5,14 @@ const qreal SquareGrid::s_width = 40;
 const qreal SquareGrid::s_height = 40;
 
 QRectF SquareGrid::boundingRect() const {
-  QPointF topLeft = getFieldPosition(minimalXCoordinate(), minimalYCoordinate()) - fieldSize() / 2;
-  QPointF bottomRight = getFieldPosition(maximalXCoordinate(), maximalYCoordinate()) + fieldSize() / 2;
+  QPointF topLeft = getFieldPosition(
+          (square_direction & ReverseX) ? maximalXCoordinate() : minimalXCoordinate() ,
+          (square_direction & ReverseY) ? maximalYCoordinate() : minimalYCoordinate()
+      ) - fieldSize() / 2;
+  QPointF bottomRight = getFieldPosition(
+          (square_direction & ReverseX) ? minimalXCoordinate() : maximalXCoordinate(),
+          (square_direction & ReverseY) ? minimalXCoordinate() : maximalYCoordinate()
+      ) + fieldSize() / 2;
   return QRectF(topLeft, bottomRight);
 }
 
@@ -41,7 +47,7 @@ QList<QPair<int, int> > SquareGrid::getHandicapCoordinates() const {
 }
 
 QPointF SquareGrid::getFieldPosition(int x, int y) const {
-  return QPointF(x * s_width, y * s_height);
+  return QPointF(x * s_width, (maximalYCoordinate()-y) * s_height);
 }
 
 QPainterPath SquareGrid::getPath() const {

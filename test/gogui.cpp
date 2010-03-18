@@ -13,7 +13,7 @@
 
 GoGui::GoGui(QWidget *parent) :
   QDialog(parent) {
-  GameScene *gameScene = GameScene::createGoScene(13);
+  GameScene *gameScene = GameScene::createGoScene(9);
   ResizableView *view = new ResizableView(gameScene, this);
   manager *m = new manager(gameScene, this);
 

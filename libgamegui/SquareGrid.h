@@ -6,7 +6,16 @@
 class SquareGrid: public Grid
 {
 public:
-  SquareGrid(int size, QGraphicsItem * parent = 0) : Grid(size, parent) {}
+  enum ESquareDirection
+  {
+      ReverseX = 0x1,
+      ReverseY = 0x2
+  };
+  SquareGrid(int size, int direction, QGraphicsItem * parent = 0) :
+    Grid(size, parent),
+    square_direction(direction)
+  {
+  }
 
   virtual QRectF boundingRect() const;
   virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *style, QWidget *widget);
@@ -34,6 +43,8 @@ protected:
   virtual QPointF getFieldPosition(int x, int y) const;
 
   static const qreal s_width, s_height;
+
+  int square_direction;
 };
 
 #endif /* SQUAREGRID_H_ */

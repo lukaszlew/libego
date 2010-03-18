@@ -1,4 +1,5 @@
 #include <QDebug>
+#include <iostream>
 #include <boost/bind.hpp>
 #include "manager.h"
 #include "GameScene.h"
@@ -9,6 +10,7 @@ manager::manager(GameScene *scene, QObject * parent): QObject(parent), m_index(0
 }
 
 void manager::handleMousePress(int x, int y, Qt::MouseButtons buttons) {
+  std::cout << "Click on (" << x << "," << y << ")" << std::endl;
   if (buttons & Qt::LeftButton) {
     switch (m_index) {
     case 0:
