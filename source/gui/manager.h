@@ -24,13 +24,6 @@ class manager : public QObject
 public:
   manager(GameScene *scene, QObject * parent = 0);
 
-  //void handleLeftClick(int x, int y);
-  //void handleRightClick(int x, int y);
-
-//public slots:
-//  void setIndex(int index) { m_index = index; }
-//  void setLabel(const QString& label) { m_label = label; }
-
 private:
     bool putStone(const Move&);
     void refreshBoard();
@@ -47,8 +40,6 @@ signals:
     void stateChanged(const Player&);
 
 private:
-//  int m_index;
-//  QString m_label;
   GameScene *m_gameScene;
   Engine engine_;
   Player current_;

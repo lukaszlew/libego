@@ -4,19 +4,21 @@
 #include "manager.h"
 #include "GameScene.h"
 
-manager::manager(GameScene *scene, QObject * parent): QObject(parent), /*m_index(0),*/ m_gameScene(scene) {
+manager::manager(GameScene *scene, QObject *parent) :
+    QObject(parent),
+    m_gameScene(scene)
+{
   connect(m_gameScene, SIGNAL(mousePressed(int, int, Qt::MouseButtons)), this, SLOT(handleMousePress(int, int, Qt::MouseButtons)));
   newGame();
 }
 
 
-void manager::handleMousePress(int x, int y, Qt::MouseButtons buttons) {
-
+void manager::handleMousePress(int x, int y, Qt::MouseButtons buttons)
+{
     std::cout << "click on (" << x << "," << y << ")" << std::endl;
     if (buttons & Qt::LeftButton) {
 
         bool ok = engine_.Play(Move(current_, 
-                //Vertex::OfCoords(y-1, x-1)
                 gui2vertex(x, y)
             ));
         if (!ok) {
@@ -25,11 +27,9 @@ void manager::handleMousePress(int x, int y, Qt::MouseButtons buttons) {
         }
 
         if (current_==Player::Black()) {
-//            m_gameScene->addBlackStone(x,y);
             current_ = Player::White();
         }
         else {
-//            m_gameScene->addWhiteStone(x,y);
             current_ = Player::Black();
         }
         //refresh
@@ -41,19 +41,23 @@ void manager::handleMousePress(int x, int y, Qt::MouseButtons buttons) {
 void manager::setKomi(double) {
 }
 
-void manager::newGame() {
+void manager::newGame()
+{
     std::cout << "newGame()" << std::endl;
+
     m_gameScene->clearBoard();
     engine_.ClearBoard();
     current_ = Player::Black();
     //emit stateChanged(Player::None());
 }
 
-void manager::genMove() {
+void manager::genMove()
+{
     std::cout << "genMove()" << std::endl;
 }
 
-void manager::playMove() {
+void manager::playMove()
+{
     std::cout << "playMove()" << std::endl;
 
     Move move = engine_.Genmove(current_);
@@ -67,17 +71,14 @@ void manager::playMove() {
     std::cout << "play move on (" << x << "," << y << ")" << std::endl;
 
     if (current_==Player::Black()) {
-//        m_gameScene->addBlackStone(x,y);
         current_ = Player::White();
     }
     else {
-//        m_gameScene->addWhiteStone(x,y);
         current_ = Player::Black();
     }
     bool ok = engine_.Play(move);
 
     //refresh
-    //if (ok)
     refreshBoard();
 }
 
@@ -86,8 +87,10 @@ void manager::undoMove()  {
 }
 
 
-void manager::refreshBoard() {
+void manager::refreshBoard()
+{
     std::cout << "refreshBoard()" << std::endl;
+
     for (int x=1; x<=board_size; x++)
         for (int y=0; y<=board_size; y++) {
             if (!engine_.PlayerAt(gui2vertex(x,y)).IsValid() ) {
@@ -102,3 +105,4 @@ void manager::refreshBoard() {
             }
         }
 }
+

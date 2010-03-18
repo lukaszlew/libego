@@ -14,14 +14,11 @@ Q_OBJECT
 public:
   GoGui(QWidget *parent = 0);
 
-//private slots:
-//  void typeIndexChanged(const QString& text);
 private slots:
     void setKomi();
     void setWinner(const Player&);
 
 private:
-  //QLineEdit *labelEdit;dd
   manager *m;
   QLabel *statebar;
 };
