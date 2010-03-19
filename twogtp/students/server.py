@@ -2,13 +2,15 @@
 
 import xmlrpclib
 from SimpleXMLRPCServer import SimpleXMLRPCServer
-import random, os, datetime
+import random, os, datetime, sys, traceback
 
 address = "students.mimuw.edu.pl", 7553
 log_dir = "/home/dokstud/lew/logi/%s" % datetime.datetime.now().isoformat()
 
 
 report_file = "report.csv"
+
+#TODO list of strings
 params_values = {"progressive_bias" : [100.0, 200.0], "explore_coeff" : [0.0, 0.1]}
 params_names  = params_values.keys () #csv header
 
@@ -36,35 +38,35 @@ def gen_params ():
 def params_to_gtp (params):
     gtp = ""
     for param_name in params_names:
-        gtp += '"%s %s %s"' % (gtp_set_command, param_name, params[param_name])
+        gtp += '"%s %s %f" ' % (gtp_set_command, param_name, params[param_name])
     return gtp
 
 
 def format_report_line (series_id, first_is_black, black_win, sgf):
     params = params_of_series [series_id]
-    csv_line = ", ".join ((params [param_name] for param_name in params_names))
-    return scv_line + (', %d, %d, "%s"' % (first_is_black, black_win, sgf))
+    csv_line = ", ".join ((str(params [param_name]) for param_name in params_names))
+    # scv_line, oh yeah :)
+    return csv_line + (', %d, %d, "%s"' % (first_is_black, black_win, sgf))
 
 
 def get_game_setup ():
     global series_id
     params = gen_params ()
-    params_of_series.append (params)
     series_id = len (params_of_series)
+    params_of_series.append (params)
     ret = (log_dir,
            series_id,
            games_per_series,
            libego % params_to_gtp (params),
            gnugo
            )
-    print len(ret)
     return ret
-
 
 def report_game_result (series_id, result_list):
     f = open (report_file, "a")
     # TODO check for result length
     for (first_is_black, black_win, sgf) in result_list:
+        print (first_is_black, black_win, sgf)
         f.write ("%s\n" % format_report_line (series_id, first_is_black, black_win, sgf))
     f.close ()
     return 0

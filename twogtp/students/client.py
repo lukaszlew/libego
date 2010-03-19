@@ -1,13 +1,16 @@
 #!/usr/bin/python
 
-import xmlrpclib, time, sys, subprocess, os, re
+import xmlrpclib, time, sys, subprocess, os, re, sys
 
 address = "students.mimuw.edu.pl", 7553
 proxy = xmlrpclib.ServerProxy("http://%s:%d/" % address)
 gnugo = "'gnugo-3.8 --mode gtp --chinese-rules --capture-all-dead --positional-superko --level=0'"
 
 def do_one_series ():
-    (log_dir, series_id, game_count, black, white) = proxy.get_game_setup ()
+    task = proxy.get_game_setup ()
+    (log_dir, series_id, game_count, black, white) = task
+    print "TASK:\n", task, "\n"
+
     os.chdir (log_dir)
 
     sgf_prefix = "game-%d" % series_id
@@ -36,9 +39,9 @@ def do_one_series ():
     print "Waiting for results."
     twogtp_log = process.communicate () [0]
 
-    print "LOG:" 
-    print twogtp_log
-    print
+    # print "LOG:" 
+    # print twogtp_log
+    # print
 
     result_list = []
     for game_no in range (game_count):
@@ -47,11 +50,12 @@ def do_one_series ():
         sgf = sgf_file.read ()
         sgf_file.close ()
         winner_letter = re.search (r'RE\[([^]]*)\]', sgf).group(1) [0]
-        assert (black_win in 'BW')
-        result = (game_no % 2, winner_letter == 'B', file_name)
+        assert (winner_letter in 'BW')
+        result = (game_no % 2, 1 if winner_letter == 'B' else 0, file_name)
         result_list.append (result)
-    result_list = [(1, 1, "file1.sgf"), (0,0, "file2.sgf")]
-    # TODO parse twogtp_log
+
+    
+    print "RESULT ", series_id, ": ", result_list, "\n"
     proxy.report_game_result (series_id, result_list)
 
 do_one_series ()
