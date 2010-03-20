@@ -2,10 +2,21 @@
 
 import xmlrpclib
 from SimpleXMLRPCServer import SimpleXMLRPCServer
-import random, os, datetime, sys, traceback
+import random, os, datetime, sys, traceback, threading
+
+if len (sys.argv) != 2:
+    print "Usage: %s <time_in_minutes>" % sys.argv [0]
+    sys.exit (1)
+
+uptime_minutes = float (sys.argv[1])
+
+start_time = datetime.datetime.now()
+log_dir = "/home/dokstud/lew/logi/%s" % start_time.isoformat()
+os.makedirs (log_dir)
+os.chdir (log_dir)
+
 
 address = "students.mimuw.edu.pl", 7553
-log_dir = "/home/dokstud/lew/logi/%s" % datetime.datetime.now().isoformat()
 
 
 report_file = "report.csv"
@@ -25,8 +36,6 @@ gtp_set_command = "set"
 
 # TODO seed, cputime
 
-os.makedirs (log_dir)
-os.chdir (log_dir)
 
 def gen_params ():
     def select_param (x):
@@ -47,6 +56,7 @@ def format_report_line (series_id, first_is_black, black_win, sgf):
     csv_line = ", ".join ((str(params [param_name]) for param_name in params_names))
     # scv_line, oh yeah :)
     return csv_line + (', %d, %d, "%s"' % (first_is_black, black_win, sgf))
+
 
 
 def get_game_setup ():
@@ -73,6 +83,8 @@ def report_game_result (series_id, result_list):
 
 
 server = SimpleXMLRPCServer (address)
+threading.Timer(uptime_minutes * 60.0, server.shutdown).start()
+
 server.register_function (get_game_setup, "get_game_setup")
 server.register_function (report_game_result, "report_game_result")
 
