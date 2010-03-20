@@ -16,6 +16,7 @@ public:
   static float tree_stat_bias;
   static float tree_rave_bias;
   static float tree_progressive_bias;
+  static float tree_progressive_bias_decay;
   static float tree_rave_update_fraction;
 
   static float prior_update_count;

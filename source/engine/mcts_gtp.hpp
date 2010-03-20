@@ -60,8 +60,9 @@ private:
     gtp.RegisterParam (tree, "rave_update_fraction", &Param::tree_rave_update_fraction);
     gtp.RegisterParam (tree, "progressive_bias",&Param::tree_progressive_bias);
 
-    gtp.RegisterParam (set, "progressive_bias",&Param::tree_progressive_bias);
-    gtp.RegisterParam (set, "explore_coeff",   &Param::tree_explore_coeff);
+    gtp.RegisterParam (set, "progressive_bias",       &Param::tree_progressive_bias);
+    gtp.RegisterParam (set, "progressive_bias_decay", &Param::tree_progressive_bias_decay);
+    gtp.RegisterParam (set, "explore_coeff",          &Param::tree_explore_coeff);
   }
 
   void Cclear_board (Gtp::Io& io) {
