@@ -33,7 +33,7 @@ csv_header = ", ".join (params_names) + ", first_is_black, black_win, sgf_file"
 params_of_series = []
 games_per_series = 2
 
-gnugo = "'gnugo-3.8 --mode gtp --chinese-rules --capture-all-dead --positional-superko --level=0'"
+gnugo = "'/home/dokstud/lew/.bin/gnugo-3.8 --mode gtp --chinese-rules --capture-all-dead --positional-superko --level=0'"
 libego = "'/home/dokstud/lew/libego/bin/engine \"LoadGammas /home/dokstud/lew/libego/bin/3x3.gamma\" %s gtp'" 
 gtp_set_command = "set"
 

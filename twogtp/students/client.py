@@ -4,7 +4,7 @@ import xmlrpclib, time, sys, subprocess, os, re, sys
 
 address = "students.mimuw.edu.pl", 7553
 proxy = xmlrpclib.ServerProxy("http://%s:%d/" % address)
-gnugo = "'gnugo-3.8 --mode gtp --chinese-rules --capture-all-dead --positional-superko --level=0'"
+gnugo = "'/home/dokstud/lew/.bin/gnugo-3.8 --mode gtp --chinese-rules --capture-all-dead --positional-superko --level=0'"
 
 def do_one_series ():
     task = proxy.get_game_setup ()
@@ -21,7 +21,7 @@ def do_one_series ():
 
     sgf_prefix = "game-%d" % series_id
     args = [
-        "gogui-twogtp",
+        "/home/dokstud/lew/.bin/gogui-twogtp",
         "-auto",
         "-size", "9",
         "-komi", "6.5",
