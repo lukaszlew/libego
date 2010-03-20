@@ -8,8 +8,14 @@ gnugo = "'gnugo-3.8 --mode gtp --chinese-rules --capture-all-dead --positional-s
 
 def do_one_series ():
     task = proxy.get_game_setup ()
-    (log_dir, series_id, game_count, black, white) = task
-    print "TASK:\n", task, "\n"
+    (log_dir, series_id, game_count, first, second) = task
+    if series_id == -1: 
+        print "No more tasks, exiting."
+        return False
+
+    print "New task. Series %d, %d games." %(series_id, game_count)
+    print "First : ", first
+    print "Second: ", second
 
     os.chdir (log_dir)
 
@@ -22,40 +28,41 @@ def do_one_series ():
         "-alternate",
         "-referee", gnugo,
         "-games", "%d" % game_count,
-        "-black", black,
-        "-white", white,
+        "-black", first,
+        "-white", second,
         "-sgffile", sgf_prefix,
-        "-verbose",
+        # "-verbose",
         ]
 
     cmd = " ".join (args)
-    print "New game series."
-    print cmd
-    print 
     process = subprocess.Popen (cmd,
                                 stdout = subprocess.PIPE,
                                 stderr = subprocess.STDOUT,
                                 shell = True)
-    print "Waiting for results."
+    sys.stdout.write ("Waiting for results...")
     twogtp_log = process.communicate () [0]
+    sys.stdout.write ("\r\n")
 
-    # print "LOG:" 
-    # print twogtp_log
-    # print
+    print twogtp_log
 
     result_list = []
     for game_no in range (game_count):
         file_name = sgf_prefix + "-" + str (game_no) + ".sgf"
-        sgf_file = open (file_name, "r") # TODO r?
+        sgf_file = open (file_name, "r")
         sgf = sgf_file.read ()
         sgf_file.close ()
         winner_letter = re.search (r'RE\[([^]]*)\]', sgf).group(1) [0]
         assert (winner_letter in 'BW')
-        result = (game_no % 2, 1 if winner_letter == 'B' else 0, file_name)
+        result = (game_no % 2 == 0, 1 if winner_letter == 'B' else 0, file_name)
+        print "%10s | Winner: %s | First is %s" % (file_name,
+                                                   winner_letter,
+                                                   "black" if game_no % 2 == 0 else "white"
+                                                   )
         result_list.append (result)
 
-    
-    print "RESULT ", series_id, ": ", result_list, "\n"
+    print "Results: ", result_list, "\n"
     proxy.report_game_result (series_id, result_list)
+    return True
 
-do_one_series ()
+while do_one_series ():
+    pass
