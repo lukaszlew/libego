@@ -101,7 +101,7 @@ void manager::refreshBoard()
     std::cout << "refreshBoard()" << std::endl;
 
     for (int x=1; x<=board_size; x++)
-        for (int y=0; y<=board_size; y++) {
+        for (int y=1; y<=board_size; y++) {
             if (!engine_.PlayerAt(gui2vertex(x,y)).IsValid() ) {
                 m_gameScene->removeStone(x,y);
                 m_gameScene->removeCircle(x,y);
