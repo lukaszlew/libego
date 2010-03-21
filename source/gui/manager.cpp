@@ -9,6 +9,7 @@ manager::manager(GameScene *scene, QObject *parent) :
     m_gameScene(scene)
 {
   connect(m_gameScene, SIGNAL(mousePressed(int, int, Qt::MouseButtons)), this, SLOT(handleMousePress(int, int, Qt::MouseButtons)));
+  connect(m_gameScene, SIGNAL(hooverEntered(int, int)), this, SLOT(handleHooverEntered(int, int)));
   newGame();
 }
 
@@ -35,6 +36,15 @@ void manager::handleMousePress(int x, int y, Qt::MouseButtons buttons)
         //refresh
         refreshBoard();
     }
+}
+
+void manager::handleHooverEntered(int x, int y)
+{
+    //std::cout << "Text for (" << x << ", " << y << "): "
+    //    << engine_.GetStringForVertex(gui2vertex(x, y))
+    //    << std::endl;
+
+    emit statusChanged(QString(engine_.GetStringForVertex(gui2vertex(x, y)).c_str()));
 }
 
 void manager::showGammas(int state)

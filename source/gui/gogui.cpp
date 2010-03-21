@@ -52,8 +52,9 @@ GoGui::GoGui(QWidget *parent) :
     connect(quit, SIGNAL(clicked()), this, SLOT(close()));
 
     connect(m, SIGNAL(stateChanged(const Player&)), this, SLOT(setWinner(const Player&)));
+    connect(m, SIGNAL(statusChanged(QString)), this, SLOT(setStatus(QString)));
 
-    statebar = new QLabel();
+    statebar = new QLabel(" ");
     QVBoxLayout *all_ = new QVBoxLayout;
     all_->addLayout(mainLayout);
     all_->addWidget(statebar);
@@ -71,5 +72,9 @@ void GoGui::setKomi() {
 }
 
 void GoGui::setWinner(const Player&) {
+}
+
+void GoGui::setStatus(QString s) {
+    statebar->setText(s);
 }
 

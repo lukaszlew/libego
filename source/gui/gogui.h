@@ -17,6 +17,7 @@ public:
 private slots:
     void setKomi();
     void setWinner(const Player&);
+    void setStatus(QString);
 
 private:
   manager *m;

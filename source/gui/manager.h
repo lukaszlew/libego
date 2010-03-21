@@ -30,6 +30,7 @@ private:
 
 public slots:
     void handleMousePress(int x, int y, Qt::MouseButtons buttons);
+    void handleHooverEntered(int x, int y);
     void setKomi(double);
     void newGame();
     void genMove();
@@ -39,6 +40,7 @@ public slots:
 
 signals:
     void stateChanged(const Player&);
+    void statusChanged(QString);
 
 private:
   GameScene *m_gameScene;

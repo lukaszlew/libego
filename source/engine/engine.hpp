@@ -139,6 +139,10 @@ public:
     return (double)(rand()%201-100)/(double)100;
   }
 
+  std::string GetStringForVertex (Vertex v) {
+      return "Vertex: " + v.ToGtpString();
+  }
+
 private:
   friend class MctsGtp;
 
