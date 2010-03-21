@@ -84,6 +84,15 @@ void manager::playMove()
 
 void manager::undoMove()  {
     std::cout << "undoMove()" << std::endl;
+    bool ok = engine_.Undo();
+    if (ok) {
+        std::cout << "One move back, replayed." << std::endl;
+    }
+    else {
+        std::cout << "Cannot undo." << std::endl;
+    }
+    //refresh
+    refreshBoard();
 }
 
 
