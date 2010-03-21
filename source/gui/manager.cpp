@@ -37,6 +37,33 @@ void manager::handleMousePress(int x, int y, Qt::MouseButtons buttons)
     }
 }
 
+void manager::showGammas(int state)
+{
+    std::cout << "showGammas() " << (state ? "TRUE" : "FALSE") << std::endl;
+
+    if (state) {
+        //show gammas
+        for (int x=1; x<=board_size; x++)
+            for (int y=1; y<=board_size; y++) {
+                double val = engine_.GetStatForVertex(gui2vertex(x, y));
+                if (-1<=val && val<=1) {
+                    QColor qc(
+                            (val>0) ? (255*(1-val)) : 255,
+                            (val>0) ? 255 : -(255*val),
+                            0, 80);
+                    m_gameScene->addBGMark(x, y, qc);
+                    //m_gameScene->addLabel(x, y, QString::number(val, 'f', 2));
+                }
+            }
+    }
+    else {
+        //clear backgrounds
+        for (int x=1; x<=board_size; x++)
+            for (int y=1; y<=board_size; y++) {
+                m_gameScene->removeBGMark(x, y);
+            }
+    }
+}
 
 void manager::setKomi(double) {
 }

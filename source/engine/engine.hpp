@@ -135,6 +135,10 @@ public:
     }
   }
 
+  double GetStatForVertex (Vertex /*v*/) {
+    return (double)(rand()%201-100)/(double)100;
+  }
+
 private:
   friend class MctsGtp;
 

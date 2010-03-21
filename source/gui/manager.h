@@ -35,6 +35,7 @@ public slots:
     void genMove();
     void playMove();
     void undoMove();
+    void showGammas(int);
 
 signals:
     void stateChanged(const Player&);
