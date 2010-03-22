@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import xmlrpclib, time, sys, subprocess, os, re, sys
+import xmlrpclib, time, sys, subprocess, os, re, sys, socket
 
 address = "students.mimuw.edu.pl", 7553
 proxy = xmlrpclib.ServerProxy("http://%s:%d/" % address)
@@ -15,11 +15,17 @@ def exec_cmd (cmd):
     
 
 def do_one_series ():
-    task = proxy.get_game_setup ()
+    try:
+        task = proxy.get_game_setup ()
+    except socket.error, e:
+        print "No server, waiting"
+        time.sleep (5)
+        return
+
     (log_dir, series_id, game_count, first, second) = task
     if series_id == -1: 
         print "No more tasks, exiting."
-        return False
+        sys.exit (1)
 
     print "New task. Series %d, %d games." %(series_id, game_count)
     print "First : ", first
@@ -61,8 +67,10 @@ def do_one_series ():
         result_list.append (result)
 
     print "Results: ", result_list, "\n"
-    proxy.report_game_result (series_id, result_list)
-    return True
+    try:
+        proxy.report_game_result (series_id, result_list)
+    except socket.error, e:
+        return
 
 while True:
     users = [u for u in exec_cmd ("users").strip().split (" ") if u != "lew"]
@@ -70,6 +78,4 @@ while True:
         sys.stdout.write ("Users on host, waiting ...")
         time.sleep (5)
         continue
-    more_tasks = do_one_series ()
-    if not more_tasks:
-        break
+    do_one_series ()
