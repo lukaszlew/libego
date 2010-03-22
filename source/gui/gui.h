@@ -17,6 +17,11 @@ private:
         engine_(engine)
     {
         Q_INIT_RESOURCE(images);
+
+        argc_ = 1;
+        argv_ = (char**)malloc(sizeof(char*));
+        argv_[0] = (char*)malloc(6*sizeof(char));
+        strncpy(argv_[0], "GoGui\0", 6);
     }
 private:
 
@@ -30,6 +35,12 @@ private:
         q.reset(new QtSingleton(engine));
     }
 public:
+    ~QtSingleton()
+    {
+        free(argv_[0]);
+        free(argv_);
+    }
+
     static QtSingleton& getInstance()
     {
         if (!q.get()) {
@@ -47,15 +58,9 @@ public:
         if (getInstance().app_) {
             throw "QApplication already initialized";
         }
-        int argc = 1;
-        char **argv;
-        argv = (char**)malloc(sizeof(char**));
-        argv[0] = (char*)malloc(sizeof(char*));
 
-        getInstance().app_ = new QApplication(argc, argv);
+        getInstance().app_ = new QApplication(argc_, argv_);
 
-        free(argv[0]);
-        free(argv);
     }
     int Exec()
     {
@@ -70,6 +75,8 @@ public:
 private:
     QApplication *app_;
     Engine& engine_;
+    int argc_;
+    char **argv_;
 };
 
 
