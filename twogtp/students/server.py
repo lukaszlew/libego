@@ -24,7 +24,8 @@ report_file = "report.csv"
 #TODO list of strings
 params_values = {
     "progressive_bias" : [25.0, 35.0, 50.0, 70.0, 100.0, 140.0, 200.0, 280.0, 400.0],
-    "progressive_bias_decay" : [0.0625, 0.125, 0.25, 0.5, 1.0, 2.0, 4.0, 8.0, 16.0, 32.0]}
+    "progressive_bias_prior" : [-200.0, -50.0, -10.0, 0.0, 10.0, 50.0, 200.0],
+    }
 
 params_names  = params_values.keys () #csv header
 

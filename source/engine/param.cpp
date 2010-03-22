@@ -11,7 +11,7 @@ bool  Param::tree_rave_use    = true;
 float Param::tree_stat_bias   = 0.0;
 float Param::tree_rave_bias   = 0.001;
 float Param::tree_progressive_bias = 100.0;
-float Param::tree_progressive_bias_decay = 1.0;
+float Param::tree_progressive_bias_prior = 1.0;
 float Param::tree_rave_update_fraction = 0.75;
 
 float Param::prior_update_count = 10.0;

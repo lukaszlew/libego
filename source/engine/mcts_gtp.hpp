@@ -64,7 +64,7 @@ private:
     gtp.RegisterParam (tree, "progressive_bias",&Param::tree_progressive_bias);
 
     gtp.RegisterParam (set, "progressive_bias",       &Param::tree_progressive_bias);
-    gtp.RegisterParam (set, "progressive_bias_decay", &Param::tree_progressive_bias_decay);
+    gtp.RegisterParam (set, "progressive_bias_prior", &Param::tree_progressive_bias_prior);
     gtp.RegisterParam (set, "explore_coeff",          &Param::tree_explore_coeff);
   }
 

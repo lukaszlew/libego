@@ -69,8 +69,8 @@ void manager::showGammas(int state)
 
     if (state) {
         //show gammas
-        for (int x=1; x<=board_size; x++)
-            for (int y=1; y<=board_size; y++) {
+        for (uint x=1; x<=board_size; x++)
+            for (uint y=1; y<=board_size; y++) {
                 double val = engine_.GetStatForVertex(gui2vertex(x, y));
                 if (-1<=val && val<=1) {
                     QColor qc(
@@ -84,8 +84,8 @@ void manager::showGammas(int state)
     }
     else {
         //clear backgrounds
-        for (int x=1; x<=board_size; x++)
-            for (int y=1; y<=board_size; y++) {
+        for (uint x=1; x<=board_size; x++)
+            for (uint y=1; y<=board_size; y++) {
                 m_gameScene->removeBGMark(x, y);
             }
     }
@@ -130,6 +130,7 @@ void manager::playMove()
         current_ = Player::Black();
     }
     bool ok = engine_.Play(move);
+    unused (ok);
 
     //refresh
     refreshBoard();
@@ -153,8 +154,8 @@ void manager::refreshBoard()
 {
     std::cout << "refreshBoard()" << std::endl;
 
-    for (int x=1; x<=board_size; x++)
-        for (int y=1; y<=board_size; y++) {
+    for (uint x=1; x<=board_size; x++)
+        for (uint y=1; y<=board_size; y++) {
             if (!engine_.PlayerAt(gui2vertex(x,y)).IsValid() ) {
                 m_gameScene->removeStone(x,y);
                 m_gameScene->removeCircle(x,y);
