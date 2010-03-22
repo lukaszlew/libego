@@ -13,6 +13,10 @@ Q_OBJECT
 
 public:
   GoGui(QWidget *parent = 0);
+  GoGui(Engine& engine, QWidget *parent = 0);
+
+private:
+    void initView(bool, Engine&);
 
 private slots:
     void setKomi();

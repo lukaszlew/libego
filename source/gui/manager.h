@@ -22,7 +22,10 @@ class manager : public QObject
 {
   Q_OBJECT
 public:
-  manager(GameScene *scene, QObject * parent = 0);
+  manager(Engine& engine, GameScene *scene, QObject * parent = 0);
+
+    void setForeignEngine();
+    virtual ~manager();
 
 private:
     bool putStone(const Move&);
@@ -44,8 +47,9 @@ signals:
 
 private:
   GameScene *m_gameScene;
-  Engine engine_;
+  Engine& engine_;
   Player current_;
+  bool foreignEngine_;
 };
 
 #endif /* MANAGER_H_ */
