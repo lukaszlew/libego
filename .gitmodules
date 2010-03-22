@@ -1,3 +1,0 @@
-[submodule "source/libgamegui"]
-	path = source/libgamegui
-	url = git@github.com:tzolnowski/BoardGameGui.git
