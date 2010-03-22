@@ -2,7 +2,7 @@
 
 import xmlrpclib
 from SimpleXMLRPCServer import SimpleXMLRPCServer
-import random, os, datetime, sys, traceback, threading
+import random, os, datetime, sys, traceback
 
 if len (sys.argv) != 2:
     print "Usage: %s <time_in_minutes>" % sys.argv [0]
@@ -22,9 +22,14 @@ address = "students.mimuw.edu.pl", 7553
 report_file = "report.csv"
 
 #TODO list of strings
+# params_values = {
+#     "progressive_bias" : [25.0, 35.0, 50.0, 70.0, 100.0, 140.0, 200.0, 280.0, 400.0],
+#     "progressive_bias_prior" : [-200.0, -50.0, -10.0, 0.0, 10.0, 50.0, 200.0],
+#     }
+
 params_values = {
-    "progressive_bias" : [25.0, 35.0, 50.0, 70.0, 100.0, 140.0, 200.0, 280.0, 400.0],
-    "progressive_bias_prior" : [-200.0, -50.0, -10.0, 0.0, 10.0, 50.0, 200.0],
+    "progressive_bias" : [100.0],
+    "progressive_bias_prior" : [0.0],
     }
 
 params_names  = params_values.keys () #csv header
@@ -34,12 +39,18 @@ csv_header = ", ".join (params_names) + ", first_is_black, black_win, sgf_file"
 params_of_series = []
 games_per_series = 2
 
-gnugo = "'/home/dokstud/lew/.bin/gnugo-3.8 --mode gtp --chinese-rules --capture-all-dead --positional-superko --level=0'"
-libego = "'/home/dokstud/lew/libego/bin/engine \"LoadGammas /home/dokstud/lew/libego/bin/3x3.gamma\" %s gtp'" 
+gnugo = \
+    "'/home/dokstud/lew/.bin/gnugo-3.8 --mode gtp --chinese-rules" \
+    " --capture-all-dead --positional-superko --level=0'"
+
+libego = \
+    "'/home/dokstud/lew/libego/bin/engine" \
+    " \"LoadGammas /home/dokstud/lew/libego/bin/3x3.gamma\"" \
+    " %s gtp'" 
+
 gtp_set_command = "set"
 
 # TODO seed, cputime
-
 
 def gen_params ():
     def select_param (x):
@@ -87,7 +98,6 @@ def report_game_result (series_id, result_list):
 
 
 server = SimpleXMLRPCServer (address)
-threading.Timer(uptime_minutes * 60.0, server.shutdown).start()
 
 server.register_function (get_game_setup, "get_game_setup")
 server.register_function (report_game_result, "report_game_result")

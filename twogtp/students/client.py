@@ -6,6 +6,14 @@ address = "students.mimuw.edu.pl", 7553
 proxy = xmlrpclib.ServerProxy("http://%s:%d/" % address)
 gnugo = "'/home/dokstud/lew/.bin/gnugo-3.8 --mode gtp --chinese-rules --capture-all-dead --positional-superko --level=0'"
 
+def exec_cmd (cmd):
+    process = subprocess.Popen (cmd,
+                                stdout = subprocess.PIPE,
+                                stderr = subprocess.STDOUT,
+                                shell = True)
+    return process.communicate () [0]
+    
+
 def do_one_series ():
     task = proxy.get_game_setup ()
     (log_dir, series_id, game_count, first, second) = task
@@ -35,15 +43,7 @@ def do_one_series ():
         ]
 
     cmd = " ".join (args)
-    process = subprocess.Popen (cmd,
-                                stdout = subprocess.PIPE,
-                                stderr = subprocess.STDOUT,
-                                shell = True)
-    sys.stdout.write ("Waiting for results...")
-    twogtp_log = process.communicate () [0]
-    sys.stdout.write ("\r\n")
-
-    print twogtp_log
+    print exec_cmd (cmd)
 
     result_list = []
     for game_no in range (game_count):
@@ -64,5 +64,12 @@ def do_one_series ():
     proxy.report_game_result (series_id, result_list)
     return True
 
-while do_one_series ():
-    pass
+while True:
+    users = [u for u in exec_cmd ("users").strip().split (" ") if u != "lew"]
+    if len (users) > 0:
+        sys.stdout.write ("Users on host, waiting ...")
+        time.sleep (5)
+        continue
+    more_tasks = do_one_series ()
+    if not more_tasks:
+        break
