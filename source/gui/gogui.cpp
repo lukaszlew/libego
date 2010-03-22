@@ -11,9 +11,28 @@
 GoGui::GoGui(QWidget *parent) :
     QDialog(parent)
 {
+    initView(false, *(new Engine()));
+}
+
+GoGui::GoGui(Engine& engine, QWidget *parent ) :
+    QDialog(parent)
+{
+    initView(true, engine);
+}
+
+void GoGui::initView(bool foreignEngine, Engine& engine)
+{
     GameScene *gameScene = GameScene::createGoScene(9);
+
+    m = new manager(engine, gameScene, this);
+    if (foreignEngine) {
+        m->setForeignEngine();
+    }
+    else {
+        m->newGame();
+    }
+
     ResizableView *gameView = new ResizableView(gameScene, this);
-    m = new manager(gameScene, this);
 
     QPushButton *new_game = new QPushButton("New game");
     QPushButton *gen_move = new QPushButton("Gen move");

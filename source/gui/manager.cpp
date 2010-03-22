@@ -4,15 +4,31 @@
 #include "manager.h"
 #include "GameScene.h"
 
-manager::manager(GameScene *scene, QObject *parent) :
+manager::manager(Engine& engine, GameScene *scene, QObject *parent) :
     QObject(parent),
-    m_gameScene(scene)
+    m_gameScene(scene),
+    engine_(engine),
+    foreignEngine_(false)
 {
   connect(m_gameScene, SIGNAL(mousePressed(int, int, Qt::MouseButtons)), this, SLOT(handleMousePress(int, int, Qt::MouseButtons)));
   connect(m_gameScene, SIGNAL(hooverEntered(int, int)), this, SLOT(handleHooverEntered(int, int)));
-  newGame();
+  //newGame();
 }
 
+void manager::setForeignEngine()
+{
+    foreignEngine_ = true;
+
+    current_ = Player::Black(); //TODO, get real current player
+
+    refreshBoard();
+}
+
+manager::~manager()
+{
+    if (!foreignEngine_)
+        delete &engine_;
+}
 
 void manager::handleMousePress(int x, int y, Qt::MouseButtons buttons)
 {

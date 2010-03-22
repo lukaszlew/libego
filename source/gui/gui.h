@@ -6,26 +6,43 @@
 #include "engine.hpp"
 #include "gogui.h"
 
+class Gui;
 
 class QtSingleton
 {
+friend class Gui;
 private:
-    QtSingleton() :
-        app_(NULL)
+    QtSingleton(Engine& engine) :
+        app_(NULL),
+        engine_(engine)
     {
         Q_INIT_RESOURCE(images);
+    }
+private:
+
+    static boost::shared_ptr<QtSingleton> q;
+
+    static void setInstance(Engine& engine)
+    {
+        if (q.get()) {
+            throw "QtSingleton instance already set";
+        }
+        q.reset(new QtSingleton(engine));
     }
 public:
     static QtSingleton& getInstance()
     {
-        static boost::shared_ptr<QtSingleton> q;
         if (!q.get()) {
-            q.reset(new QtSingleton());
+            throw "QtSingleton instance not set";
         }
         return *q;
     }
+    Engine& getEngine()
+    {
+        return engine_;
+    }
 public:
-    static void Init()
+    void Init()
     {
         if (getInstance().app_) {
             throw "QApplication already initialized";
@@ -40,7 +57,7 @@ public:
         free(argv[0]);
         free(argv);
     }
-    static int Exec()
+    int Exec()
     {
         if (!getInstance().app_) {
             throw "QApplication not initialized";
@@ -52,6 +69,7 @@ public:
     }
 private:
     QApplication *app_;
+    Engine& engine_;
 };
 
 
@@ -60,6 +78,8 @@ class Gui
 public:
     Gui(Engine& engine)
     {
+        QtSingleton::setInstance(engine);
+
         gtp.Register("gui", Gui::Run);
     }
 
