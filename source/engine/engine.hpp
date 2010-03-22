@@ -1,3 +1,5 @@
+#ifndef ENGINE_H_
+#define ENGINE_H_
 //
 // Copyright 2006 and onwards, Lukasz Lew
 //
@@ -156,3 +158,5 @@ private:
   MctsPlayout playout;
 
 };
+
+#endif /* ENGINE_H_ */

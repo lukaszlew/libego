@@ -1,3 +1,6 @@
+#ifndef MCTS_GTP_H_
+#define MCTS_GTP_H_
+
 extern Gtp::ReplWithGogui gtp;
 
 class MctsGtp {
@@ -147,3 +150,5 @@ private:
 private:
   Engine& mcts_engine;
 };
+
+#endif /* MCTS_GTP_H_ */
