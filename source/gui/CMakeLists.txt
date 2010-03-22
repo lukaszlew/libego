@@ -20,7 +20,7 @@ qt4_wrap_ui ( UI_HDRS ${UIS} )
 qt4_wrap_cpp ( MOC_SRCS ${MOC_HDRS} )
 
 include_directories (
-  ${LIBGAMEGUI}/libgamegui
+  ${LIBGAMEGUI}
   ${CMAKE_BINARY_DIR}
   ${BOOST_ROOT}
   ${ENGINE_MAIN}
