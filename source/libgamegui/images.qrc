@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/" >
+        <file>images/gogui-black-32x32.png</file>
+        <file>images/gogui-black.svg</file>
+        <file>images/gogui-white-32x32.png</file>
+        <file>images/gogui-white.svg</file>
+        <file>images/wood.png</file>
+    </qresource>
+</RCC>

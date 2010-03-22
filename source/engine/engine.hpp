@@ -1,3 +1,5 @@
+#ifndef ENGINE_H_
+#define ENGINE_H_
 //
 // Copyright 2006 and onwards, Lukasz Lew
 //
@@ -51,6 +53,19 @@ public:
       logger.LogLine ("");
     }
     return ok;
+  }
+
+  Player PlayerAt(Vertex v)
+  {
+    if (full_board.ColorAt(v)==Color::White())
+      return Player::White();
+    if (full_board.ColorAt(v)==Color::Black())
+      return Player::Black();
+    return Player::Invalid();
+  }
+
+  Vertex LastVertex () {
+    return full_board.LastVertex();
   }
 
   Move Genmove (Player player) {
@@ -122,6 +137,14 @@ public:
     }
   }
 
+  double GetStatForVertex (Vertex /*v*/) {
+    return (double)(rand()%201-100)/(double)100;
+  }
+
+  std::string GetStringForVertex (Vertex v) {
+      return "Vertex: " + v.ToGtpString();
+  }
+
 private:
   friend class MctsGtp;
 
@@ -135,3 +158,5 @@ private:
   MctsPlayout playout;
 
 };
+
+#endif /* ENGINE_H_ */
