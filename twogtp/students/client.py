@@ -1,10 +1,7 @@
 #!/usr/bin/python
 
-import xmlrpclib, time, sys, subprocess, os, re, sys, socket
+import xmlrpclib, time, sys, subprocess, os, re, sys, socket, multiprocessing
 
-address = "students.mimuw.edu.pl", 7553
-proxy = xmlrpclib.ServerProxy("http://%s:%d/" % address)
-gnugo = "'/home/dokstud/lew/.bin/gnugo-3.8 --mode gtp --chinese-rules --capture-all-dead --positional-superko --level=0'"
 
 def exec_cmd (cmd):
     process = subprocess.Popen (cmd,
@@ -12,7 +9,16 @@ def exec_cmd (cmd):
                                 stderr = subprocess.STDOUT,
                                 shell = True)
     return process.communicate () [0]
+
+client_count = int (exec_cmd ("ps aux | grep client.py | grep lew | wc").split() [0]) - 2
+if client_count > multiprocessing.cpu_count ():
+    print "More clients than processes, exiting ..."
+    sys.exit (1)
     
+address = "students.mimuw.edu.pl", 7553
+proxy = xmlrpclib.ServerProxy("http://%s:%d/" % address)
+gnugo = "'/home/dokstud/lew/.bin/gnugo-3.8 --mode gtp --chinese-rules --capture-all-dead --positional-superko --level=0'"
+
 
 def do_one_series ():
     try:
