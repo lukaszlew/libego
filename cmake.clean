@@ -1,9 +1,0 @@
-rm -fr release_build debug_build
-rm -rf CMakeCache.txt CMakeFiles cmake_install.cmake Makefile
-cd libgamegui
-rm -rf CMakeFiles cmake_install.cmake Makefile moc_* qrc_*
-cd ..
-cd test
-rm -rf CMakeFiles cmake_install.cmake Makefile moc_* qrc_*
-cd ..
-
