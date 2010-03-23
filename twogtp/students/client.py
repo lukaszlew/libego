@@ -76,8 +76,10 @@ def do_one_series ():
 
 
 def main ():
-    client_count = int (exec_cmd ("ps aux | grep client.py | grep lew | wc").split() [0]) - 2
-    if client_count > multiprocessing.cpu_count ():
+    ps_cmd = 'pgrep "^python .*client.py" -lf'
+    ps_out = exec_cmd (ps_cmd).splitlines ()
+    print ps_out
+    if len (ps_out) > multiprocessing.cpu_count ():
         print "More clients than processes, exiting ..."
         sys.exit (1)
 
