@@ -10,17 +10,10 @@ def exec_cmd (cmd):
                                 shell = True)
     return process.communicate () [0]
 
-client_count = int (exec_cmd ("ps aux | grep client.py | grep lew | wc").split() [0]) - 2
-if client_count > multiprocessing.cpu_count ():
-    print "More clients than processes, exiting ..."
-    sys.exit (1)
-    
-address = "students.mimuw.edu.pl", 7553
-proxy = xmlrpclib.ServerProxy("http://%s:%d/" % address)
-gnugo = "'/home/dokstud/lew/.bin/gnugo-3.8 --mode gtp --chinese-rules --capture-all-dead --positional-superko --level=0'"
-
-
 def do_one_series ():
+    address = "students.mimuw.edu.pl", 7553
+    proxy = xmlrpclib.ServerProxy("http://%s:%d/" % address)
+
     try:
         task = proxy.get_game_setup ()
     except socket.error, e:
@@ -40,6 +33,9 @@ def do_one_series ():
     os.chdir (log_dir)
 
     sgf_prefix = "game-%d" % series_id
+    gnugo = \
+        "'/home/dokstud/lew/.bin/gnugo-3.8 --mode gtp --chinese-rules --capture-all-dead" \
+        " --positional-superko --level=0'"
     args = [
         "/home/dokstud/lew/.bin/gogui-twogtp",
         "-auto",
@@ -78,10 +74,19 @@ def do_one_series ():
     except socket.error, e:
         return
 
-while True:
-    users = [u for u in exec_cmd ("users").strip().split (" ") if u != "lew"]
-    if len (users) > 0:
-        sys.stdout.write ("Users on host, waiting ...")
-        time.sleep (5)
-        continue
-    do_one_series ()
+
+def main ():
+    client_count = int (exec_cmd ("ps aux | grep client.py | grep lew | wc").split() [0]) - 2
+    if client_count > multiprocessing.cpu_count ():
+        print "More clients than processes, exiting ..."
+        sys.exit (1)
+
+    while True:
+        users = [u for u in exec_cmd ("users").strip().split (" ") if u != "lew"]
+        if len (users) > 0:
+            print "Users on host, waiting ..."
+            time.sleep (5)
+            continue
+        do_one_series ()
+
+main ()
