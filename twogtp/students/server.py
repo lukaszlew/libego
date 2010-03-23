@@ -8,22 +8,14 @@ import random, os, datetime, sys, traceback
 start_time = datetime.datetime.now()
 log_dir = "/home/dokstud/lew/logi/%s" % start_time.isoformat()
 
-address = "students.mimuw.edu.pl", 7553
-
 report_file = "report.csv"
 
-#TODO list of strings
-# params_values = {
-#     "progressive_bias" : [25.0, 35.0, 50.0, 70.0, 100.0, 140.0, 200.0, 280.0, 400.0],
-#     "progressive_bias_prior" : [-200.0, -50.0, -10.0, 0.0, 10.0, 50.0, 200.0],
-#     }
-
-params_values = {
-    "progressive_bias" : [100.0],
-    "progressive_bias_prior" : [0.0],
+params_sampler = {
+    "progressive_bias"       : lambda: random.uniform (0.0, 300),
+    "progressive_bias_prior" : lambda: random.uniform (-100.0, 100),
     }
 
-params_names  = params_values.keys () #csv header
+params_names  = params_sampler.keys () #csv header
 
 csv_header = ", ".join (params_names) + ", first_is_black, first_win, sgf_file"
 
@@ -46,10 +38,7 @@ workers = {}
 idle_workers = {}
 
 def gen_params ():
-    def select_param (x):
-        vals = params_values[x]
-        return x, vals [random.randrange (len (vals))]
-    return dict ((select_param (x) for x in params_values))
+    return dict (((p, params_sampler [p] ()) for p in params_names))
 
 
 def params_to_gtp (params):
@@ -71,8 +60,8 @@ def report_idling (worker_id):
     if (worker_id in workers):
         print "Warning! Idling worker on worker list."
     return 0
-    
-
+   
+ 
 def get_game_setup (worker_id):
     if (worker_id in workers):
         print "Warning! Worker already on worker list."
@@ -126,6 +115,7 @@ def list_workers ():
 os.makedirs (log_dir)
 os.chdir (log_dir)
 
+address = "students.mimuw.edu.pl", 7553
 server = SimpleXMLRPCServer (address)
 
 server.register_function (get_game_setup, "get_game_setup")
