@@ -10,13 +10,9 @@ def exec_cmd (cmd):
                                 shell = True)
     return process.communicate () [0]
 
-def do_one_series ():
-    process_id = "%s.%d" % (os.uname() [1], os.getpid())
-    address = "students.mimuw.edu.pl", 7553
-    proxy = xmlrpclib.ServerProxy("http://%s:%d/" % address)
-
+def do_one_series (proxy, worker_id):
     try:
-        task = proxy.get_game_setup (process_id)
+        task = proxy.get_game_setup (worker_id)
     except socket.error, e:
         print "No server, waiting"
         time.sleep (5)
@@ -71,7 +67,7 @@ def do_one_series ():
 
     print "Results: ", result_list, "\n"
     try:
-        proxy.report_game_result (process_id, log_dir, series_id, result_list)
+        proxy.report_game_result (worker_id, log_dir, series_id, result_list)
     except socket.error, e:
         return
 
@@ -84,12 +80,20 @@ def main ():
         print "More clients than processes, exiting ..."
         sys.exit (1)
 
+    address = "students.mimuw.edu.pl", 7553
+    proxy = xmlrpclib.ServerProxy("http://%s:%d/" % address)
+    worker_id = "%s.%d" % (os.uname() [1], os.getpid())
+
     while True:
         users = [u for u in exec_cmd ("users").strip().split (" ") if u != "lew"]
         if len (users) > 0:
             print "Users on host, waiting ..."
-            time.sleep (5)
+            try:
+                proxy.report_idling (worker_id)
+            except socket.error, e:
+                print "No server, waiting"
+            time.sleep (10)
             continue
-        do_one_series ()
+        do_one_series (proxy, worker_id)
 
 main ()

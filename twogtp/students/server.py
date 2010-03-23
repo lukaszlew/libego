@@ -12,9 +12,6 @@ uptime_minutes = float (sys.argv[1])
 
 start_time = datetime.datetime.now()
 log_dir = "/home/dokstud/lew/logi/%s" % start_time.isoformat()
-os.makedirs (log_dir)
-os.chdir (log_dir)
-
 
 address = "students.mimuw.edu.pl", 7553
 
@@ -52,6 +49,7 @@ gtp_set_command = "set"
 
 # TODO seed, cputime
 workers = {}
+idle_workers = {}
 
 def gen_params ():
     def select_param (x):
@@ -74,9 +72,18 @@ def format_report_line (series_id, first_is_black, black_win, sgf):
     return csv_line + (', %d, %d, "%s"' % (first_is_black, black_win, sgf))
 
 
+def report_idling (worker_id):
+    idle_workers [worker_id] = datetime.datetime.now()
+    if (worker_id in workers):
+        print "Warning! Idling worker on worker list."
+    return 0
+    
+
 def get_game_setup (worker_id):
     if (worker_id in workers):
         print "Warning! Worker already on worker list."
+    if (worker_id in idle_workers):
+        idle_workers.pop (worker_id)
     workers [worker_id] = datetime.datetime.now()
 
     global series_id
@@ -114,17 +121,23 @@ def report_game_result (worker_id, clog_dir, series_id, result_list):
 
 
 def list_workers ():
-    s = ""
+    s = "ACTIVE:\n"
     for w in workers:
-        s += "%s %s\n" % (w, workers[w]);
+        s += "%s %s\n" % (w, workers[w])
+    s += "IDLE:\n"
+    for w in idle_workers:
+        s += "%s %s\n" % (w, idle_workers[w])
     return s
 
+os.makedirs (log_dir)
+os.chdir (log_dir)
 
 server = SimpleXMLRPCServer (address)
 
 server.register_function (get_game_setup, "get_game_setup")
 server.register_function (report_game_result, "report_game_result")
 server.register_function (list_workers, "list_workers")
+server.register_function (report_idling, "report_idling")
 
 print "Listening on port %d..." % address[1]
 
