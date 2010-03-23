@@ -87,7 +87,9 @@ def get_game_setup ():
            )
     return ret
 
-def report_game_result (series_id, result_list):
+def report_game_result (clog_dir, series_id, result_list):
+    if clog_dir != log_dir: 
+        return 0
     f = open (report_file, "a")
     # TODO check for result length
     for (first_is_black, black_win, sgf) in result_list:

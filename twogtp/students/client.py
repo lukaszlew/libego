@@ -70,7 +70,7 @@ def do_one_series ():
 
     print "Results: ", result_list, "\n"
     try:
-        proxy.report_game_result (series_id, result_list)
+        proxy.report_game_result (log_dir, series_id, result_list)
     except socket.error, e:
         return
 
