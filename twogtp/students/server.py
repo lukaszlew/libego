@@ -31,7 +31,7 @@ params_values = {
 
 params_names  = params_values.keys () #csv header
 
-csv_header = ", ".join (params_names) + ", first_is_black, black_win, sgf_file"
+csv_header = ", ".join (params_names) + ", first_is_black, first_win, sgf_file"
 
 params_of_series = []
 games_per_series = 2
@@ -65,11 +65,11 @@ def params_to_gtp (params):
     return gtp
 
 
-def format_report_line (series_id, first_is_black, black_win, sgf):
+def format_report_line (series_id, first_is_black, first_win, sgf):
     params = params_of_series [series_id]
     csv_line = ", ".join ((str(params [param_name]) for param_name in params_names))
     # scv_line, oh yeah :)
-    return csv_line + (', %d, %d, "%s"' % (first_is_black, black_win, sgf))
+    return csv_line + (', %d, %d, "%s"' % (first_is_black, first_win, sgf))
 
 
 def report_idling (worker_id):
@@ -113,9 +113,9 @@ def report_game_result (worker_id, clog_dir, series_id, result_list):
     worker_start = workers.pop (worker_id)
     f = open (report_file, "a")
     # TODO check for result length
-    for (first_is_black, black_win, sgf) in result_list:
-        print (first_is_black, black_win, sgf)
-        f.write ("%s\n" % format_report_line (series_id, first_is_black, black_win, sgf))
+    for (first_is_black, first_win, sgf) in result_list:
+        print (first_is_black, first_win, sgf)
+        f.write ("%s\n" % format_report_line (series_id, first_is_black, first_win, sgf))
     f.close ()
     return 0
 

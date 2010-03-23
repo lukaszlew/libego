@@ -58,7 +58,10 @@ def do_one_series (proxy, worker_id):
         sgf_file.close ()
         winner_letter = re.search (r'RE\[([^]]*)\]', sgf).group(1) [0]
         assert (winner_letter in 'BW')
-        result = (game_no % 2 == 0, 1 if winner_letter == 'B' else 0, file_name)
+        first_is_black = (game_no % 2 == 0)
+        black_win      = 1 if winner_letter == 'B' else 0
+        first_win = first_is_black == black_win 
+        result = (first_is_black, first_win, file_name)
         print "%10s | Winner: %s | First is %s" % (file_name,
                                                    winner_letter,
                                                    "black" if game_no % 2 == 0 else "white"
