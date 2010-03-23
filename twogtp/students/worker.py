@@ -76,11 +76,11 @@ def do_one_series (proxy, worker_id):
 
 
 def main ():
-    ps_cmd = 'pgrep "^python .*client.py" -lf'
+    ps_cmd = 'pgrep "^python .*worker.py" -lf'
     ps_out = exec_cmd (ps_cmd).splitlines ()
     print ps_out
     if len (ps_out) > multiprocessing.cpu_count ():
-        print "More clients than processes, exiting ..."
+        print "More workers than processes, exiting ..."
         sys.exit (1)
 
     address = "students.mimuw.edu.pl", 7553
