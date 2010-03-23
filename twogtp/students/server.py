@@ -4,17 +4,11 @@ import xmlrpclib
 from SimpleXMLRPCServer import SimpleXMLRPCServer
 import random, os, datetime, sys, traceback
 
-if len (sys.argv) != 2:
-    print "Usage: %s <time_in_minutes>" % sys.argv [0]
-    sys.exit (1)
-
-uptime_minutes = float (sys.argv[1])
 
 start_time = datetime.datetime.now()
 log_dir = "/home/dokstud/lew/logi/%s" % start_time.isoformat()
 
 address = "students.mimuw.edu.pl", 7553
-
 
 report_file = "report.csv"
 
