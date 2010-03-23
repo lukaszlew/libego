@@ -31,9 +31,7 @@ include_directories (
 
 link_directories ( ${gogui_BINARY_DIR}/libgogui )
 
-add_executable (gogui ${SRCS} ${EXEC_SRCS} ${RC_SRCS} ${UI_HDRS} ${MOC_SRCS} )
 
-add_library (gui gui.cpp ${SRCS} ${RC_SRCS} ${UI_HDRDS} ${MOC_SRCS} )
+add_library (gui STATIC gui.cpp ${SRCS} ${RC_SRCS} ${UI_HDRDS} ${MOC_SRCS} )
 
-target_link_libraries(gogui gamegui ai ${QT_LIBRARIES} ${Boost_LIBRARIES} )
 
