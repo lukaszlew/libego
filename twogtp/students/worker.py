@@ -85,9 +85,10 @@ def main ():
     worker_id = "%s.%d" % (os.uname() [1], os.getpid())
 
     while True:
-        users = [u for u in exec_cmd ("users").strip().split (" ") if u != "lew"]
+        users = [u for u in exec_cmd ("users").strip().split () if u != "lew"]
         if len (users) > 0:
-            print "Users on host, waiting ..."
+            print len (users), " users on host: ", users
+            print "Waiting ..."
             try:
                 proxy.report_idling (worker_id)
             except socket.error, e:
