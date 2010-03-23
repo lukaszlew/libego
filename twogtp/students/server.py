@@ -51,6 +51,7 @@ libego = \
 gtp_set_command = "set"
 
 # TODO seed, cputime
+workers = {}
 
 def gen_params ():
     def select_param (x):
@@ -73,8 +74,11 @@ def format_report_line (series_id, first_is_black, black_win, sgf):
     return csv_line + (', %d, %d, "%s"' % (first_is_black, black_win, sgf))
 
 
+def get_game_setup (worker_id):
+    if (worker_id in workers):
+        print "Warning! Worker already on worker list."
+    workers [worker_id] = datetime.datetime.now()
 
-def get_game_setup ():
     global series_id
     params = gen_params ()
     series_id = len (params_of_series)
@@ -87,9 +91,19 @@ def get_game_setup ():
            )
     return ret
 
-def report_game_result (clog_dir, series_id, result_list):
+
+def report_game_result (worker_id, clog_dir, series_id, result_list):
+    # error handling
+    if (not worker_id in workers):
+        print "Old report from ", worker_id
+        if (clog_dir == log_dir):
+            print "Warning! but the same experiment dir!"
+        return 0;
     if clog_dir != log_dir: 
+        print "Warning! in pool, but wrong dir!!"
         return 0
+
+    worker_start = workers.pop (worker_id)
     f = open (report_file, "a")
     # TODO check for result length
     for (first_is_black, black_win, sgf) in result_list:
@@ -99,10 +113,18 @@ def report_game_result (clog_dir, series_id, result_list):
     return 0
 
 
+def list_workers ():
+    s = ""
+    for w in workers:
+        s += "%s %s\n" % (w, workers[w]);
+    return s
+
+
 server = SimpleXMLRPCServer (address)
 
 server.register_function (get_game_setup, "get_game_setup")
 server.register_function (report_game_result, "report_game_result")
+server.register_function (list_workers, "list_workers")
 
 print "Listening on port %d..." % address[1]
 

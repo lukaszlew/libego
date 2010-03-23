@@ -11,11 +11,12 @@ def exec_cmd (cmd):
     return process.communicate () [0]
 
 def do_one_series ():
+    process_id = "%s.%d" % (os.uname() [1], os.getpid())
     address = "students.mimuw.edu.pl", 7553
     proxy = xmlrpclib.ServerProxy("http://%s:%d/" % address)
 
     try:
-        task = proxy.get_game_setup ()
+        task = proxy.get_game_setup (process_id)
     except socket.error, e:
         print "No server, waiting"
         time.sleep (5)
@@ -70,7 +71,7 @@ def do_one_series ():
 
     print "Results: ", result_list, "\n"
     try:
-        proxy.report_game_result (log_dir, series_id, result_list)
+        proxy.report_game_result (process_id, log_dir, series_id, result_list)
     except socket.error, e:
         return
 
