@@ -107,11 +107,16 @@ def report_game_result (worker_id, clog_dir, series_id, result_list):
 
 def list_workers ():
     s = "ACTIVE:\n"
+    t_now = datetime.datetime.now()
     for w in workers:
-        s += "%s %s\n" % (w, workers[w])
+        d = t_now - workers[w]
+        mark = " *" if d.seconds > 60 else ""
+        s += "%s %s %s\n" % (w, str(d), mark)
     s += "IDLE:\n"
     for w in idle_workers:
-        s += "%s %s\n" % (w, idle_workers[w])
+        d = t_now - idle_workers[w]
+        mark = " *" if d.seconds > 60 else ""
+        s += "%s %s %s\n" % (w, str(d), mark)
     return s
 
 os.makedirs (log_dir)
