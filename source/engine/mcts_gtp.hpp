@@ -67,8 +67,8 @@ private:
     gtp.RegisterParam (set, "progressive_bias_prior", &Param::tree_progressive_bias_prior);
     gtp.RegisterParam (set, "explore_coeff",          &Param::tree_explore_coeff);
 
-    gtp.RegisterParam (set, "proxy_1_bonus", &(Params::proximity_bonus[0]));
-    gtp.RegisterParam (set, "proxy_2_bonus", &(Params::proximity_bonus[1]));
+    gtp.RegisterParam (set, "proxy_1_bonus", &mcts_engine.playout.sampler.proximity_bonus[0]);
+    gtp.RegisterParam (set, "proxy_2_bonus", &mcts_engine.playout.sampler.proximity_bonus[1]);
   }
 
   void Cclear_board (Gtp::Io& io) {

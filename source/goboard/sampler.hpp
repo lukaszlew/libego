@@ -3,9 +3,6 @@
 
 #include <tr1/random>
 
-namespace Params {
-  static double proximity_bonus [2] = { 10.0, 10.0 };
-};
 
 struct Sampler {
   explicit Sampler (const Board& board, const Gammas& gammas) :
@@ -18,6 +15,8 @@ struct Sampler {
       }
       act_gamma_sum [pl] = 0.0;
     }
+    proximity_bonus [0] = 10.0;
+    proximity_bonus [1] = 10.0;
   }
 
 
@@ -133,7 +132,7 @@ struct Sampler {
 
     if (board.ColorAt (last_v) != Color::OffBoard ()) {
       ForEachNat (Dir, d) {
-        proxy_gamma [d] = act_gamma [last_v.Nbr(d)] [pl] * Params::proximity_bonus [d.Proximity()];
+        proxy_gamma [d] = act_gamma [last_v.Nbr(d)] [pl] * proximity_bonus [d.Proximity()];
         total_proxy_gamma += proxy_gamma [d];
       }
 
@@ -224,6 +223,8 @@ struct Sampler {
     CheckSumCorrect (id);
     CheckValuesCorrect (id);
   }
+
+  double proximity_bonus [2];
 
   const Board& board;
   const Gammas& gammas;
