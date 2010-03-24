@@ -4,7 +4,7 @@
 #include <tr1/random>
 
 namespace Params {
-  const static double proximity_bonus [2] = { 10.0, 10.0 };
+  static double proximity_bonus [2] = { 10.0, 10.0 };
 };
 
 struct Sampler {

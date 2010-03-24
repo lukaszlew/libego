@@ -2,7 +2,7 @@
 
 import xmlrpclib
 from SimpleXMLRPCServer import SimpleXMLRPCServer
-import random, os, datetime, sys, traceback
+import random, os, datetime, sys, traceback, math
 
 
 start_time = datetime.datetime.now()
@@ -11,8 +11,10 @@ log_dir = "/home/dokstud/lew/logi/%s" % start_time.isoformat()
 report_file = "report.csv"
 
 params_sampler = {
-    "progressive_bias"       : lambda: random.uniform (0.0, 300),
-    "progressive_bias_prior" : lambda: random.uniform (-100.0, 100),
+    "progressive_bias"       : lambda: random.uniform (60.0, 120),
+    "progressive_bias_prior" : lambda: random.uniform (0, 40),
+    "proxy_1_bonus"          : lambda: random.uniform (0, 30),
+    "proxy_2_bonus"          : lambda: random.uniform (0, 20),
     }
 
 params_names  = params_sampler.keys () #csv header
