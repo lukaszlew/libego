@@ -86,6 +86,7 @@ struct Sampler {
 
 
   double Probability (Player pl, Vertex v) const {
+    // TODO no locality here !
     CheckConsistency ();
     double g  = act_gamma [v] [pl];
     double tg = act_gamma_sum [pl];
@@ -106,26 +107,41 @@ struct Sampler {
     
     Vertex last_v = board.LastVertex ();
 
-    // Calculate proxied gammas
-    total_local_gamma = 0.0;
+    // Calculate local gammas
+    is_in_local.Clear ();
+    local_vertices.Clear ();
 
+    double total_non_local_gamma = act_gamma_sum [pl];
+    double total_local_gamma = 0.0;
+
+    // TODO optimize this
     if (board.ColorAt (last_v) != Color::OffBoard ()) {
-      ForEachNat (Dir, d) {
+      ForEachNat (Dir, d) { // TODO unroll loop
         Vertex nbr = last_v.Nbr (d);
-        local_gamma [nbr] = act_gamma [nbr] [pl] * proximity_bonus [d.Proximity()];
-        total_local_gamma += local_gamma [nbr];
+        if (!is_in_local.IsMarked (nbr)) {
+          is_in_local.Mark (nbr);
+          local_vertices.Push (nbr);
+          local_gamma [nbr] = act_gamma [nbr] [pl];
+        }
+
+        local_gamma [nbr] *= proximity_bonus [d.Proximity()];
       }
     }
 
+    rep (ii, local_vertices.Size ()) {
+      Vertex local_v = local_vertices [ii];
+      total_local_gamma += local_gamma [local_v];
+    }
+
     // Draw sample.
-    double total_gamma = act_gamma_sum [pl] + total_local_gamma;
+    double total_gamma = total_non_local_gamma + total_local_gamma;
     double sample = random.NextDouble (total_gamma);
 
     // Local move ?
     if (sample < total_local_gamma) {
       double local_gamma_sum = 0.0;
-      ForEachNat (Dir, d) {
-        Vertex nbr = last_v.Nbr (d);
+      rep (ii, local_vertices.Size ()) {
+        Vertex nbr = local_vertices [ii];
         local_gamma_sum += local_gamma [nbr];
         if (local_gamma_sum >= sample) return nbr;
       }
@@ -134,14 +150,14 @@ struct Sampler {
 
     // Not local move.
     sample -= total_local_gamma;
-    ASSERT (sample < act_gamma_sum [pl] || act_gamma_sum [pl] == 0.0);
+    ASSERT (sample < total_non_local_gamma || total_non_local_gamma == 0.0);
     
     double sum = 0.0;
     rep (ii, board.EmptyVertexCount()) {
       Vertex v = board.EmptyVertex (ii);
       sum += act_gamma [v] [pl];
       if (sum > sample) {
-        ASSERT (act_gamma_sum [pl] > 0.0);
+        ASSERT (total_non_local_gamma > 0.0);
         ASSERT (act_gamma [v] [pl] > 0.0);
         return v;
       }
@@ -216,8 +232,9 @@ private:
   const Board& board;
   const Gammas& gammas;
 
+  NatSet <Vertex> is_in_local;
+  FastStack <Vertex, Board::kArea> local_vertices;
   NatMap <Vertex, double> local_gamma;
-  double total_local_gamma;
 
   Vertex ko_v;
 };
