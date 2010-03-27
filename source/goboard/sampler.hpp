@@ -47,26 +47,6 @@ struct Sampler {
     CheckConsistency ();
   }
 
-  // non-incremental version.
-  void MovePlayed_Slow () {
-    Player pl = board.ActPlayer ();
-
-    // Prepare act_gamma and act_gamma_sum
-    double sum = 0.0;
-
-    rep (ii, board.EmptyVertexCount()) {
-      Vertex v = board.EmptyVertex (ii);
-      act_gamma [v] [pl] = gammas.Get (board.Hash3x3At (v), pl);
-      sum += act_gamma [v] [pl];
-    }
-
-    ko_v = board.KoVertex ();
-    sum -= act_gamma [ko_v] [pl];
-    act_gamma [ko_v] [pl] = 0.0;
-
-    act_gamma_sum [pl] = sum;
-  }
-
 
   void MovePlayed () {
     Player last_pl = board.LastPlayer();
@@ -126,7 +106,7 @@ struct Sampler {
     
     Vertex last_v = board.LastVertex ();
 
-    // gammas calculations
+    // Calculate proxied gammas
     NatMap <Dir, double> proxy_gamma;
     double total_proxy_gamma = 0.0;
 
@@ -142,10 +122,11 @@ struct Sampler {
       }
     }
 
-    // Select move based on act_gamma and act_gamma_sum
+    // Draw sample.
     double total_gamma = act_gamma_sum [pl] + total_proxy_gamma;
     double sample = random.NextDouble (total_gamma);
 
+    // Proxy move ?
     if (sample < total_proxy_gamma) {
       double proxy_gamma_sum = 0.0;
       ForEachNat (Dir, d) {
@@ -155,6 +136,7 @@ struct Sampler {
       CHECK (false);
     }
 
+    // Not proxy move.
     sample -= total_proxy_gamma;
     ASSERT (sample < act_gamma_sum [pl] || act_gamma_sum [pl] == 0.0);
     
@@ -169,6 +151,7 @@ struct Sampler {
       }
     }
 
+    // Pass
     return Vertex::Pass();
   }
 
@@ -224,16 +207,19 @@ struct Sampler {
     CheckValuesCorrect (id);
   }
 
-  double proximity_bonus [2];
-
-  const Board& board;
-  const Gammas& gammas;
+public:
 
   // The invariant is that act_gamma[v] is correct for all empty 
   // vertices except KoVertex() where it is 0.0.
   // act_gamma_sum is a sum of the above.
   NatMap <Vertex, NatMap<Player, double> > act_gamma;
   NatMap <Player, double> act_gamma_sum;
+  double proximity_bonus [2];
+
+private:
+  const Board& board;
+  const Gammas& gammas;
+
   Vertex ko_v;
 };
 
