@@ -97,6 +97,26 @@ struct Sampler {
     return p;
   }
 
+  
+  void ClearLocal () {
+    Player pl = board.ActPlayer ();
+    is_in_local.Clear ();
+    local_vertices.Clear ();
+    total_non_local_gamma = act_gamma_sum [pl];
+    total_local_gamma = 0.0;
+  }
+
+
+  void EnsureLocal (Vertex v) {
+    if (!is_in_local.IsMarked (v)) {
+      Player pl = board.ActPlayer ();
+      is_in_local.Mark (v);
+      local_vertices.Push (v);
+      local_gamma [v] = act_gamma [v] [pl];
+      total_non_local_gamma -= act_gamma [v] [pl];
+    }
+  }
+
 
   Vertex SampleMove (FastRandom& random) {
     Player pl = board.ActPlayer ();
@@ -108,23 +128,13 @@ struct Sampler {
     Vertex last_v = board.LastVertex ();
 
     // Calculate local gammas
-    is_in_local.Clear ();
-    local_vertices.Clear ();
+    ClearLocal ();
 
-    double total_non_local_gamma = act_gamma_sum [pl];
-    double total_local_gamma = 0.0;
-
-    // TODO optimize this
     if (board.ColorAt (last_v) != Color::OffBoard ()) {
+      // TODO optimize this
       ForEachNat (Dir, d) { // TODO unroll loop
         Vertex nbr = last_v.Nbr (d);
-        if (!is_in_local.IsMarked (nbr)) {
-          is_in_local.Mark (nbr);
-          local_vertices.Push (nbr);
-          local_gamma [nbr] = act_gamma [nbr] [pl];
-          total_non_local_gamma -= act_gamma [nbr] [pl];
-        }
-
+        EnsureLocal (nbr);
         local_gamma [nbr] *= proximity_bonus [d.Proximity()];
       }
     }
@@ -134,10 +144,7 @@ struct Sampler {
       total_local_gamma += local_gamma [local_v];
     }
 
-    // Draw sample.
-    double total_gamma = total_non_local_gamma + total_local_gamma;
-    double sample = random.NextDouble (total_gamma);
-
+    // Tests
     if (kCheckAsserts) {
       double sum = 0.0;
       rep (ii, board.EmptyVertexCount()) {
@@ -148,6 +155,9 @@ struct Sampler {
       }
       CHECK (fabs (total_non_local_gamma - sum) < Gammas::kAccurancy);
     }
+
+    // Draw sample.
+    double sample = random.NextDouble (total_non_local_gamma + total_local_gamma);
 
     // Local move ?
     if (sample < total_local_gamma) {
@@ -162,7 +172,7 @@ struct Sampler {
       CHECK (false);
     }
 
-    // Not local move.
+    // Non-local move.
     sample -= total_local_gamma;
     ASSERT (sample < total_non_local_gamma || total_non_local_gamma == 0.0);
     
@@ -252,6 +262,8 @@ private:
   NatSet <Vertex> is_in_local;
   FastStack <Vertex, Board::kArea> local_vertices;
   NatMap <Vertex, double> local_gamma;
+  double total_non_local_gamma;
+  double total_local_gamma;
 
   Vertex ko_v;
 };
