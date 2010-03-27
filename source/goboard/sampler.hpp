@@ -107,37 +107,34 @@ struct Sampler {
     Vertex last_v = board.LastVertex ();
 
     // Calculate proxied gammas
-    NatMap <Dir, double> proxy_gamma;
-    double total_proxy_gamma = 0.0;
+    NatMap <Vertex, double> local_gamma;
+    double total_local_gamma = 0.0;
 
     if (board.ColorAt (last_v) != Color::OffBoard ()) {
       ForEachNat (Dir, d) {
-        proxy_gamma [d] = act_gamma [last_v.Nbr(d)] [pl] * proximity_bonus [d.Proximity()];
-        total_proxy_gamma += proxy_gamma [d];
-      }
-
-    } else {
-      ForEachNat (Dir, d) {
-        proxy_gamma [d] = 0.0;
+        Vertex nbr = last_v.Nbr (d);
+        local_gamma [nbr] = act_gamma [nbr] [pl] * proximity_bonus [d.Proximity()];
+        total_local_gamma += local_gamma [nbr];
       }
     }
 
     // Draw sample.
-    double total_gamma = act_gamma_sum [pl] + total_proxy_gamma;
+    double total_gamma = act_gamma_sum [pl] + total_local_gamma;
     double sample = random.NextDouble (total_gamma);
 
-    // Proxy move ?
-    if (sample < total_proxy_gamma) {
-      double proxy_gamma_sum = 0.0;
+    // Local move ?
+    if (sample < total_local_gamma) {
+      double local_gamma_sum = 0.0;
       ForEachNat (Dir, d) {
-        proxy_gamma_sum += proxy_gamma [d];
-        if (proxy_gamma_sum >= sample) return last_v.Nbr (d);
+        Vertex nbr = last_v.Nbr (d);
+        local_gamma_sum += local_gamma [nbr];
+        if (local_gamma_sum >= sample) return nbr;
       }
       CHECK (false);
     }
 
-    // Not proxy move.
-    sample -= total_proxy_gamma;
+    // Not local move.
+    sample -= total_local_gamma;
     ASSERT (sample < act_gamma_sum [pl] || act_gamma_sum [pl] == 0.0);
     
     double sum = 0.0;
@@ -214,7 +211,7 @@ public:
   // act_gamma_sum is a sum of the above.
   NatMap <Vertex, NatMap<Player, double> > act_gamma;
   NatMap <Player, double> act_gamma_sum;
-  double proximity_bonus [2];
+  double proximity_bonus [2]; // TODO move this to Gammas 
 
 private:
   const Board& board;
