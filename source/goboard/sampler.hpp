@@ -122,6 +122,7 @@ struct Sampler {
           is_in_local.Mark (nbr);
           local_vertices.Push (nbr);
           local_gamma [nbr] = act_gamma [nbr] [pl];
+          total_non_local_gamma -= act_gamma [nbr] [pl];
         }
 
         local_gamma [nbr] *= proximity_bonus [d.Proximity()];
@@ -137,13 +138,26 @@ struct Sampler {
     double total_gamma = total_non_local_gamma + total_local_gamma;
     double sample = random.NextDouble (total_gamma);
 
+    if (kCheckAsserts) {
+      double sum = 0.0;
+      rep (ii, board.EmptyVertexCount()) {
+        Vertex v = board.EmptyVertex (ii);
+        if (!is_in_local.IsMarked (v)) {
+          sum += act_gamma [v] [pl];
+        }
+      }
+      CHECK (fabs (total_non_local_gamma - sum) < Gammas::kAccurancy);
+    }
+
     // Local move ?
     if (sample < total_local_gamma) {
       double local_gamma_sum = 0.0;
       rep (ii, local_vertices.Size ()) {
         Vertex nbr = local_vertices [ii];
         local_gamma_sum += local_gamma [nbr];
-        if (local_gamma_sum >= sample) return nbr;
+        if (local_gamma_sum >= sample) {
+          return nbr;
+        }
       }
       CHECK (false);
     }
@@ -152,9 +166,12 @@ struct Sampler {
     sample -= total_local_gamma;
     ASSERT (sample < total_non_local_gamma || total_non_local_gamma == 0.0);
     
+
     double sum = 0.0;
     rep (ii, board.EmptyVertexCount()) {
       Vertex v = board.EmptyVertex (ii);
+      if (is_in_local.IsMarked (v)) continue;
+
       sum += act_gamma [v] [pl];
       if (sum > sample) {
         ASSERT (total_non_local_gamma > 0.0);
