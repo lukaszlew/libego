@@ -107,8 +107,7 @@ struct Sampler {
     Vertex last_v = board.LastVertex ();
 
     // Calculate proxied gammas
-    NatMap <Vertex, double> local_gamma;
-    double total_local_gamma = 0.0;
+    total_local_gamma = 0.0;
 
     if (board.ColorAt (last_v) != Color::OffBoard ()) {
       ForEachNat (Dir, d) {
@@ -216,6 +215,9 @@ public:
 private:
   const Board& board;
   const Gammas& gammas;
+
+  NatMap <Vertex, double> local_gamma;
+  double total_local_gamma;
 
   Vertex ko_v;
 };
