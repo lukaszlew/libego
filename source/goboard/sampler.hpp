@@ -113,15 +113,7 @@ struct Sampler {
 
     // Local move ?
     if (sample < total_local_gamma) {
-      double local_gamma_sum = 0.0;
-      rep (ii, local_vertices.Size ()) {
-        Vertex nbr = local_vertices [ii];
-        local_gamma_sum += local_gamma [nbr];
-        if (local_gamma_sum >= sample) {
-          return nbr;
-        }
-      }
-      CHECK (false);
+      return SampleLocalMove (sample);
     }
 
     // Non-local move.
@@ -180,6 +172,19 @@ struct Sampler {
       local_gamma [v] = act_gamma [v] [pl];
       total_non_local_gamma -= act_gamma [v] [pl];
     }
+  }
+
+
+  Vertex SampleLocalMove (double sample) {
+    double local_gamma_sum = 0.0;
+    rep (ii, local_vertices.Size ()) {
+      Vertex nbr = local_vertices [ii];
+      local_gamma_sum += local_gamma [nbr];
+      if (local_gamma_sum >= sample) {
+        return nbr;
+      }
+    }
+    CHECK (false);
   }
 
 private:
