@@ -114,28 +114,12 @@ struct Sampler {
     // Local move ?
     if (sample < total_local_gamma) {
       return SampleLocalMove (sample);
+    } else {
+      sample -= total_local_gamma;
+      return SampleNonLocalMove (sample);
     }
-
-    // Non-local move.
-    sample -= total_local_gamma;
-    ASSERT (sample < total_non_local_gamma || total_non_local_gamma == 0.0);
-    
-    double sum = 0.0;
-    rep (ii, board.EmptyVertexCount()) {
-      Vertex v = board.EmptyVertex (ii);
-      if (is_in_local.IsMarked (v)) continue;
-
-      sum += act_gamma [v] [pl];
-      if (sum > sample) {
-        ASSERT (total_non_local_gamma > 0.0);
-        ASSERT (act_gamma [v] [pl] > 0.0);
-        return v;
-      }
-    }
-
-    // Pass
-    return Vertex::Pass();
   }
+
 
   void CalculateLocalGammas () {
     Player pl = board.ActPlayer ();
@@ -185,6 +169,24 @@ struct Sampler {
       }
     }
     CHECK (false);
+  }
+
+
+  Vertex SampleNonLocalMove (double sample) {
+    ASSERT (sample < total_non_local_gamma || total_non_local_gamma == 0.0);
+    Player pl = board.ActPlayer();
+    double sum = 0.0;
+    rep (ii, board.EmptyVertexCount()) {
+      Vertex v = board.EmptyVertex (ii);
+      if (is_in_local.IsMarked (v)) continue;
+      sum += act_gamma [v] [pl];
+      if (sum > sample) {
+        ASSERT (total_non_local_gamma > 0.0);
+        ASSERT (act_gamma [v] [pl] > 0.0);
+        return v;
+      }
+    }
+    return Vertex::Pass();
   }
 
 private:
