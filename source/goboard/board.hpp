@@ -87,6 +87,8 @@ public:
   bool IsLegal (Player player, Vertex v) const;
   bool IsLegal (Move m) const;
 
+  Vertex AtariVertexOf (Vertex v) const;
+
   // Returns a random light playout move. Returns pass if no light move found.
   Vertex RandomLightMove (Player player, FastRandom& random) const;
   Move RandomLightMove (FastRandom& random) const;
@@ -158,6 +160,8 @@ private:
 
 
   // TODO: move these consistency checks to some some kind of unit testing
+  void check_chain_atari_v () const;
+  void check_hash3x3 () const;
   void check_empty_v () const;
   void check_hash () const;
   void check_color_at () const;
@@ -166,7 +170,6 @@ private:
   void check_chain_next_v () const;
   void check () const;
   void check_no_more_legal (Player player) const;
-  void check_hash3x3 () const;
 
   class NbrCounter { // TODO update it to a full 3x3 pattern
   public:
@@ -200,6 +203,7 @@ private:
     uint lib_sum;
     uint lib_sum2;
     uint size;
+    Vertex atari_v;
 
     void Reset ();
     void ResetOffBoard ();

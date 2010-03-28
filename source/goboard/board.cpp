@@ -139,6 +139,7 @@ void RawBoard::Chain::ResetOffBoard () {
   lib_sum  = 1;
   lib_sum2 = 1;
   size = 100;
+  atari_v = Vertex::Any();
 }
 
 void RawBoard::Chain::Reset () {
@@ -146,6 +147,7 @@ void RawBoard::Chain::Reset () {
   lib_sum  = 0;
   lib_sum2 = 0;
   size = 1;
+  atari_v = Vertex::Any();
 }
 
 void RawBoard::Chain::AddLib (Vertex v) {
@@ -165,6 +167,7 @@ void RawBoard::Chain::Merge (const RawBoard::Chain& other) {
   lib_sum  += other.lib_sum;
   lib_sum2 += other.lib_sum2;
   size += other.size;
+  atari_v = Vertex::Any();
 }
 
 bool RawBoard::Chain::IsCaptured () const {
@@ -418,8 +421,15 @@ bool RawBoard::IsEyelike (Player player, Vertex v) const {
   return is_eye;
 }
 
+
 bool RawBoard::IsEyelike (Move move) const {
   return IsEyelike (move.GetPlayer (), move.GetVertex());
+}
+
+
+Vertex RawBoard::AtariVertexOf (Vertex v) const {
+  ASSERT (ColorAt (v).IsPlayer());
+  return chain_at (v).atari_v;
 }
 
 
@@ -520,6 +530,7 @@ void RawBoard::MaybeInAtari (Vertex v) {
   Vertex av = chain_at(v).AtariVertex();
   ASSERT (color_at [av] == Color::Empty ());
 
+  chain_at(v).atari_v = av;
   hash3x3[av].SetAtariBits (chain_id [av.N()] == chain_id [v],
                             chain_id [av.E()] == chain_id [v],
                             chain_id [av.S()] == chain_id [v],
@@ -541,6 +552,8 @@ void RawBoard::MaybeInAtariEnd (Vertex v) {
 
   Vertex av = chain_at(v).AtariVertex();
   ASSERT (color_at [av] == Color::Empty ());
+
+  chain_at(v).atari_v = Vertex::Any();
 
   // This may not be needed, in case when atari bits were not set yet.
   // For instance the stone we play is about to be in atari, but
@@ -776,6 +789,24 @@ const RawBoard::Chain& RawBoard::chain_at (Vertex v) const {
 
 // -----------------------------------------------------------------------------
 
+void RawBoard::check_chain_atari_v () const {
+  ForEachNat (Vertex, v) {
+    if (!v.IsOnBoard()) continue;
+    if (color_at [v] == Color::Empty()) continue;
+    Vertex correct_av;
+    if (chain_at(v).IsInAtari()) {
+      correct_av = chain_at (v).AtariVertex ();
+    } else {
+      correct_av = Vertex::Any ();
+    }
+    CHECK2 (chain_at (v).atari_v == correct_av,
+            Dump1 (v);
+            WW (correct_av.ToGtpString());
+            WW (chain_at (v).atari_v.ToGtpString());
+            );
+  }
+}
+
 void RawBoard::check_hash3x3 () const {
   ForEachNat (Vertex, v) {
     if (!v.IsOnBoard()) continue;
@@ -888,6 +919,7 @@ void RawBoard::check () const {
   check_chain_at      ();
   check_chain_next_v  ();
   check_hash3x3       ();
+  check_chain_atari_v ();
 }
 
 
