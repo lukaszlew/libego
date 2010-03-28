@@ -240,7 +240,7 @@ private:
                 WW (act_gamma[v][pl]);
                 WW(correct);
                 WW(id);
-                board.DebugPrint(v);
+                board.Dump1(v);
                 WW(board.KoVertex().ToGtpString());
                 WW (pl.ToGtpString());
                 WW (board.ActPlayer().ToGtpString());

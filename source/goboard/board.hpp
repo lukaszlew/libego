@@ -134,8 +134,8 @@ public:
   string ToAsciiArt (Vertex mark_v = Vertex::Invalid ()) const;
 
   // debugging helper
-  void DebugPrint (Vertex v = Vertex::Pass ()) const;
   void Dump () const;
+  void Dump1 (Vertex v) const;
 
   // Clears the board. (It is faster to Load(empty_board))
   void Clear ();

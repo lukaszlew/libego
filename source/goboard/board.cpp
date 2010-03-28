@@ -224,13 +224,12 @@ string RawBoard::ToAsciiArt (Vertex mark_v) const {
 }
 
 
-void RawBoard::DebugPrint (Vertex v) const {
-  cerr << ToAsciiArt (v);
-  cerr << ActPlayer().ToGtpString () << " to play" << endl;
+void RawBoard::Dump () const {
+  Dump1 (LastVertex ());
 }
 
-void RawBoard::Dump () const {
-  Vertex v = LastVertex();
+
+void RawBoard::Dump1 (Vertex v) const {
   cerr << ToAsciiArt (v);
   cerr << ActPlayer().ToGtpString () << " to play" << endl;
 }
@@ -409,7 +408,7 @@ bool RawBoard::IsEyelike (Player player, Vertex v) const {
     (diag_color_cnt [Color::OffBoard ()] > 0) < 2;
 
   ASSERT2 (hash3x3[v].IsEyelike (player) == is_eye, {
-    DebugPrint (v);
+    Dump1 (v);
     WW (player.ToGtpString());
     WW (is_eye);
     WW (hash3x3[v].IsEyelike(player));
@@ -482,6 +481,7 @@ void RawBoard::PlayLegal (Player player, Vertex v) { // TODO test with move
   // if (chain_at(v).IsCaptured ()) remove_chain (v);
   ASSERT (!chain_at(v).IsCaptured());
 
+  // covers all kinds of cases with the final string
   MaybeInAtari (v);
   check ();
 }
@@ -497,6 +497,7 @@ void RawBoard::update_neighbour (Vertex v, Vertex nbr_v) {
     if (chain_at(nbr_v).IsCaptured ()) {
       remove_chain (nbr_v);
     } else {
+      // reuduced liberty of nbr opponent 
       MaybeInAtari (nbr_v);
     }
   } else {
@@ -513,7 +514,7 @@ void RawBoard::update_neighbour (Vertex v, Vertex nbr_v) {
 all_inline
 void RawBoard::MaybeInAtari (Vertex v) {
   // update atari bits in hash3x3
-  ASSERT2 (color_at[v] != Color::Empty(), {DebugPrint (v);});
+  ASSERT2 (color_at[v] != Color::Empty(), {Dump1 (v);});
   if (!chain_at(v).IsInAtari ()) return;
 
   Vertex av = chain_at(v).AtariVertex();
@@ -573,6 +574,8 @@ void RawBoard::remove_chain (Vertex v) {
   Vertex act_v = v;
 
   ASSERT (old_color.IsPlayer ());
+
+  // two pass chain removing
 
   do {
     remove_stone (act_v);
@@ -783,7 +786,7 @@ void RawBoard::check_hash3x3 () const {
                                color_at [v.S()].IsPlayer() && chain_at(v.S()).IsInAtari(),
                                color_at [v.W()].IsPlayer() && chain_at(v.W()).IsInAtari());
     CHECK2 (hash3x3[v] == correct_hash, {
-      DebugPrint(v);
+      Dump1(v);
       cerr << hash3x3[v].ToString () << " == "
            << correct_hash.ToString() << endl;
     });
