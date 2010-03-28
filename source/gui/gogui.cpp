@@ -9,19 +9,14 @@
 #include "SquareGrid.h"
 
 GoGui::GoGui(Engine& engine, QWidget *parent ) :
-    QDialog(parent)
+  QDialog(parent)
 {
-    initView (engine);
-}
+    game_scene = GameScene::createGoScene(9);
 
-void GoGui::initView(Engine& engine)
-{
-    GameScene *gameScene = GameScene::createGoScene(9);
+    manager = new Manager (engine, game_scene, this);
+    manager->newGame();
 
-    m = new Manager(engine, gameScene, this);
-    m->newGame();
-
-    ResizableView *gameView = new ResizableView(gameScene, this);
+    ResizableView *gameView = new ResizableView(game_scene, this);
 
     QPushButton *new_game = new QPushButton("New game");
     QPushButton *gen_move = new QPushButton("Gen move");
@@ -51,16 +46,16 @@ void GoGui::initView(Engine& engine)
     mainLayout->addWidget(gameView);
     mainLayout->addLayout(controls);
 
-    connect(new_game, SIGNAL(clicked()), m, SLOT(newGame()));
-    connect(gen_move, SIGNAL(clicked()), m, SLOT(genMove()));
-    connect(play_move, SIGNAL(clicked()), m, SLOT(playMove()));
-    connect(undo_move, SIGNAL(clicked()), m, SLOT(undoMove()));
-    connect(show_gammas, SIGNAL(stateChanged(int)), m, SLOT(showGammas(int)));
+    connect(new_game, SIGNAL(clicked()), manager, SLOT(newGame()));
+    connect(gen_move, SIGNAL(clicked()), manager, SLOT(genMove()));
+    connect(play_move, SIGNAL(clicked()), manager, SLOT(playMove()));
+    connect(undo_move, SIGNAL(clicked()), manager, SLOT(undoMove()));
+    connect(show_gammas, SIGNAL(stateChanged(int)), manager, SLOT(showGammas(int)));
     connect(set_komi, SIGNAL(clicked()), this, SLOT(setKomi()));
     connect(quit, SIGNAL(clicked()), this, SLOT(close()));
 
-    connect(m, SIGNAL(stateChanged(const Player&)), this, SLOT(setWinner(const Player&)));
-    connect(m, SIGNAL(statusChanged(QString)), this, SLOT(setStatus(QString)));
+    connect(manager, SIGNAL(stateChanged(const Player&)), this, SLOT(setWinner(const Player&)));
+    connect(manager, SIGNAL(statusChanged(QString)), this, SLOT(setStatus(QString)));
 
     statebar = new QLabel(" ");
     QVBoxLayout *all_ = new QVBoxLayout;
@@ -76,7 +71,7 @@ void GoGui::setKomi() {
             this, "Set komi", "Enter double:", 
             10, 0, 100, 2, &ok);
     if (ok)
-        m->setKomi(komi);
+        manager->setKomi(komi);
 }
 
 void GoGui::setWinner(const Player&) {

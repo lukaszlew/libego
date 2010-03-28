@@ -11,17 +11,15 @@ class GoGui: public QDialog {
 public:
   GoGui(Engine& engine, QWidget *parent = 0);
 
-private:
-  void initView(Engine&);
-
 private slots:
   void setKomi();
   void setWinner(const Player&);
   void setStatus(QString);
 
 private:
-  Manager *m;
-  QLabel *statebar;
+  Manager* manager;
+  QLabel* statebar;
+  GameScene* game_scene;
 
 private:
   Q_OBJECT
