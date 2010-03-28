@@ -16,16 +16,12 @@ public:
 
   virtual ~Manager ();
 
-private:
-  bool putStone (const Move&);
   void refreshBoard ();
 
 public slots:
   void handleMousePress (int x, int y, Qt::MouseButtons buttons);
   void handleHooverEntered (int x, int y);
   void setKomi (double);
-  void newGame ();
-  void genMove ();
   void playMove ();
   void undoMove ();
   void showGammas (int);

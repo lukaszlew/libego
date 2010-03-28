@@ -14,12 +14,8 @@ GoGui::GoGui(Engine& engine, QWidget *parent ) :
     game_scene = GameScene::createGoScene(9);
 
     manager = new Manager (engine, game_scene, this);
-    manager->newGame();
 
     ResizableView *gameView = new ResizableView(game_scene, this);
-
-    QPushButton *new_game = new QPushButton("New game");
-    QPushButton *gen_move = new QPushButton("Gen move");
 
     QPushButton *play_move = new QPushButton("Play move");
     QPushButton *undo_move = new QPushButton("Undo move");
@@ -33,8 +29,6 @@ GoGui::GoGui(Engine& engine, QWidget *parent ) :
     QVBoxLayout *controls = new QVBoxLayout;
     controls->addWidget(new QLabel("<b>GoGui</b>"), 0, Qt::AlignHCenter);
 
-    controls->addWidget(new_game);
-    controls->addWidget(gen_move);
     controls->addWidget(play_move);
     controls->addWidget(undo_move);
     controls->addWidget(show_gammas);
@@ -46,8 +40,6 @@ GoGui::GoGui(Engine& engine, QWidget *parent ) :
     mainLayout->addWidget(gameView);
     mainLayout->addLayout(controls);
 
-    connect(new_game, SIGNAL(clicked()), manager, SLOT(newGame()));
-    connect(gen_move, SIGNAL(clicked()), manager, SLOT(genMove()));
     connect(play_move, SIGNAL(clicked()), manager, SLOT(playMove()));
     connect(undo_move, SIGNAL(clicked()), manager, SLOT(undoMove()));
     connect(show_gammas, SIGNAL(stateChanged(int)), manager, SLOT(showGammas(int)));
@@ -63,6 +55,7 @@ GoGui::GoGui(Engine& engine, QWidget *parent ) :
     all_->addWidget(statebar);
 
     setLayout(all_);
+    manager->refreshBoard ();
 }
 
 void GoGui::setKomi() {

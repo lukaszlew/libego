@@ -94,22 +94,6 @@ void Manager::setKomi (double) {
 }
 
 
-void Manager::newGame ()
-{
-  std::cout << "newGame ()" << std::endl;
-
-  m_gameScene->clearBoard ();
-  engine_.ClearBoard ();
-  //emit stateChanged (Player::None ());
-}
-
-
-void Manager::genMove ()
-{
-  std::cout << "genMove ()" << std::endl;
-}
-
-
 void Manager::playMove ()
 {
   std::cout << "playMove ()" << std::endl;
