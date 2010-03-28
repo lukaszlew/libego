@@ -7,8 +7,7 @@
 Manager::Manager (Engine& engine, GameScene *scene, QObject *parent) :
   QObject (parent),
   m_gameScene (scene),
-  engine_ (engine),
-  foreignEngine_ (false)
+  engine_ (engine)
 {
   connect (m_gameScene, SIGNAL (mousePressed (int, int, Qt::MouseButtons)),
            this, SLOT (handleMousePress (int, int, Qt::MouseButtons)));
@@ -18,17 +17,8 @@ Manager::Manager (Engine& engine, GameScene *scene, QObject *parent) :
 }
 
 
-void Manager::setForeignEngine ()
-{
-  foreignEngine_ = true;
-  refreshBoard ();
-}
-
-
 Manager::~Manager ()
 {
-  if (!foreignEngine_)
-    delete &engine_;
 }
 
 

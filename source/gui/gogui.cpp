@@ -8,29 +8,18 @@
 #include "ResizableView.h"
 #include "SquareGrid.h"
 
-GoGui::GoGui(QWidget *parent) :
-    QDialog(parent)
-{
-    initView(false, *(new Engine()));
-}
-
 GoGui::GoGui(Engine& engine, QWidget *parent ) :
     QDialog(parent)
 {
-    initView(true, engine);
+    initView (engine);
 }
 
-void GoGui::initView(bool foreignEngine, Engine& engine)
+void GoGui::initView(Engine& engine)
 {
     GameScene *gameScene = GameScene::createGoScene(9);
 
     m = new Manager(engine, gameScene, this);
-    if (foreignEngine) {
-        m->setForeignEngine();
-    }
-    else {
-        m->newGame();
-    }
+    m->newGame();
 
     ResizableView *gameView = new ResizableView(gameScene, this);
 

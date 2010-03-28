@@ -23,7 +23,6 @@ class Manager : public QObject {
 public:
   Manager (Engine& engine, GameScene *scene, QObject * parent = 0);
 
-  void setForeignEngine ();
   virtual ~Manager ();
 
 private:
@@ -47,7 +46,6 @@ signals:
 private:
   GameScene *m_gameScene;
   Engine& engine_;
-  bool foreignEngine_;
 
 private:
   Q_OBJECT
