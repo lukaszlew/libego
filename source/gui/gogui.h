@@ -12,8 +12,6 @@ public:
   GoGui(Engine& engine, QWidget *parent = 0);
 
 private slots:
-  void setKomi();
-  void setWinner(const Player&);
   void setStatus(QString);
 
 private:
