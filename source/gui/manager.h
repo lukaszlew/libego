@@ -3,21 +3,12 @@
 
 #include <QObject>
 #include <QString>
-#include "game_inc.h"
+
 
 class GameScene;
-
-inline
-void vertex2gui (Vertex v, int& x, int& y) {
-  x = v.GetColumn ()+1;
-  y = board_size-v.GetRow ();
-}
-
-inline
-Vertex gui2vertex (int x, int y) {
-  return Vertex::OfCoords (board_size-y, x-1);
-}
-
+class Engine;
+class Move;
+class Player;
 
 class Manager : public QObject {
 public:

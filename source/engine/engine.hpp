@@ -7,6 +7,7 @@
 #include "mcts_playout.hpp"
 #include "logger.hpp"
 #include "to_string.hpp"
+#include "gtp_gogui.hpp"
 
 class Engine {
 public:

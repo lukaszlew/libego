@@ -3,6 +3,18 @@
 #include <iostream>
 #include "manager.h"
 #include "GameScene.h"
+#include "engine.hpp"
+
+
+void vertex2gui (Vertex v, int& x, int& y) {
+  x = v.GetColumn ()+1;
+  y = board_size-v.GetRow ();
+}
+
+Vertex gui2vertex (int x, int y) {
+  return Vertex::OfCoords (board_size-y, x-1);
+}
+
 
 Manager::Manager (Engine& engine, GameScene *scene, QObject *parent) :
   QObject (parent),

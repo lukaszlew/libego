@@ -79,6 +79,7 @@ private:
 
 boost::shared_ptr<QtSingleton> QtSingleton::q = boost::shared_ptr<QtSingleton>();
 
+extern Gtp::ReplWithGogui gtp;
 
 Gui::Gui(Engine& engine)
 {
@@ -89,8 +90,9 @@ Gui::Gui(Engine& engine)
 
 
 
-void Gui::Run(Gtp::Io&)
+void Gui::Run(Gtp::Io& io)
 {
+    io.CheckEmpty ();
     std::cout << "Gui::Run" << std::endl;
     QtSingleton::getInstance().Init();
 
