@@ -98,63 +98,15 @@ struct Sampler {
   }
 
   
-  void ClearLocal () {
-    Player pl = board.ActPlayer ();
-    is_in_local.Clear ();
-    local_vertices.Clear ();
-    total_non_local_gamma = act_gamma_sum [pl];
-    total_local_gamma = 0.0;
-  }
-
-
-  void EnsureLocal (Vertex v) {
-    if (!is_in_local.IsMarked (v)) {
-      Player pl = board.ActPlayer ();
-      is_in_local.Mark (v);
-      local_vertices.Push (v);
-      local_gamma [v] = act_gamma [v] [pl];
-      total_non_local_gamma -= act_gamma [v] [pl];
-    }
-  }
-
-
   Vertex SampleMove (FastRandom& random) {
     Player pl = board.ActPlayer ();
+
     if (act_gamma_sum [pl] < Gammas::kAccurancy) {
       // TODO assert no_more_legal_moves
       return Vertex::Pass ();
     }
     
-    Vertex last_v = board.LastVertex ();
-
-    // Calculate local gammas
-    ClearLocal ();
-
-    if (board.ColorAt (last_v) != Color::OffBoard ()) {
-      // TODO optimize this
-      ForEachNat (Dir, d) { // TODO unroll loop
-        Vertex nbr = last_v.Nbr (d);
-        EnsureLocal (nbr);
-        local_gamma [nbr] *= proximity_bonus [d.Proximity()];
-      }
-    }
-
-    rep (ii, local_vertices.Size ()) {
-      Vertex local_v = local_vertices [ii];
-      total_local_gamma += local_gamma [local_v];
-    }
-
-    // Tests
-    if (kCheckAsserts) {
-      double sum = 0.0;
-      rep (ii, board.EmptyVertexCount()) {
-        Vertex v = board.EmptyVertex (ii);
-        if (!is_in_local.IsMarked (v)) {
-          sum += act_gamma [v] [pl];
-        }
-      }
-      CHECK (fabs (total_non_local_gamma - sum) < Gammas::kAccurancy);
-    }
+    CalculateLocalGammas ();
 
     // Draw sample.
     double sample = random.NextDouble (total_non_local_gamma + total_local_gamma);
@@ -176,7 +128,6 @@ struct Sampler {
     sample -= total_local_gamma;
     ASSERT (sample < total_non_local_gamma || total_non_local_gamma == 0.0);
     
-
     double sum = 0.0;
     rep (ii, board.EmptyVertexCount()) {
       Vertex v = board.EmptyVertex (ii);
@@ -192,6 +143,59 @@ struct Sampler {
 
     // Pass
     return Vertex::Pass();
+  }
+
+  void CalculateLocalGammas () {
+    Player pl = board.ActPlayer ();
+    is_in_local.Clear ();
+    local_vertices.Clear ();
+    total_non_local_gamma = act_gamma_sum [pl];
+    total_local_gamma = 0.0;
+
+    Vertex last_v = board.LastVertex ();
+
+    if (board.ColorAt (last_v) != Color::OffBoard ()) {
+      // TODO optimize this
+      ForEachNat (Dir, d) { // TODO unroll loop
+        Vertex nbr = last_v.Nbr (d);
+        EnsureLocal (nbr);
+        local_gamma [nbr] *= proximity_bonus [d.Proximity()];
+      }
+    }
+
+    rep (ii, local_vertices.Size ()) {
+      Vertex local_v = local_vertices [ii];
+      total_local_gamma += local_gamma [local_v];
+    }
+
+    CheckLocalSumCorrect ();
+  }
+
+
+  void EnsureLocal (Vertex v) {
+    if (!is_in_local.IsMarked (v)) {
+      Player pl = board.ActPlayer ();
+      is_in_local.Mark (v);
+      local_vertices.Push (v);
+      local_gamma [v] = act_gamma [v] [pl];
+      total_non_local_gamma -= act_gamma [v] [pl];
+    }
+  }
+
+private:
+
+  void CheckLocalSumCorrect () const {
+    // Tests
+    if (!kCheckAsserts) return;
+    Player pl = board.ActPlayer();
+    double sum = 0.0;
+    rep (ii, board.EmptyVertexCount()) {
+      Vertex v = board.EmptyVertex (ii);
+      if (!is_in_local.IsMarked (v)) {
+        sum += act_gamma [v] [pl];
+      }
+    }
+    CHECK (fabs (total_non_local_gamma - sum) < Gammas::kAccurancy);
   }
 
 

@@ -64,7 +64,7 @@ public:
 
   void Clear () { act_mark += 1; }
 
-  bool IsMarked (Nat n) { return mark [n] == act_mark; }
+  bool IsMarked (Nat n) const { return mark [n] == act_mark; }
   void Mark (Nat n) { mark [n] = act_mark; }
 
 private:
