@@ -24,7 +24,7 @@ void GoGui::initView(bool foreignEngine, Engine& engine)
 {
     GameScene *gameScene = GameScene::createGoScene(9);
 
-    m = new manager(engine, gameScene, this);
+    m = new Manager(engine, gameScene, this);
     if (foreignEngine) {
         m->setForeignEngine();
     }
