@@ -22,6 +22,7 @@ private:
     gtp.Register ("undo",         this, &MctsGtp::Cundo);
     gtp.Register ("genmove",      this, &MctsGtp::Cgenmove);
     gtp.Register ("showboard",    this, &MctsGtp::Cshowboard);
+    gtp.Register ("gui",          this, &MctsGtp::Cgui);
 
     gtp.Register ("LoadGammas",   this, &MctsGtp::CLoadGammas);
 
@@ -154,6 +155,11 @@ private:
       return;
     }
     in.close();
+  }
+
+  void Cgui (Gtp::Io& io) {
+    io.CheckEmpty ();
+    RunGui (mcts_engine);
   }
 
 private:

@@ -7,10 +7,10 @@
 Gtp::ReplWithGogui gtp;
 
 #include "engine.hpp"
+#include "gui.h"
 #include "mcts_gtp.hpp"
 #include "mm_train.hpp"
 
-#include "gui.h"
 
 
 // TODO automatize through CMake (and add git SHA1)
@@ -57,7 +57,6 @@ int main(int argc, char** argv) {
 
   Engine& engine = *(new Engine());
   MctsGtp mcts_gtp (engine);
-  Gui gui (engine);
 
   reps (ii, 1, argc) {
     if (ii == argc-1 && string (argv[ii]) == "gtp") continue;
