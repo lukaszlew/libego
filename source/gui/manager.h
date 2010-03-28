@@ -47,7 +47,6 @@ signals:
 private:
   GameScene *m_gameScene;
   Engine& engine_;
-  Player current_;
   bool foreignEngine_;
 
 private:

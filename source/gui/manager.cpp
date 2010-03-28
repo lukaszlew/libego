@@ -21,9 +21,6 @@ Manager::Manager (Engine& engine, GameScene *scene, QObject *parent) :
 void Manager::setForeignEngine ()
 {
   foreignEngine_ = true;
-
-  current_ = Player::Black (); //TODO, get real current player
-
   refreshBoard ();
 }
 
@@ -39,22 +36,14 @@ void Manager::handleMousePress (int x, int y, Qt::MouseButtons buttons)
 {
   std::cout << "click on (" << x << "," << y << ")" << std::endl;
   if (buttons & Qt::LeftButton) {
+    Vertex v = gui2vertex (x, y);
+    bool ok = engine_.Play (Move (engine_.GetBoard().ActPlayer (), v));
 
-    bool ok = engine_.Play (Move (current_, 
-                                  gui2vertex (x, y)
-                                  ));
     if (!ok) {
       std::cout << "Invalid move." << std::endl;
       return;
     }
 
-    if (current_==Player::Black ()) {
-      current_ = Player::White ();
-    }
-    else {
-      current_ = Player::Black ();
-    }
-    //refresh
     refreshBoard ();
   }
 }
@@ -109,7 +98,6 @@ void Manager::newGame ()
 
   m_gameScene->clearBoard ();
   engine_.ClearBoard ();
-  current_ = Player::Black ();
   //emit stateChanged (Player::None ());
 }
 
@@ -124,7 +112,7 @@ void Manager::playMove ()
 {
   std::cout << "playMove ()" << std::endl;
 
-  Move move = engine_.Genmove (current_);
+  Move move = engine_.Genmove (engine_.GetBoard().ActPlayer());
   if (!move.IsValid ()) {
     std::cout << "Genmove returned invalid move" << std::endl;
     return;
@@ -134,12 +122,6 @@ void Manager::playMove ()
   vertex2gui (move.GetVertex (), x ,y);
   std::cout << "play move on (" << x << "," << y << ")" << std::endl;
 
-  if (current_==Player::Black ()) {
-    current_ = Player::White ();
-  }
-  else {
-    current_ = Player::Black ();
-  }
   bool ok = engine_.Play (move);
   unused (ok);
 
@@ -148,7 +130,8 @@ void Manager::playMove ()
 }
 
 
-void Manager::undoMove ()  {
+void Manager::undoMove ()
+{
   std::cout << "undoMove ()" << std::endl;
   bool ok = engine_.Undo ();
   if (ok) {
@@ -166,24 +149,24 @@ void Manager::refreshBoard ()
 {
   std::cout << "refreshBoard ()" << std::endl;
 
-  for (uint x=1; x<=board_size; x++)
+  for (uint x=1; x<=board_size; x++) {
     for (uint y=1; y<=board_size; y++) {
-      if (!engine_.PlayerAt (gui2vertex (x,y)).IsValid () ) {
+      Vertex v = gui2vertex (x,y);
+      Color col = engine_.GetBoard().ColorAt (v);
+
+      if (col == Color::Empty ()) {
         m_gameScene->removeStone (x,y);
-        m_gameScene->removeCircle (x,y);
+      } else if (col == Color::White ()) {
+        m_gameScene->addWhiteStone (x,y);
+      } else if (col == Color::Black ()) {
+        m_gameScene->addBlackStone (x,y);
+      }
+
+      if (engine_.GetBoard().LastVertex () == v) {
+        m_gameScene->addCircle (x,y);
       } else {
-        if (engine_.PlayerAt (gui2vertex (x,y)) == Player::White ()) {
-          m_gameScene->addWhiteStone (x,y);
-        }
-        if (engine_.PlayerAt (gui2vertex (x,y)) == Player::Black ()) {
-          m_gameScene->addBlackStone (x,y);
-        }
-        if (engine_.LastVertex () == gui2vertex (x,y)) {
-          m_gameScene->addCircle (x,y);
-        }
-        else {
-          m_gameScene->removeCircle (x,y);
-        }
+        m_gameScene->removeCircle (x,y);
       }
     }
+  }
 }

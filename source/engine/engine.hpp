@@ -55,17 +55,8 @@ public:
     return ok;
   }
 
-  Player PlayerAt(Vertex v)
-  {
-    if (full_board.ColorAt(v)==Color::White())
-      return Player::White();
-    if (full_board.ColorAt(v)==Color::Black())
-      return Player::Black();
-    return Player::Invalid();
-  }
-
-  Vertex LastVertex () {
-    return full_board.LastVertex();
+  const Board& GetBoard () const {
+    return full_board;
   }
 
   Move Genmove (Player player) {
