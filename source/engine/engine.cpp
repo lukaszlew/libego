@@ -28,12 +28,23 @@ void Engine::SetKomi (float komi) {
 
 
 bool Engine::Play (Move move) {
+  CHECK (move.IsValid ());
   bool ok = base_board.IsReallyLegal (move);
   if (ok) {
     base_board.PlayLegal (move);
     base_board.Dump();
   }
   return ok;
+}
+
+
+Move Engine::Genmove (Player player) {
+  base_board.SetActPlayer (player);
+  Move move = ChooseBestMove ();
+  if (move.IsValid ()) {
+    CHECK (Play (move));
+  }
+  return move;
 }
 
 
@@ -48,18 +59,6 @@ const Board& Engine::GetBoard () const {
 }
 
 
-Move Engine::Genmove (Player player) {
-  base_board.SetActPlayer (player);
-  Move m = ChooseBestMove ();
-
-  if (m.IsValid ()) {
-    CHECK (base_board.IsReallyLegal (m));
-    base_board.PlayLegal (m);
-    base_board.Dump();
-  }
-
-  return m;
-}
 
 
 double Engine::GetStatForVertex (Vertex /*v*/) {
