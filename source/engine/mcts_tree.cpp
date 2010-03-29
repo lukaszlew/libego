@@ -242,22 +242,12 @@ void MctsTrace::UpdateTraceRave (float score) {
 Mcts::Mcts () :
   root (Player::White(), Vertex::Any (), 0.0)
 {
-  act_root = &root;
 }
 
 void Mcts::Reset () {
   root.Reset ();
 }
 
-
-Move Mcts::BestMove (Player player) {
-  const MctsNode& best_node = act_root->MostExploredChild (player);
-
-  return
-    best_node.SubjectiveMean() < Param::resign_mean ?
-    Move::Invalid() :
-    Move (player, best_node.v);
-}
 
 
 void Mcts::EnsureAllLegalChildren (MctsNode* node, Player pl, const Board& board, const Sampler& sampler) {

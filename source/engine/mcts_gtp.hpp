@@ -185,7 +185,7 @@ private:
     uint min_updates  = io.Read <uint> ();
     uint max_children = io.Read <uint> ();
     io.CheckEmpty();
-    io.out << endl << engine.mcts.act_root->RecToString (min_updates, max_children);
+    io.out << endl << engine.act_root->RecToString (min_updates, max_children);
   }
 
 

@@ -38,15 +38,18 @@ public:
   vector<Move> LastPlayout ();
 
 private:
-  Board base_board;
   TimeControl time_control;
-
-  Board play_board;
-  vector<Move> playout_moves;
-  Mcts mcts;
   FastRandom random;
+  Mcts mcts;
   Gammas gammas;
   Sampler sampler;
+
+  Board base_board;
+  MctsNode* act_root;
+  
+  Board play_board;
+
+  vector<Move> playout_moves;
 
   friend class MctsGtp;
 };

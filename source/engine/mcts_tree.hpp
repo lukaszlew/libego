@@ -94,7 +94,6 @@ struct Mcts {
 
   MctsNode root;
 
-  MctsNode* act_root;
   MctsNode* act_node;
 
   uint tree_move_count;
