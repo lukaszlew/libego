@@ -25,10 +25,6 @@ public slots:
   void undoMove ();
   void showGammas (int);
 
-signals:
-  void stateChanged (const Player&);
-  void statusChanged (QString);
-
 private:
   QLabel* statebar;
   GameScene* game_scene;
