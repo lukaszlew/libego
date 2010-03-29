@@ -25,7 +25,6 @@ public:
   const Board& GetBoard () const;
 
   string BoardAsciiArt ();
-  Gtp::GoguiGfx LastPlayoutGfx (uint move_count);
 
   double GetStatForVertex (Vertex /*v*/);
   std::string GetStringForVertex (Vertex v);

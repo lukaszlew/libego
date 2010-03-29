@@ -129,9 +129,31 @@ private:
   }
 
   void CShowLastPlayout (Gtp::Io& io) {
-    int n = io.Read<int> ();
+    uint move_count = io.Read<uint> ();
     io.CheckEmpty ();
-    engine.LastPlayoutGfx(n).Report (io);
+
+    vector<Move> last_playout = engine.LastPlayout ();
+
+    move_count = max(move_count, 0u);
+    move_count = min(move_count, uint(last_playout.size()));
+
+    Gtp::GoguiGfx gfx;
+
+    rep(ii, move_count) {
+      gfx.AddVariationMove (last_playout[ii].ToGtpString());
+    }
+
+    if (move_count > 0) {
+      gfx.SetSymbol (last_playout[move_count-1].GetVertex().ToGtpString(),
+                     Gtp::GoguiGfx::circle);
+    }
+
+    //     rep (ii, mcmc.moves.size()) {
+    //       gfx.SetSymbol (mcmc.moves[ii].GetVertex().ToGtpString(),
+    //                      Gtp::GoguiGfx::triangle);
+    //     }
+
+    gfx.Report (io);
   }
 
   void CShowGammas (Gtp::Io& io) {
