@@ -32,7 +32,7 @@ public:
   void DoOnePlayout ();
   Move ChooseMctsMove ();
   void PlayMove (Move m);
-  double Score (bool accurate);
+  double Score ();
 
   double GetStatForVertex (Vertex v);
   std::string GetStringForVertex (Vertex v);
@@ -40,10 +40,14 @@ public:
 
 private:
   TimeControl time_control;
-  FastRandom random;
-  Mcts mcts;
   Gammas gammas;
+
+  FastRandom random;
+
+  Mcts mcts;
   Sampler sampler;
+
+  bool tree_phase;
 
   Board base_board;
   MctsNode* base_node;

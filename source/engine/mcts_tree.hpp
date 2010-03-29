@@ -84,20 +84,14 @@ struct Mcts {
 
   void Reset ();
 
-  Move BestMove (Player player);
   void EnsureAllLegalChildren (MctsNode* node, Player pl, const Board& board, const Sampler& sampler);
   void RemoveIllegalChildren (MctsNode* node, Player pl, const Board& full_board);
 
-  void GtpShowTree (Gtp::Io& io);
-
   MctsNode root;
 
-
-  uint tree_move_count;
   
   MctsTrace trace;
 
-  bool tree_phase;
 };
 
 

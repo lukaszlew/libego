@@ -134,7 +134,7 @@ void Engine::DoOnePlayout () {
     PlayMove (m);
   }
 
-  double score = Score (mcts.tree_phase);
+  double score = Score ();
   mcts.trace.UpdateTraceRegular (score);
 }
 
@@ -146,20 +146,19 @@ void Engine::PrepareToPlayout () {
 
   mcts.trace.Reset (*base_node);
   playout_node = base_node;
-  mcts.tree_phase = Param::tree_use;
-  mcts.tree_move_count = 0;
+  tree_phase = Param::tree_use;
 }
 
 Move Engine::ChooseMctsMove () {
   Player pl = playout_board.ActPlayer();
 
-  if (!mcts.tree_phase || mcts.tree_move_count >= Param::tree_max_moves) {
+  if (!tree_phase) {
     return Move::Invalid();
   }
 
   if (!playout_node->has_all_legal_children [pl]) {
     if (!playout_node->ReadyToExpand ()) {
-      mcts.tree_phase = false;
+      tree_phase = false;
       return Move::Invalid();
     }
     ASSERT (pl == playout_node->player.Other());
@@ -170,7 +169,6 @@ Move Engine::ChooseMctsMove () {
   mcts.trace.NewNode (uct_child);
   playout_node = &uct_child;
   ASSERT (uct_child.v != Vertex::Any());
-  mcts.tree_move_count += 1;
   return Move (pl, uct_child.v);
 }
 
@@ -191,10 +189,10 @@ vector<Move> Engine::LastPlayout () {
 }
 
 
-double Engine::Score (bool accurate) {
+double Engine::Score () {
   // TODO game replay i update wszystkich modeli
   double score;
-  if (accurate) {
+  if (tree_phase) {
     score = playout_board.TrompTaylorWinner().ToScore();
   } else {
     int sc = playout_board.PlayoutScore();
