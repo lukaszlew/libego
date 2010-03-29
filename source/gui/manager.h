@@ -16,18 +16,14 @@ class Manager : public QDialog {
 public:
   Manager (Engine& engine);
 
-  virtual ~Manager ();
-
   void refreshBoard ();
 
 public slots:
   void handleMousePress (int x, int y, Qt::MouseButtons buttons);
   void handleHooverEntered (int x, int y);
-  void setKomi (double);
   void playMove ();
   void undoMove ();
   void showGammas (int);
-  void setStatus (QString);
 
 signals:
   void stateChanged (const Player&);
@@ -36,7 +32,7 @@ signals:
 private:
   QLabel* statebar;
   GameScene* game_scene;
-  Engine& engine_;
+  Engine& engine;
 
 private:
   Q_OBJECT
