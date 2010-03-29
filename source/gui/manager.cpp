@@ -45,7 +45,8 @@ Manager::Manager (Engine& engine) :
 
   QCheckBox* show_gammas = new QCheckBox ("Show gammas");
   controls->addWidget (show_gammas);
-  connect (show_gammas, SIGNAL (stateChanged (int)), this, SLOT (showGammas (int)));
+  connect (show_gammas, SIGNAL (stateChanged (Qt::CheckState)),
+           this, SLOT (showGammas (Qt::CheckState)));
 
   QPushButton* quit = new QPushButton ("Quit");
   controls->addWidget (quit);
@@ -84,34 +85,38 @@ void Manager::handleMousePress (int x, int y, Qt::MouseButtons buttons)
 
 
 void Manager::handleHooverEntered (int x, int y) {
-  statebar->setText (QString (engine.GetStringForVertex (gui2vertex (x, y)).c_str ()));
+  QString hoover_text = engine.GetStringForVertex (gui2vertex (x, y)).c_str ();
+  statebar->setText (hoover_text);
 }
 
 
-void Manager::showGammas (int state)
+void Manager::showGammas (Qt::CheckState state)
 {
-  std::cout << "showGammas () " << (state ? "TRUE" : "FALSE") << std::endl;
+  std::cout << "showGammas () " << state << std::endl;
 
-  if (state) {
+  if (state == Qt::Checked) {
     //show gammas
-    for (uint x=1; x<=board_size; x++)
+    for (uint x=1; x<=board_size; x++) {
       for (uint y=1; y<=board_size; y++) {
-        double val = engine.GetStatForVertex (gui2vertex (x, y));
+        Vertex v = gui2vertex (x, y);
+        double val = engine.GetStatForVertex (v);
         if (-1<=val && val<=1) {
-          QColor qc (
-                     (val>0) ? (255* (1-val)) : 255,
-                     (val>0) ? 255 : - (255*val),
-                     0, 80);
-          game_scene->addBGMark (x, y, qc);
+          double r = (val>0) ? (255* (1-val)) : 255;
+          double g = (val>0) ? 255 : - (255*val);
+          double b = 0;
+          double a = 60;
+          game_scene->addBGMark (x, y, QColor (r, g, b, a));
           //game_scene->addLabel (x, y, QString::number (val, 'f', 2));
         }
       }
+    }
   } else {
     //clear backgrounds
-    for (uint x=1; x<=board_size; x++)
+    for (uint x=1; x<=board_size; x++) {
       for (uint y=1; y<=board_size; y++) {
         game_scene->removeBGMark (x, y);
       }
+    }
   }
 }
 
