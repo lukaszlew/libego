@@ -15,9 +15,8 @@ class Engine {
 public:
   Engine ();
 
-  bool SetBoardSize (uint board_size);
+  bool Reset (uint board_size);
   void SetKomi (float komi);
-  void ClearBoard ();
   bool Play (Move move);
   Move Genmove (Player player);
   bool Undo ();

@@ -78,7 +78,7 @@ private:
 
   void Cclear_board (Gtp::Io& io) {
     io.CheckEmpty ();
-    engine.ClearBoard ();
+    CHECK (engine.Reset (board_size));
   }
 
   void Cgenmove (Gtp::Io& io) {
@@ -91,7 +91,7 @@ private:
   void Cboardsize (Gtp::Io& io) {
     int new_board_size = io.Read<int> ();
     io.CheckEmpty ();
-    if (!engine.SetBoardSize (new_board_size)) {
+    if (!engine.Reset (new_board_size)) {
       io.SetError ("unacceptable size");
       return;
     }

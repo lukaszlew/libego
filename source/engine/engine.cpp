@@ -9,25 +9,21 @@
 Engine::Engine () :
   random (TimeSeed()),
   root (Player::White(), Vertex::Any (), 0.0),
-  sampler (playout_board, gammas),
-  base_node (&root)
+  sampler (playout_board, gammas)
 {
+  CHECK (Reset (board_size));
 }
 
 
-bool Engine::SetBoardSize (uint board_size) {
+bool Engine::Reset (uint board_size) {
+  base_board.Clear ();
+  root.Reset ();
   return board_size == ::board_size;
 }
 
 
 void Engine::SetKomi (float komi) {
   base_board.SetKomi (komi);
-}
-
-
-void Engine::ClearBoard () {
-  base_board.Clear ();
-  root.Reset ();
 }
 
 
