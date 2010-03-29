@@ -8,6 +8,7 @@
 
 
 class GameScene;
+class QCheckBox;
 class Engine;
 class Move;
 class Player;
@@ -28,6 +29,7 @@ public slots:
 private:
   QLabel* statebar;
   GameScene* game_scene;
+  QCheckBox* show_gammas;
   Engine& engine;
 
 private:

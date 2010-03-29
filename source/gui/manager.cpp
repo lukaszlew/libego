@@ -43,7 +43,7 @@ Manager::Manager (Engine& engine) :
   controls->addWidget (undo_move);
   connect (undo_move, SIGNAL (clicked ()), this, SLOT (undoMove ()));
 
-  QCheckBox* show_gammas = new QCheckBox ("Show gammas");
+  show_gammas = new QCheckBox ("Show gammas");
   controls->addWidget (show_gammas);
   connect (show_gammas, SIGNAL (stateChanged (int)),
            this, SLOT (showGammas (int)));
@@ -92,32 +92,7 @@ void Manager::handleHooverEntered (int x, int y) {
 
 void Manager::showGammas (int state)
 {
-  std::cout << "showGammas () " << state << std::endl;
-
-  if (state == Qt::Checked) {
-    //show gammas
-    for (uint x=1; x<=board_size; x++) {
-      for (uint y=1; y<=board_size; y++) {
-        Vertex v = gui2vertex (x, y);
-        double val = engine.GetStatForVertex (v);
-        if (-1<=val && val<=1) {
-          double r = (val>0) ? (255* (1-val)) : 255;
-          double g = (val>0) ? 255 : - (255*val);
-          double b = 0;
-          double a = 60;
-          game_scene->addBGMark (x, y, QColor (r, g, b, a));
-          //game_scene->addLabel (x, y, QString::number (val, 'f', 2));
-        }
-      }
-    }
-  } else {
-    //clear backgrounds
-    for (uint x=1; x<=board_size; x++) {
-      for (uint y=1; y<=board_size; y++) {
-        game_scene->removeBGMark (x, y);
-      }
-    }
-  }
+  refreshBoard ();
 }
 
 
@@ -156,6 +131,21 @@ void Manager::refreshBoard ()
         game_scene->addCircle (x,y);
       } else {
         game_scene->removeCircle (x,y);
+      }
+
+      //show gammas
+      if (show_gammas->checkState() == Qt::Checked) {
+        double val = engine.GetStatForVertex (v);
+        if (-1<=val && val<=1) {
+          double r = (val>0) ? (255* (1-val)) : 255;
+          double g = (val>0) ? 255 : - (255*val);
+          double b = 0;
+          double a = 60;
+          game_scene->addBGMark (x, y, QColor (r, g, b, a));
+          //game_scene->addLabel (x, y, QString::number (val, 'f', 2));
+        }
+      } else {
+        game_scene->removeBGMark (x, y);
       }
     }
   }
