@@ -80,18 +80,6 @@ private:
 // -----------------------------------------------------------------------------
 
 struct Mcts {
-  Mcts ();
-
-  void Reset ();
-
-  void EnsureAllLegalChildren (MctsNode* node, Player pl, const Board& board, const Sampler& sampler);
-  void RemoveIllegalChildren (MctsNode* node, Player pl, const Board& full_board);
-
-  MctsNode root;
-
-  
-  MctsTrace trace;
-
 };
 
 

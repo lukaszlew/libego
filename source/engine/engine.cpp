@@ -8,9 +8,9 @@
 
 Engine::Engine () :
   random (TimeSeed()),
-  mcts(),
+  root (Player::White(), Vertex::Any (), 0.0),
   sampler (playout_board, gammas),
-  base_node (&mcts.root)
+  base_node (&root)
 {
 }
 
@@ -27,7 +27,7 @@ void Engine::SetKomi (float komi) {
 
 void Engine::ClearBoard () {
   base_board.Clear ();
-  mcts.Reset ();
+  root.Reset ();
 }
 
 
@@ -77,7 +77,7 @@ std::string Engine::GetStringForVertex (Vertex v) {
 
 
 Move Engine::ChooseBestMove () {
-  if (Param::reset_tree_on_genmove) mcts.Reset ();
+  if (Param::reset_tree_on_genmove) root.Reset ();
   Player player = base_board.ActPlayer ();
   int playouts = time_control.PlayoutCount (player);
   DoNPlayouts (playouts);
@@ -105,9 +105,9 @@ void Engine::SyncRoot () {
   Sampler sampler(sync_board, gammas);
   sampler.NewPlayout ();
 
-  base_node = &mcts.root;
+  base_node = &root;
   BOOST_FOREACH (Move m, base_board.Moves ()) {
-    mcts.EnsureAllLegalChildren (base_node, m.GetPlayer(), sync_board, sampler);
+    EnsureAllLegalChildren (base_node, m.GetPlayer(), sync_board, sampler);
     base_node = base_node->FindChild (m);
     CHECK (sync_board.IsLegal (m));
     sync_board.PlayLegal (m);
@@ -115,8 +115,8 @@ void Engine::SyncRoot () {
   }
 
   Player pl = base_board.ActPlayer();
-  mcts.EnsureAllLegalChildren (base_node, pl, base_board, sampler);
-  mcts.RemoveIllegalChildren (base_node, pl, base_board);
+  EnsureAllLegalChildren (base_node, pl, base_board, sampler);
+  RemoveIllegalChildren (base_node, pl, base_board);
 }
 
 
@@ -135,7 +135,7 @@ void Engine::DoOnePlayout () {
   }
 
   double score = Score ();
-  mcts.trace.UpdateTraceRegular (score);
+  trace.UpdateTraceRegular (score);
 }
 
 
@@ -144,7 +144,7 @@ void Engine::PrepareToPlayout () {
   playout_moves.clear();
   sampler.NewPlayout ();
 
-  mcts.trace.Reset (*base_node);
+  trace.Reset (*base_node);
   playout_node = base_node;
   tree_phase = Param::tree_use;
 }
@@ -162,14 +162,40 @@ Move Engine::ChooseMctsMove () {
       return Move::Invalid();
     }
     ASSERT (pl == playout_node->player.Other());
-    mcts.EnsureAllLegalChildren (playout_node, pl, playout_board, sampler);
+    EnsureAllLegalChildren (playout_node, pl, playout_board, sampler);
   }
 
   MctsNode& uct_child = playout_node->BestRaveChild (pl);
-  mcts.trace.NewNode (uct_child);
+  trace.NewNode (uct_child);
   playout_node = &uct_child;
   ASSERT (uct_child.v != Vertex::Any());
   return Move (pl, uct_child.v);
+}
+
+void Engine::EnsureAllLegalChildren (MctsNode* node, Player pl, const Board& board, const Sampler& sampler) {
+  if (node->has_all_legal_children [pl]) return;
+  empty_v_for_each_and_pass (&board, v, {
+      // superko nodes have to be removed from the tree later
+      if (board.IsLegal (pl, v)) {
+      double bias = sampler.Probability (pl, v);
+      node->AddChild (MctsNode(pl, v, bias));
+      }
+      });
+  node->has_all_legal_children [pl] = true;
+}
+
+
+void Engine::RemoveIllegalChildren (MctsNode* node, Player pl, const Board& full_board) {
+  ASSERT (node->has_all_legal_children [pl]);
+
+  MctsNode::ChildrenList::iterator child = node->children.begin();
+  while (child != node->children.end()) {
+    if (child->player == pl && !full_board.IsReallyLegal (Move (pl, child->v))) {
+      node->children.erase (child++);
+    } else {
+      ++child;
+    }
+  }
 }
 
 
@@ -177,7 +203,7 @@ void Engine::PlayMove (Move m) {
   ASSERT (playout_board.IsLegal (m));
   playout_board.PlayLegal (m);
 
-  mcts.trace.NewMove (m);
+  trace.NewMove (m);
   sampler.MovePlayed ();
 
   playout_moves.push_back (m);
@@ -201,3 +227,4 @@ double Engine::Score () {
   }
   return score;
 }
+

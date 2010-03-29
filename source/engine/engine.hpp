@@ -38,16 +38,18 @@ public:
   std::string GetStringForVertex (Vertex v);
   vector<Move> LastPlayout ();
 
+  void EnsureAllLegalChildren (MctsNode* node, Player pl, const Board& board, const Sampler& sampler);
+  void RemoveIllegalChildren (MctsNode* node, Player pl, const Board& full_board);
+
 private:
   TimeControl time_control;
   Gammas gammas;
 
   FastRandom random;
 
-  Mcts mcts;
+  MctsNode root;
   Sampler sampler;
 
-  bool tree_phase;
 
   Board base_board;
   MctsNode* base_node;
@@ -55,7 +57,9 @@ private:
   Board playout_board;
   MctsNode* playout_node;
 
+  bool tree_phase;
   vector<Move> playout_moves;
+  MctsTrace trace;
 
   friend class MctsGtp;
 };
