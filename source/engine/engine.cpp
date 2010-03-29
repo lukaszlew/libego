@@ -1,22 +1,12 @@
-//
-// Copyright 2006 and onwards, Lukasz Lew
-//
 
-#include "mcts_playout.hpp"
+#include "engine.hpp"
 
 
-MctsPlayout::MctsPlayout (const Board& base_board) :
-  base_board (base_board),
-  random (TimeSeed()),
-  sampler (play_board, gammas)
-{
-}
-
-void MctsPlayout::Reset () {
+void Engine::Reset () {
   mcts.Reset ();
 }
 
-Move MctsPlayout::Genmove () {
+Move Engine::Genmove () {
   if (Param::reset_tree_on_genmove) mcts.Reset ();
 
   Player player = base_board.ActPlayer ();
@@ -29,14 +19,14 @@ Move MctsPlayout::Genmove () {
 }
 
 
-void MctsPlayout::DoNPlayouts (uint n) {
+void Engine::DoNPlayouts (uint n) {
   mcts.SyncRoot (base_board, gammas);
   rep (ii, n) {
     DoOnePlayout ();
   }
 }
 
-void MctsPlayout::DoOnePlayout () {
+void Engine::DoOnePlayout () {
   PrepareToPlayout();
 
   // do the playout
@@ -54,14 +44,14 @@ void MctsPlayout::DoOnePlayout () {
   mcts.trace.UpdateTraceRegular (score);
 }
 
-void MctsPlayout::PrepareToPlayout () {
+void Engine::PrepareToPlayout () {
   play_board.Load (base_board);
   playout_moves.clear();
   sampler.NewPlayout ();
   mcts.NewPlayout ();
 }
 
-Move MctsPlayout::ChooseMove () {
+Move Engine::ChooseMove () {
   Move m = Move::Invalid ();
 
   if (!m.IsValid()) m = mcts.ChooseMove (play_board, sampler);
@@ -71,7 +61,7 @@ Move MctsPlayout::ChooseMove () {
   return m;
 }
 
-void MctsPlayout::PlayMove (Move m) {
+void Engine::PlayMove (Move m) {
   ASSERT (play_board.IsLegal (m));
   play_board.PlayLegal (m);
 
@@ -81,18 +71,18 @@ void MctsPlayout::PlayMove (Move m) {
   playout_moves.push_back (m);
 }
 
-void MctsPlayout::Sync () {
+void Engine::Sync () {
   play_board.Load (base_board);
   playout_moves.clear();
   sampler.NewPlayout ();
 }
 
-vector<Move> MctsPlayout::LastPlayout () {
+vector<Move> Engine::LastPlayout () {
   return playout_moves;
 }
 
 
-double MctsPlayout::Score (bool accurate) {
+double Engine::Score (bool accurate) {
   // TODO game replay i update wszystkich modeli
   double score;
   if (accurate) {
@@ -106,7 +96,7 @@ double MctsPlayout::Score (bool accurate) {
 }
 
 // TODO policy randomization
-Move MctsPlayout::ChooseLocalMove () {
+Move Engine::ChooseLocalMove () {
   if (!Param::use_local) return Move::Invalid();
   Vertex last_v = play_board.LastVertex ();
   Player pl = play_board.ActPlayer ();
@@ -126,3 +116,4 @@ Move MctsPlayout::ChooseLocalMove () {
   uint i = random.GetNextUint (tab.Size());
   return Move (pl, tab[i]);
 }
+

@@ -4,23 +4,29 @@
 // Copyright 2006 and onwards, Lukasz Lew
 //
 
-#include "mcts_playout.hpp"
 #include "logger.hpp"
 #include "to_string.hpp"
 #include "gtp_gogui.hpp"
+#include "ego.hpp"
+#include "time_control.hpp"
+#include "mcts_tree.hpp"
 
 class Engine {
 public:
   
-  Engine () : playout (full_board) { }
+  Engine () :
+    random (TimeSeed()),
+    sampler (play_board, gammas)
+  {
+  }
 
   bool SetBoardSize (uint board_size) {
     return board_size == ::board_size;
   }
 
   void SetKomi (float komi) {
-    float old_komi = full_board.Komi ();
-    full_board.SetKomi (komi);
+    float old_komi = base_board.Komi ();
+    base_board.SetKomi (komi);
     if (komi != old_komi) {
       logger.LogLine("komi "+ToString(komi));
       logger.LogLine ("");
@@ -28,19 +34,19 @@ public:
   }
 
   void ClearBoard () {
-    full_board.Clear ();
-    playout.Reset ();
+    base_board.Clear ();
+    Reset ();
     logger.NewLog ();
     logger.LogLine ("clear_board");
-    logger.LogLine ("komi " + ToString (full_board.Komi()));
+    logger.LogLine ("komi " + ToString (base_board.Komi()));
     logger.LogLine ("");
   }
 
   bool Play (Move move) {
-    bool ok = full_board.IsReallyLegal (move);
+    bool ok = base_board.IsReallyLegal (move);
     if (ok) {
-      full_board.PlayLegal (move);
-      full_board.Dump();
+      base_board.PlayLegal (move);
+      base_board.Dump();
       logger.LogLine ("play " + move.ToGtpString());
       logger.LogLine ("");
     }
@@ -48,7 +54,7 @@ public:
   }
 
   bool Undo () {
-    bool ok = full_board.Undo ();
+    bool ok = base_board.Undo ();
     if (ok) {
       logger.LogLine ("undo");
       logger.LogLine ("");
@@ -57,24 +63,24 @@ public:
   }
 
   const Board& GetBoard () const {
-    return full_board;
+    return base_board;
   }
 
   Move Genmove (Player player) {
-    logger.LogLine ("param.other seed " + ToString (playout.random.GetSeed ()));
+    logger.LogLine ("param.other seed " + ToString (random.GetSeed ()));
     
-    full_board.SetActPlayer (player);
-    Move m = playout.Genmove ();
+    base_board.SetActPlayer (player);
+    Move m = Genmove ();
 
     if (m.IsValid ()) {
-      CHECK (full_board.IsReallyLegal (m));
-      full_board.PlayLegal (m);
-      full_board.Dump();
+      CHECK (base_board.IsReallyLegal (m));
+      base_board.PlayLegal (m);
+      base_board.Dump();
 
       logger.LogLine ("reg_genmove " + player.ToGtpString() +
                       "   #? [" + m.GetVertex().ToGtpString() + "]");
       logger.LogLine ("play " + m.ToGtpString() + " # move " +
-                      ToString(full_board.MoveCount()));
+                      ToString(base_board.MoveCount()));
       logger.LogLine ("");
     }
 
@@ -82,12 +88,12 @@ public:
   }
 
   string BoardAsciiArt () {
-    return full_board.ToAsciiArt();
+    return base_board.ToAsciiArt();
   }
   
 
   Gtp::GoguiGfx LastPlayoutGfx (uint move_count) {
-    vector<Move> last_playout = playout.LastPlayout ();
+    vector<Move> last_playout = LastPlayout ();
 
     move_count = max(move_count, 0u);
     move_count = min(move_count, uint(last_playout.size()));
@@ -103,8 +109,8 @@ public:
                      Gtp::GoguiGfx::circle);
     }
 
-//     rep (ii, playout.mcmc.moves.size()) {
-//       gfx.SetSymbol (playout.mcmc.moves[ii].GetVertex().ToGtpString(),
+//     rep (ii, mcmc.moves.size()) {
+//       gfx.SetSymbol (mcmc.moves[ii].GetVertex().ToGtpString(),
 //                      Gtp::GoguiGfx::triangle);
 //     }
 
@@ -113,17 +119,17 @@ public:
   }
 
   void ShowGammas (Gtp::GoguiGfx& gfx) {
-    Player pl = full_board.ActPlayer ();
-    playout.PrepareToPlayout ();
+    Player pl = base_board.ActPlayer ();
+    PrepareToPlayout ();
     NatMap <Vertex, double> p (0.0);
     ForEachNat (Vertex, v) {
-      if (full_board.ColorAt (v) == Color::Empty()) {
-        p [v] = playout.sampler.act_gamma [v] [pl];
+      if (base_board.ColorAt (v) == Color::Empty()) {
+        p [v] = sampler.act_gamma [v] [pl];
       }
     }
     p.ScalePositive ();
     ForEachNat (Vertex, v) {
-      if (full_board.ColorAt (v) == Color::Empty()) {
+      if (base_board.ColorAt (v) == Color::Empty()) {
         gfx.SetInfluence (v.ToGtpString(), p[v]);
       }
     }
@@ -141,13 +147,45 @@ private:
   friend class MctsGtp;
 
   // base board
-  Board full_board;
+  Board base_board;
 
   // logging
   Logger logger;
   
+
+public:
+  void Reset ();
+  Move Genmove ();
+  void DoNPlayouts (uint n);
+  void PrepareToPlayout ();
+
+  void DoOnePlayout ();
+  Move ChooseMove ();
+
+  void PlayMove (Move m);
+  void Sync ();
+
+  vector<Move> LastPlayout ();
+
+  double Score (bool accurate);
+
+  // TODO policy randomization
+  Move ChooseLocalMove ();
+
+private:
+  
+  TimeControl time_control;
+
   // playout
-  MctsPlayout playout;
+  Board play_board;
+  vector<Move> playout_moves;
+
+  Mcts mcts;
+
+public:
+  FastRandom random;
+  Gammas gammas;
+  Sampler sampler;
 
 };
 

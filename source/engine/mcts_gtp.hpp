@@ -50,7 +50,7 @@ private:
 
     gtp.RegisterParam (other, "genmove_playouts",     &Param::genmove_playouts);
     gtp.RegisterParam (other, "local_use",            &Param::use_local);
-    gtp.RegisterParam (other, "seed",                 &mcts_engine.playout.random.seed);
+    gtp.RegisterParam (other, "seed",                 &mcts_engine.random.seed);
     gtp.RegisterParam (other, "logger_is_active",     &mcts_engine.logger.is_active);
     gtp.RegisterParam (other, "logger_directory",     &mcts_engine.logger.log_directory);
 
@@ -68,8 +68,8 @@ private:
     gtp.RegisterParam (set, "progressive_bias_prior", &Param::tree_progressive_bias_prior);
     gtp.RegisterParam (set, "explore_coeff",          &Param::tree_explore_coeff);
 
-    gtp.RegisterParam (set, "proxy_1_bonus", &mcts_engine.playout.sampler.proximity_bonus[0]);
-    gtp.RegisterParam (set, "proxy_2_bonus", &mcts_engine.playout.sampler.proximity_bonus[1]);
+    gtp.RegisterParam (set, "proxy_1_bonus", &mcts_engine.sampler.proximity_bonus[0]);
+    gtp.RegisterParam (set, "proxy_2_bonus", &mcts_engine.sampler.proximity_bonus[1]);
   }
 
   void Cclear_board (Gtp::Io& io) {
@@ -125,7 +125,7 @@ private:
   void CDoPlayouts (Gtp::Io& io) {
     uint n = io.Read <uint> (Param::genmove_playouts);
     io.CheckEmpty();
-    mcts_engine.playout.DoNPlayouts (n);
+    mcts_engine.DoNPlayouts (n);
   }
 
   void CShowLastPlayout (Gtp::Io& io) {
@@ -150,7 +150,7 @@ private:
       io.SetError ("Can't open a file: " + file_name);
       return;
     }
-    if (!mcts_engine.playout.gammas.Read (in)) {
+    if (!mcts_engine.gammas.Read (in)) {
       io.SetError ("File in a bad format.");
       return;
     }
