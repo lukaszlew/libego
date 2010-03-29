@@ -5,7 +5,6 @@
 #ifndef ENGINE_H_
 #define ENGINE_H_
 
-#include "logger.hpp"
 #include "to_string.hpp"
 #include "gtp_gogui.hpp"
 #include "ego.hpp"
@@ -26,7 +25,6 @@ public:
   const Board& GetBoard () const;
 
   // Playout functions
-  void Reset ();
   Move Genmove ();
   void DoNPlayouts (uint n);
   void PrepareToPlayout ();
@@ -43,7 +41,6 @@ public:
 
 private:
   Board base_board;
-  Logger logger;
   TimeControl time_control;
 
   Board play_board;

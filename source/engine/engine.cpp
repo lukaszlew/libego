@@ -12,21 +12,12 @@ bool Engine::SetBoardSize (uint board_size) {
 }
 
 void Engine::SetKomi (float komi) {
-  float old_komi = base_board.Komi ();
   base_board.SetKomi (komi);
-  if (komi != old_komi) {
-    logger.LogLine("komi "+ToString(komi));
-    logger.LogLine ("");
-  }
 }
 
 void Engine::ClearBoard () {
   base_board.Clear ();
-  Reset ();
-  logger.NewLog ();
-  logger.LogLine ("clear_board");
-  logger.LogLine ("komi " + ToString (base_board.Komi()));
-  logger.LogLine ("");
+  mcts.Reset ();
 }
 
 bool Engine::Play (Move move) {
@@ -34,18 +25,12 @@ bool Engine::Play (Move move) {
   if (ok) {
     base_board.PlayLegal (move);
     base_board.Dump();
-    logger.LogLine ("play " + move.ToGtpString());
-    logger.LogLine ("");
   }
   return ok;
 }
 
 bool Engine::Undo () {
   bool ok = base_board.Undo ();
-  if (ok) {
-    logger.LogLine ("undo");
-    logger.LogLine ("");
-  }
   return ok;
 }
 
@@ -54,8 +39,6 @@ const Board& Engine::GetBoard () const {
 }
 
 Move Engine::Genmove (Player player) {
-  logger.LogLine ("param.other seed " + ToString (random.GetSeed ()));
-    
   base_board.SetActPlayer (player);
   Move m = Genmove ();
 
@@ -63,12 +46,6 @@ Move Engine::Genmove (Player player) {
     CHECK (base_board.IsReallyLegal (m));
     base_board.PlayLegal (m);
     base_board.Dump();
-
-    logger.LogLine ("reg_genmove " + player.ToGtpString() +
-                    "   #? [" + m.GetVertex().ToGtpString() + "]");
-    logger.LogLine ("play " + m.ToGtpString() + " # move " +
-                    ToString(base_board.MoveCount()));
-    logger.LogLine ("");
   }
 
   return m;
@@ -82,10 +59,6 @@ std::string Engine::GetStringForVertex (Vertex v) {
   return "Vertex: " + v.ToGtpString();
 }
 
-
-void Engine::Reset () {
-  mcts.Reset ();
-}
 
 Move Engine::Genmove () {
   if (Param::reset_tree_on_genmove) mcts.Reset ();

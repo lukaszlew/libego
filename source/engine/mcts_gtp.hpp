@@ -1,6 +1,8 @@
 #ifndef MCTS_GTP_H_
 #define MCTS_GTP_H_
 
+#include <fstream>
+
 extern Gtp::ReplWithGogui gtp;
 
 class MctsGtp {
@@ -51,8 +53,6 @@ private:
     gtp.RegisterParam (other, "genmove_playouts",     &Param::genmove_playouts);
     gtp.RegisterParam (other, "local_use",            &Param::use_local);
     gtp.RegisterParam (other, "seed",                 &engine.random.seed);
-    gtp.RegisterParam (other, "logger_is_active",     &engine.logger.is_active);
-    gtp.RegisterParam (other, "logger_directory",     &engine.logger.log_directory);
 
     gtp.RegisterParam (tree, "use",             &Param::tree_use);
     gtp.RegisterParam (tree, "max_moves",       &Param::tree_max_moves);
