@@ -18,7 +18,7 @@ Engine::Engine () :
 bool Engine::Reset (uint board_size) {
   base_board.Clear ();
   root.Reset ();
-  base_node = &root;
+  base_node = &root; // easy SyncRoot
   return board_size == ::board_size;
 }
 
@@ -33,6 +33,7 @@ bool Engine::Play (Move move) {
   bool ok = base_board.IsReallyLegal (move);
   if (ok) {
     base_board.PlayLegal (move);
+    SyncRoot ();
     base_board.Dump();
   }
   return ok;
@@ -51,6 +52,9 @@ Move Engine::Genmove (Player player) {
 
 bool Engine::Undo () {
   bool ok = base_board.Undo ();
+  if (ok) {
+    SyncRoot ();
+  }
   return ok;
 }
 
@@ -73,7 +77,7 @@ std::string Engine::GetStringForVertex (Vertex v) {
 
 
 Move Engine::ChooseBestMove () {
-  if (Param::reset_tree_on_genmove) root.Reset ();
+  // TODO Garbage collection of old tree here !
   Player player = base_board.ActPlayer ();
   int playouts = time_control.PlayoutCount (player);
   DoNPlayouts (playouts);
@@ -88,7 +92,6 @@ Move Engine::ChooseBestMove () {
 
 
 void Engine::DoNPlayouts (uint n) {
-  SyncRoot ();
   rep (ii, n) {
     DoOnePlayout ();
   }
@@ -113,6 +116,7 @@ void Engine::SyncRoot () {
 
   EnsureAllLegalChildren (base_node, base_board, sampler);
   RemoveIllegalChildren (base_node, base_board);
+  cerr << endl << base_node->RecToString (100, 6) << endl;
 }
 
 

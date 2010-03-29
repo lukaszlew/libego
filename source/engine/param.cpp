@@ -20,5 +20,3 @@ float Param::prior_mean = 1.0;
 float Param::mature_update_count = 10.0;
 
 float Param::resign_mean = -0.90;
-bool  Param::reset_tree_on_genmove = true; // TODO memory problems 
-

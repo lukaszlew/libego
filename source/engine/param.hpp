@@ -25,7 +25,6 @@ public:
   static float mature_update_count;
 
   static float resign_mean;
-  static bool reset_tree_on_genmove;
 };
 
 #endif /* GO_PARAM_H */
