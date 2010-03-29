@@ -18,6 +18,7 @@ Engine::Engine () :
 bool Engine::Reset (uint board_size) {
   base_board.Clear ();
   root.Reset ();
+  base_node = &root;
   return board_size == ::board_size;
 }
 
@@ -102,16 +103,16 @@ void Engine::SyncRoot () {
 
   base_node = &root;
   BOOST_FOREACH (Move m, base_board.Moves ()) {
-    EnsureAllLegalChildren (base_node, m.GetPlayer(), sync_board, sampler);
+    sync_board.SetActPlayer (m.GetPlayer());
+    EnsureAllLegalChildren (base_node, sync_board, sampler);
     base_node = base_node->FindChild (m);
     CHECK (sync_board.IsLegal (m));
     sync_board.PlayLegal (m);
     sampler.MovePlayed();
   }
 
-  Player pl = base_board.ActPlayer();
-  EnsureAllLegalChildren (base_node, pl, base_board, sampler);
-  RemoveIllegalChildren (base_node, pl, base_board);
+  EnsureAllLegalChildren (base_node, base_board, sampler);
+  RemoveIllegalChildren (base_node, base_board);
 }
 
 
@@ -157,7 +158,7 @@ Move Engine::ChooseMctsMove () {
       return Move::Invalid();
     }
     ASSERT (pl == playout_node->player.Other());
-    EnsureAllLegalChildren (playout_node, pl, playout_board, sampler);
+    EnsureAllLegalChildren (playout_node, playout_board, sampler);
   }
 
   MctsNode& uct_child = playout_node->BestRaveChild (pl);
@@ -167,7 +168,8 @@ Move Engine::ChooseMctsMove () {
   return Move (pl, uct_child.v);
 }
 
-void Engine::EnsureAllLegalChildren (MctsNode* node, Player pl, const Board& board, const Sampler& sampler) {
+void Engine::EnsureAllLegalChildren (MctsNode* node, const Board& board, const Sampler& sampler) {
+  Player pl = board.ActPlayer ();
   if (node->has_all_legal_children [pl]) return;
   empty_v_for_each_and_pass (&board, v, {
       // superko nodes have to be removed from the tree later
@@ -180,12 +182,13 @@ void Engine::EnsureAllLegalChildren (MctsNode* node, Player pl, const Board& boa
 }
 
 
-void Engine::RemoveIllegalChildren (MctsNode* node, Player pl, const Board& full_board) {
+void Engine::RemoveIllegalChildren (MctsNode* node, const Board& board) {
+  Player pl = board.ActPlayer ();
   ASSERT (node->has_all_legal_children [pl]);
 
   MctsNode::ChildrenList::iterator child = node->children.begin();
   while (child != node->children.end()) {
-    if (child->player == pl && !full_board.IsReallyLegal (Move (pl, child->v))) {
+    if (child->player == pl && !board.IsReallyLegal (Move (pl, child->v))) {
       node->children.erase (child++);
     } else {
       ++child;

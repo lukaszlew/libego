@@ -37,8 +37,8 @@ public:
   std::string GetStringForVertex (Vertex v);
   vector<Move> LastPlayout ();
 
-  void EnsureAllLegalChildren (MctsNode* node, Player pl, const Board& board, const Sampler& sampler);
-  void RemoveIllegalChildren (MctsNode* node, Player pl, const Board& full_board);
+  void EnsureAllLegalChildren (MctsNode* node, const Board& board, const Sampler& sampler);
+  void RemoveIllegalChildren (MctsNode* node, const Board& board);
 
 private:
   TimeControl time_control;
