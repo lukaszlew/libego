@@ -4,6 +4,15 @@
 #include "manager.h"
 #include "GameScene.h"
 #include "engine.hpp"
+#include <QtGui>
+#include <QPushButton>
+#include <QCheckBox>
+#include <QIntValidator>
+
+#include "GameScene.h"
+#include "ResizableView.h"
+#include "SquareGrid.h"
+
 
 
 void vertex2gui (Vertex v, int& x, int& y) {
@@ -16,16 +25,49 @@ Vertex gui2vertex (int x, int y) {
 }
 
 
-Manager::Manager (Engine& engine, GameScene *scene, QObject *parent) :
-  QObject (parent),
-  m_gameScene (scene),
+Manager::Manager (Engine& engine) :
+  QDialog (0),
   engine_ (engine)
 {
-  connect (m_gameScene, SIGNAL (mousePressed (int, int, Qt::MouseButtons)),
+  game_scene = GameScene::createGoScene(9);
+
+  ResizableView *gameView = new ResizableView(game_scene, this);
+  QPushButton *play_move = new QPushButton("Play move");
+  QPushButton *undo_move = new QPushButton("Undo move");
+  QCheckBox *show_gammas = new QCheckBox("Show gammas");
+  QPushButton *quit = new QPushButton("Quit");
+  QVBoxLayout *controls = new QVBoxLayout;
+  
+  controls->addWidget(new QLabel("<b>Libego</b>"), 0, Qt::AlignHCenter);
+  controls->addWidget(play_move);
+  controls->addWidget(undo_move);
+  controls->addWidget(show_gammas);
+  controls->addWidget(quit);
+  controls->addStretch();
+  
+  QHBoxLayout *mainLayout = new QHBoxLayout;
+  mainLayout->addWidget(gameView);
+  mainLayout->addLayout(controls);
+
+  connect(play_move, SIGNAL(clicked()), this, SLOT(playMove()));
+  connect(undo_move, SIGNAL(clicked()), this, SLOT(undoMove()));
+  connect(show_gammas, SIGNAL(stateChanged(int)), this, SLOT(showGammas(int)));
+  connect(quit, SIGNAL(clicked()), this, SLOT(close()));
+
+  connect(this, SIGNAL(statusChanged(QString)), this, SLOT(setStatus(QString)));
+
+  statebar = new QLabel(" ");
+  QVBoxLayout *all_ = new QVBoxLayout;
+  all_->addLayout(mainLayout);
+  all_->addWidget(statebar);
+
+  connect (game_scene, SIGNAL (mousePressed (int, int, Qt::MouseButtons)),
            this, SLOT (handleMousePress (int, int, Qt::MouseButtons)));
-  connect (m_gameScene, SIGNAL (hooverEntered (int, int)), this,
+  connect (game_scene, SIGNAL (hooverEntered (int, int)), this,
            SLOT (handleHooverEntered (int, int)));
-  //newGame ();
+
+  setLayout(all_);
+  refreshBoard ();
 }
 
 
@@ -75,8 +117,8 @@ void Manager::showGammas (int state)
                      (val>0) ? (255* (1-val)) : 255,
                      (val>0) ? 255 : - (255*val),
                      0, 80);
-          m_gameScene->addBGMark (x, y, qc);
-          //m_gameScene->addLabel (x, y, QString::number (val, 'f', 2));
+          game_scene->addBGMark (x, y, qc);
+          //game_scene->addLabel (x, y, QString::number (val, 'f', 2));
         }
       }
   }
@@ -84,7 +126,7 @@ void Manager::showGammas (int state)
     //clear backgrounds
     for (uint x=1; x<=board_size; x++)
       for (uint y=1; y<=board_size; y++) {
-        m_gameScene->removeBGMark (x, y);
+        game_scene->removeBGMark (x, y);
       }
   }
 }
@@ -141,18 +183,23 @@ void Manager::refreshBoard ()
       Color col = engine_.GetBoard().ColorAt (v);
 
       if (col == Color::Empty ()) {
-        m_gameScene->removeStone (x,y);
+        game_scene->removeStone (x,y);
       } else if (col == Color::White ()) {
-        m_gameScene->addWhiteStone (x,y);
+        game_scene->addWhiteStone (x,y);
       } else if (col == Color::Black ()) {
-        m_gameScene->addBlackStone (x,y);
+        game_scene->addBlackStone (x,y);
       }
 
       if (engine_.GetBoard().LastVertex () == v) {
-        m_gameScene->addCircle (x,y);
+        game_scene->addCircle (x,y);
       } else {
-        m_gameScene->removeCircle (x,y);
+        game_scene->removeCircle (x,y);
       }
     }
   }
+}
+
+
+void Manager::setStatus(QString s) {
+    statebar->setText(s);
 }

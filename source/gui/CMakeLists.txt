@@ -11,5 +11,5 @@ include_directories (
 
 add_definitions ( -Wall )
 
-qt4_wrap_cpp (MOC_SRCS manager.h gogui.h)
-add_library (gui gui.cpp manager.cpp gogui.cpp ${MOC_SRCS})
+qt4_wrap_cpp (MOC_SRCS manager.h)
+add_library (gui gui.cpp manager.cpp ${MOC_SRCS})

@@ -2,7 +2,7 @@
 #include <QApplication>
 #include "gui.h"
 #include "engine.hpp"
-#include "gogui.h"
+#include "manager.h"
 
 
 void RunGui (Engine& engine) {
@@ -13,7 +13,7 @@ void RunGui (Engine& engine) {
   argv[0] = (char*)malloc(6*sizeof(char));
   strncpy (argv[0], "GoGui\0", 6);
   QApplication app (argc, argv);
-  GoGui gogui (engine);
+  Manager gogui (engine);
   gogui.show();
   app.exec();
 }

@@ -3,6 +3,8 @@
 
 #include <QObject>
 #include <QString>
+#include <QDialog>
+#include <QLabel>
 
 
 class GameScene;
@@ -10,9 +12,9 @@ class Engine;
 class Move;
 class Player;
 
-class Manager : public QObject {
+class Manager : public QDialog {
 public:
-  Manager (Engine& engine, GameScene *scene, QObject * parent = 0);
+  Manager (Engine& engine);
 
   virtual ~Manager ();
 
@@ -25,13 +27,15 @@ public slots:
   void playMove ();
   void undoMove ();
   void showGammas (int);
+  void setStatus (QString);
 
 signals:
   void stateChanged (const Player&);
   void statusChanged (QString);
 
 private:
-  GameScene *m_gameScene;
+  QLabel* statebar;
+  GameScene* game_scene;
   Engine& engine_;
 
 private:
