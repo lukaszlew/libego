@@ -25,13 +25,11 @@ public:
   const Board& GetBoard () const;
 
   // Playout functions
-  Move Genmove ();
+  Move ChooseBestMove ();
   void DoNPlayouts (uint n);
   void PrepareToPlayout ();
   void DoOnePlayout ();
-  Move ChooseMove ();
   void PlayMove (Move m);
-  void Sync ();
   double Score (bool accurate);
 
   double GetStatForVertex (Vertex v);

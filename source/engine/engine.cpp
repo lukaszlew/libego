@@ -50,7 +50,7 @@ const Board& Engine::GetBoard () const {
 
 Move Engine::Genmove (Player player) {
   base_board.SetActPlayer (player);
-  Move m = Genmove ();
+  Move m = ChooseBestMove ();
 
   if (m.IsValid ()) {
     CHECK (base_board.IsReallyLegal (m));
@@ -72,7 +72,7 @@ std::string Engine::GetStringForVertex (Vertex v) {
 }
 
 
-Move Engine::Genmove () {
+Move Engine::ChooseBestMove () {
   if (Param::reset_tree_on_genmove) mcts.Reset ();
   Player player = base_board.ActPlayer ();
   int playouts = time_control.PlayoutCount (player);
@@ -97,7 +97,9 @@ void Engine::DoOnePlayout () {
     if (play_board.BothPlayerPass()) break;
     if (play_board.MoveCount() >= 3*Board::kArea) return;
 
-    Move m = ChooseMove ();
+    Move m = Move::Invalid ();
+    if (!m.IsValid()) m = mcts.ChooseMove (play_board, sampler);
+    if (!m.IsValid()) m = Move (play_board.ActPlayer (), sampler.SampleMove (random));
     PlayMove (m);
   }
 
@@ -114,14 +116,6 @@ void Engine::PrepareToPlayout () {
 }
 
 
-Move Engine::ChooseMove () {
-  Move m = Move::Invalid ();
-  if (!m.IsValid()) m = mcts.ChooseMove (play_board, sampler);
-  if (!m.IsValid()) m = Move (play_board.ActPlayer (), sampler.SampleMove (random));
-  return m;
-}
-
-
 void Engine::PlayMove (Move m) {
   ASSERT (play_board.IsLegal (m));
   play_board.PlayLegal (m);
@@ -130,13 +124,6 @@ void Engine::PlayMove (Move m) {
   sampler.MovePlayed ();
 
   playout_moves.push_back (m);
-}
-
-
-void Engine::Sync () {
-  play_board.Load (base_board);
-  playout_moves.clear();
-  sampler.NewPlayout ();
 }
 
 
