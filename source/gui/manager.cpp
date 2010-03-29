@@ -31,51 +31,54 @@ Manager::Manager (Engine& engine) :
   QDialog (0),
   engine (engine)
 {
-  game_scene = GameScene::createGoScene(9);
-
-  ResizableView *gameView = new ResizableView(game_scene, this);
-  QPushButton *play_move = new QPushButton("Play move");
-  QPushButton *undo_move = new QPushButton("Undo move");
-  QCheckBox *show_gammas = new QCheckBox("Show gammas");
-  QPushButton *quit = new QPushButton("Quit");
-  QVBoxLayout *controls = new QVBoxLayout;
-  
+  // Controlls on the right
+  QVBoxLayout* controls = new QVBoxLayout;
   controls->addWidget(new QLabel("<b>Libego</b>"), 0, Qt::AlignHCenter);
+
+  QPushButton* play_move = new QPushButton("Play move");
   controls->addWidget(play_move);
-  controls->addWidget(undo_move);
-  controls->addWidget(show_gammas);
-  controls->addWidget(quit);
-  controls->addStretch();
+  connect (play_move, SIGNAL (clicked ()), this, SLOT (playMove ()));
+
+  QPushButton* undo_move = new QPushButton ("Undo move");
+  controls->addWidget (undo_move);
+  connect (undo_move, SIGNAL (clicked ()), this, SLOT (undoMove ()));
+
+  QCheckBox* show_gammas = new QCheckBox ("Show gammas");
+  controls->addWidget (show_gammas);
+  connect (show_gammas, SIGNAL (stateChanged (int)), this, SLOT (showGammas (int)));
+
+  QPushButton* quit = new QPushButton ("Quit");
+  controls->addWidget (quit);
+  connect (quit, SIGNAL (clicked ()), this, SLOT (close ()));
   
-  QHBoxLayout *mainLayout = new QHBoxLayout;
-  mainLayout->addWidget(gameView);
-  mainLayout->addLayout(controls);
+  statebar = new QLabel (" ");
+  controls->addWidget (statebar);
 
-  connect(play_move, SIGNAL(clicked()), this, SLOT(playMove()));
-  connect(undo_move, SIGNAL(clicked()), this, SLOT(undoMove()));
-  connect(show_gammas, SIGNAL(stateChanged(int)), this, SLOT(showGammas(int)));
-  connect(quit, SIGNAL(clicked()), this, SLOT(close()));
+  controls->addStretch ();
 
-  statebar = new QLabel(" ");
-  QVBoxLayout *all = new QVBoxLayout;
-  all->addLayout(mainLayout);
-  all->addWidget(statebar);
-
+  // Board.
+  game_scene = GameScene::createGoScene(9);
   connect (game_scene, SIGNAL (mousePressed (int, int, Qt::MouseButtons)),
            this, SLOT (handleMousePress (int, int, Qt::MouseButtons)));
-  connect (game_scene, SIGNAL (hooverEntered (int, int)), this,
-           SLOT (handleHooverEntered (int, int)));
+  connect (game_scene, SIGNAL (hooverEntered (int, int)),
+           this, SLOT (handleHooverEntered (int, int)));
 
-  setLayout(all);
+
+  // Main layout
+  QHBoxLayout* mainLayout = new QHBoxLayout;
+  mainLayout->addWidget (new ResizableView(game_scene, this));
+  mainLayout->addLayout (controls);
+
+  setLayout (mainLayout);
   refreshBoard ();
 }
 
 
 void Manager::handleMousePress (int x, int y, Qt::MouseButtons buttons)
 {
-  if (!(buttons & Qt::LeftButton)) return;
+  if (! (buttons & Qt::LeftButton)) return;
   Vertex v = gui2vertex (x, y);
-  engine.Play (Move (engine.GetBoard().ActPlayer (), v));
+  engine.Play (Move (engine.GetBoard ().ActPlayer (), v));
   refreshBoard ();
 }
 
@@ -115,8 +118,7 @@ void Manager::showGammas (int state)
 
 void Manager::playMove ()
 {
-  Move move = engine.Genmove (engine.GetBoard().ActPlayer());
-  CHECK (engine.Play (move));
+  engine.Genmove (engine.GetBoard ().ActPlayer ());
   refreshBoard ();
 }
 
@@ -135,7 +137,7 @@ void Manager::refreshBoard ()
   for (uint x=1; x<=board_size; x++) {
     for (uint y=1; y<=board_size; y++) {
       Vertex v = gui2vertex (x,y);
-      Color col = engine.GetBoard().ColorAt (v);
+      Color col = engine.GetBoard ().ColorAt (v);
 
       if (col == Color::Empty ()) {
         game_scene->removeStone (x,y);
@@ -145,7 +147,7 @@ void Manager::refreshBoard ()
         game_scene->addBlackStone (x,y);
       }
 
-      if (engine.GetBoard().LastVertex () == v) {
+      if (engine.GetBoard ().LastVertex () == v) {
         game_scene->addCircle (x,y);
       } else {
         game_scene->removeCircle (x,y);
