@@ -2,6 +2,8 @@
 // Copyright 2006 and onwards, Lukasz Lew
 //
 
+#include <boost/foreach.hpp>
+
 #include "engine.hpp"
 
 Engine::Engine () :
@@ -82,10 +84,31 @@ Move Engine::ChooseBestMove () {
 
 
 void Engine::DoNPlayouts (uint n) {
-  mcts.SyncRoot (base_board, gammas);
+  SyncRoot ();
   rep (ii, n) {
     DoOnePlayout ();
   }
+}
+
+
+void Engine::SyncRoot () {
+  // TODO replace this by FatBoard
+  Board sync_board;
+  Sampler sampler(sync_board, gammas);
+  sampler.NewPlayout ();
+
+  mcts.act_root = &mcts.root;
+  BOOST_FOREACH (Move m, base_board.Moves ()) {
+    mcts.EnsureAllLegalChildren (mcts.act_root, m.GetPlayer(), sync_board, sampler);
+    mcts.act_root = mcts.act_root->FindChild (m);
+    CHECK (sync_board.IsLegal (m));
+    sync_board.PlayLegal (m);
+    sampler.MovePlayed();
+  }
+
+  Player pl = base_board.ActPlayer();
+  mcts.EnsureAllLegalChildren (mcts.act_root, pl, base_board, sampler);
+  mcts.RemoveIllegalChildren (mcts.act_root, pl, base_board);
 }
 
 
@@ -112,7 +135,11 @@ void Engine::PrepareToPlayout () {
   play_board.Load (base_board);
   playout_moves.clear();
   sampler.NewPlayout ();
-  mcts.NewPlayout ();
+
+  mcts.trace.Reset (*mcts.act_root);
+  mcts.act_node = mcts.act_root;
+  mcts.tree_phase = Param::tree_use;
+  mcts.tree_move_count = 0;
 }
 
 

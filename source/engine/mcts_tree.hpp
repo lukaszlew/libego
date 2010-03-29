@@ -84,9 +84,7 @@ struct Mcts {
 
   void Reset ();
 
-  void SyncRoot (const Board& board, const Gammas& gammas);
   Move BestMove (Player player);
-  void NewPlayout ();
   void EnsureAllLegalChildren (MctsNode* node, Player pl, const Board& board, const Sampler& sampler);
   void RemoveIllegalChildren (MctsNode* node, Player pl, const Board& full_board);
 
@@ -94,16 +92,13 @@ struct Mcts {
 
   void GtpShowTree (Gtp::Io& io);
 
-private:
-
   MctsNode root;
+
   MctsNode* act_root;
   MctsNode* act_node;
 
   uint tree_move_count;
   
-public:
-
   MctsTrace trace;
 
   bool tree_phase;

@@ -43,6 +43,10 @@ private:
 
     gtp.RegisterGfx ("ShowGammas", "", this, &MctsGtp::CShowGammas);
 
+    gtp.RegisterGfx ("MCTS.show",    "0 4", this, &MctsGtp::CShowTree);
+    gtp.RegisterGfx ("MCTS.show",   "10 4", this, &MctsGtp::CShowTree);
+    gtp.RegisterGfx ("MCTS.show",  "100 4", this, &MctsGtp::CShowTree);
+    gtp.RegisterGfx ("MCTS.show", "1000 4", this, &MctsGtp::CShowTree);
   }
 
   void RegisterParams () {
@@ -175,6 +179,15 @@ private:
     }
     gfx.Report (io);
   }
+
+
+  void CShowTree (Gtp::Io& io) {
+    uint min_updates  = io.Read <uint> ();
+    uint max_children = io.Read <uint> ();
+    io.CheckEmpty();
+    io.out << endl << engine.mcts.act_root->RecToString (min_updates, max_children);
+  }
+
 
   void CLoadGammas (Gtp::Io& io) {
     string file_name = io.Read<string> ();

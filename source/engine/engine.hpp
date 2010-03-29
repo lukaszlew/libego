@@ -27,6 +27,7 @@ public:
   // Playout functions
   Move ChooseBestMove ();
   void DoNPlayouts (uint n);
+  void SyncRoot ();
   void PrepareToPlayout ();
   void DoOnePlayout ();
   void PlayMove (Move m);

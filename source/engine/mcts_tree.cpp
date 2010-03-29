@@ -243,34 +243,10 @@ Mcts::Mcts () :
   root (Player::White(), Vertex::Any (), 0.0)
 {
   act_root = &root;
-  gtp.RegisterGfx ("MCTS.show",    "0 4", this, &Mcts::GtpShowTree);
-  gtp.RegisterGfx ("MCTS.show",   "10 4", this, &Mcts::GtpShowTree);
-  gtp.RegisterGfx ("MCTS.show",  "100 4", this, &Mcts::GtpShowTree);
-  gtp.RegisterGfx ("MCTS.show", "1000 4", this, &Mcts::GtpShowTree);
 }
 
 void Mcts::Reset () {
   root.Reset ();
-}
-
-void Mcts::SyncRoot (const Board& board, const Gammas& gammas) {
-  // TODO replace this by FatBoard
-  Board sync_board;
-  Sampler sampler(sync_board, gammas);
-  sampler.NewPlayout ();
-
-  act_root = &root;
-  BOOST_FOREACH (Move m, board.Moves ()) {
-    EnsureAllLegalChildren (act_root, m.GetPlayer(), sync_board, sampler);
-    act_root = act_root->FindChild (m);
-    CHECK (sync_board.IsLegal (m));
-    sync_board.PlayLegal (m);
-    sampler.MovePlayed();
-  }
-
-  Player pl = board.ActPlayer();
-  EnsureAllLegalChildren (act_root, pl, board, sampler);
-  RemoveIllegalChildren (act_root, pl, board);
 }
 
 
@@ -283,13 +259,6 @@ Move Mcts::BestMove (Player player) {
     Move (player, best_node.v);
 }
 
-
-void Mcts::NewPlayout (){
-  trace.Reset (*act_root);
-  act_node = act_root;
-  tree_phase = Param::tree_use;
-  tree_move_count = 0;
-}
 
 void Mcts::EnsureAllLegalChildren (MctsNode* node, Player pl, const Board& board, const Sampler& sampler) {
   if (node->has_all_legal_children [pl]) return;
@@ -341,12 +310,3 @@ Move Mcts::ChooseMove (Board& play_board, const Sampler& sampler) {
   tree_move_count += 1;
   return Move (pl, uct_child.v);
 }
-
-
-void Mcts::GtpShowTree (Gtp::Io& io) {
-  uint min_updates  = io.Read <uint> ();
-  uint max_children = io.Read <uint> ();
-  io.CheckEmpty();
-  io.out << endl << act_root->RecToString (min_updates, max_children);
-}
-
