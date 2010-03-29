@@ -45,8 +45,8 @@ Manager::Manager (Engine& engine) :
 
   QCheckBox* show_gammas = new QCheckBox ("Show gammas");
   controls->addWidget (show_gammas);
-  connect (show_gammas, SIGNAL (stateChanged (Qt::CheckState)),
-           this, SLOT (showGammas (Qt::CheckState)));
+  connect (show_gammas, SIGNAL (stateChanged (int)),
+           this, SLOT (showGammas (int)));
 
   QPushButton* quit = new QPushButton ("Quit");
   controls->addWidget (quit);
@@ -90,7 +90,7 @@ void Manager::handleHooverEntered (int x, int y) {
 }
 
 
-void Manager::showGammas (Qt::CheckState state)
+void Manager::showGammas (int state)
 {
   std::cout << "showGammas () " << state << std::endl;
 

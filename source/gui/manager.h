@@ -23,7 +23,7 @@ public slots:
   void handleHooverEntered (int x, int y);
   void playMove ();
   void undoMove ();
-  void showGammas (Qt::CheckState);
+  void showGammas (int);
 
 private:
   QLabel* statebar;
