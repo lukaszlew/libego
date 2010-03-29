@@ -33,7 +33,6 @@ public:
   void PlayMove (Move m);
   void Sync ();
   double Score (bool accurate);
-  Move ChooseLocalMove (); // TODO policy randomization
 
   double GetStatForVertex (Vertex v);
   std::string GetStringForVertex (Vertex v);
