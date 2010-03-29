@@ -74,11 +74,6 @@ Move Engine::Genmove (Player player) {
   return m;
 }
 
-string Engine::BoardAsciiArt () {
-  return base_board.ToAsciiArt();
-}
-  
-
 double Engine::GetStatForVertex (Vertex /*v*/) {
   return (double)(rand()%201-100)/(double)100;
 }

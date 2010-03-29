@@ -1,8 +1,9 @@
-#ifndef ENGINE_H_
-#define ENGINE_H_
 //
 // Copyright 2006 and onwards, Lukasz Lew
 //
+
+#ifndef ENGINE_H_
+#define ENGINE_H_
 
 #include "logger.hpp"
 #include "to_string.hpp"
@@ -13,8 +14,8 @@
 
 class Engine {
 public:
-  
   Engine ();
+
   bool SetBoardSize (uint board_size);
   void SetKomi (float komi);
   void ClearBoard ();
@@ -24,51 +25,34 @@ public:
 
   const Board& GetBoard () const;
 
-  string BoardAsciiArt ();
-
-  double GetStatForVertex (Vertex /*v*/);
-  std::string GetStringForVertex (Vertex v);
-
-private:
   // Playout functions
   void Reset ();
   Move Genmove ();
   void DoNPlayouts (uint n);
   void PrepareToPlayout ();
-
   void DoOnePlayout ();
   Move ChooseMove ();
-
   void PlayMove (Move m);
   void Sync ();
+  double Score (bool accurate);
+  Move ChooseLocalMove (); // TODO policy randomization
 
+  double GetStatForVertex (Vertex v);
+  std::string GetStringForVertex (Vertex v);
   vector<Move> LastPlayout ();
 
-  double Score (bool accurate);
-
-  // TODO policy randomization
-  Move ChooseLocalMove ();
-
 private:
-  // base board
   Board base_board;
-
-  // logging
   Logger logger;
-  
-
   TimeControl time_control;
 
-  // playout
   Board play_board;
   vector<Move> playout_moves;
-
   Mcts mcts;
-
   FastRandom random;
   Gammas gammas;
   Sampler sampler;
-private:
+
   friend class MctsGtp;
 };
 

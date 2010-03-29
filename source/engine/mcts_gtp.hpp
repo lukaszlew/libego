@@ -119,7 +119,7 @@ private:
 
   void Cshowboard (Gtp::Io& io) {
     io.CheckEmpty ();
-    io.out << engine.BoardAsciiArt ();
+    io.out << engine.GetBoard().ToAsciiArt ();
   }
 
   void CDoPlayouts (Gtp::Io& io) {
