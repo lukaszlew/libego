@@ -30,6 +30,7 @@ public:
   void SyncRoot ();
   void PrepareToPlayout ();
   void DoOnePlayout ();
+  Move ChooseMctsMove ();
   void PlayMove (Move m);
   double Score (bool accurate);
 
@@ -45,9 +46,10 @@ private:
   Sampler sampler;
 
   Board base_board;
-  MctsNode* act_root;
+  MctsNode* base_node;
   
-  Board play_board;
+  Board playout_board;
+  MctsNode* playout_node;
 
   vector<Move> playout_moves;
 

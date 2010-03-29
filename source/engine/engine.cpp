@@ -9,8 +9,8 @@
 Engine::Engine () :
   random (TimeSeed()),
   mcts(),
-  sampler (play_board, gammas),
-  act_root (&mcts.root)
+  sampler (playout_board, gammas),
+  base_node (&mcts.root)
 {
 }
 
@@ -82,7 +82,7 @@ Move Engine::ChooseBestMove () {
   int playouts = time_control.PlayoutCount (player);
   DoNPlayouts (playouts);
 
-  const MctsNode& best_node = act_root->MostExploredChild (player);
+  const MctsNode& best_node = base_node->MostExploredChild (player);
 
   return
     best_node.SubjectiveMean() < Param::resign_mean ?
@@ -105,18 +105,18 @@ void Engine::SyncRoot () {
   Sampler sampler(sync_board, gammas);
   sampler.NewPlayout ();
 
-  act_root = &mcts.root;
+  base_node = &mcts.root;
   BOOST_FOREACH (Move m, base_board.Moves ()) {
-    mcts.EnsureAllLegalChildren (act_root, m.GetPlayer(), sync_board, sampler);
-    act_root = act_root->FindChild (m);
+    mcts.EnsureAllLegalChildren (base_node, m.GetPlayer(), sync_board, sampler);
+    base_node = base_node->FindChild (m);
     CHECK (sync_board.IsLegal (m));
     sync_board.PlayLegal (m);
     sampler.MovePlayed();
   }
 
   Player pl = base_board.ActPlayer();
-  mcts.EnsureAllLegalChildren (act_root, pl, base_board, sampler);
-  mcts.RemoveIllegalChildren (act_root, pl, base_board);
+  mcts.EnsureAllLegalChildren (base_node, pl, base_board, sampler);
+  mcts.RemoveIllegalChildren (base_node, pl, base_board);
 }
 
 
@@ -125,12 +125,12 @@ void Engine::DoOnePlayout () {
 
   // do the playout
   while (true) {
-    if (play_board.BothPlayerPass()) break;
-    if (play_board.MoveCount() >= 3*Board::kArea) return;
+    if (playout_board.BothPlayerPass()) break;
+    if (playout_board.MoveCount() >= 3*Board::kArea) return;
 
     Move m = Move::Invalid ();
-    if (!m.IsValid()) m = mcts.ChooseMove (play_board, sampler);
-    if (!m.IsValid()) m = Move (play_board.ActPlayer (), sampler.SampleMove (random));
+    if (!m.IsValid()) m = ChooseMctsMove ();
+    if (!m.IsValid()) m = Move (playout_board.ActPlayer (), sampler.SampleMove (random));
     PlayMove (m);
   }
 
@@ -140,20 +140,44 @@ void Engine::DoOnePlayout () {
 
 
 void Engine::PrepareToPlayout () {
-  play_board.Load (base_board);
+  playout_board.Load (base_board);
   playout_moves.clear();
   sampler.NewPlayout ();
 
-  mcts.trace.Reset (*act_root);
-  mcts.act_node = act_root;
+  mcts.trace.Reset (*base_node);
+  playout_node = base_node;
   mcts.tree_phase = Param::tree_use;
   mcts.tree_move_count = 0;
 }
 
+Move Engine::ChooseMctsMove () {
+  Player pl = playout_board.ActPlayer();
+
+  if (!mcts.tree_phase || mcts.tree_move_count >= Param::tree_max_moves) {
+    return Move::Invalid();
+  }
+
+  if (!playout_node->has_all_legal_children [pl]) {
+    if (!playout_node->ReadyToExpand ()) {
+      mcts.tree_phase = false;
+      return Move::Invalid();
+    }
+    ASSERT (pl == playout_node->player.Other());
+    mcts.EnsureAllLegalChildren (playout_node, pl, playout_board, sampler);
+  }
+
+  MctsNode& uct_child = playout_node->BestRaveChild (pl);
+  mcts.trace.NewNode (uct_child);
+  playout_node = &uct_child;
+  ASSERT (uct_child.v != Vertex::Any());
+  mcts.tree_move_count += 1;
+  return Move (pl, uct_child.v);
+}
+
 
 void Engine::PlayMove (Move m) {
-  ASSERT (play_board.IsLegal (m));
-  play_board.PlayLegal (m);
+  ASSERT (playout_board.IsLegal (m));
+  playout_board.PlayLegal (m);
 
   mcts.trace.NewMove (m);
   sampler.MovePlayed ();
@@ -171,9 +195,9 @@ double Engine::Score (bool accurate) {
   // TODO game replay i update wszystkich modeli
   double score;
   if (accurate) {
-    score = play_board.TrompTaylorWinner().ToScore();
+    score = playout_board.TrompTaylorWinner().ToScore();
   } else {
-    int sc = play_board.PlayoutScore();
+    int sc = playout_board.PlayoutScore();
     score = Player::WinnerOfBoardScore (sc).ToScore (); // +- 1
     score += double(sc) / 10000.0; // small bonus for bigger win.
   }

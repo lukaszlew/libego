@@ -88,13 +88,10 @@ struct Mcts {
   void EnsureAllLegalChildren (MctsNode* node, Player pl, const Board& board, const Sampler& sampler);
   void RemoveIllegalChildren (MctsNode* node, Player pl, const Board& full_board);
 
-  Move ChooseMove (Board& play_board, const Sampler& sampler);
-
   void GtpShowTree (Gtp::Io& io);
 
   MctsNode root;
 
-  MctsNode* act_node;
 
   uint tree_move_count;
   

@@ -277,26 +277,3 @@ void Mcts::RemoveIllegalChildren (MctsNode* node, Player pl, const Board& full_b
 }
 
 
-Move Mcts::ChooseMove (Board& play_board, const Sampler& sampler) {
-  Player pl = play_board.ActPlayer();
-
-  if (!tree_phase || tree_move_count >= Param::tree_max_moves) {
-    return Move::Invalid();
-  }
-
-  if (!act_node->has_all_legal_children [pl]) {
-    if (!act_node->ReadyToExpand ()) {
-      tree_phase = false;
-      return Move::Invalid();
-    }
-    ASSERT (pl == act_node->player.Other());
-    EnsureAllLegalChildren (act_node, pl, play_board, sampler);
-  }
-
-  MctsNode& uct_child = act_node->BestRaveChild (pl);
-  trace.NewNode (uct_child);
-  act_node = &uct_child;
-  ASSERT (uct_child.v != Vertex::Any());
-  tree_move_count += 1;
-  return Move (pl, uct_child.v);
-}
