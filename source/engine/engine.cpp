@@ -105,23 +105,6 @@ Gtp::GoguiGfx Engine::LastPlayoutGfx (uint move_count) {
   return gfx;
 }
 
-void Engine::ShowGammas (Gtp::GoguiGfx& gfx) {
-  Player pl = base_board.ActPlayer ();
-  PrepareToPlayout ();
-  NatMap <Vertex, double> p (0.0);
-  ForEachNat (Vertex, v) {
-    if (base_board.ColorAt (v) == Color::Empty()) {
-      p [v] = sampler.act_gamma [v] [pl];
-    }
-  }
-  p.ScalePositive ();
-  ForEachNat (Vertex, v) {
-    if (base_board.ColorAt (v) == Color::Empty()) {
-      gfx.SetInfluence (v.ToGtpString(), p[v]);
-    }
-  }
-}
-
 double Engine::GetStatForVertex (Vertex /*v*/) {
   return (double)(rand()%201-100)/(double)100;
 }

@@ -26,7 +26,6 @@ public:
 
   string BoardAsciiArt ();
   Gtp::GoguiGfx LastPlayoutGfx (uint move_count);
-  void ShowGammas (Gtp::GoguiGfx& gfx);
 
   double GetStatForVertex (Vertex /*v*/);
   std::string GetStringForVertex (Vertex v);

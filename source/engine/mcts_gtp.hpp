@@ -5,8 +5,8 @@ extern Gtp::ReplWithGogui gtp;
 
 class MctsGtp {
 public:
-  MctsGtp (Engine& mcts_engine)
-  : mcts_engine (mcts_engine)
+  MctsGtp (Engine& engine)
+  : engine (engine)
   {
     RegisterCommands ();
     RegisterParams ();
@@ -50,9 +50,9 @@ private:
 
     gtp.RegisterParam (other, "genmove_playouts",     &Param::genmove_playouts);
     gtp.RegisterParam (other, "local_use",            &Param::use_local);
-    gtp.RegisterParam (other, "seed",                 &mcts_engine.random.seed);
-    gtp.RegisterParam (other, "logger_is_active",     &mcts_engine.logger.is_active);
-    gtp.RegisterParam (other, "logger_directory",     &mcts_engine.logger.log_directory);
+    gtp.RegisterParam (other, "seed",                 &engine.random.seed);
+    gtp.RegisterParam (other, "logger_is_active",     &engine.logger.is_active);
+    gtp.RegisterParam (other, "logger_directory",     &engine.logger.log_directory);
 
     gtp.RegisterParam (tree, "use",             &Param::tree_use);
     gtp.RegisterParam (tree, "max_moves",       &Param::tree_max_moves);
@@ -68,26 +68,26 @@ private:
     gtp.RegisterParam (set, "progressive_bias_prior", &Param::tree_progressive_bias_prior);
     gtp.RegisterParam (set, "explore_coeff",          &Param::tree_explore_coeff);
 
-    gtp.RegisterParam (set, "proxy_1_bonus", &mcts_engine.sampler.proximity_bonus[0]);
-    gtp.RegisterParam (set, "proxy_2_bonus", &mcts_engine.sampler.proximity_bonus[1]);
+    gtp.RegisterParam (set, "proxy_1_bonus", &engine.sampler.proximity_bonus[0]);
+    gtp.RegisterParam (set, "proxy_2_bonus", &engine.sampler.proximity_bonus[1]);
   }
 
   void Cclear_board (Gtp::Io& io) {
     io.CheckEmpty ();
-    mcts_engine.ClearBoard ();
+    engine.ClearBoard ();
   }
 
   void Cgenmove (Gtp::Io& io) {
     Player player = io.Read<Player> ();
     io.CheckEmpty ();
-    Move m = mcts_engine.Genmove (player);
+    Move m = engine.Genmove (player);
     io.out << (m.IsValid() ? m.GetVertex().ToGtpString() : "resign");
   }
 
   void Cboardsize (Gtp::Io& io) {
     int new_board_size = io.Read<int> ();
     io.CheckEmpty ();
-    if (!mcts_engine.SetBoardSize (new_board_size)) {
+    if (!engine.SetBoardSize (new_board_size)) {
       io.SetError ("unacceptable size");
       return;
     }
@@ -96,14 +96,14 @@ private:
   void Ckomi (Gtp::Io& io) {
     float new_komi = io.Read<float> ();
     io.CheckEmpty();
-    mcts_engine.SetKomi (new_komi);
+    engine.SetKomi (new_komi);
   }
 
   void Cplay (Gtp::Io& io) {
     Move move = io.Read<Move> ();
     io.CheckEmpty ();
 
-    if (!mcts_engine.Play (move)) {
+    if (!engine.Play (move)) {
       io.SetError ("illegal move");
       return;
     }
@@ -111,7 +111,7 @@ private:
 
   void Cundo (Gtp::Io& io) {
     io.CheckEmpty ();
-    if (!mcts_engine.Undo ()) {
+    if (!engine.Undo ()) {
       io.SetError ("too many undo");
       return;
     }
@@ -119,25 +119,38 @@ private:
 
   void Cshowboard (Gtp::Io& io) {
     io.CheckEmpty ();
-    io.out << mcts_engine.BoardAsciiArt ();
+    io.out << engine.BoardAsciiArt ();
   }
 
   void CDoPlayouts (Gtp::Io& io) {
     uint n = io.Read <uint> (Param::genmove_playouts);
     io.CheckEmpty();
-    mcts_engine.DoNPlayouts (n);
+    engine.DoNPlayouts (n);
   }
 
   void CShowLastPlayout (Gtp::Io& io) {
     int n = io.Read<int> ();
     io.CheckEmpty ();
-    mcts_engine.LastPlayoutGfx(n).Report (io);
+    engine.LastPlayoutGfx(n).Report (io);
   }
 
   void CShowGammas (Gtp::Io& io) {
     io.CheckEmpty ();
     Gtp::GoguiGfx gfx;
-    mcts_engine.ShowGammas (gfx);
+    Player pl = engine.base_board.ActPlayer ();
+    engine.PrepareToPlayout ();
+    NatMap <Vertex, double> p (0.0);
+    ForEachNat (Vertex, v) {
+      if (engine.base_board.ColorAt (v) == Color::Empty()) {
+        p [v] = engine.sampler.act_gamma [v] [pl];
+      }
+    }
+    p.ScalePositive ();
+    ForEachNat (Vertex, v) {
+      if (engine.base_board.ColorAt (v) == Color::Empty()) {
+        gfx.SetInfluence (v.ToGtpString(), p[v]);
+      }
+    }
     gfx.Report (io);
   }
 
@@ -150,7 +163,7 @@ private:
       io.SetError ("Can't open a file: " + file_name);
       return;
     }
-    if (!mcts_engine.gammas.Read (in)) {
+    if (!engine.gammas.Read (in)) {
       io.SetError ("File in a bad format.");
       return;
     }
@@ -159,11 +172,11 @@ private:
 
   void Cgui (Gtp::Io& io) {
     io.CheckEmpty ();
-    RunGui (mcts_engine);
+    RunGui (engine);
   }
 
 private:
-  Engine& mcts_engine;
+  Engine& engine;
 };
 
 #endif /* MCTS_GTP_H_ */
