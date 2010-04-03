@@ -65,9 +65,10 @@ const Board& Engine::GetBoard () const {
 
 
 
-
-double Engine::GetStatForVertex (Vertex /*v*/) {
-  return (double)(rand()%201-100)/(double)100;
+void Engine::GetInfluence (NatMap <Vertex,double>* influence) const {
+  ForEachNat (Vertex, v) {
+    (*influence) [v] = (double)(rand()%201-100)/(double)100;
+  }
 }
 
 

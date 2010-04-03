@@ -114,6 +114,12 @@ void Manager::refreshBoard ()
 {
   std::cout << "refreshBoard ()" << std::endl;
 
+  NatMap <Vertex, double> influence;
+
+  if (show_gammas->checkState() == Qt::Checked) {
+    engine.GetInfluence (&influence);
+  }
+
   for (uint x=1; x<=board_size; x++) {
     for (uint y=1; y<=board_size; y++) {
       Vertex v = gui2vertex (x,y);
@@ -135,7 +141,7 @@ void Manager::refreshBoard ()
 
       //show gammas
       if (show_gammas->checkState() == Qt::Checked) {
-        double val = engine.GetStatForVertex (v);
+        double val = influence [v];
         if (-1<=val && val<=1) {
           double r = (val>0) ? (255* (1-val)) : 255;
           double g = (val>0) ? 255 : - (255*val);

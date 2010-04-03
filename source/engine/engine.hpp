@@ -33,7 +33,7 @@ public:
   void PlayMove (Move m);
   double Score ();
 
-  double GetStatForVertex (Vertex v);
+  void GetInfluence (NatMap <Vertex,double>* influence) const;
   std::string GetStringForVertex (Vertex v);
   vector<Move> LastPlayout ();
 
