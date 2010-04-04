@@ -144,7 +144,7 @@ void Manager::refreshBoard ()
         double val = influence [v];
         if (0 <= val && val <= 1) {
           QColor color;
-          color.setHsvF (val * 2.0 / 3.0, 1.0, 1.0, 0.6);
+          color.setHsvF (val * 5.0 / 6.0, 1.0, 1.0, 0.6);
           game_scene->addBGMark (x, y, color);
           //game_scene->addLabel (x, y, QString::number (val, 'f', 2));
         }
