@@ -50,7 +50,8 @@ MctsNode* MctsNode::FindChild (Move m) {
       return &child;
     }
   }
-  FAIL ("should not happen");
+
+  return NULL; // no child
 }
 
 string MctsNode::ToString() const {

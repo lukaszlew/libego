@@ -66,16 +66,20 @@ const Board& Engine::GetBoard () const {
 
 
 void Engine::GetInfluence (NatMap <Vertex,double>& influence) const {
-  double val = 0.0;
   ForEachNat (Vertex, v) {
-    if (base_board.ColorAt (v) == Color::Empty()) {
-      influence [v] = val;
-      val += 1.0;
+    Move m = Move (base_board.ActPlayer (), v);
+    if (base_board.IsLegal (m)) {
+      MctsNode* node = base_node->FindChild (m);
+      if (node != NULL) {
+        influence [v] = (node->stat.mean() + 1) / 2;
+      } else {
+        influence [v] = nan ("");
+      }
     } else {
-      influence [v] = nan("s");
+      influence [v] = nan ("");
     }
   }
-  influence.ScalePositive();
+  //influence.ScalePositive();
 }
 
 

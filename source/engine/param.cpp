@@ -1,6 +1,6 @@
 #include "param.hpp"
 
-float Param::genmove_playouts = 2000;
+float Param::genmove_playouts = 20000;
 bool  Param::use_local  = false;
 
 bool  Param::tree_use = true;
