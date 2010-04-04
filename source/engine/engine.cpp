@@ -65,13 +65,17 @@ const Board& Engine::GetBoard () const {
 
 
 
-void Engine::GetInfluence (NatMap <Vertex,double>* influence) const {
+void Engine::GetInfluence (NatMap <Vertex,double>& influence) const {
   double val = 0.0;
   ForEachNat (Vertex, v) {
-    (*influence) [v] = val;
-    if (v.IsOnBoard()) val += 1.0;
+    if (base_board.ColorAt (v) == Color::Empty()) {
+      influence [v] = val;
+      val += 1.0;
+    } else {
+      influence [v] = nan("s");
+    }
   }
-  influence->ScalePositive();
+  influence.ScalePositive();
 }
 
 

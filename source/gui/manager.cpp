@@ -117,7 +117,7 @@ void Manager::refreshBoard ()
   NatMap <Vertex, double> influence;
 
   if (show_gammas->checkState() == Qt::Checked) {
-    engine.GetInfluence (&influence);
+    engine.GetInfluence (influence);
   }
 
   for (uint x=1; x<=board_size; x++) {
@@ -140,8 +140,8 @@ void Manager::refreshBoard ()
       }
 
       //show gammas
-      if (show_gammas->checkState() == Qt::Checked) {
-        double val = influence [v];
+      double val = influence [v];
+      if (show_gammas->checkState() == Qt::Checked && !isnan (val)) {
         if (0 <= val && val <= 1) {
           QColor color;
           color.setHsvF (val * 5.0 / 6.0, 1.0, 1.0, 0.6);
