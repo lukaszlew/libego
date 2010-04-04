@@ -142,12 +142,10 @@ void Manager::refreshBoard ()
       //show gammas
       if (show_gammas->checkState() == Qt::Checked) {
         double val = influence [v];
-        if (-1<=val && val<=1) {
-          double r = (val>0) ? (255* (1-val)) : 255;
-          double g = (val>0) ? 255 : - (255*val);
-          double b = 0;
-          double a = 60;
-          game_scene->addBGMark (x, y, QColor (r, g, b, a));
+        if (0 <= val && val <= 1) {
+          QColor color;
+          color.setHsvF (val * 2.0 / 3.0, 1.0, 1.0, 0.6);
+          game_scene->addBGMark (x, y, color);
           //game_scene->addLabel (x, y, QString::number (val, 'f', 2));
         }
       } else {

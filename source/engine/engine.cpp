@@ -66,9 +66,12 @@ const Board& Engine::GetBoard () const {
 
 
 void Engine::GetInfluence (NatMap <Vertex,double>* influence) const {
+  double val = 0.0;
   ForEachNat (Vertex, v) {
-    (*influence) [v] = (double)(rand()%201-100)/(double)100;
+    (*influence) [v] = val;
+    if (v.IsOnBoard()) val += 1.0;
   }
+  influence->ScalePositive();
 }
 
 
