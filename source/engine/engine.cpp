@@ -84,7 +84,13 @@ void Engine::GetInfluence (NatMap <Vertex,double>& influence) const {
 
 
 std::string Engine::GetStringForVertex (Vertex v) {
-  return "Vertex: " + v.ToGtpString();
+  Move m = Move (base_board.ActPlayer (), v);
+  MctsNode* node = base_node->FindChild (m);
+  if (node != NULL) {
+    return node->ToString ();
+  } else {
+    return "";
+  }
 }
 
 

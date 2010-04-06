@@ -13,6 +13,8 @@ class Engine;
 class Move;
 class Player;
 
+namespace Gui {
+
 class Manager : public QDialog {
 public:
   Manager (Engine& engine);
@@ -36,4 +38,6 @@ private:
   Q_OBJECT
 };
 
-#endif /* MANAGER_H_ */
+} // namespace
+
+#endif

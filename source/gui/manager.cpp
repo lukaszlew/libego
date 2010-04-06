@@ -14,6 +14,8 @@
 
 #include "manager.h"
 
+namespace Gui {
+
 // -----------------------------------------------------------------------------
 
 void vertex2gui (Vertex v, int& x, int& y) {
@@ -53,6 +55,7 @@ Manager::Manager (Engine& engine) :
   connect (quit, SIGNAL (clicked ()), this, SLOT (close ()));
   
   statebar = new QLabel (" ");
+  statebar->setFixedWidth(200);
   controls->addWidget (statebar);
 
   controls->addStretch ();
@@ -154,3 +157,5 @@ void Manager::refreshBoard ()
     }
   }
 }
+
+} // namespace

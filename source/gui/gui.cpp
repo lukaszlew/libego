@@ -13,7 +13,7 @@ void RunGui (Engine& engine) {
   argv[0] = (char*)malloc(6*sizeof(char));
   strncpy (argv[0], "GoGui\0", 6);
   QApplication app (argc, argv);
-  Manager gogui (engine);
+  Gui::Manager gogui (engine);
   gogui.show();
   app.exec();
 }
