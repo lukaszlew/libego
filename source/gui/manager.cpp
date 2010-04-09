@@ -45,14 +45,26 @@ Manager::Manager (Engine& engine) :
   controls->addWidget (undo_move);
   connect (undo_move, SIGNAL (clicked ()), this, SLOT (undoMove ()));
 
+  slider1 = new QSlider (this);
+  slider2 = new QSlider (this);
+  slider1->setOrientation (Qt::Horizontal);
+  slider2->setOrientation (Qt::Horizontal);
+  slider1->setMinimum (0);
+  slider2->setMinimum (0);
+  slider1->setMaximum (100);
+  slider2->setMaximum (100);
+  slider1->setValue (50);
+  slider2->setValue (50);
+  controls->addWidget (slider1);
+  controls->addWidget (slider2);
+  connect (slider1, SIGNAL (sliderMoved (int)), this, SLOT (sliderMoved (int)));
+  connect (slider2, SIGNAL (sliderMoved (int)), this, SLOT (sliderMoved (int)));
+
   show_gammas = new QCheckBox ("Show gammas");
   controls->addWidget (show_gammas);
   connect (show_gammas, SIGNAL (stateChanged (int)),
            this, SLOT (showGammas (int)));
 
-  QPushButton* quit = new QPushButton ("Quit");
-  controls->addWidget (quit);
-  connect (quit, SIGNAL (clicked ()), this, SLOT (close ()));
   
   statebar = new QLabel (" ");
   statebar->setFixedWidth(200);
@@ -101,6 +113,9 @@ void Manager::handleHooverEntered (int x, int y) {
   statebar->setText (hoover_text);
 }
 
+void Manager::sliderMoved (int) {
+  refreshBoard ();
+}
 
 void Manager::showGammas (int state)
 {
@@ -152,14 +167,16 @@ void Manager::refreshBoard ()
       }
 
       //show gammas
-      double val = influence [v];
+      double min_val = slider1->value() / 100.0 - slider2->value() / 100.0;
+      double max_val = slider1->value() / 100.0 + slider2->value() / 100.0;
+      double val = (influence [v] - min_val) / (max_val - min_val);
       if (show_gammas->checkState() == Qt::Checked && !isnan (val)) {
-        if (0 <= val && val <= 1) {
-          QColor color;
-          color.setHsvF (val * 5.0 / 6.0, 1.0, 1.0, 0.6);
-          game_scene->addBGMark (x, y, color);
-          //game_scene->addLabel (x, y, QString::number (val, 'f', 2));
-        }
+        val = max (val, 0.0);
+        val = min (val, 1.0);
+        QColor color;
+        color.setHsvF (val / 3.0, 1.0, 1.0, 0.6);
+        game_scene->addBGMark (x, y, color);
+        //game_scene->addLabel (x, y, QString::number (val, 'f', 2));
       } else {
         game_scene->removeBGMark (x, y);
       }

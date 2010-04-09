@@ -5,6 +5,7 @@
 #include <QString>
 #include <QDialog>
 #include <QLabel>
+#include <QSlider>
 
 
 class GameScene;
@@ -22,6 +23,7 @@ public:
   void refreshBoard ();
 
 public slots:
+  void sliderMoved (int value);
   void handleMousePress (int x, int y, Qt::MouseButtons buttons);
   void handleHooverEntered (int x, int y);
   void playMove ();
@@ -29,6 +31,8 @@ public slots:
   void showGammas (int);
 
 private:
+  QSlider* slider1;
+  QSlider* slider2;
   QLabel* statebar;
   GameScene* game_scene;
   QCheckBox* show_gammas;
