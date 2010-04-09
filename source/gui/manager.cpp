@@ -72,9 +72,15 @@ Manager::Manager (Engine& engine) :
 
 
   // Main layout
+  QWidget* right = new QWidget (this);
+  right->setLayout (controls);
+
   QHBoxLayout* mainLayout = new QHBoxLayout;
-  mainLayout->addWidget (new ResizableView(game_scene, this));
-  mainLayout->addLayout (controls);
+  QSplitter* main_widget = new QSplitter (this);
+  mainLayout->addWidget(main_widget);
+  main_widget->addWidget (new ResizableView(game_scene, this));
+  main_widget->addWidget (right);
+  
 
   setLayout (mainLayout);
   refreshBoard ();
