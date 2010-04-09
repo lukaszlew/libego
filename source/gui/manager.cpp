@@ -56,6 +56,9 @@ Manager::Manager (Engine& engine) :
   
   statebar = new QLabel (" ");
   statebar->setFixedWidth(200);
+  QFont font("Monospace");
+  font.setStyleHint(QFont::TypeWriter);
+  statebar->setFont (font);
   controls->addWidget (statebar);
 
   controls->addStretch ();

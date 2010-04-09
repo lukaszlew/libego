@@ -74,6 +74,21 @@ string MctsNode::ToString() const {
   return s.str();
 }
 
+string MctsNode::GuiString() const {
+  stringstream s;
+  s << player.ToGtpString() << " " 
+    << v.ToGtpString() << endl
+    << "MCTS: " << stat.to_string() << endl
+    << "RAVE: " << rave_stat.to_string() << endl
+    << "Bias: " << bias << endl
+    << "Mix:  "
+    << Stat::Mix (stat,      Param::tree_stat_bias,
+                  rave_stat, Param::tree_rave_bias) << endl
+    ;
+
+  return s.str();
+}
+
 namespace {
   bool SubjectiveCmp (const MctsNode* a, const MctsNode* b) {
     return a->stat.update_count() > b->stat.update_count();

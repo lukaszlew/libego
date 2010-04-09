@@ -19,6 +19,7 @@ public:
   // Printing.
 
   string ToString() const;
+  string GuiString() const;
 
   string RecToString (float min_visit, uint max_children) const; 
 

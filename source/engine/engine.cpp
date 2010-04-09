@@ -87,7 +87,7 @@ std::string Engine::GetStringForVertex (Vertex v) {
   Move m = Move (base_board.ActPlayer (), v);
   MctsNode* node = base_node->FindChild (m);
   if (node != NULL) {
-    return node->ToString ();
+    return node->GuiString ();
   } else {
     return "";
   }
