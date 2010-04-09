@@ -35,6 +35,9 @@ Manager::Manager (Engine& engine) :
 {
   // Controlls on the right
   QVBoxLayout* controls = new QVBoxLayout;
+  QWidget* right = new QWidget (this);
+  right->setLayout (controls);
+
   controls->addWidget(new QLabel("<b>Libego</b>"), 0, Qt::AlignHCenter);
 
   QPushButton* play_move = new QPushButton("Play move");
@@ -45,16 +48,29 @@ Manager::Manager (Engine& engine) :
   controls->addWidget (undo_move);
   connect (undo_move, SIGNAL (clicked ()), this, SLOT (undoMove ()));
 
+  radio_nul    = new QRadioButton("Nothing", right);
+  radio_mcts_n = new QRadioButton("MctsN", right);
+  radio_mcts_m = new QRadioButton("MctsMean", right);
+  radio_rave_n = new QRadioButton("RaveN", right);
+  radio_rave_m = new QRadioButton("RaveMean", right);
+  radio_bias   = new QRadioButton("Bias", right);
+  controls->addWidget (radio_nul);
+  controls->addWidget (radio_mcts_n);
+  controls->addWidget (radio_mcts_m);
+  controls->addWidget (radio_rave_n);
+  controls->addWidget (radio_rave_m);
+  controls->addWidget (radio_bias);
+
   slider1 = new QSlider (this);
   slider2 = new QSlider (this);
   slider1->setOrientation (Qt::Horizontal);
   slider2->setOrientation (Qt::Horizontal);
-  slider1->setMinimum (0);
-  slider2->setMinimum (0);
+  slider1->setMinimum (-100);
+  slider2->setMinimum (-100);
   slider1->setMaximum (100);
   slider2->setMaximum (100);
-  slider1->setValue (50);
-  slider2->setValue (50);
+  slider1->setValue (0);
+  slider2->setValue (0);
   controls->addWidget (slider1);
   controls->addWidget (slider2);
   connect (slider1, SIGNAL (sliderMoved (int)), this, SLOT (sliderMoved (int)));
@@ -84,8 +100,6 @@ Manager::Manager (Engine& engine) :
 
 
   // Main layout
-  QWidget* right = new QWidget (this);
-  right->setLayout (controls);
 
   QHBoxLayout* mainLayout = new QHBoxLayout;
   QSplitter* main_widget = new QSplitter (this);
@@ -144,7 +158,14 @@ void Manager::refreshBoard ()
   NatMap <Vertex, double> influence;
 
   if (show_gammas->checkState() == Qt::Checked) {
-    engine.GetInfluence (Engine::RaveMean, influence);
+    Engine::InfluenceType type;
+    if (radio_mcts_n->isChecked()) type = Engine::MctsN;
+    if (radio_mcts_m->isChecked()) type = Engine::MctsMean;
+    if (radio_rave_n->isChecked()) type = Engine::RaveN;
+    if (radio_rave_m->isChecked()) type = Engine::RaveMean;
+    if (radio_bias->isChecked())   type = Engine::Bias;
+    
+    engine.GetInfluence (type, influence);
   }
 
   for (uint x=1; x<=board_size; x++) {
@@ -167,14 +188,13 @@ void Manager::refreshBoard ()
       }
 
       //show gammas
-      double min_val = slider1->value() / 100.0 - slider2->value() / 100.0;
-      double max_val = slider1->value() / 100.0 + slider2->value() / 100.0;
-      double val = (influence [v] - min_val) / (max_val - min_val);
+      double scale = pow (4, slider1->value() / 100.0);
+      double val = influence [v] * scale;
+      val = max (val, -1.0);
+      val = min (val, 1.0);
       if (show_gammas->checkState() == Qt::Checked && !isnan (val)) {
-        val = max (val, 0.0);
-        val = min (val, 1.0);
         QColor color;
-        color.setHsvF (val / 3.0, 1.0, 1.0, 0.6);
+        color.setHsvF ((val + 1) / 6.0, 1.0, 1.0, 0.6);
         game_scene->addBGMark (x, y, color);
         //game_scene->addLabel (x, y, QString::number (val, 'f', 2));
       } else {

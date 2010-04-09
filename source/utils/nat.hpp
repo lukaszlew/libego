@@ -48,6 +48,7 @@ class NatMap {
   void SetAllToZero (); // Assumes POD of Elt, uses memset
   void Scale (Elt min_val, Elt max_val);
   void ScalePositive ();
+  void Normalize ();
   void Load (const NatMap& other);
 
  private:

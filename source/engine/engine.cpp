@@ -97,7 +97,7 @@ void Engine::GetInfluence (InfluenceType type,
       influence [v] = nan ("");
     }
   }
-  //influence.ScalePositive();
+  influence.Normalize();
 }
 
 

@@ -134,6 +134,29 @@ void NatMap <Nat, Elt>::ScalePositive () {
 }
 
 template <typename Nat, typename Elt>
+void NatMap <Nat, Elt>::Normalize () {
+  Elt n = 0.0;
+  Elt sum = 0.0;
+  Elt sum2 = 0.0;
+
+  ForEachNat (Nat, nat) {
+    Elt val = (*this) [nat];
+    if (std::isnan (val)) continue;
+    n += 1;
+    sum += val;
+    sum2 += val*val;
+  }
+
+  Elt mean = sum / n;
+  Elt stddev = sqrt (sum2 / n - mean * mean);
+
+  ForEachNat (Nat, nat) {
+    (*this) [nat] -= mean;
+    (*this) [nat] /= stddev;
+  }
+}
+
+template <typename Nat, typename Elt>
 void NatMap <Nat, Elt>::Load (const NatMap& other) {
   memcpy(this, &other, sizeof(NatMap));
 }

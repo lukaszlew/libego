@@ -6,6 +6,7 @@
 #include <QDialog>
 #include <QLabel>
 #include <QSlider>
+#include <QRadioButton>
 
 
 class GameScene;
@@ -31,8 +32,16 @@ public slots:
   void showGammas (int);
 
 private:
+  QRadioButton* radio_nul;
+  QRadioButton* radio_mcts_n;
+  QRadioButton* radio_mcts_m;
+  QRadioButton* radio_rave_n;
+  QRadioButton* radio_rave_m;
+  QRadioButton* radio_bias;
+
   QSlider* slider1;
   QSlider* slider2;
+
   QLabel* statebar;
   GameScene* game_scene;
   QCheckBox* show_gammas;
