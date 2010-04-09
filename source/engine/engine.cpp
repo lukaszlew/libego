@@ -65,13 +65,31 @@ const Board& Engine::GetBoard () const {
 
 
 
-void Engine::GetInfluence (NatMap <Vertex,double>& influence) const {
+void Engine::GetInfluence (InfluenceType type, 
+                           NatMap <Vertex,double>& influence) const
+{
   ForEachNat (Vertex, v) {
     Move m = Move (base_board.ActPlayer (), v);
     if (base_board.IsLegal (m)) {
       MctsNode* node = base_node->FindChild (m);
       if (node != NULL) {
-        influence [v] = (node->stat.mean() + 1) / 2;
+        switch (type) {
+        case MctsN:
+          influence [v] = log (node->stat.update_count());
+          break;
+        case MctsMean:
+          influence [v] = (node->stat.mean() + 1) / 2;
+          break;
+        case RaveN:
+          influence [v] = log (node->rave_stat.update_count());
+          break;
+        case RaveMean:
+          influence [v] = (node->rave_stat.mean() + 1) / 2;
+          break;
+        case Bias:
+          influence [v] = node->bias;
+          break;
+        }
       } else {
         influence [v] = nan ("");
       }

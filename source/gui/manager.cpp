@@ -144,7 +144,7 @@ void Manager::refreshBoard ()
   NatMap <Vertex, double> influence;
 
   if (show_gammas->checkState() == Qt::Checked) {
-    engine.GetInfluence (influence);
+    engine.GetInfluence (Engine::RaveMean, influence);
   }
 
   for (uint x=1; x<=board_size; x++) {
