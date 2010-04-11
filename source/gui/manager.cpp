@@ -29,6 +29,7 @@ Vertex gui2vertex (int x, int y) {
 
 // -----------------------------------------------------------------------------
 
+
 Manager::Manager (Engine& engine) :
   QDialog (0),
   engine (engine)
@@ -54,18 +55,21 @@ Manager::Manager (Engine& engine) :
   radio_rave_n = new QRadioButton("RaveN", right);
   radio_rave_m = new QRadioButton("RaveMean", right);
   radio_bias   = new QRadioButton("Bias", right);
+  radio_mix    = new QRadioButton("MctsPolicyMix", right);
   controls->addWidget (radio_nul);
   controls->addWidget (radio_mcts_n);
   controls->addWidget (radio_mcts_m);
   controls->addWidget (radio_rave_n);
   controls->addWidget (radio_rave_m);
   controls->addWidget (radio_bias);
+  controls->addWidget (radio_mix);
   connect (radio_nul, SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
   connect (radio_mcts_n, SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
   connect (radio_mcts_m, SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
   connect (radio_rave_n, SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
   connect (radio_rave_m, SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
   connect (radio_bias, SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
+  connect (radio_mix, SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
   radio_nul->setChecked (true);
 
   slider1 = new QSlider (this);
@@ -166,6 +170,7 @@ void Manager::refreshBoard ()
   if (radio_rave_n->isChecked()) type = Engine::RaveN;
   if (radio_rave_m->isChecked()) type = Engine::RaveMean;
   if (radio_bias->isChecked())   type = Engine::Bias;
+  if (radio_mix->isChecked())    type = Engine::MctsPolicyMix;
   engine.GetInfluence (type, influence);
 
   for (uint x=1; x<=board_size; x++) {

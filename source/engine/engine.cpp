@@ -64,10 +64,12 @@ const Board& Engine::GetBoard () const {
 }
 
 
-
+// -----------------------------------------------------------------------------
 void Engine::GetInfluence (InfluenceType type, 
                            NatMap <Vertex,double>& influence) const
 {
+  float log_val = log (base_node->stat.update_count ());
+
   ForEachNat (Vertex, v) {
     Move m = Move (base_board.ActPlayer (), v);
     if (base_board.IsLegal (m)) {
@@ -92,6 +94,8 @@ void Engine::GetInfluence (InfluenceType type,
         case Bias:
           influence [v] = node->bias;
           break;
+        case MctsPolicyMix:
+          influence [v] = node->SubjectiveRaveValue (base_board.ActPlayer(), log_val);
         }
       } else {
         influence [v] = nan ("");

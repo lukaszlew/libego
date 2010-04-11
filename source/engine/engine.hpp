@@ -33,10 +33,15 @@ public:
   void PlayMove (Move m);
   double Score ();
 
-  enum InfluenceType { NoInfluence,
-                       MctsN, MctsMean,
-                       RaveN, RaveMean,
-                       Bias };
+  enum InfluenceType {
+    NoInfluence,
+    MctsN,
+    MctsMean,
+    RaveN,
+    RaveMean,
+    Bias,
+    MctsPolicyMix
+  };
 
   void GetInfluence (InfluenceType type, NatMap <Vertex,double>& influence) const;
   std::string GetStringForVertex (Vertex v);
