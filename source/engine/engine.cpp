@@ -74,6 +74,9 @@ void Engine::GetInfluence (InfluenceType type,
       MctsNode* node = base_node->FindChild (m);
       if (node != NULL) {
         switch (type) {
+        case NoInfluence:
+          influence [v] = nan ("");
+          break;
         case MctsN:
           influence [v] = log (node->stat.update_count());
           break;

@@ -60,6 +60,13 @@ Manager::Manager (Engine& engine) :
   controls->addWidget (radio_rave_n);
   controls->addWidget (radio_rave_m);
   controls->addWidget (radio_bias);
+  connect (radio_nul, SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
+  connect (radio_mcts_n, SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
+  connect (radio_mcts_m, SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
+  connect (radio_rave_n, SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
+  connect (radio_rave_m, SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
+  connect (radio_bias, SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
+  radio_nul->setChecked (true);
 
   slider1 = new QSlider (this);
   slider2 = new QSlider (this);
@@ -75,11 +82,6 @@ Manager::Manager (Engine& engine) :
   controls->addWidget (slider2);
   connect (slider1, SIGNAL (sliderMoved (int)), this, SLOT (sliderMoved (int)));
   connect (slider2, SIGNAL (sliderMoved (int)), this, SLOT (sliderMoved (int)));
-
-  show_gammas = new QCheckBox ("Show gammas");
-  controls->addWidget (show_gammas);
-  connect (show_gammas, SIGNAL (stateChanged (int)),
-           this, SLOT (showGammas (int)));
 
   
   statebar = new QLabel (" ");
@@ -157,16 +159,14 @@ void Manager::refreshBoard ()
 
   NatMap <Vertex, double> influence;
 
-  if (show_gammas->checkState() == Qt::Checked) {
-    Engine::InfluenceType type;
-    if (radio_mcts_n->isChecked()) type = Engine::MctsN;
-    if (radio_mcts_m->isChecked()) type = Engine::MctsMean;
-    if (radio_rave_n->isChecked()) type = Engine::RaveN;
-    if (radio_rave_m->isChecked()) type = Engine::RaveMean;
-    if (radio_bias->isChecked())   type = Engine::Bias;
-    
-    engine.GetInfluence (type, influence);
-  }
+  Engine::InfluenceType type = Engine::NoInfluence;
+  if (radio_nul->isChecked())    type = Engine::NoInfluence;
+  if (radio_mcts_n->isChecked()) type = Engine::MctsN;
+  if (radio_mcts_m->isChecked()) type = Engine::MctsMean;
+  if (radio_rave_n->isChecked()) type = Engine::RaveN;
+  if (radio_rave_m->isChecked()) type = Engine::RaveMean;
+  if (radio_bias->isChecked())   type = Engine::Bias;
+  engine.GetInfluence (type, influence);
 
   for (uint x=1; x<=board_size; x++) {
     for (uint y=1; y<=board_size; y++) {
@@ -192,7 +192,7 @@ void Manager::refreshBoard ()
       double val = influence [v] * scale;
       val = max (val, -1.0);
       val = min (val, 1.0);
-      if (show_gammas->checkState() == Qt::Checked && !isnan (val)) {
+      if (!isnan (val)) {
         QColor color;
         color.setHsvF ((val + 1) / 6.0, 1.0, 1.0, 0.6);
         game_scene->addBGMark (x, y, color);

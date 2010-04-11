@@ -21,9 +21,9 @@ class Manager : public QDialog {
 public:
   Manager (Engine& engine);
 
-  void refreshBoard ();
 
 public slots:
+  void refreshBoard ();
   void sliderMoved (int value);
   void handleMousePress (int x, int y, Qt::MouseButtons buttons);
   void handleHooverEntered (int x, int y);
@@ -44,7 +44,6 @@ private:
 
   QLabel* statebar;
   GameScene* game_scene;
-  QCheckBox* show_gammas;
   Engine& engine;
 
 private:
