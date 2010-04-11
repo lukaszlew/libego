@@ -45,6 +45,7 @@ private:
   QRadioButton* radio_bias;
   QRadioButton* radio_mix;
   QRadioButton* radio_samp_p;
+  QRadioButton* radio_gamma;
 
   QSlider* slider1;
   QSlider* slider2;

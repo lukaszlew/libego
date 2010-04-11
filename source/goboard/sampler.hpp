@@ -203,6 +203,13 @@ struct Sampler {
     }
   }
 
+  void GetPatternGammas (NatMap <Vertex,double>& gamma) {
+    ForEachNat (Vertex, v) {
+      gamma [v] = act_gamma [v] [board.ActPlayer()];
+      if (gamma [v] == 0.0) gamma[v] = nan ("");
+    }
+  }
+
 private:
 
   void CheckLocalSumCorrect () const {

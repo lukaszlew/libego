@@ -41,7 +41,8 @@ public:
     RaveMean,
     Bias,
     MctsPolicyMix,
-    SamplerMoveProb
+    SamplerMoveProb,
+    PatternGammas
   };
 
   void GetInfluence (InfluenceType type, NatMap <Vertex,double>& influence);

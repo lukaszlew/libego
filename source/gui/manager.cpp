@@ -57,6 +57,7 @@ Manager::Manager (Engine& engine) :
   radio_bias   = new QRadioButton("Bias", right);
   radio_mix    = new QRadioButton("MctsPolicyMix", right);
   radio_samp_p = new QRadioButton("SamplerProb", right);
+  radio_gamma  = new QRadioButton("PatternGammas", right);
   controls->addWidget (radio_nul);
   controls->addWidget (radio_mcts_n);
   controls->addWidget (radio_mcts_m);
@@ -65,6 +66,7 @@ Manager::Manager (Engine& engine) :
   controls->addWidget (radio_bias);
   controls->addWidget (radio_mix);
   controls->addWidget (radio_samp_p);
+  controls->addWidget (radio_gamma);
   connect (radio_nul,    SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
   connect (radio_mcts_n, SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
   connect (radio_mcts_m, SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
@@ -73,6 +75,8 @@ Manager::Manager (Engine& engine) :
   connect (radio_bias,   SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
   connect (radio_mix,    SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
   connect (radio_samp_p, SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
+  connect (radio_gamma,  SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
+
   radio_nul->setChecked (true);
 
   slider1 = new QSlider (this);
@@ -171,6 +175,7 @@ void Manager::getInfluence () {
   if (radio_bias->isChecked())   type = Engine::Bias;
   if (radio_mix->isChecked())    type = Engine::MctsPolicyMix;
   if (radio_samp_p->isChecked()) type = Engine::SamplerMoveProb;
+  if (radio_gamma->isChecked())  type = Engine::PatternGammas;
   engine.GetInfluence (type, influence);
 }
 

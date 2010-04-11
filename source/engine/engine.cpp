@@ -73,6 +73,12 @@ void Engine::GetInfluence (InfluenceType type,
     return;
   }
 
+  if (type == PatternGammas) {
+    PrepareToPlayout ();
+    sampler.GetPatternGammas (influence);
+    return;
+  }
+
   float log_val = log (base_node->stat.update_count ());
 
   ForEachNat (Vertex, v) {
@@ -102,6 +108,7 @@ void Engine::GetInfluence (InfluenceType type,
         case MctsPolicyMix:
           influence [v] = node->SubjectiveRaveValue (base_board.ActPlayer(), log_val);
           break;
+        case PatternGammas:
         case SamplerMoveProb:
           CHECK (false);
         }
