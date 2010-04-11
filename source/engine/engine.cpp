@@ -71,7 +71,7 @@ void Engine::GetInfluence (InfluenceType type,
     PrepareToPlayout ();
     sampler.RecalcMoveProb();
     influence = sampler.move_prob;
-    influence.ScalePositive ();
+    influence.Scale (-1.0, 1.0);
     return;
   }
 

@@ -193,7 +193,7 @@ struct Sampler {
     FastRandom fr (123); // TODO auto seed 
     move_prob.SetAll (0.0);
     ForEachNat (Vertex, v) {
-      if (v.IsOnBoard () || v == Vertex::Pass ()) move_prob [v] = 0.0;
+      if (v.IsOnBoard ()) move_prob [v] = 0.0;
       else move_prob [v] = nan("");
     }
 

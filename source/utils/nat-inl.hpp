@@ -113,6 +113,8 @@ void NatMap <Nat, Elt>::Scale (Elt min_val, Elt max_val) {
     Elt& elt = (*this) [nat];
     elt = (elt - min_all) / (max_all - min_all);
     elt = elt * (max_val - min_val) + min_val;
+    (*this) [nat] = elt;    
+    cerr << nat.ToGtpString () << " " << elt << endl;
   }
 }
 
