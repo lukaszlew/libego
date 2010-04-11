@@ -56,6 +56,7 @@ Manager::Manager (Engine& engine) :
   radio_rave_m = new QRadioButton("RaveMean", right);
   radio_bias   = new QRadioButton("Bias", right);
   radio_mix    = new QRadioButton("MctsPolicyMix", right);
+  radio_samp_p = new QRadioButton("SamplerProb", right);
   controls->addWidget (radio_nul);
   controls->addWidget (radio_mcts_n);
   controls->addWidget (radio_mcts_m);
@@ -63,13 +64,15 @@ Manager::Manager (Engine& engine) :
   controls->addWidget (radio_rave_m);
   controls->addWidget (radio_bias);
   controls->addWidget (radio_mix);
-  connect (radio_nul, SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
+  controls->addWidget (radio_samp_p);
+  connect (radio_nul,    SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
   connect (radio_mcts_n, SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
   connect (radio_mcts_m, SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
   connect (radio_rave_n, SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
   connect (radio_rave_m, SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
-  connect (radio_bias, SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
-  connect (radio_mix, SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
+  connect (radio_bias,   SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
+  connect (radio_mix,    SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
+  connect (radio_samp_p, SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
   radio_nul->setChecked (true);
 
   slider1 = new QSlider (this);
@@ -171,6 +174,7 @@ void Manager::refreshBoard ()
   if (radio_rave_m->isChecked()) type = Engine::RaveMean;
   if (radio_bias->isChecked())   type = Engine::Bias;
   if (radio_mix->isChecked())    type = Engine::MctsPolicyMix;
+  if (radio_samp_p->isChecked()) type = Engine::SamplerMoveProb;
   engine.GetInfluence (type, influence);
 
   for (uint x=1; x<=board_size; x++) {

@@ -64,10 +64,17 @@ const Board& Engine::GetBoard () const {
 }
 
 
-// -----------------------------------------------------------------------------
 void Engine::GetInfluence (InfluenceType type, 
-                           NatMap <Vertex,double>& influence) const
+                           NatMap <Vertex,double>& influence)
 {
+  if (type == SamplerMoveProb) {
+    PrepareToPlayout ();
+    sampler.RecalcMoveProb();
+    influence = sampler.move_prob;
+    influence.ScalePositive ();
+    return;
+  }
+
   float log_val = log (base_node->stat.update_count ());
 
   ForEachNat (Vertex, v) {
@@ -96,6 +103,9 @@ void Engine::GetInfluence (InfluenceType type,
           break;
         case MctsPolicyMix:
           influence [v] = node->SubjectiveRaveValue (base_board.ActPlayer(), log_val);
+          break;
+        case SamplerMoveProb:
+          CHECK (false);
         }
       } else {
         influence [v] = nan ("");

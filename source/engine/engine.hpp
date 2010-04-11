@@ -40,10 +40,11 @@ public:
     RaveN,
     RaveMean,
     Bias,
-    MctsPolicyMix
+    MctsPolicyMix,
+    SamplerMoveProb
   };
 
-  void GetInfluence (InfluenceType type, NatMap <Vertex,double>& influence) const;
+  void GetInfluence (InfluenceType type, NatMap <Vertex,double>& influence);
   std::string GetStringForVertex (Vertex v);
   vector<Move> LastPlayout ();
 
@@ -58,7 +59,6 @@ private:
 
   MctsNode root;
   Sampler sampler;
-
 
   Board base_board;
   MctsNode* base_node;

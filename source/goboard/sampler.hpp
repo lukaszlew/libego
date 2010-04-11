@@ -189,6 +189,21 @@ struct Sampler {
     return Vertex::Pass();
   }
 
+  void RecalcMoveProb () {
+    FastRandom fr (123); // TODO auto seed 
+    move_prob.SetAll (0.0);
+    ForEachNat (Vertex, v) {
+      if (v.IsOnBoard () || v == Vertex::Pass ()) move_prob [v] = 0.0;
+      else move_prob [v] = nan("");
+    }
+
+    uint nn = 10000;
+    rep (ii, nn) {
+      Vertex v = SampleMove (fr);
+      move_prob [v] += 1.0 / nn;
+    }
+  }
+
 private:
 
   void CheckLocalSumCorrect () const {
@@ -266,6 +281,8 @@ public:
   NatMap <Player, double> act_gamma_sum;
   double proximity_bonus [2]; // TODO move this to Gammas 
 
+  NatMap <Vertex,double> move_prob;
+
 private:
   const Board& board;
   const Gammas& gammas;
@@ -275,6 +292,7 @@ private:
   NatMap <Vertex, double> local_gamma;
   double total_non_local_gamma;
   double total_local_gamma;
+
 
   Vertex ko_v;
 };

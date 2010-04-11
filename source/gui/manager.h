@@ -39,6 +39,7 @@ private:
   QRadioButton* radio_rave_m;
   QRadioButton* radio_bias;
   QRadioButton* radio_mix;
+  QRadioButton* radio_samp_p;
 
   QSlider* slider1;
   QSlider* slider2;

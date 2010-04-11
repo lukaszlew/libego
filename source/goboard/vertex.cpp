@@ -128,8 +128,8 @@ string Vertex::ToGtpString() const {
   if (*this == Invalid()) return "invalid";
   if (*this == Pass())    return "pass";
   if (*this == Any())     return "any";
+  if (!IsOnBoard ())      return "off board";
 
-  CHECK (IsOnBoard ());
   return
     Coord::ColumnToGtpString (GetColumn()) +
     Coord::RowToGtpString    (GetRow());

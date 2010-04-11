@@ -147,12 +147,17 @@ void NatMap <Nat, Elt>::Normalize () {
     sum2 += val*val;
   }
 
+  if (n == 0.0) return;
+
   Elt mean = sum / n;
   Elt stddev = sqrt (sum2 / n - mean * mean);
 
+  cerr << "Normalize: (x - " << mean << ") / " << stddev << endl;
+
   ForEachNat (Nat, nat) {
-    (*this) [nat] -= mean;
-    (*this) [nat] /= stddev;
+    (*this) [nat] = (*this) [nat] - mean;
+    (*this) [nat] = (*this) [nat] / stddev;
+    cerr << nat.ToGtpString() << " " << (*this) [nat] << " " << endl;
   }
 }
 
