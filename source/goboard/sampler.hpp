@@ -189,18 +189,17 @@ struct Sampler {
     return Vertex::Pass();
   }
 
-  void RecalcMoveProb () {
+  void SampleMany (uint nn, NatMap <Vertex,double>& count) {
     FastRandom fr (123); // TODO auto seed 
-    move_prob.SetAll (0.0);
+    count.SetAll (0.0);
     ForEachNat (Vertex, v) {
-      if (v.IsOnBoard ()) move_prob [v] = 0.0;
-      else move_prob [v] = nan("");
+      if (v.IsOnBoard ()) count [v] = 0.0;
+      else count [v] = nan("");
     }
 
-    uint nn = 10000;
     rep (ii, nn) {
       Vertex v = SampleMove (fr);
-      move_prob [v] += 1.0 / nn;
+      count [v] += 1.0;
     }
   }
 
@@ -280,8 +279,6 @@ public:
   NatMap <Vertex, NatMap<Player, double> > act_gamma;
   NatMap <Player, double> act_gamma_sum;
   double proximity_bonus [2]; // TODO move this to Gammas 
-
-  NatMap <Vertex,double> move_prob;
 
 private:
   const Board& board;

@@ -69,8 +69,7 @@ void Engine::GetInfluence (InfluenceType type,
 {
   if (type == SamplerMoveProb) {
     PrepareToPlayout ();
-    sampler.RecalcMoveProb();
-    influence = sampler.move_prob;
+    sampler.SampleMany (10000, influence);
     return;
   }
 
