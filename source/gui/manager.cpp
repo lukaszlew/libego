@@ -132,8 +132,10 @@ void Manager::handleMousePress (int x, int y, Qt::MouseButtons buttons)
 
 
 void Manager::handleHooverEntered (int x, int y) {
-  QString hoover_text = engine.GetStringForVertex (gui2vertex (x, y)).c_str ();
-  statebar->setText (hoover_text);
+  Vertex v = gui2vertex (x, y);
+  QString hoover_text = engine.GetStringForVertex (v).c_str ();
+  hoover_text += "%1\n";
+  statebar->setText (hoover_text.arg (influence[v]));
 }
 
 void Manager::sliderMoved (int) {

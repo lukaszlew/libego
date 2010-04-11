@@ -10,6 +10,7 @@
 class FastRandom {             // Park - Miller "minimal standard"
 public:
 
+  FastRandom ();
   FastRandom (uint seed);
   void SetSeed (uint seed);
   uint GetSeed ();

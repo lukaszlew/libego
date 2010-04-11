@@ -190,10 +190,10 @@ struct Sampler {
   }
 
   void SampleMany (uint nn, NatMap <Vertex,double>& count) {
-    FastRandom fr (123); // TODO auto seed 
+    FastRandom fr;
     count.SetAll (0.0);
     ForEachNat (Vertex, v) {
-      if (v.IsOnBoard ()) count [v] = 0.0;
+      if (v.IsOnBoard () && board.IsLegal (board.ActPlayer(), v)) count [v] = 0.0;
       else count [v] = nan("");
     }
 

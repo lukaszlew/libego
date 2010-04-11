@@ -14,6 +14,9 @@
 FastRandom::FastRandom (uint seed) : seed (seed) {
 }
 
+FastRandom::FastRandom () : seed (TimeSeed()) {
+}
+
 void FastRandom::SetSeed (uint new_seed) { 
   seed = new_seed;
 }
