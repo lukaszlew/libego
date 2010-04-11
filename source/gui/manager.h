@@ -8,6 +8,9 @@
 #include <QSlider>
 #include <QRadioButton>
 
+#include <nat.hpp>
+#include <vertex.hpp>
+#include <vertex.hpp>
 
 class GameScene;
 class QCheckBox;
@@ -23,6 +26,7 @@ public:
 
 
 public slots:
+  void getInfluence ();
   void refreshBoard ();
   void sliderMoved (int value);
   void handleMousePress (int x, int y, Qt::MouseButtons buttons);
@@ -32,6 +36,7 @@ public slots:
   void showGammas (int);
 
 private:
+
   QRadioButton* radio_nul;
   QRadioButton* radio_mcts_n;
   QRadioButton* radio_mcts_m;
@@ -45,7 +50,10 @@ private:
   QSlider* slider2;
 
   QLabel* statebar;
+
   GameScene* game_scene;
+  NatMap <Vertex, double> influence;
+
   Engine& engine;
 
 private:

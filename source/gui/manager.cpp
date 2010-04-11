@@ -159,13 +159,7 @@ void Manager::undoMove ()
   refreshBoard ();
 }
 
-
-void Manager::refreshBoard ()
-{
-  std::cout << "refreshBoard ()" << std::endl;
-
-  NatMap <Vertex, double> influence;
-
+void Manager::getInfluence () {
   Engine::InfluenceType type = Engine::NoInfluence;
   if (radio_nul->isChecked())    type = Engine::NoInfluence;
   if (radio_mcts_n->isChecked()) type = Engine::MctsN;
@@ -176,6 +170,11 @@ void Manager::refreshBoard ()
   if (radio_mix->isChecked())    type = Engine::MctsPolicyMix;
   if (radio_samp_p->isChecked()) type = Engine::SamplerMoveProb;
   engine.GetInfluence (type, influence);
+}
+
+void Manager::refreshBoard ()
+{
+  std::cout << "refreshBoard ()" << std::endl;
 
   for (uint x=1; x<=board_size; x++) {
     for (uint y=1; y<=board_size; y++) {
@@ -195,17 +194,29 @@ void Manager::refreshBoard ()
       } else {
         game_scene->removeCircle (x,y);
       }
+    }
+  }
 
-      //show gammas
-      double scale = pow (4, slider1->value() / 100.0);
-      double val = influence [v] * scale;
+  //show gammas
+  getInfluence ();
+  NatMap <Vertex, double> hsv = influence;
+  ForEachNat (Vertex, v) {
+    if (!v.IsOnBoard()) hsv [v] = nan("");
+  }
+  hsv.Scale (-1, 1);
+
+  for (uint x=1; x<=board_size; x++) {
+    for (uint y=1; y<=board_size; y++) {
+      Vertex v = gui2vertex (x,y);
+      double mean  = slider1->value() / 100.0;
+      double scale = pow (100, slider2->value() / 100.0);
+      double val = (hsv [v] - mean) * scale;
       val = max (val, -1.0);
       val = min (val, 1.0);
       if (!isnan (val)) {
         QColor color;
         color.setHsvF ((val + 1) / 6.0, 1.0, 1.0, 0.6);
         game_scene->addBGMark (x, y, color);
-        //game_scene->addLabel (x, y, QString::number (val, 'f', 2));
       } else {
         game_scene->removeBGMark (x, y);
       }

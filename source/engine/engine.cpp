@@ -71,7 +71,6 @@ void Engine::GetInfluence (InfluenceType type,
     PrepareToPlayout ();
     sampler.RecalcMoveProb();
     influence = sampler.move_prob;
-    influence.Scale (-1.0, 1.0);
     return;
   }
 
@@ -87,16 +86,16 @@ void Engine::GetInfluence (InfluenceType type,
           influence [v] = nan ("");
           break;
         case MctsN:
-          influence [v] = log (node->stat.update_count());
+          influence [v] = log10 (node->stat.update_count());
           break;
         case MctsMean:
-          influence [v] = (node->stat.mean() + 1) / 2;
+          influence [v] = node->stat.mean();
           break;
         case RaveN:
-          influence [v] = log (node->rave_stat.update_count());
+          influence [v] = log10 (node->rave_stat.update_count());
           break;
         case RaveMean:
-          influence [v] = (node->rave_stat.mean() + 1) / 2;
+          influence [v] = node->rave_stat.mean();
           break;
         case Bias:
           influence [v] = node->bias;
@@ -114,7 +113,6 @@ void Engine::GetInfluence (InfluenceType type,
       influence [v] = nan ("");
     }
   }
-  influence.Normalize();
 }
 
 

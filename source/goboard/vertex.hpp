@@ -9,6 +9,8 @@
 #include <string>
 #include "config.hpp"
 
+class Dir;
+
 namespace Coord {
   bool IsOk (int coord);
 
