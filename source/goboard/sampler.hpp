@@ -203,9 +203,20 @@ struct Sampler {
     }
   }
 
-  void GetPatternGammas (NatMap <Vertex,double>& gamma) {
+  void GetPatternGammas (NatMap <Vertex,double>& gamma, bool use_local_features) {
     ForEachNat (Vertex, v) {
       gamma [v] = act_gamma [v] [board.ActPlayer()];
+    }
+
+    if (use_local_features) {
+      CalculateLocalGammas ();
+      rep (ii, local_vertices.Size ()) {
+        Vertex nbr = local_vertices [ii];
+        gamma [nbr] = local_gamma [nbr];
+      }
+    }
+
+    ForEachNat (Vertex, v) {
       if (gamma [v] == 0.0) gamma[v] = nan ("");
     }
   }

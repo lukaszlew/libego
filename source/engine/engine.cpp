@@ -59,6 +59,16 @@ bool Engine::Undo () {
 }
 
 
+void Engine::DoPlayoutMove () {
+  PrepareToPlayout ();
+  FastRandom fr;
+  Vertex v = sampler.SampleMove (fr);
+  Move move = Move (base_board.ActPlayer (), v);
+  CHECK (move.IsValid ());
+  CHECK (Play (move));
+}
+
+
 const Board& Engine::GetBoard () const {
   return base_board;
 }
@@ -75,7 +85,13 @@ void Engine::GetInfluence (InfluenceType type,
 
   if (type == PatternGammas) {
     PrepareToPlayout ();
-    sampler.GetPatternGammas (influence);
+    sampler.GetPatternGammas (influence, false);
+    return;
+  }
+
+  if (type == CompleteGammas) {
+    PrepareToPlayout ();
+    sampler.GetPatternGammas (influence, true);
     return;
   }
 
@@ -108,8 +124,9 @@ void Engine::GetInfluence (InfluenceType type,
         case MctsPolicyMix:
           influence [v] = node->SubjectiveRaveValue (base_board.ActPlayer(), log_val);
           break;
-        case PatternGammas:
         case SamplerMoveProb:
+        case PatternGammas:
+        case CompleteGammas:
           CHECK (false);
         }
       } else {

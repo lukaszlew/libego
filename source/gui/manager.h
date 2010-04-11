@@ -33,6 +33,7 @@ public slots:
   void handleHooverEntered (int x, int y);
   void playMove ();
   void undoMove ();
+  void playoutMove ();
   void showGammas (int);
 
 private:
@@ -46,6 +47,7 @@ private:
   QRadioButton* radio_mix;
   QRadioButton* radio_samp_p;
   QRadioButton* radio_gamma;
+  QRadioButton* radio_gamma2;
 
   QSlider* slider1;
   QSlider* slider2;

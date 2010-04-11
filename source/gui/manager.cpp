@@ -49,6 +49,10 @@ Manager::Manager (Engine& engine) :
   controls->addWidget (undo_move);
   connect (undo_move, SIGNAL (clicked ()), this, SLOT (undoMove ()));
 
+  QPushButton* playout_move = new QPushButton ("Playout Move");
+  controls->addWidget (playout_move);
+  connect (playout_move, SIGNAL (clicked ()), this, SLOT (playoutMove ()));
+
   radio_nul    = new QRadioButton("Nothing", right);
   radio_mcts_n = new QRadioButton("MctsN", right);
   radio_mcts_m = new QRadioButton("MctsMean", right);
@@ -58,6 +62,7 @@ Manager::Manager (Engine& engine) :
   radio_mix    = new QRadioButton("MctsPolicyMix", right);
   radio_samp_p = new QRadioButton("SamplerProb", right);
   radio_gamma  = new QRadioButton("PatternGammas", right);
+  radio_gamma2 = new QRadioButton("CompleteGammas", right);
   controls->addWidget (radio_nul);
   controls->addWidget (radio_mcts_n);
   controls->addWidget (radio_mcts_m);
@@ -67,6 +72,7 @@ Manager::Manager (Engine& engine) :
   controls->addWidget (radio_mix);
   controls->addWidget (radio_samp_p);
   controls->addWidget (radio_gamma);
+  controls->addWidget (radio_gamma2);
   connect (radio_nul,    SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
   connect (radio_mcts_n, SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
   connect (radio_mcts_m, SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
@@ -76,6 +82,7 @@ Manager::Manager (Engine& engine) :
   connect (radio_mix,    SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
   connect (radio_samp_p, SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
   connect (radio_gamma,  SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
+  connect (radio_gamma2, SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
 
   radio_nul->setChecked (true);
 
@@ -165,6 +172,12 @@ void Manager::undoMove ()
   refreshBoard ();
 }
 
+void Manager::playoutMove ()
+{
+  engine.DoPlayoutMove ();
+  refreshBoard ();
+}
+
 void Manager::getInfluence () {
   Engine::InfluenceType type = Engine::NoInfluence;
   if (radio_nul->isChecked())    type = Engine::NoInfluence;
@@ -176,6 +189,7 @@ void Manager::getInfluence () {
   if (radio_mix->isChecked())    type = Engine::MctsPolicyMix;
   if (radio_samp_p->isChecked()) type = Engine::SamplerMoveProb;
   if (radio_gamma->isChecked())  type = Engine::PatternGammas;
+  if (radio_gamma2->isChecked()) type = Engine::CompleteGammas;
   engine.GetInfluence (type, influence);
 }
 

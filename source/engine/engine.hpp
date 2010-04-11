@@ -21,6 +21,8 @@ public:
   Move Genmove (Player player);
   bool Undo ();
 
+  void DoPlayoutMove ();
+
   const Board& GetBoard () const;
 
   // Playout functions
@@ -42,7 +44,8 @@ public:
     Bias,
     MctsPolicyMix,
     SamplerMoveProb,
-    PatternGammas
+    PatternGammas,
+    CompleteGammas
   };
 
   void GetInfluence (InfluenceType type, NatMap <Vertex,double>& influence);
