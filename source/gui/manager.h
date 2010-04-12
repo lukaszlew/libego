@@ -49,6 +49,8 @@ private:
   QRadioButton* radio_samp_p;
   QRadioButton* radio_gamma;
   QRadioButton* radio_gamma2;
+  QRadioButton* radio_terr;
+  QRadioButton* radio_terr2;
 
   QSlider* slider1;
   QSlider* slider2;

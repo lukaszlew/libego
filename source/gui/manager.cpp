@@ -67,6 +67,8 @@ Manager::Manager (Engine& engine) :
   radio_samp_p = new QRadioButton("SamplerProb", right);
   radio_gamma  = new QRadioButton("PatternGammas", right);
   radio_gamma2 = new QRadioButton("CompleteGammas", right);
+  radio_terr   = new QRadioButton("Territory", right);
+  radio_terr2  = new QRadioButton("Territory with tree", right);
   controls->addWidget (radio_nul);
   controls->addWidget (radio_mcts_n);
   controls->addWidget (radio_mcts_m);
@@ -77,6 +79,8 @@ Manager::Manager (Engine& engine) :
   controls->addWidget (radio_samp_p);
   controls->addWidget (radio_gamma);
   controls->addWidget (radio_gamma2);
+  controls->addWidget (radio_terr);
+  controls->addWidget (radio_terr2);
   connect (radio_nul,    SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
   connect (radio_mcts_n, SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
   connect (radio_mcts_m, SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
@@ -87,6 +91,8 @@ Manager::Manager (Engine& engine) :
   connect (radio_samp_p, SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
   connect (radio_gamma,  SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
   connect (radio_gamma2, SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
+  connect (radio_terr,   SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
+  connect (radio_terr2,  SIGNAL (clicked ()), this, SLOT (refreshBoard ()));
 
   radio_nul->setChecked (true);
 
@@ -200,6 +206,8 @@ void Manager::getInfluence () {
   if (radio_samp_p->isChecked()) type = Engine::SamplerMoveProb;
   if (radio_gamma->isChecked())  type = Engine::PatternGammas;
   if (radio_gamma2->isChecked()) type = Engine::CompleteGammas;
+  if (radio_terr->isChecked())   type = Engine::PlayoutTerritory;
+  if (radio_terr2->isChecked())  type = Engine::MctsTerritory;
   engine.GetInfluence (type, influence);
 }
 

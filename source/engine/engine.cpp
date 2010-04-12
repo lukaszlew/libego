@@ -97,6 +97,11 @@ void Engine::GetInfluence (InfluenceType type,
 
   if (type == PlayoutTerritory || type == MctsTerritory) {
     const uint n = 200;
+    influence.SetAll (0.0);
+    ForEachNat (Vertex, v) {
+      if (!v.IsOnBoard()) influence [v] = nan ("");
+    }
+
     rep (ii, n) {
       DoOnePlayout (type == MctsTerritory, false);
       ForEachNat (Vertex, v) {
@@ -110,6 +115,7 @@ void Engine::GetInfluence (InfluenceType type,
         }
       }
     }
+    return;
   }
 
   float log_val = log (base_node->stat.update_count ());
