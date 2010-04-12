@@ -96,25 +96,7 @@ void Engine::GetInfluence (InfluenceType type,
   }
 
   if (type == PlayoutTerritory || type == MctsTerritory) {
-    const uint n = 200;
-    influence.SetAll (0.0);
-    ForEachNat (Vertex, v) {
-      if (!v.IsOnBoard()) influence [v] = nan ("");
-    }
-
-    rep (ii, n) {
-      DoOnePlayout (type == MctsTerritory, false);
-      ForEachNat (Vertex, v) {
-        Color c = playout_board.ColorAt (v);
-        if (c == Color::OffBoard()) continue;
-        if (c.IsPlayer ()) {
-          influence [v] += c.ToPlayer().ToScore() / double (n);
-        } else {
-          CHECK (c == Color::Empty ());
-          influence [v] += playout_board.EyeScore (v) / double (n);
-        }
-      }
-    }
+    EstimateTerritory (influence, type == MctsTerritory);
     return;
   }
 
@@ -130,13 +112,13 @@ void Engine::GetInfluence (InfluenceType type,
           influence [v] = nan ("");
           break;
         case MctsN:
-          influence [v] = log10 (node->stat.update_count());
+          influence [v] = node->stat.update_count();
           break;
         case MctsMean:
           influence [v] = node->stat.mean();
           break;
         case RaveN:
-          influence [v] = log10 (node->rave_stat.update_count());
+          influence [v] = node->rave_stat.update_count();
           break;
         case RaveMean:
           influence [v] = node->rave_stat.mean();
@@ -159,6 +141,30 @@ void Engine::GetInfluence (InfluenceType type,
       }
     } else {
       influence [v] = nan ("");
+    }
+  }
+}
+
+void Engine::EstimateTerritory (NatMap<Vertex, double>& influence, bool use_tree) {
+  const uint n = 200;
+
+  influence.SetAll (0.0);
+
+  ForEachNat (Vertex, v) {
+    if (!v.IsOnBoard()) influence [v] = nan ("");
+  }
+
+  rep (ii, n) {
+    DoOnePlayout (use_tree, false);
+    ForEachNat (Vertex, v) {
+      Color c = playout_board.ColorAt (v);
+      if (c == Color::OffBoard()) continue;
+      if (c.IsPlayer ()) {
+        influence [v] += c.ToPlayer().ToScore() / double (n);
+      } else {
+        CHECK (c == Color::Empty ());
+        influence [v] += playout_board.EyeScore (v) / double (n);
+      }
     }
   }
 }

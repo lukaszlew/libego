@@ -51,6 +51,7 @@ public:
   };
 
   void GetInfluence (InfluenceType type, NatMap <Vertex,double>& influence);
+
   std::string GetStringForVertex (Vertex v);
   vector<Move> LastPlayout ();
 
@@ -58,6 +59,8 @@ public:
   void RemoveIllegalChildren (MctsNode* node, const Board& board);
 
 private:
+  void EstimateTerritory (NatMap<Vertex, double>& influence, bool use_tree);
+
   TimeControl time_control;
   Gammas gammas;
 
