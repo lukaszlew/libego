@@ -30,10 +30,10 @@ public:
   void DoNPlayouts (uint n);
   void SyncRoot ();
   void PrepareToPlayout ();
-  void DoOnePlayout ();
-  Move ChooseMctsMove ();
+  void DoOnePlayout (bool use_tree, bool update_tree);
+  Move ChooseMctsMove (bool* tree_phase);
   void PlayMove (Move m);
-  double Score ();
+  double Score (bool tree_phase);
 
   enum InfluenceType {
     NoInfluence,
@@ -45,7 +45,9 @@ public:
     MctsPolicyMix,
     SamplerMoveProb,
     PatternGammas,
-    CompleteGammas
+    CompleteGammas,
+    PlayoutTerritory,
+    MctsTerritory
   };
 
   void GetInfluence (InfluenceType type, NatMap <Vertex,double>& influence);
@@ -70,7 +72,6 @@ private:
   Board playout_board;
   MctsNode* playout_node;
 
-  bool tree_phase;
   vector<Move> playout_moves;
   MctsTrace trace;
 

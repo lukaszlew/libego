@@ -95,6 +95,23 @@ void Engine::GetInfluence (InfluenceType type,
     return;
   }
 
+  if (type == PlayoutTerritory || type == MctsTerritory) {
+    const uint n = 200;
+    rep (ii, n) {
+      DoOnePlayout (type == MctsTerritory, false);
+      ForEachNat (Vertex, v) {
+        Color c = playout_board.ColorAt (v);
+        if (c == Color::OffBoard()) continue;
+        if (c.IsPlayer ()) {
+          influence [v] += c.ToPlayer().ToScore() / double (n);
+        } else {
+          CHECK (c == Color::Empty ());
+          influence [v] += playout_board.EyeScore (v) / double (n);
+        }
+      }
+    }
+  }
+
   float log_val = log (base_node->stat.update_count ());
 
   ForEachNat (Vertex, v) {
@@ -127,6 +144,8 @@ void Engine::GetInfluence (InfluenceType type,
         case SamplerMoveProb:
         case PatternGammas:
         case CompleteGammas:
+        case PlayoutTerritory:
+        case MctsTerritory:
           CHECK (false);
         }
       } else {
@@ -167,7 +186,7 @@ Move Engine::ChooseBestMove () {
 
 void Engine::DoNPlayouts (uint n) {
   rep (ii, n) {
-    DoOnePlayout ();
+    DoOnePlayout (true, true);
   }
 }
 
@@ -194,7 +213,8 @@ void Engine::SyncRoot () {
 }
 
 
-void Engine::DoOnePlayout () {
+void Engine::DoOnePlayout (bool use_tree, bool update_tree) {
+  bool tree_phase = use_tree;
   PrepareToPlayout();
 
   // do the playout
@@ -203,13 +223,15 @@ void Engine::DoOnePlayout () {
     if (playout_board.MoveCount() >= 3*Board::kArea) return;
 
     Move m = Move::Invalid ();
-    if (!m.IsValid()) m = ChooseMctsMove ();
+    if (!m.IsValid()) m = ChooseMctsMove (&tree_phase);
     if (!m.IsValid()) m = Move (playout_board.ActPlayer (), sampler.SampleMove (random));
     PlayMove (m);
   }
 
-  double score = Score ();
-  trace.UpdateTraceRegular (score);
+  if (update_tree) {
+    double score = Score (tree_phase);
+    trace.UpdateTraceRegular (score);
+  }
 }
 
 
@@ -220,19 +242,18 @@ void Engine::PrepareToPlayout () {
 
   trace.Reset (*base_node);
   playout_node = base_node;
-  tree_phase = Param::tree_use;
 }
 
-Move Engine::ChooseMctsMove () {
+Move Engine::ChooseMctsMove (bool* tree_phase) {
   Player pl = playout_board.ActPlayer();
 
-  if (!tree_phase) {
+  if (!*tree_phase) {
     return Move::Invalid();
   }
 
   if (!playout_node->has_all_legal_children [pl]) {
     if (!playout_node->ReadyToExpand ()) {
-      tree_phase = false;
+      *tree_phase = false;
       return Move::Invalid();
     }
     ASSERT (pl == playout_node->player.Other());
@@ -291,7 +312,7 @@ vector<Move> Engine::LastPlayout () {
 }
 
 
-double Engine::Score () {
+double Engine::Score (bool tree_phase) {
   // TODO game replay i update wszystkich modeli
   double score;
   if (tree_phase) {
