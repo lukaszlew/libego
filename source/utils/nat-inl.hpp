@@ -97,71 +97,73 @@ void NatMap <Nat, Elt>::SetAllToZero () {
 }
 
 template <typename Nat, typename Elt>
-void NatMap <Nat, Elt>::Scale (Elt min_val, Elt max_val) {
+Elt NatMap <Nat, Elt>::Min () const {
   Elt min_all = 1E20;
-  Elt max_all = -1E20;
-
   ForEachNat (Nat, nat) {
     Elt val = (*this) [nat];
     if (std::isnan (val)) continue;
     min_all = min (min_all, val);
+  }
+  return min_all;
+}
+
+template <typename Nat, typename Elt>
+Elt NatMap <Nat, Elt>::Max () const {
+  Elt max_all = -1E20;
+  ForEachNat (Nat, nat) {
+    Elt val = (*this) [nat];
+    if (std::isnan (val)) continue;
     max_all = max (max_all, val);
   }
+  return max_all;
+}
+
+template <typename Nat, typename Elt>
+Elt NatMap <Nat, Elt>::Mean () const {
+  double n = 0.0;
+  Elt sum = 0.0;
+  ForEachNat (Nat, nat) {
+    Elt val = (*this) [nat];
+    if (std::isnan (val)) continue;
+    sum += val;
+    n += 1;
+  }
+  if (n == 0.0) return nan("");
+  return sum / n;
+}
+
+
+template <typename Nat, typename Elt>
+Elt NatMap <Nat, Elt>::StdDev () const {
+  double n = 0.0;
+  Elt sum2 = 0.0;
+  ForEachNat (Nat, nat) {
+    Elt val = (*this) [nat];
+    if (std::isnan (val)) continue;
+    sum2 += val * val;
+    n += 1;
+  }
+  if (n == 0.0) return nan("");
+  double mean = Mean ();
+  return sqrt (sum2 / n - mean * mean);
+}
+
+
+template <typename Nat, typename Elt>
+void NatMap <Nat, Elt>::Scale (Elt min_val, Elt max_val) {
+  Elt min_all = Min ();
+  Elt max_all = Max ();
 
   std::cerr << "Scale: " << min_all << " .. " << max_all << endl;
+
   ForEachNat (Nat, nat) {
     Elt& elt = (*this) [nat];
     elt = (elt - min_all) / (max_all - min_all);
     elt = elt * (max_val - min_val) + min_val;
     (*this) [nat] = elt;    
-    cerr << nat.ToGtpString () << " " << elt << endl;
   }
 }
 
-template <typename Nat, typename Elt>
-void NatMap <Nat, Elt>::ScalePositive () {
-  Elt max_elt = 0.0;
-
-  ForEachNat (Nat, nat) {
-    Elt val = (*this) [nat];
-    if (std::isnan (val)) continue;
-    CHECK (max_elt >= 0.0);
-    max_elt = max (max_elt, val);
-  }
-
-  std::cerr << "Scale by:" << max_elt << endl;
-  ForEachNat (Nat, nat) {
-    (*this) [nat] /= max_elt;
-  }
-}
-
-template <typename Nat, typename Elt>
-void NatMap <Nat, Elt>::Normalize () {
-  Elt n = 0.0;
-  Elt sum = 0.0;
-  Elt sum2 = 0.0;
-
-  ForEachNat (Nat, nat) {
-    Elt val = (*this) [nat];
-    if (std::isnan (val)) continue;
-    n += 1;
-    sum += val;
-    sum2 += val*val;
-  }
-
-  if (n == 0.0) return;
-
-  Elt mean = sum / n;
-  Elt stddev = sqrt (sum2 / n - mean * mean);
-
-  cerr << "Normalize: (x - " << mean << ") / " << stddev << endl;
-
-  ForEachNat (Nat, nat) {
-    (*this) [nat] = (*this) [nat] - mean;
-    (*this) [nat] = (*this) [nat] / stddev;
-    cerr << nat.ToGtpString() << " " << (*this) [nat] << " " << endl;
-  }
-}
 
 template <typename Nat, typename Elt>
 void NatMap <Nat, Elt>::Load (const NatMap& other) {

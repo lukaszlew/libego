@@ -171,7 +171,7 @@ private:
         p [v] = engine.sampler.act_gamma [v] [pl];
       }
     }
-    p.ScalePositive ();
+    p.Scale (0.0, 1.0);
     ForEachNat (Vertex, v) {
       if (engine.base_board.ColorAt (v) == Color::Empty()) {
         gfx.SetInfluence (v.ToGtpString(), p[v]);

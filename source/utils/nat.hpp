@@ -46,10 +46,14 @@ class NatMap {
   const Elt& operator[] (Nat nat) const;
   void SetAll (const Elt& elt);
   void SetAllToZero (); // Assumes POD of Elt, uses memset
-  void Scale (Elt min_val, Elt max_val);
-  void ScalePositive ();
-  void Normalize ();
   void Load (const NatMap& other);
+
+  Elt Min () const;
+  Elt Max () const;
+  Elt Mean () const;
+  Elt StdDev () const;
+
+  void Scale (Elt min_val, Elt max_val);
 
  private:
   Elt tab [Nat::kBound];
