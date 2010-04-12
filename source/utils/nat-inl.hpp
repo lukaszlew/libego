@@ -188,6 +188,15 @@ void NatMap <Nat, Elt>::Scale (Elt min_val, Elt max_val) {
   }
 }
 
+template <typename Nat, typename Elt>
+void NatMap <Nat, Elt>::Dump () { 
+  ForEachNat (Nat, v) {
+    if (v.IsOnBoard() || v == Nat::Pass ()) {
+      cerr << v.ToGtpString() << " " << (*this) [v] << endl;
+    }
+  }
+}
+
 
 template <typename Nat, typename Elt>
 void NatMap <Nat, Elt>::Load (const NatMap& other) {

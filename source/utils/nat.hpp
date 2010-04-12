@@ -59,6 +59,8 @@ class NatMap {
   void operator /= (Elt val);
   void LogAll (double base);
 
+  void Dump ();
+
   void Scale (Elt min_val, Elt max_val);
 
  private:

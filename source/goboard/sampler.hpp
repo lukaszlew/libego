@@ -199,7 +199,7 @@ struct Sampler {
 
     rep (ii, nn) {
       Vertex v = SampleMove (fr);
-      count [v] += 1.0;
+      count [v] += 1.0 / nn;
     }
   }
 

@@ -249,6 +249,20 @@ void Manager::refreshBoard ()
     hsv.Scale (-1, 1);
   }
 
+  if (influence_type == Engine::SamplerMoveProb) {
+    hsv /= hsv.Max () / 2;
+    hsv -= 1;
+  }
+
+  if (influence_type == Engine::CompleteGammas ||
+      influence_type == Engine::PatternGammas)
+  {
+    cerr << "MaxGamma = " << hsv.Max () << endl;
+    hsv /= hsv.Max () / 2;
+    hsv -= 1;
+    //hsv.Dump ();
+  }
+
   for (uint x=1; x<=board_size; x++) {
     for (uint y=1; y<=board_size; y++) {
       Vertex v = gui2vertex (x,y);
