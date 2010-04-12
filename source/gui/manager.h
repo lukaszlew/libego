@@ -31,6 +31,7 @@ public slots:
   void sliderMoved (int value);
   void handleMousePress (int x, int y, Qt::MouseButtons buttons);
   void handleHooverEntered (int x, int y);
+  void clearBoard ();
   void playMove ();
   void undoMove ();
   void playoutMove ();

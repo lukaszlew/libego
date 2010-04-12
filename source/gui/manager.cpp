@@ -41,6 +41,10 @@ Manager::Manager (Engine& engine) :
 
   controls->addWidget(new QLabel("<b>Libego</b>"), 0, Qt::AlignHCenter);
 
+  QPushButton* clear_board = new QPushButton("Clear Board");
+  controls->addWidget(clear_board);
+  connect (clear_board, SIGNAL (clicked ()), this, SLOT (clearBoard ()));
+
   QPushButton* play_move = new QPushButton("Play move");
   controls->addWidget(play_move);
   connect (play_move, SIGNAL (clicked ()), this, SLOT (playMove ()));
@@ -162,6 +166,12 @@ void Manager::showGammas (int state)
 void Manager::playMove ()
 {
   engine.Genmove (engine.GetBoard ().ActPlayer ());
+  refreshBoard ();
+}
+
+void Manager::clearBoard ()
+{
+  engine.Reset (board_size);
   refreshBoard ();
 }
 
