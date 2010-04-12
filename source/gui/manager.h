@@ -10,11 +10,10 @@
 
 #include <nat.hpp>
 #include <vertex.hpp>
-#include <vertex.hpp>
+#include <engine.hpp>
 
 class GameScene;
 class QCheckBox;
-class Engine;
 class Move;
 class Player;
 
@@ -59,6 +58,7 @@ private:
 
   GameScene* game_scene;
   NatMap <Vertex, double> influence;
+  Engine::InfluenceType influence_type;
 
   Engine& engine;
 

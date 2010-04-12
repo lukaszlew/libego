@@ -195,20 +195,23 @@ void Manager::playoutMove ()
 }
 
 void Manager::getInfluence () {
-  Engine::InfluenceType type = Engine::NoInfluence;
-  if (radio_nul->isChecked())    type = Engine::NoInfluence;
-  if (radio_mcts_n->isChecked()) type = Engine::MctsN;
-  if (radio_mcts_m->isChecked()) type = Engine::MctsMean;
-  if (radio_rave_n->isChecked()) type = Engine::RaveN;
-  if (radio_rave_m->isChecked()) type = Engine::RaveMean;
-  if (radio_bias->isChecked())   type = Engine::Bias;
-  if (radio_mix->isChecked())    type = Engine::MctsPolicyMix;
-  if (radio_samp_p->isChecked()) type = Engine::SamplerMoveProb;
-  if (radio_gamma->isChecked())  type = Engine::PatternGammas;
-  if (radio_gamma2->isChecked()) type = Engine::CompleteGammas;
-  if (radio_terr->isChecked())   type = Engine::PlayoutTerritory;
-  if (radio_terr2->isChecked())  type = Engine::MctsTerritory;
-  engine.GetInfluence (type, influence);
+  influence_type = Engine::NoInfluence;
+  if (radio_nul->isChecked())    influence_type = Engine::NoInfluence;
+  if (radio_mcts_n->isChecked()) influence_type = Engine::MctsN;
+  if (radio_mcts_m->isChecked()) influence_type = Engine::MctsMean;
+  if (radio_rave_n->isChecked()) influence_type = Engine::RaveN;
+  if (radio_rave_m->isChecked()) influence_type = Engine::RaveMean;
+  if (radio_bias->isChecked())   influence_type = Engine::Bias;
+  if (radio_mix->isChecked())    influence_type = Engine::MctsPolicyMix;
+  if (radio_samp_p->isChecked()) influence_type = Engine::SamplerMoveProb;
+  if (radio_gamma->isChecked())  influence_type = Engine::PatternGammas;
+  if (radio_gamma2->isChecked()) influence_type = Engine::CompleteGammas;
+  if (radio_terr->isChecked())   influence_type = Engine::PlayoutTerritory;
+  if (radio_terr2->isChecked())  influence_type = Engine::MctsTerritory;
+  engine.GetInfluence (influence_type, influence);
+  ForEachNat (Vertex, v) {
+    if (!v.IsOnBoard()) influence [v] = nan("");
+  }
 }
 
 void Manager::refreshBoard ()
@@ -239,10 +242,12 @@ void Manager::refreshBoard ()
   //show gammas
   getInfluence ();
   NatMap <Vertex, double> hsv = influence;
-  ForEachNat (Vertex, v) {
-    if (!v.IsOnBoard()) hsv [v] = nan("");
+
+  if (influence_type == Engine::MctsN ||
+      influence_type == Engine::RaveN)
+  {      
+    hsv.Scale (-1, 1);
   }
-  hsv.Scale (-1, 1);
 
   for (uint x=1; x<=board_size; x++) {
     for (uint y=1; y<=board_size; y++) {

@@ -53,6 +53,12 @@ class NatMap {
   Elt Mean () const;
   Elt StdDev () const;
 
+  void operator += (Elt val);
+  void operator -= (Elt val);
+  void operator *= (Elt val);
+  void operator /= (Elt val);
+  void LogAll (double base);
+
   void Scale (Elt min_val, Elt max_val);
 
  private:

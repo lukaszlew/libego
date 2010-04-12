@@ -148,6 +148,30 @@ Elt NatMap <Nat, Elt>::StdDev () const {
   return sqrt (sum2 / n - mean * mean);
 }
 
+template <typename Nat, typename Elt>
+void NatMap <Nat, Elt>::
+operator += (Elt val) { ForEachNat (Nat, nat) (*this) [nat] += val; }
+
+template <typename Nat, typename Elt>
+void NatMap <Nat, Elt>::
+operator -= (Elt val) { ForEachNat (Nat, nat) (*this) [nat] -= val; }
+
+template <typename Nat, typename Elt>
+void NatMap <Nat, Elt>::
+operator *= (Elt val) { ForEachNat (Nat, nat) (*this) [nat] *= val; }
+
+template <typename Nat, typename Elt>
+void NatMap <Nat, Elt>::
+operator /= (Elt val) { ForEachNat (Nat, nat) (*this) [nat] /= val; }
+
+template <typename Nat, typename Elt>
+void NatMap <Nat, Elt>::LogAll (double base) { 
+  double base_change = log (base);
+  ForEachNat (Nat, nat) {
+    (*this) [nat] = log ((*this) [nat]) / base_change;
+  }
+}
+
 
 template <typename Nat, typename Elt>
 void NatMap <Nat, Elt>::Scale (Elt min_val, Elt max_val) {
