@@ -18,31 +18,14 @@ Checkout the source:
 
 Construct library and examples with your favorite compiler:
 
-    export CXX=g++-4.2  # set your favorite compiler, optional
     ./cmakeall          # do all the work
 
-Light playout benchmark:
+Run GTP engine:
 
-    echo "benchmark" | ./bin/engine
-    echo "benchmark 1000000" | ./bin/engine
+    ./bin/libego.sh     # Same as ./bin/engine but loads pattern gammas from a file.
+    ./bin/libego.sh gui # Experimental gui for making experiments :)
 
-Run exemplary GTP engine:
-
-    ./bin/engine
-    ./bin/engine config.gtp -
-
-To work with distributed_twogtp read:
- 
-    ./scripts/*.sql
-    ./scripts/*.d2g
-
-and play with:
-
-    ./bin/distributed_twogtp
-
-The second command will first execute GTP commands from config.gtp.
-And then take commands from stdin.
-You can connect engine to GoGui usigng both of above commands.
+You can connect engine to GoGui using first command.
 
 Thanks
 ------
@@ -53,8 +36,9 @@ Jakub Pawlewicz for the idea of pseudo-liberties and find-union algorithms.
 Dave Hillis for the idea of mercy rule.  
 Markus Enzenberger for his computer go bibliography and GoGui.  
 Don Dailey for setting up CGOS server.  
+Remi Coulom for supervising my work.  
 And last but not least, a whole computer Go community for a
-stimulating mixture of cooperation and competition.  
+stimulating mixture of cooperation and competition.
 
 Copyright
 ---------
