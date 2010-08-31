@@ -1,4 +1,3 @@
-#include <boost/algorithm/string/trim.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <iostream>
 #include <fstream>
@@ -52,7 +51,15 @@ void Io::PrepareIn () {
 }
 
 string Io::Report () const {
-  return boost::trim_right_copy (out.str()); // remove bad endl in msg
+  string s = out.str ();
+  while (s.size () > 0 && 
+	 (s [s.size() - 1] == '\n' ||
+	  s [s.size() - 1] == ' ' ||
+	  s [s.size() - 1] == '\t')) 
+  {
+    s.resize (s.size() - 1);
+  }
+  return s;
 }
 
 // -----------------------------------------------------------------------------

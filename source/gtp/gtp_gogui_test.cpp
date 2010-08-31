@@ -1,6 +1,5 @@
 #include <sstream>
 #include <iostream>
-#include <boost/algorithm/string/trim.hpp>
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK // IMPROVE: why do I need this?
 #include <boost/test/unit_test.hpp>
