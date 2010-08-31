@@ -7,7 +7,7 @@
 Gtp::ReplWithGogui gtp;
 
 #include "engine.hpp"
-#include "gui.h"
+//#include "gui.h"
 #include "mcts_gtp.hpp"
 #include "mm_train.hpp"
 

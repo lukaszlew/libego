@@ -207,7 +207,7 @@ private:
 
   void Cgui (Gtp::Io& io) {
     io.CheckEmpty ();
-    RunGui (engine);
+    //RunGui (engine);
   }
 
 private:
