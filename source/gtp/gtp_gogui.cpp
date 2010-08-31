@@ -1,5 +1,3 @@
-#include "boost/foreach.hpp"
-
 #include "gtp_gogui.hpp"
 #include <cmath>
 
@@ -43,9 +41,11 @@ void GoguiGfx::SetStatusBar (const string& status) {
 }
 
 void GoguiGfx::Report (Io& io)  {
-  typedef pair <const string, string> P;
-  BOOST_FOREACH (P& p, gfx_output) {
-    io.out << p.first << " " << p.second << endl;
+  for (map <string, string>::iterator it = gfx_output.begin();
+       it != gfx_output.end();
+       ++it)
+  {
+    io.out << it->first << " " << it->second << endl;
   }
 }
 
@@ -71,10 +71,12 @@ void ReplWithGogui::CParam (const string& cmd_name, Io& io) {
   map<string, Callback>& vars = params[cmd_name];
   if (io.IsEmpty ()) {
     // print all vars and their values
-    pair<string, Callback> v;
-    BOOST_FOREACH(v, vars) {
-      io.out << "[string] " << v.first << " ";
-      v.second (io);
+    for (map <string, Callback>::iterator it = vars.begin();
+	 it != vars.end();
+	 ++it)
+    {
+      io.out << "[string] " << it->first << " ";
+      it->second (io);
       io.out << endl;
     }
   } else {
