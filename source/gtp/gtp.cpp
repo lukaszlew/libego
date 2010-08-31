@@ -1,5 +1,4 @@
 #include <boost/algorithm/string/trim.hpp>
-#include <boost/foreach.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <iostream>
 #include <fstream>
@@ -89,7 +88,8 @@ void Repl::RegisterStatic (const string& name, const string& response) {
 
 void ParseLine (const string& line, int* id, string* command, string* rest) {
   stringstream ss;
-  BOOST_FOREACH (char c, line) {
+  for (unsigned int ii = 0; ii != line.size (); ii += 1) {
+    char c = line [ii];
     if (false) {}
     else if (c == '\t') ss << ' ';
     else if (c == '\n') assert (false);
@@ -122,9 +122,13 @@ Repl::Status Repl::RunOneCommand (const string& line, string* report) {
 
   if (IsCommand (command)) {
     // Callback call with optional fast return.
-    BOOST_FOREACH (Callback& cmd, callbacks [command]) {
+    list<Callback>& cmd_list = callbacks [command];
+    for (list<Callback>::iterator cmd = cmd_list.begin();
+	 cmd != cmd_list.end();
+	 ++cmd)
+    {
       io.PrepareIn();
-      try { cmd (io); } catch (Return) { }
+      try { (*cmd) (io); } catch (Return) { }
     }
   } else {
     io.SetError ("unknown command: \"" + command + "\"");
@@ -163,8 +167,11 @@ void Repl::Run (istream& in, ostream& out) {
 void Repl::CListCommands (Io& io) {
   io.CheckEmpty();
   pair<string, list<Callback> > p;
-  BOOST_FOREACH(p, callbacks) {
-    io.out << p.first << endl;
+  for (map <string, list<Callback> >::iterator cb = callbacks.begin();
+       cb != callbacks.end();
+       ++cb)
+  {
+    io.out << cb->first << endl;
   }
 }
 
