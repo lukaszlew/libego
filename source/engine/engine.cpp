@@ -2,8 +2,6 @@
 // Copyright 2006 and onwards, Lukasz Lew
 //
 
-#include <boost/foreach.hpp>
-
 #include "engine.hpp"
 
 Engine::Engine () :
@@ -210,7 +208,9 @@ void Engine::SyncRoot () {
   sampler.NewPlayout ();
 
   base_node = &root;
-  BOOST_FOREACH (Move m, base_board.Moves ()) {
+  const vector<Move>& moves = base_board.Moves ();
+  rep (ii, moves.size()) {
+    Move m = moves [ii];
     sync_board.SetActPlayer (m.GetPlayer());
     EnsureAllLegalChildren (base_node, sync_board, sampler);
     base_node = base_node->FindChild (m);

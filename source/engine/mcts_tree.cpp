@@ -1,5 +1,4 @@
 #include <list>
-#include <boost/foreach.hpp>
 #include "mcts_tree.hpp"
 #include "gtp_gogui.hpp"
 
@@ -45,9 +44,12 @@ MctsNode* MctsNode::FindChild (Move m) {
   Player pl = m.GetPlayer();
   Vertex v  = m.GetVertex();
   ASSERT (has_all_legal_children [pl]);
-  BOOST_FOREACH (MctsNode& child, children) {
-    if (child.player == pl && child.v == v) {
-      return &child;
+  for (ChildrenList::iterator child = children.begin();
+       child != children.end();
+       ++child)
+  {
+    if (child->player == pl && child->v == v) {
+      return &(*child);
     }
   }
 
@@ -101,14 +103,18 @@ void MctsNode::RecPrint (ostream& out, uint depth, float min_visit, uint max_chi
   out << ToString () << endl;
 
   vector <const MctsNode*> child_tab;
-  BOOST_FOREACH (const MctsNode& child, children) {
-    child_tab.push_back(&child);
+  for (ChildrenList::const_iterator child = children.begin();
+       child != children.end();
+       ++child)
+  {
+    child_tab.push_back(&*child);
   }
 
   sort (child_tab.begin(), child_tab.end(), SubjectiveCmp);
   if (child_tab.size () > max_children) child_tab.resize(max_children);
 
-  BOOST_FOREACH (const MctsNode* child, child_tab) {
+  rep(ii, child_tab.size()) {
+    const MctsNode* child = child_tab[ii];
     if (child->stat.update_count() >= min_visit) {
       child->RecPrint (out, depth + 1, min_visit, max(1u, max_children - 1));
     }
@@ -127,10 +133,13 @@ const MctsNode& MctsNode::MostExploredChild (Player pl) const {
 
   ASSERT (has_all_legal_children [pl]);
 
-  BOOST_FOREACH (const MctsNode& child, children) {
-    if (child.player == pl && child.stat.update_count() > best_update_count) {
-      best_update_count = child.stat.update_count();
-      best = &child;
+  for (ChildrenList::const_iterator child = children.begin();
+       child != children.end();
+       ++child)
+  {
+    if (child->player == pl && child->stat.update_count() > best_update_count) {
+      best_update_count = child->stat.update_count();
+      best = &*child;
     }
   }
 
@@ -146,12 +155,15 @@ MctsNode& MctsNode::BestRaveChild (Player pl) {
 
   ASSERT (has_all_legal_children [pl]);
 
-  BOOST_FOREACH (MctsNode& child, children) {
-    if (child.player != pl) continue;
-    float child_urgency = child.SubjectiveRaveValue (pl, log_val);
+  for (ChildrenList::iterator child = children.begin();
+       child != children.end();
+       ++child)
+  {
+    if (child->player != pl) continue;
+    float child_urgency = child->SubjectiveRaveValue (pl, log_val);
     if (child_urgency > best_urgency) {
       best_urgency = child_urgency;
-      best_child   = &child;
+      best_child   = &*child;
     }
   }
 
@@ -213,8 +225,9 @@ void MctsTrace::NewMove (Move m) {
 
 
 void MctsTrace::UpdateTraceRegular (float score) {
-  BOOST_FOREACH (MctsNode* node, nodes) {
-    node->stat.update (score);
+
+  rep (ii, nodes.size ()) {
+    nodes[ii]->stat.update (score);
   }
 
   if (Param::tree_rave_update) {
@@ -245,9 +258,12 @@ void MctsTrace::UpdateTraceRave (float score) {
     }
 
     // Do the update.
-    BOOST_FOREACH (MctsNode& child, nodes[act_ii]->children) {
-      if (do_update [child.GetMove()]) {
-        child.rave_stat.update (score);
+    for (MctsNode::ChildrenList::iterator child = nodes[act_ii]->children.begin();
+	 child != nodes[act_ii]->children.end();
+	 ++child)
+    {
+      if (do_update [child->GetMove()]) {
+        child->rave_stat.update (score);
       }
     }
   }
