@@ -9,7 +9,7 @@ include (CheckCXXCompilerFlag)
 
 include (EnsureOutOfSourceBuild)
 include (EnsureBuildTypeIsChosen)
-include (AddBoostCxxTest)
+# include (AddBoostCxxTest)
 include (SetDefaultInstallationDirs)
 include (SetCxxFlags)
 
