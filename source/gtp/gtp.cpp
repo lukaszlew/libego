@@ -1,7 +1,7 @@
-#include <boost/lambda/lambda.hpp>
 #include <iostream>
 #include <fstream>
 #include <cerrno>
+#include <cassert>
 
 #include "gtp.hpp"
 
@@ -72,7 +72,7 @@ void StaticAux(const string& ret, Io& io) {
 }
 
 Repl::Callback StaticCommand (const string& ret) {
-  return boost::bind(StaticAux, ret, _1);
+  return std::bind(StaticAux, ret, _1);
 }
 
 // -----------------------------------------------------------------------------

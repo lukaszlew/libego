@@ -1,5 +1,6 @@
 #include "gtp_gogui.hpp"
 #include <cmath>
+#include <cassert>
 
 namespace Gtp {
 

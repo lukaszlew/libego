@@ -14,7 +14,7 @@ macro (set_cxx_flags strong_release_flags)
       set (CMAKE_CXX_MARCH_FLAGS "")
     endif()
 
-    set (CMAKE_CXX_FLAGS "-ggdb3 -Wall -Wextra -Wswitch-enum -Wunused -fshow-column")
+    set (CMAKE_CXX_FLAGS "-std=c++0x -ggdb3 -Wall -Wextra -Wswitch-enum -Wunused -fshow-column")
 
     set (STRONG "${strong_release_flags}")
     if (STRONG)

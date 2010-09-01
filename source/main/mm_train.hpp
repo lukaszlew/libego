@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "all_hash3x3.hpp"
 #include "mm.hpp"
 

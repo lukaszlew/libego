@@ -1,4 +1,5 @@
 #include <list>
+#include <algorithm>
 #include "mcts_tree.hpp"
 #include "gtp_gogui.hpp"
 

@@ -3,7 +3,6 @@
 
 #include <string>
 #include <map>
-#include <boost/bind.hpp>
 
 #include "gtp.hpp"
 
@@ -68,7 +67,7 @@ void ReplWithGogui::RegisterGfx (const string& name,
                                  T* object,
                                  void(T::*member)(Io&))
 {
-  RegisterGfx (name, params, boost::bind(member, object, _1));
+  RegisterGfx (name, params, std::bind(member, object, _1));
 }
 
 template <typename T>
@@ -79,7 +78,7 @@ void ReplWithGogui::RegisterParam (const string& cmd_name,
   params [cmd_name] [param_name] = GetSetCallback (param);
   if (IsCommand (cmd_name)) return;
   analyze_list << "param/" << cmd_name << "/" << cmd_name << endl; // NOTE: factor out
-  Register (cmd_name, boost::bind (&ReplWithGogui::CParam, this, cmd_name, _1));
+  Register (cmd_name, std::bind (&ReplWithGogui::CParam, this, cmd_name, _1));
 }
 
 } // namespace Gtp

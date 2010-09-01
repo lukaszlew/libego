@@ -1,16 +1,16 @@
 #ifndef GTP_H_
 #define GTP_H_
 
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
 #include <list>
 #include <map>
 #include <sstream>
 #include <string>
+#include <functional>
 
 namespace Gtp {
 
 using namespace std;
+using std::placeholders::_1;
 
 // -----------------------------------------------------------------------------
 // Command communication interface.
@@ -58,7 +58,7 @@ private:
 
 class Repl {
 public:
-  typedef boost::function< void(Io&) > Callback;
+  typedef std::function< void(Io&) > Callback;
 
   Repl ();
 
@@ -146,13 +146,13 @@ T Io::Read (const T& default_value) {
 
 template <class T>
 void Repl::Register (const string& name, T* object, void(T::*member)(Io&)) {
-  Register (name, boost::bind(member, object, _1));
+  Register (name, std::bind(member, object, _1));
 }
 
 
 namespace {
   template <typename T>
-  void GetSetCallback (T* var, Io& io) {
+  void GetSetCallbackAux (T* var, Io& io) {
     if (io.IsEmpty()) {
       io.out << *var;
       return;
@@ -166,7 +166,7 @@ namespace {
 
 template <typename T>
 Repl::Callback GetSetCallback (T* var) {
-  return bind(GetSetCallback<T>, var, _1);
+  return bind(GetSetCallbackAux<T>, var, _1);
 }
 
 // -----------------------------------------------------------------------------
