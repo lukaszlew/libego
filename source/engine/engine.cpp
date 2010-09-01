@@ -107,7 +107,7 @@ void Engine::GetInfluence (InfluenceType type,
       if (node != NULL) {
         switch (type) {
         case NoInfluence:
-          influence [v] = nan ("");
+          influence [v] = nan;
           break;
         case MctsN:
           influence [v] = node->stat.update_count();
@@ -135,10 +135,10 @@ void Engine::GetInfluence (InfluenceType type,
           CHECK (false);
         }
       } else {
-        influence [v] = nan ("");
+        influence [v] = nan;
       }
     } else {
-      influence [v] = nan ("");
+      influence [v] = nan;
     }
   }
 }
@@ -149,7 +149,7 @@ void Engine::EstimateTerritory (NatMap<Vertex, double>& influence, bool use_tree
   influence.SetAll (0.0);
 
   ForEachNat (Vertex, v) {
-    if (!v.IsOnBoard()) influence [v] = nan ("");
+    if (!v.IsOnBoard()) influence [v] = nan;
   }
 
   rep (ii, n) {

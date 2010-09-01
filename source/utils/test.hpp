@@ -36,7 +36,7 @@ const bool kCheckAsserts = true;
 #define WW(x) cerr << #x << " = " << x << endl << flush;
 
 // Automatic progam failure with report.
-#define FAIL(msg) (TestFail (msg, __FILE__, __LINE__, __PRETTY_FUNCTION__), exit(0))
+#define FAIL(msg) (TestFail (msg, __FILE__, __LINE__, __FUNCSIG__), exit(0))
 
 // Always evaluate condition and always assert true.
 #define CHECK2(expr, block) { if (!(expr)) { block; FAIL (#expr); } }

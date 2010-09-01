@@ -3,6 +3,10 @@
 
 #include "hash.hpp"
 
+const double GammaskAccurancy = 1.0e-10;
+
+
+
 class Gammas {
 public:
   Gammas () {
@@ -57,7 +61,7 @@ public:
         Hash3x3 hash = all[ii];
         CHECK (value > 0.0);
         CHECK (hash.IsLegal (Player::Black ()));
-        CHECK (value > kAccurancy * 100);
+        CHECK (value > GammaskAccurancy * 100);
 
         // Note: We zero values of play-in-eye
         if (!hash.IsEyelike (Player::Black())) {
@@ -81,8 +85,6 @@ public:
     return (*gammas) [hash] [pl];
   }
 
-  static const double kAccurancy = 1.0e-10;
-
 private:
 
   typedef NatMap<Hash3x3, NatMap<Player, double> > Tab;
@@ -90,3 +92,4 @@ private:
 };
 
 #endif
+

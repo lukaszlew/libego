@@ -7,7 +7,7 @@
 
 #include "utils.hpp"
 #include "player.hpp"
-#include "gtp.hpp"
+#include "gtp_gogui.hpp"
 
 class TimeControl {
 public:

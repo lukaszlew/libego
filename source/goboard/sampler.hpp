@@ -1,7 +1,8 @@
 #ifndef _SAMPLER_HPP
 #define _SAMPLER_HPP
 
-#include <tr1/random>
+#include <random>
+#include "test.hpp"
 
 
 struct Sampler {
@@ -90,7 +91,7 @@ struct Sampler {
     CheckConsistency ();
     double g  = act_gamma [v] [pl];
     double tg = act_gamma_sum [pl];
-    double p = g / (tg + Gammas::kAccurancy);
+    double p = g / (tg + GammaskAccurancy);
     ASSERT2 (!isnan (p), WW(g); WW(tg));
     ASSERT2 (p >= 0.0,   WW(g); WW(tg));
     ASSERT2 (p <= 1.0,   WW(g); WW(tg));
@@ -101,7 +102,7 @@ struct Sampler {
   Vertex SampleMove (FastRandom& random) {
     Player pl = board.ActPlayer ();
 
-    if (act_gamma_sum [pl] < Gammas::kAccurancy) {
+    if (act_gamma_sum [pl] < GammaskAccurancy) {
       // TODO assert no_more_legal_moves
       return Vertex::Pass ();
     }
@@ -194,7 +195,7 @@ struct Sampler {
     count.SetAll (0.0);
     ForEachNat (Vertex, v) {
       if (v.IsOnBoard () && board.IsLegal (board.ActPlayer(), v)) count [v] = 0.0;
-      else count [v] = nan("");
+      else count [v] = nan;
     }
 
     rep (ii, nn) {
@@ -217,7 +218,7 @@ struct Sampler {
     }
 
     ForEachNat (Vertex, v) {
-      if (gamma [v] == 0.0) gamma[v] = nan ("");
+      if (gamma [v] == 0.0) gamma[v] = nan;
     }
   }
 
@@ -234,7 +235,7 @@ private:
         sum += act_gamma [v] [pl];
       }
     }
-    CHECK (fabs (total_non_local_gamma - sum) < Gammas::kAccurancy);
+    CHECK (fabs (total_non_local_gamma - sum) < GammaskAccurancy);
   }
 
 
@@ -246,7 +247,7 @@ private:
       ForEachNat (Vertex, v) {
         sum += act_gamma [v] [pl];
       }
-      CHECK2 (fabs (act_gamma_sum [pl] - sum) < Gammas::kAccurancy,
+      CHECK2 (fabs (act_gamma_sum [pl] - sum) < GammaskAccurancy,
               WW (act_gamma_sum[pl]);
               WW(sum);
               WW(id);

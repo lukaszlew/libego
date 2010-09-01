@@ -7,6 +7,7 @@
 
 #include <sstream>
 #include <string>
+#include <limits.h>
 
 typedef unsigned int uint;
 typedef unsigned long long uint64;
@@ -20,6 +21,13 @@ using namespace std;
 #define reps(i,s,n)  for (int i = (s); i < int(n); i++)
 
 // performance macros
+
+template <class T> bool isnan(T x) {
+	T t = x;
+	return t != x;
+}
+
+const double nan = numeric_limits<double>::quiet_NaN();
 
 #ifdef _MSC_VER
 

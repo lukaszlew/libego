@@ -5,6 +5,7 @@
 #include "gtp_gogui.hpp"
 
 Gtp::ReplWithGogui gtp;
+//Gtp::Repl& gtp = gtp2;
 
 #include "engine.hpp"
 //#include "gui.h"
@@ -45,7 +46,7 @@ int main(int argc, char** argv) {
   // no buffering to work well with gogui
   setbuf (stdout, NULL);
   setbuf (stderr, NULL);
-  srand48 (123);
+  //srand48 (123);
 
   gtp.RegisterStatic("name", "Libego");
   gtp.RegisterStatic("version", STRING(VERSION));

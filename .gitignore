@@ -2,6 +2,9 @@ build/*
 bin/engine
 bin/fuego-0.4
 bin/gnugo-3.8
+ipch
+vs2010/Release
+vs2010/Debug
 bin/mogo-3
 log/*
 twogtp/2010-*

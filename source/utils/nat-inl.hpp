@@ -101,7 +101,7 @@ Elt NatMap <Nat, Elt>::Min () const {
   Elt min_all = 1E20;
   ForEachNat (Nat, nat) {
     Elt val = (*this) [nat];
-    if (std::isnan (val)) continue;
+    if (isnan (val)) continue;
     min_all = min (min_all, val);
   }
   return min_all;
@@ -112,7 +112,7 @@ Elt NatMap <Nat, Elt>::Max () const {
   Elt max_all = -1E20;
   ForEachNat (Nat, nat) {
     Elt val = (*this) [nat];
-    if (std::isnan (val)) continue;
+    if (isnan (val)) continue;
     max_all = max (max_all, val);
   }
   return max_all;

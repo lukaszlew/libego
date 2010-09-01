@@ -4,8 +4,10 @@
 
 #include "time_control.hpp"
 #include "param.hpp"
+#include "gtp_gogui.hpp"
 
-extern Gtp::Repl gtp;
+extern Gtp::ReplWithGogui gtp;
+
 
 TimeControl::TimeControl () :
     time_left (0.0),

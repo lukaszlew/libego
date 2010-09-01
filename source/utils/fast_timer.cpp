@@ -81,9 +81,8 @@ string FastTimer::ToString (float unit) {
 
 
 int TimeSeed () {
-  struct timeval time;
-  gettimeofday(&time, NULL);
-  return time.tv_sec * 1000000 + time.tv_usec;
+  FastTimer timer;
+  return (int)timer.GetCcTime();
 }
 
 

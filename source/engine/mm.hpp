@@ -226,7 +226,7 @@ struct Match {
 
   void GradientUpdate (Gammas& gammas) {
     // Calculate probabilities
-    double p [teams.size()];
+    double *p = new double[teams.size()];
     double sum = 0.0;
     rep (ii, teams.size()) {
       p [ii] = teams[ii].TeamGamma(gammas);
@@ -240,6 +240,7 @@ struct Match {
     rep (ii, teams.size()) {
       teams[ii].GradientUpdate (gammas, -p[ii]);
     }
+	delete[] p;
   }
 
   double LogLikelihood (const Gammas& gammas) {
@@ -288,7 +289,7 @@ struct BtModel {
       const vector <Team>& teams = matches [ii].teams;
       
       // itg = incomplete team gamma (without current feature)
-      double itg [teams.size()];
+      double *itg = new double[teams.size()];
       double tg_sum = 0.0; // E in Remi's paper
 
       rep (jj, teams.size()) {
@@ -302,6 +303,8 @@ struct BtModel {
         uint level = teams [jj].levels [feature];
         c_e [level] += itg [jj] * tg_sum_inv;
       }
+
+	  delete[] itg;
     }
 
     rep (level, level_count [feature]) {

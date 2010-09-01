@@ -16,7 +16,7 @@ public:
   double Ticks();
   std::string ToString (float unit = 1.0);
 
-private:
+public:
   static uint64 GetCcTime ();
 
   double  sample_cnt;
