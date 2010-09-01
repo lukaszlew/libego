@@ -7,7 +7,7 @@
 
 #include <sstream>
 #include <string>
-#include <limits.h>
+#include <limits>
 
 typedef unsigned int uint;
 typedef unsigned long long uint64;
@@ -27,7 +27,7 @@ template <class T> bool isnan(T x) {
 	return t != x;
 }
 
-const double nan = numeric_limits<double>::quiet_NaN();
+const double qnan = numeric_limits<double>::quiet_NaN();
 
 #ifdef _MSC_VER
 

@@ -195,7 +195,7 @@ struct Sampler {
     count.SetAll (0.0);
     ForEachNat (Vertex, v) {
       if (v.IsOnBoard () && board.IsLegal (board.ActPlayer(), v)) count [v] = 0.0;
-      else count [v] = nan;
+      else count [v] = qnan;
     }
 
     rep (ii, nn) {
@@ -218,7 +218,7 @@ struct Sampler {
     }
 
     ForEachNat (Vertex, v) {
-      if (gamma [v] == 0.0) gamma[v] = nan;
+      if (gamma [v] == 0.0) gamma[v] = qnan;
     }
   }
 

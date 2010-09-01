@@ -5,7 +5,6 @@
 #include <map>
 
 #include "gtp.hpp"
-#include "utils.hpp"
 
 namespace Gtp {
 
