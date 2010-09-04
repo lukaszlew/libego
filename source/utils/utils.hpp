@@ -22,7 +22,7 @@ using namespace std;
 
 // performance macros
 
-template <class T> bool isnan(T x) {
+template <class T> bool qisnan(T x) {
 	T t = x;
 	return t != x;
 }

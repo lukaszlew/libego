@@ -9,7 +9,7 @@ GoguiGfx::GoguiGfx () {
 
 
 void GoguiGfx::SetInfluence (const string& vertex, float influence) {
-  if (influence != 0.0 && ! isnan (influence)) {
+  if (influence != 0.0 && ! qisnan (influence)) {
     ostringstream s;
     s << influence;
     gfx_output ["INFLUENCE"] += vertex + " " + s.str() + " ";

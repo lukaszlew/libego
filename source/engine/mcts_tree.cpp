@@ -8,7 +8,7 @@ extern Gtp::ReplWithGogui gtp;
 MctsNode::MctsNode (Player player, Vertex v, double bias)
 : player(player), v(v), has_all_legal_children (false), bias(bias)
 {
-  ASSERT2 (!isnan (bias), WW(bias));
+  ASSERT2 (!qisnan (bias), WW(bias));
   ASSERT2 (bias >= 0.0, WW(bias));
   ASSERT2 (bias <= 1.0, WW(bias));
   Reset ();

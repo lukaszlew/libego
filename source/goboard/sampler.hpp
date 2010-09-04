@@ -92,7 +92,7 @@ struct Sampler {
     double g  = act_gamma [v] [pl];
     double tg = act_gamma_sum [pl];
     double p = g / (tg + GammaskAccurancy);
-    ASSERT2 (!isnan (p), WW(g); WW(tg));
+    ASSERT2 (!qisnan (p), WW(g); WW(tg));
     ASSERT2 (p >= 0.0,   WW(g); WW(tg));
     ASSERT2 (p <= 1.0,   WW(g); WW(tg));
     return p;

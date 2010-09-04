@@ -101,7 +101,7 @@ Elt NatMap <Nat, Elt>::Min () const {
   Elt min_all = 1E20;
   ForEachNat (Nat, nat) {
     Elt val = (*this) [nat];
-    if (isnan (val)) continue;
+    if (qisnan (val)) continue;
     min_all = min (min_all, val);
   }
   return min_all;
@@ -112,7 +112,7 @@ Elt NatMap <Nat, Elt>::Max () const {
   Elt max_all = -1E20;
   ForEachNat (Nat, nat) {
     Elt val = (*this) [nat];
-    if (isnan (val)) continue;
+    if (qisnan (val)) continue;
     max_all = max (max_all, val);
   }
   return max_all;
@@ -124,7 +124,7 @@ Elt NatMap <Nat, Elt>::Mean () const {
   Elt sum = 0.0;
   ForEachNat (Nat, nat) {
     Elt val = (*this) [nat];
-    if (std::isnan (val)) continue;
+    if (qisnan (val)) continue;
     sum += val;
     n += 1;
   }
@@ -139,7 +139,7 @@ Elt NatMap <Nat, Elt>::StdDev () const {
   Elt sum2 = 0.0;
   ForEachNat (Nat, nat) {
     Elt val = (*this) [nat];
-    if (std::isnan (val)) continue;
+    if (qisnan (val)) continue;
     sum2 += val * val;
     n += 1;
   }
